@@ -1,0 +1,14 @@
+//
+// Process P4 Changes
+//
+// Instructs the controller to process the current set of P4 changes
+// and generate the appropriate list of CIS build commands
+//
+
+watchstart CISProcessP4Changes
+
+status Processing changelists for CIS...
+CISProcessP4Changes %Config%
+
+// Done
+watchstop

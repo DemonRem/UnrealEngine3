@@ -1,0 +1,16 @@
+// Mine the database for some stats
+
+unofficial
+
+successaddress john.scott@epicgames.com
+
+sqlexecint StatBuildCount
+sqlexecint StatCompileJobs
+sqlexecint StatCISJobs
+sqlexecint StatCooks
+sqlexecint StatPCS
+sqlexecint StatPromotions
+sqlexecint StatVerifications
+sqlexecdouble StatGBSubmittedToPerforce
+sqlexecdouble StatGBFTPd
+sqlexecdouble StatGBPublished

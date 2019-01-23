@@ -1,0 +1,15 @@
+// Promotes UDKGame
+
+CarbonCopyAddress builder-notify-promotion@epicgames.com
+successaddress Envy-External-List@epicgames.com;shane.caudle@epicgames.com;Contract-Coders@epicgames.com
+
+dependency #LatestApprovedBuild
+Game UDK
+
+getchanges
+
+report UDK UDKMaps UDKContent Engine Audio GFx Lightmass Win32 Win64 Xbox360 PS3
+
+tag latestUnrealEngine3_UDK
+
+updatelabel VerificationLabel

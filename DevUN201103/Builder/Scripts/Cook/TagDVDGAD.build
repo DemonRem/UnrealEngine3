@@ -1,0 +1,39 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Tools@epicgames.com;builder-notify-rift@epicgames.com
+successaddress matt.kuhlenschmidt@epicgames.com
+failaddress mike.fricker@epicgames.com
+
+Dependency #LatestPublishedRiftDVDBuild
+
+status	Syncing to latest build
+sync
+
+timeout 120
+
+Game %Game%
+Platform %Platform%
+
+clean
+PreheatMapOven
+
+status Getting latest Rift DVD build from \\epicgames.net\Root\Rift\Builds\%Platform%
+language
+define INTSku
+GetPublishedData CookedData \\epicgames.net\Root\Rift\Builds\%Platform%
+
+timeout 120
+
+status Tagging DVD assets for RiftGame
+checkoutgadcheckpoint %Game%
+TagDVDAssets
+
+timeout 240
+
+database dev-db cooked-rift-working
+commandletconfig Clear
+MineCookedPackages
+
+status	Submitting updated checkpoint file for game asset database
+submitandtag
+

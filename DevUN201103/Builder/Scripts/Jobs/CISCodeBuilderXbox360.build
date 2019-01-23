@@ -1,0 +1,53 @@
+//
+// CIS Compile Xenon
+//
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror Xbox360Error
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 20
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Syncing to changelist
+watchstart CISCompileXenon_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Building UBT
+BuildUBT
+
+watchstart CISCompileXenon
+
+platform Xbox360
+buildconfig %JobConfig%
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Building Example %JobConfig%
+checkoutgame Example
+game Example
+unrealbuild
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Building Gear %JobConfig%
+checkoutgame Gear
+game Gear
+unrealbuild
+
+// status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Building Nano %JobConfig%
+// checkoutgame Nano
+// game Nano
+// unrealbuild
+
+status (CIS #BranchFriendlyName Xbox360: CL %JobLabel%) Building UDK %JobConfig%
+checkoutgame UDK
+game UDK
+unrealbuild
+
+watchstop

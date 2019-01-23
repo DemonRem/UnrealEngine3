@@ -1,0 +1,16 @@
+﻿  <UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	x:Class="Wpf_K2.K2Editor"
+	xmlns:Wpf_K2="clr-namespace:Wpf_K2">
+
+	<Grid x:Name="LayoutRoot">
+		<Grid.RowDefinitions>
+      <RowDefinition Height="1*"/>
+		</Grid.RowDefinitions>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+		  <Wpf_K2:K2Canvas Height="8000" Width="8000" x:Name="TheCanvas" Background="#FFEEEEEE" Grid.Row="0"/>
+    </ScrollViewer>
+	</Grid>
+</UserControl>

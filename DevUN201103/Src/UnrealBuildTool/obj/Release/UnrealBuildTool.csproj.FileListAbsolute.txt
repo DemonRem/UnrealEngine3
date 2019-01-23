@@ -1,0 +1,5 @@
+I:\UnrealEngine3\Development\Intermediate\UnrealBuildTool\Release\UnrealBuildTool.exe
+I:\UnrealEngine3\Development\Intermediate\UnrealBuildTool\Release\UnrealBuildTool.pdb
+I:\UnrealEngine3\Development\Src\UnrealBuildTool\obj\Release\ResolveAssemblyReference.cache
+I:\UnrealEngine3\Development\Src\UnrealBuildTool\obj\Release\UnrealBuildTool.exe
+I:\UnrealEngine3\Development\Src\UnrealBuildTool\obj\Release\UnrealBuildTool.pdb

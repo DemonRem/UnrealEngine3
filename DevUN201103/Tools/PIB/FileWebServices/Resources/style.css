@@ -1,0 +1,85 @@
+﻿
+html,body
+{
+    margin: 0px;
+    padding: 0px;
+    background-color: #111111;
+    text-align: center;
+    height: 100%;
+}
+
+#main
+{
+    position: relative;
+    height: 100%;
+    margin: 0px auto;
+    width: 900px;
+    background-color: #787775;
+    color: #000000;
+    text-align: left;
+}
+
+#header
+{
+    text-align: left;
+    padding: 5px;
+    padding-left: 85px;
+    background-color: #001030;
+    color: #cccccc;
+    font-size: 150%;
+    font-weight: bold;
+    line-height: 2.0em;
+}
+
+#divline
+{
+    background-color: #cccccc;
+    height: 1px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#logo
+{
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 60px;
+}
+
+.content
+{
+    width: 95%;
+    background-color: #787775;
+    margin: 10px auto;
+}
+
+table
+{
+    text-align: left;
+}
+
+th
+{
+    text-align: center;
+    color: #001848;
+}
+
+input.text
+{
+    background-color: #000000;
+    color: #cccccc;
+    border-width: 1px;
+    border-color: #555555;
+    padding: 2px;
+}
+
+input.text-changed
+{
+    background-color: #999900;
+    color: #000000;
+    border-width: 1px;
+    border-color: #555555;
+    padding: 2px;
+}

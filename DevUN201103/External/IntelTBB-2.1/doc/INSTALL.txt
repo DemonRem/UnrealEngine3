@@ -1,0 +1,434 @@
+------------------------------------------------------------------------
+Intel(R) Threading Building Blocks - Installation Guide
+		    Version 2.1
+------------------------------------------------------------------------
+
+
+Introduction
+------------
+
+This document explains how to install and configure Intel(R) Threading
+Building Blocks.  Installation is a multi-step process.  You should read
+this document in its entirety before you begin.  Follow the steps
+provided in sequence.
+
+
+Installing Intel(R) Threading Building Blocks
+---------------------------------------------
+
+The installation software installs the full set of Intel(R) Threading
+Building Blocks files for your platform, for all supported operating
+systems and processors.
+
+Previous versions of Intel(R) Threading Building Blocks can co-exist
+with this version.  However, if you are installing an update on a system
+that has another release of *this version* installed, then during 
+the installation you will be asked to uninstall the existing release 
+before installing the update, except if you use non-RPM installation
+on Linux* systems.
+
+The default install location on Microsoft* Windows* systems is:
+
+    C:\Program Files\Intel\TBB\<version>
+            or
+    C:\Program Files (x86)\Intel\TBB\<version>
+        (64-bit versions of Microsoft* Windows* only)
+
+The default install location on Linux* systems is:
+
+    /opt/intel/tbb/<version>
+            or
+    <home_dir>/intel/tbb/<version>
+        (If you are not logged in as root)
+
+The default install location on Mac OS* X systems is:
+
+    /Library/Frameworks/TBB.framework/Versions/<version>
+
+To install on Microsoft* Windows* systems:
+
+    1.  Start the installation program.
+
+	a.  If you received the product on CD-ROM, insert the CD-ROM
+	    into a CD-ROM drive.  If the installation program does not
+	    automatically start, locate the file Setup.exe on the CD-ROM
+	    and double-click it.
+
+	b.  If you received the product as an electronic download,
+	    double-click the downloaded file, named
+	    tbb<version>_<package#>_win.exe.
+
+	The installation program starts.  Click "Next".
+
+    2.  At the prompt, accept the default temporary directory or choose
+	a different temporary directory into which the contents of the
+	self-extracting installation file will be placed before actual
+	installation begins.  Click "Next".
+
+    3.  The Intel(R) Software Setup Assistant appears.  Click "Next" to
+	continue the installation, or click the links provided on the
+	left-hand side to view useful product and support information.
+
+    4.  Choose between the following product license options:
+
+	    (1) Use the existing license found on the system.
+	    (2) Provide your serial number.
+	    (3) Provide a license file.
+
+	A recommended option is indicated, and options that are not
+	applicable are not displayed.
+
+	a.  Choose option (1) and click "Next" if an existing license is
+	    already available on your system.
+
+	b.  Choose option (2), enter a serial number, and click "Next"
+	    if you are connected to the Internet and you have a serial
+	    number.
+
+	    A serial number was provided to you when you purchased the
+	    product, either in an e-mail from Intel or your reseller, or
+	    on a sticker attached to the CD-ROM package.  The correct
+	    license, based on the serial number, will automatically be
+	    downloaded and installed on your system.
+
+	c.  Choose option (3), enter the path to a license file, and
+	    click "Next" if you have a license file provided to you 
+	    after registration of your serial number.
+
+    5.  Select Intel(R) Threading Building Blocks in "Tool Selection" 
+	dialog, and click "Next".
+
+    6.  The installation begins.  Click "Next" to proceed.
+
+    7.  Read the license agreement and decide if you accept it or not.
+	If you accept the agreement, click "Next" to proceed.  If you 
+	choose not to accept it, click "Cancel" to stop the installation.
+
+    8.  Accept the default installation directory or choose a different
+	directory.  All product files are installed in the directory you 
+	choose.  Any previous product version(s) can co-exist with this 
+	product version if installed in different directories.  
+	Make sure to update your build scripts to point to the desired 
+	product version if you choose to keep multiple versions 
+	installed.  Click "Next".
+
+    9.  Select the checkbox to register the PATH, LIB and INCLUDE
+	environment variables for the environment you wish to use, so
+	that the product libraries and headers can be located easily
+	when compiling and linking.  Click "Install" to proceed with the
+	installation.
+
+	After the installation completes, a file named tbbvars.bat is
+	placed in each of the "bin" sub-directories where the product
+	software is installed.  Use this file to set the PATH, LIB and
+	INCLUDE environment variables in a user shell or to select a
+	different environment after installing.
+
+    9.  Wait for the installation to complete, and then click "Finish".
+
+    10. If you have not already registered your product, a registration
+	screen appears.  Enter your full e-mail address to register for
+	support, free product updates, and more, or click "Cancel" to
+	skip the registration step.
+
+	If you have already registered your product, the Intel(R)
+	Software Setup Assistant re-appears.  Click the links on the
+	left-hand side, or click "Finish" when done.
+
+To install on Linux* systems:
+
+    In the following instructions, specific examples of commands for
+    various steps are prefixed with '#' characters.
+
+    1.  Unpack the package in a directory to which you have write
+	access.
+
+	    # cd <directory>
+	    # tar -xzf tbb<version>_<package#>_lin.tgz
+
+    2.  Run the installation script.  Execute the script in the
+	directory where the package was unpacked in the previous step.
+
+	    # cd <directory>/tbb<version>_<package#>_lin
+	    # ./install.sh
+
+    3.  If you are logged in as root, the installation will proceed 
+	automatically; otherwise you will be asked to choose whether 
+	you want to run installation under root account (root password 
+	required) or as current user. When running under root account,
+	the installation will automatically use RPM if available on your
+	system. When not under root account, you may only install 
+	without using RPM.
+
+    4.  The Intel(R) Software Setup Assistant starts.  The installation
+	script displays a series of options:
+
+	    1.  Install
+	    2.  Readme
+	    3.  Release Notes
+	    ...
+	    etc.
+
+	Enter 1 to begin the installation, or enter another choice to
+	view useful product and support information.
+
+    5.  Choose between the following product license options:
+
+	    1. Use existing license found on your system.
+	    2. Provide your serial number.
+	    3. Provide a path to a license file.
+
+	A recommended option is indicated, and options that are not
+	applicable are not displayed.
+
+	a.  Enter 1 if an existing license is already available 
+	    on your system.
+
+	b.  Enter 2, then enter a serial number if you are connected to
+	    the Internet and you have a serial number.
+
+	    A serial number was provided to you when you purchased the
+	    product, either in an e-mail from Intel or your reseller, or
+	    on a sticker attached to the CD-ROM package.  The correct
+	    license, based on the serial number, will automatically be
+	    downloaded and installed on your system.
+
+	c.  Enter 3, then enter the path to a license file if you have 
+	    a license file provided to you after registration of your 
+	    serial number.
+
+    6.  Enter 1 to proceed with the installation, or enter x to exit
+	without installing.
+
+    7.  Press <enter> to display the license agreement.  Read the
+	license agreement and enter "accept" to continue or "reject" to 
+	exit.
+
+    8.  The installation will continue after accepting the license
+	agreement.
+
+	Enter the desired install path or press <enter> to accept
+	the default install path.  All the product files are installed 
+	in the directory you choose.  Any previous product version(s) can 
+	remain installed if this product version is installed into 
+	a separate directory.  Make sure to update your build scripts 
+	to point to the desired product version if you choose to keep 
+	multiple versions installed.
+
+	In each case you need to choose directories for which you have 
+	write access.
+
+    9.  Wait for the installation to complete.
+
+	After the installation completes:
+
+	- The "bin" and "lib" sub-directories are created that contain 
+	    links to the architecture/platform-specific "bin" and "lib"
+	    sub-directories for the architecture and platform on which
+	    the product software was installed.
+
+	- Files named tbbvars.sh and tbbvars.csh are placed in the
+	    "bin" sub-directories.  Use these files with appropriate
+	    arguments, or directly use files from "bin/{architecture}" 
+	    sub-directories to set the LIBRARY_PATH, LD_LIBRARY_PATH, 
+	    DYLD_LIBRARY_PATH and CPATH environment variables in a user 
+	    shell so that the product libraries and headers can be
+	    located when compiling and linking.
+
+    10. If you have not already registered your product, a registration
+	screen appears.  Enter your full e-mail address to register for
+	support, free product updates, and more, or enter x to skip the
+	registration step and exit the installation script.
+
+	If you have already registered your product, the Intel(R)
+	Software Setup Assistant re-appears.  Enter x to exit the
+	installation script, or enter another choice to view useful
+	product and support information.
+
+To install on Mac OS* X systems:
+
+    Note that Xcode* tool suite 2.4.1 or higher must be installed
+    prior to installing Intel(R) Threading Building Blocks on Mac OS* X
+    systems (see also Release_Notes.txt).
+
+    1.  Start the installation program.
+
+	a.  If you received the product on CD-ROM, insert the CD-ROM
+	    into a CD-ROM drive.   Locate the file
+	    tbb<version>_<package#>_mac.dmg on the CD-ROM and double-
+	    click it.
+
+	b.  If you received the product as an electronic download,
+	    double-click the downloaded file, named
+	    tbb<version>_<package#>_mac.dmg.
+
+    2.  Open the mounted disk to view the contents.  Locate the file
+	named Install, and double-click it.
+
+    3.  The Intel(R) Software Setup Assistant appears.  Click "Continue"
+	to continue the installation, or click the links provided on
+	the left-hand side to view useful product and support
+	information.
+
+    4.  Choose between the following product license options:
+
+	    (1) Use the existing license found on the system.
+	    (2) Provide your serial number.
+	    (3) Provide a license file.
+
+	A recommended option is indicated, and options that are not
+	applicable are not displayed.
+
+	a.  Choose option (1) and click "Continue" if an existing license 
+	    is already available on your system.
+
+	b.  Choose option (2), enter a serial number, and click "Continue"
+	    if you are connected to the Internet and you have a serial
+	    number.
+
+	    A serial number was provided to you when you purchased the
+	    product, either in an e-mail from Intel or your reseller, or
+	    on a sticker attached to the CD-ROM package.  The correct
+	    license, based on the serial number, will automatically be
+	    downloaded and installed on your system.
+
+	c.  Choose option (3), enter the path to a license file, and
+	    click "Continue" if you have a license file provided to you 
+	    after registration of your serial number.
+
+    5.  Click "Install" or "Update" on the left-hand side.
+
+    6.  Read the Introduction information and click "Continue".
+
+    7.  Read the license agreement and click "Continue". Click 
+	"Accept" to continue, or "Disagree" to stop the installation.
+
+    8.  Note the Volume where the destination folder for your
+	installation will be located and click "Continue".
+
+    9.  Click "Install" or "Upgrade" to begin the installation.
+
+    10. Wait for the installation to complete, and then click "Close".
+
+    11. Click "Continue". After the installation completes:
+
+	- The "bin" and "lib" sub-directories are created that link to
+	    the architecture/platform-specific "bin" and "lib" 
+	    sub-directories for the architecture and platform on which 
+	    the product software was installed.
+
+	- Files named tbbvars.sh and tbbvars.csh are placed in the "bin" 
+	    sub-directories.  Use these files to set the LIBRARY_PATH, 
+	    LD_LIBRARY_PATH, DYLD_LIBRARY_PATH and CPATH environment 
+	    variables in a user shell so that the product libraries and 
+	    headers can be located when compiling and linking.
+
+    12. If you have not already registered your product, a registration
+	screen appears.  Enter your full e-mail address and click
+	"Continue" to register for support, free product updates, and
+	more, or close the window to skip the registration step.
+
+	If you have already registered your product, the Intel(R)
+	Software Setup Assistant re-appears.  Click the links on the
+	left-hand side, or click "Finish" when done.
+
+
+Uninstalling Intel(R) Threading Building Blocks
+-----------------------------------------------
+
+Note: Uninstalling the product software does *not* delete the
+corresponding license file.
+
+Microsoft* Windows* Systems
+
+    1.  Click the Windows "Start" button and select "Settings",
+	"Control Panel", "Add or Remove Programs".
+
+    2.  Click Intel(R) Threading Building Blocks to select it from
+	the list of installed software.
+
+    3.  Click "Remove" and then click "Yes" to uninstall.
+
+Linux* Systems
+
+    In the following instructions, specific examples of commands for
+    various steps are prefixed with '#' characters.
+
+    1.  Run the uninstallation script.  Execute the script in the
+	directory where the package was installed.
+
+	    # cd <installation directory>
+	    # ./uninstall.sh
+
+Mac OS* X Systems
+
+    In the following instructions, specific examples of commands for
+    various steps are prefixed with '#' characters.
+
+    1.  Run the uninstallation script.  Execute the script in the
+	directory where the package was installed.
+
+	    # cd <installation directory>
+	    # ./uninstall.sh
+
+    2.  An alternative to using uninstall.sh is to double-click the
+	"uninstall" icon that is located in the installation directory.
+	This icon has the file name uninstall.app.
+
+
+Known Issues
+------------
+
+Please note the following with respect to this particular release of
+Intel(R) Threading Building Blocks.
+
+Windows* Installation Issues
+
+    - If the version of Windows* Installer on your system is older
+	than version 2.0, the installer will automatically upgrade it
+	and you will need to reboot the computer after the installation
+	is complete.
+
+    - Scripts are used in the normal install process and may trip
+	false positives in certain antivirus software.  You may need to
+	disable script blocking or you may be able to temporarily allow
+	scripts for the installation process.
+
+    - When using a non-English log-in name on a Windows* system, the
+	Intel(R) Threading Building Blocks installer may fail.  The
+	workaround is to change to an English log-in name.  If you have
+	already started the installation and encounter this issue, use
+	Task Manager and click "End Task" for each of these processes:
+	setup.exe, secore.exe, and sewingui.exe.
+
+Linux* Installation Issues
+
+    - Some versions of RPM do not allow installation to a non-default
+	installation directory, including RPM 4.0.2 (resolved in RPM
+	4.0.3) and RPM 4.1 (resolved in RPM 4.11 to 4.2).
+
+    - When installing on Linux*, there is a known issue where the
+	registration step at the end of the installation program may
+	freeze after your e-mail address is entered.  If this occurs,
+	you may interrupt the installation program (e.g., via pressing
+	<ctrl-C>); the installation should already have completed.
+	In this case, you may register via the Intel(R) Software
+	Development Products Registration Center by visiting:
+
+		https://registrationcenter.intel.com/
+
+Mac OS* X Installation Issues
+
+    - Xcode* tool suite 2.4.1 or higher must be installed prior to
+	installing Intel(R) Threading Building Blocks on Mac OS* X
+	systems.
+
+
+------------------------------------------------------------------------
+Copyright (C) 2005-2009 Intel Corporation.  All Rights Reserved.
+
+Intel, Pentium, Intel Xeon, Itanium, Intel XScale and VTune are
+registered trademarks or trademarks of Intel Corporation or its
+subsidiaries in the United States and other countries.
+
+* Other names and brands may be claimed as the property of others.

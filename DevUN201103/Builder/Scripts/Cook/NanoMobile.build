@@ -1,0 +1,56 @@
+watchstart %Game%Cook_iPhone
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com;builder-notify-nano@epicgames.com
+failaddress martin.sweitzer@epicgames.com
+successaddress martin.sweitzer@epicgames.com
+
+report %Game% %Game%Maps %Game%Content Engine iPhone
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform %Platform%
+scriptconfig %Config%
+
+preheatmapoven
+
+timeout 180
+
+define %Config%
+
+timeout 60
+language INT
+
+Status Cook %Game% Maps
+cookconfig slowpvrtc
+cookinimaps AllMaps
+
+timeout 120
+
+status Publishing to \\epicgames.net\root\Nano\MobileBuilds
+blockonpublish
+define iPhone
+publish \\epicgames.net\root\Nano\MobileBuilds
+
+// status Packaging Release IPA file
+// BuildConfig Release
+// iPhonePackage
+
+status Packaging Shipping IPA file
+BuildConfig Shipping
+iPhonePackage
+
+// status Packaging Shipping IPA file for Distribution
+// BuildConfig Shipping
+// iPhonePackage Distribution
+
+status Publishing IPA to \\epicgames.net\root\Nano\MobileBuilds
+define IPA
+publishtagset iPhonePackage \\epicgames.net\root\Nano\MobileBuilds
+
+watchstop

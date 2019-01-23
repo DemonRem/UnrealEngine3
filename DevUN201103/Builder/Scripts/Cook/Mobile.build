@@ -1,0 +1,60 @@
+watchstart %Game%Cook_iPhone
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+failaddress 
+successaddress josh.adams@epicgames.com
+
+report %Game% %Game%Maps %Game%Content Engine iPhone
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform %Platform%
+scriptconfig %Config%
+
+preheatmapoven
+
+timeout 180
+
+define %Config%
+
+timeout 60
+language INT
+
+Status Cook %Game% Maps
+cookconfig slowpvrtc
+cookinimaps AllMaps
+
+timeout 120
+
+status Publishing to \\epicgames.net\root\UE3\Products\%Game%\Builds
+blockonpublish
+define iPhone
+publish \\epicgames.net\root\UE3\Products\%Game%\Builds
+
+status Packaging Release IPA file
+BuildConfig Release
+iPhonePackage
+
+status Packaging Shipping IPA file
+BuildConfig Shipping
+iPhonePackage
+
+status Packaging Test IPA file
+BuildConfig Test
+iPhonePackage
+
+// status Packaging Shipping IPA file for Distribution
+// BuildConfig Shipping
+// iPhonePackage -distribution
+
+status Publishing IPA to \\epicgames.net\root\UE3\Products\%Game%\Builds
+define IPA
+publishtagset iPhoneFinalIPAPackage \\epicgames.net\root\UE3\Products\%Game%\Builds
+
+watchstop

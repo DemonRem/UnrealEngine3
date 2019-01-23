@@ -1,0 +1,11 @@
+Status Sending QA changelist descriptions
+
+dependency #LatestApprovedQABuild
+
+report Engine Editor Example UDK Win32 Win64 Xbox360 PS3 Mobile iPhone ExampleMaps UDKMaps ExampleContent UDKContent Online GameSpy G4WLive Steam PiB Loc Build UnrealProp Install Swarm Lightmass Tools 
+
+getchanges
+
+SendQAChanges
+
+trigger Add Tool Symbols

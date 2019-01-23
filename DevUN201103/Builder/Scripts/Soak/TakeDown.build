@@ -1,0 +1,20 @@
+// Machine is bad, sync to head and check consistency on the entire branch
+
+errormode checkerrors
+
+unofficial
+
+triggeraddress
+failaddress woody.ent@epicgames.com
+successaddress woody.ent@epicgames.com
+
+status Syncing to head
+sync
+
+ValidateInstall
+
+status	Building script profiler
+checkout Binaries/GameplayProfiler.exe
+checkout Binaries/GameplayProfiler.exe.config
+checkout Binaries/GameplayProfiler.pdb
+msvc9full Development/Tools/GameplayProfiler/GameplayProfiler

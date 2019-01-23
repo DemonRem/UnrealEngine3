@@ -1,0 +1,80 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4706B526-42F0-420E-9CF2-B0AB775C8E47}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>P4API</RootNamespace>
+    <AssemblyName>P4API</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\P4API.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ExceptionLevels.cs" />
+    <Compile Include="Exceptions\P4APIExceptions.cs" />
+    <Compile Include="P4Connection.cs" />
+    <Compile Include="P4Form.cs" />
+    <Compile Include="P4BaseRecordSet.cs" />
+    <Compile Include="P4FormRecordSet.cs" />
+    <Compile Include="P4PendingChangelist.cs" />
+    <Compile Include="P4PrintClientUser.cs" />
+    <Compile Include="P4PrintStreamEventArgs.cs" />
+    <Compile Include="P4PromptEventArgs.cs" />
+    <Compile Include="P4ResultClientUser.cs" />
+    <Compile Include="P4UnParsedRecordSet.cs" />
+    <Compile Include="P4RecordSet.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="P4Record.cs" />
+    <Compile Include="PrintStreamHelper.cs" />
+    <Compile Include="Record\ArrayFieldDictionary.cs" />
+    <Compile Include="Record\FieldDictionary.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\p4dn\p4dn.vcproj">
+      <Project>{79872B7D-711D-410F-B60F-A60E0DE0301F}</Project>
+      <Name>p4dn</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CodeDocuments.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

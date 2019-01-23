@@ -1,0 +1,13 @@
+1. set MOZ_PLUGIN_PATH=c:\sdk\sample\Debug
+2. Copy xpt file to output directory
+3. Run mozilla.exe -console
+4. In TaskManager, under the Proccess tab, right click on mozilla.exe and choose Debug. 
+You can also attach to process or pre-load DLLS in Visual Studio's IDE.
+
+Don't forget to set pref("plugin.dont_try_safe_calls", true); 
+so the browser won't catch crashes. See ..\readme.txt
+
+Additional notes:
+set NSPR_LOG_MODOULES=Plugin:8,PluginNPP:8,PluginNPN:8 to see debug info in console
+You can also set NSPR_LOG_FILE= to go to a file instead.
+

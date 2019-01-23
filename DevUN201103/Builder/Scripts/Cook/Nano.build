@@ -1,0 +1,39 @@
+watchstart Gears2Cook_Xenon
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com;builder-notify-nano@epicgames.com
+failaddress
+successaddress
+
+report Nano NanoMaps NanoContent Engine Audio GFx Win32 Win64
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform %Platform%
+scriptconfig %Config%
+
+preheatmapoven
+
+timeout 180
+language INT
+
+Status Cook maps
+cookmaps CHL_P MidTown_P
+
+timeout 120
+
+watchstart NanoPublish_Win32_UnProp
+
+status Publishing to \\prop-06\Builds\Nano\Win32
+blockonpublish
+define %Config%
+publish \\prop-06\Builds\Nano\Win32
+
+watchstop
+
+watchstop

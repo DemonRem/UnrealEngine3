@@ -1,0 +1,46 @@
+watchstart UnrealGameJob_%JobGame%_%JobPlatform%_%JobConfig%
+
+errormode %JobParameter%
+UBTDisableXGE
+
+status	Syncing to build label
+watchstart SyncBuildLabel
+sync
+watchstop
+
+Status Cleaning
+clean
+
+buildconfig %JobConfig%
+// msvc9clean Development/Src/UE3
+
+BuildUBT
+
+timeout 30
+buildconfig %JobConfig%
+
+Status	Compiling %JobGame% %JobPlatform% %JobConfig%
+
+watchstart UBT_%JobGame%_%JobPlatform%_%JobConfig%
+define %JobDefine%
+checkoutgame %JobGame%
+Game %JobGame%
+UnrealBuild
+define
+watchstop
+
+errormode SuppressErrors
+
+status	Updating source and symbol server
+watchstart UpdateSymbolServer_%JobGame%_%JobPlatform%_%JobConfig%
+getengineversion
+updatesymbolserver
+watchstop
+
+errormode %JobParameter%
+
+Status	Submitting %JobGame% %JobPlatform% %JobConfig% files
+submitandtag
+
+watchstop
+

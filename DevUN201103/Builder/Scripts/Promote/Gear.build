@@ -1,0 +1,13 @@
+// Promotes GearGame
+
+CarbonCopyAddress builder-notify-promotion@epicgames.com;builder-notify-rift@epicgames.com
+successaddress Rift-List@epicgames.com;wrbldnts@microsoft.com
+
+dependency #LatestApprovedBuild
+Game Gear
+
+getchanges
+
+report Gear GearMaps GearContent Engine Audio GFx Lightmass Win32 Win64 Xbox360 PS3
+
+tag latestUnrealEngine3_Rift

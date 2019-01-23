@@ -1,0 +1,39 @@
+watchstart %Game%Cook_%Platform%
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+failaddress josh.adams@epicgames.com
+successaddress josh.adams@epicgames.com
+
+report %Game% %Game%Maps %Game%Content Engine %Platform%
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform %Platform%
+scriptconfig %Config%
+
+preheatmapoven
+
+timeout 180
+
+define %Config%
+
+timeout 60
+language INT
+
+Status Cook %Game% Maps for %Platform%
+cookconfig slowpvrtc
+cookinimaps AllMaps
+
+timeout 120
+
+status Publishing to \\epicgames.net\root\UE3\Products\%Game%\Builds
+define %Platform%
+publish \\epicgames.net\root\UE3\Products\%Game%\Builds
+
+watchstop

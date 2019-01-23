@@ -1,0 +1,38 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Tools@epicgames.com
+triggeraddress dan.schoenblum@epicgames.com;Shambler@OldUnreal.com
+failaddress dan.schoenblum@epicgames.com;Shambler@OldUnreal.com
+successaddress dan.schoenblum@epicgames.com;Shambler@OldUnreal.com
+
+status Syncing to original source
+dependency #LatestPublishedUTPCBuild
+define
+sync
+
+Game %Game%
+Platform %Platform%
+
+clean
+PreheatMapOven
+
+timeout 120
+
+status Getting latest PC build from \\prop-06\Builds\UDK\PC
+language
+define STEAM
+GetPublishedData CookedData \\prop-06\Builds\UDK\PC
+
+AmbiguousFolderName
+PublishTagset Shipping c:\Builds
+
+status Incorporating latest build into Steam
+SteamMakeVersion UDKGame\Build\Steam\SteamMakeVersion
+
+status Publishing files to local test server
+copydest c:\Steam\DepotRoot
+UpdateSteamServer 13261
+copy c:\SteamGame\ContentDescriptionDB.xml
+
+status Restarting content server
+RestartSteamServer

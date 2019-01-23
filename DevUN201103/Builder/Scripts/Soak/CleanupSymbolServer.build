@@ -1,0 +1,13 @@
+watchstart CleanupSymbolServer
+
+errormode checkerrors
+
+failaddress derek.cornish@epicgames.com
+successaddress 
+
+timeout 1440
+
+status Cleaning up old entries in the symbol server
+CleanupSymbolServer
+
+watchstop

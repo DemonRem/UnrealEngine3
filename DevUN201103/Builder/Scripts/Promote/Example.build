@@ -1,0 +1,14 @@
+// Promotes ExampleGame
+
+CarbonCopyAddress builder-notify-promotion@epicgames.com
+successaddress 
+
+dependency #LatestApprovedBuild
+game Example
+
+getchanges
+
+report Example ExampleMaps ExampleContent Engine Audio GFx Lightmass Win32 Win64 Xbox360 PS3 Mobile iPhone Android
+
+tag latestUnrealEngine3_Example
+

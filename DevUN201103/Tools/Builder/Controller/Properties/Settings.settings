@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Controller.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DBConnection" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Data Source=production-db;Initial Catalog=Builder;Integrated Security=True</Value>
+    </Setting>
+    <Setting Name="MailServer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">smtp.epicgames.net</Value>
+    </Setting>
+    <Setting Name="FailedLogLocation" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\epicgames.net\Root\UE3\Builder\BuilderFailedLogs</Value>
+    </Setting>
+    <Setting Name="SymbolStoreLocation" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\epicgames.net\Root\UE3\Builder\BuilderSymbols</Value>
+    </Setting>
+    <Setting Name="BuilderEmail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">build@epicgames.com</Value>
+    </Setting>
+    <Setting Name="BuilderAdminEmail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">builder-notify@epicgames.com</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

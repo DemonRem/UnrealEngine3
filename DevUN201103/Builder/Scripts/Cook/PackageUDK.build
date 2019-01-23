@@ -1,0 +1,120 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+triggeraddress
+failaddress
+successaddress mike.fricker@epicgames.com
+
+report UDK UDKMaps UDKContent Mobile MobileMaps MobileContent Engine Audio GFX Win32 Win64 iPhone Android
+
+timeout 120
+
+dependency #LatestUDKHashBuild
+
+status	Syncing to latest build
+sync
+
+PreheatMapOven
+
+status Getting latest Runtime build (UDK and Mobile)
+Game UDK
+GetPublishedData RunTimeContent \\epicgames.net\Root\UE3\Products\UDK\Builds\Automated
+Game Mobile
+GetPublishedData RunTimeContent \\epicgames.net\Root\UE3\Products\UDK\Builds\Automated
+
+checkout Binaries\build.properties
+SaveDefines
+
+use32bit
+
+status Publishing local build for processing
+
+Game UDK
+Platform Win32
+checkoutgadcheckpoint
+shaderclean
+Platform Win32_SM5
+shaderclean
+
+Game Mobile
+Platform Win32
+checkoutgadcheckpoint
+shaderclean
+
+Status Generating encrypted shaders
+Use32Bit
+SmokeTest
+
+GameNameOverride UDK
+
+Game UDK
+Platform PC
+language
+PublishTagset RunTime c:\Builds
+language CHN
+PublishTagset Loc c:\Builds
+language JPN
+PublishTagset Loc c:\Builds
+language KOR
+PublishTagset Loc c:\Builds
+
+Game Mobile
+Platform PC
+language
+PublishTagset RunTime c:\Builds
+language CHN
+PublishTagset Loc c:\Builds
+language JPN
+PublishTagset Loc c:\Builds
+language KOR
+PublishTagset Loc c:\Builds
+
+language
+
+status Fixing up folder structure
+MoveFolder c:\Builds UDKGame\CutdownPackages\UDKGame UDKGame
+MoveFolder c:\Builds MobileGame\CutdownPackages\MobileGame MobileGame
+
+MoveFolder c:\Builds UDKGame\CutdownPackages\Engine Engine
+MoveFolder c:\Builds MobileGame\CutdownPackages\Engine Engine
+
+status Creating a GAD checkpoint for cutdown data
+Game UDK
+UpdateGameAssetDatabase C:\Builds
+Game Mobile
+UpdateGameAssetDatabase C:\Builds
+
+Status Building UDK SM3 shader cache
+Game UDK
+Platform Win32
+shaderbuild c:\Builds
+
+Status Building UDK SM5 shader cache
+Platform Win32_SM5
+shaderbuild c:\Builds
+
+Status Building Mobile SM3 shader cache
+Game Mobile
+Platform Win32
+shaderbuild c:\Builds
+
+UnSetupType UDK
+
+status Creating manifest
+UnSetup CreateManifest
+
+status Building installer
+UnSetup BuildInstaller
+
+status Packaging files
+UnSetup Package
+
+signfile c:\Builds UDKInstall*.exe
+makemd5 c:\Builds UDKInstall*.exe
+
+PublishFiles \\epicgames.net\Root\UE3\Products\UDK\Builds\Automated c:\Builds UDKInstall*.exe
+ClearPublishDestinations
+PublishFiles \\epicgames.net\Root\UE3\Products\UDK\Builds\Automated c:\Builds *.md5
+
+Platform Dual
+Game UDK

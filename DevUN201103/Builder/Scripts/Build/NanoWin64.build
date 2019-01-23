@@ -1,0 +1,207 @@
+watchstart DailyFullBuild
+
+errormode checkerrors
+
+CarbonCopyAddress builder-notify-build@epicgames.com;builder-notify-nano@epicgames.com
+triggeraddress
+failaddress
+successaddress SupportQA@epicgames.com
+
+watchstart CodeSync
+status	Syncing to head
+sync
+watchstop
+
+CreateNewLabel
+
+platform PC
+buildconfig Release
+
+mobileversionfiles
+
+checkout Development/Src/Core/Src/UnObjVer.cpp
+checkout Development/Src/ExampleGame/Live/xex.xml
+checkout Development/Src/GearGame/Live/xex.xml
+checkout Development/Src/NanoGame/Live/xex.xml
+checkout Development/Src/UTGame/Live/xex.xml
+
+checkout Development/Src/Launch/Resources/Version.h
+checkout Development/Src/Launch/Resources/PCLaunch.rc
+checkout Binaries/PIB/NP/XPIFiles/install.rdf
+checkout Binaries/PIB/AX/ATLUE3.inf
+checkout Binaries/PIB/GC/manifest.json
+checkout Binaries/build.properties
+
+bumpengineversion
+
+// -----------------------------------
+
+buildconfig Release
+checkout Binaries/Editor/Release/UnrealEdCSharp.dll
+checkout Binaries/Editor/Release/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+sign Binaries/Editor/Release/UnrealEdCSharp.dll
+
+checkout Binaries/Win32/Editor/Release/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/Release/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/Release
+copy Binaries/Editor/Release/UnrealEdCSharp.dll
+copy Binaries/Editor/Release/UnrealEdCSharp.pdb
+
+checkout Binaries/Win64/Editor/Release/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/Release/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/Release
+copy Binaries/Editor/Release/UnrealEdCSharp.dll
+copy Binaries/Editor/Release/UnrealEdCSharp.pdb
+
+buildconfig Debug
+checkout Binaries/Editor/Debug/UnrealEdCSharp.dll
+checkout Binaries/Editor/Debug/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/Debug/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/Debug/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/Debug
+copy Binaries/Editor/Debug/UnrealEdCSharp.dll
+copy Binaries/Editor/Debug/UnrealEdCSharp.pdb
+
+checkout Binaries/Win64/Editor/Debug/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/Debug/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/Debug
+copy Binaries/Editor/Debug/UnrealEdCSharp.dll
+copy Binaries/Editor/Debug/UnrealEdCSharp.pdb
+
+// -----------------------------------
+
+Status Checking out Swarm binaries
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Bumping Swarm Agent version
+checkout Development/Tools/UnrealSwarm/Agent/Agent.csproj
+checkout Development/Tools/UnrealSwarm/Agent/Properties/AssemblyInfo.cs
+bumpagentversion
+
+Status Building Swarm Agent
+buildconfig Release
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+Status Publishing Swarm Agent for QA
+msvc9deploy Development/Tools/UnrealSwarm/UnrealSwarm,Agent,\\devweb-01\Deploy\Swarm\SwarmAgentQA\
+
+sign Binaries/AgentInterface.dll
+sign Binaries/Win32/AgentInterface.dll
+sign Binaries/Win64/AgentInterface.dll
+sign Binaries/SwarmAgent.exe
+sign Binaries/SwarmCoordinator.exe
+sign Binaries/SwarmCoordinatorInterface.dll
+
+// -----------------------------------
+
+Status	Submitting version files
+submitandtag
+
+buildconfig Release
+Platform Win64
+Game Nano
+AddUnrealFullGameJob CheckErrors
+
+// Compile all tools
+
+platform PC
+buildconfig Release
+
+// NOTE: StandaloneSymbolParser is built by MemoryProfiler2, XeTools, and PS3Tools so it won't be signed until after all of those projects have been built
+
+buildconfig Release
+
+// Put this between PS3Tools and XeTools to reduce chances of contention with mt.exe on StandaloneSymbolParser
+checkout Binaries/Windows/WindowsTools.dll
+checkout Binaries/Windows/WindowsTools.pdb
+msvc9full Development/Src/Windows/WindowsTools/WindowsTools
+
+sign Binaries/Windows/WindowsTools.dll
+
+// End StandaloneSymbolParser building
+sign Binaries/Win32/StandaloneSymbolParser.dll
+sign Binaries/Win64/StandaloneSymbolParser.dll
+
+status	Building UnrealFrontEnd and UnrealConsole
+checkout Binaries/CookerSync.exe
+checkout Binaries/CookerSync.exe.config
+checkout Binaries/CookerSync.pdb
+checkout Binaries/ConsoleInterface.dll
+checkout Binaries/ConsoleInterface.pdb
+checkout Binaries/UnrealConsole.exe
+checkout Binaries/UnrealConsole.exe.config
+checkout Binaries/UnrealConsole.pdb
+checkout Binaries/UnrealControls.dll
+checkout Binaries/UnrealControls.pdb
+checkout Binaries/UnrealFrontend.exe
+checkout Binaries/UnrealFrontend.exe.config
+checkout Binaries/UnrealFrontend.pdb
+checkout Binaries/UnrealConsoleRemoting.dll
+checkout Binaries/UnrealConsoleRemoting.pdb
+msvc9full Development/Tools/UnrealFrontend/UnrealFrontend
+
+sign Binaries/CookerSync.exe
+sign Binaries/ConsoleInterface.dll
+sign Binaries/UnrealConsole.exe
+sign Binaries/UnrealControls.dll
+sign Binaries/UnrealFrontend.exe
+sign Binaries/UnrealConsoleRemoting.dll
+
+status Building Lightmass (32 bit)
+buildconfig Release|Win32
+checkout Binaries/Win32/UnrealLightmass.exe
+checkout Binaries/Win32/UnrealLightmass.pdb
+msvc9full Development/Tools/UnrealLightmass/UnrealLightmass
+
+sign Binaries/Win32/UnrealLightmass.exe
+
+status Building Lightmass (64 bit)
+buildconfig Release|x64
+checkout Binaries/Win64/UnrealLightmass.exe
+checkout Binaries/Win64/UnrealLightmass.pdb
+msvc9full Development/Tools/UnrealLightmass/UnrealLightmass
+
+sign Binaries/Win64/UnrealLightmass.exe
+
+buildconfig release
+
+status Building ShaderCompilerWorker
+Checkout Binaries/Win64/UE3ShaderCompileWorker.exe
+Checkout Binaries/Win64/UE3ShaderCompileWorker.pdb
+msvc9full Development/Tools/ShaderCompileWorker/ShaderCompileWorker
+
+sign Binaries/Win64/UE3ShaderCompileWorker.exe
+
+watchstart SubmitBuildAllPC
+Status Submitting all files
+submitandtag
+watchstop
+
+Status Waiting for other compiles to finish
+Timeout 60
+WaitForJobs
+
+updatelabeldescription
+
+watchstop

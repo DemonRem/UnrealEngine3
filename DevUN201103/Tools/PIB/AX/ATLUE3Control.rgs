@@ -1,0 +1,34 @@
+HKCR
+{
+	ATLUE3.ATLUE3Control.1 = s 'ATLUE3Control Class'
+	{
+		CLSID = s '{8AF65954-58E5-4DC5-8DD0-A28B13E77AC7}'
+	}
+	ATLUE3.ATLUE3Control = s 'ATLUE3Control Class'
+	{
+		CLSID = s '{8AF65954-58E5-4DC5-8DD0-A28B13E77AC7}'
+		CurVer = s 'ATLUE3.ATLUE3Control.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8AF65954-58E5-4DC5-8DD0-A28B13E77AC7} = s 'ATLUE3Control Class'
+		{
+			ProgID = s 'ATLUE3.ATLUE3Control.1'
+			VersionIndependentProgID = s 'ATLUE3.ATLUE3Control'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			val AppID = s '%APPID%'
+			ForceRemove 'Control'
+			ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 102'
+			'MiscStatus' = s '0'
+			{
+			    '1' = s '%OLEMISC%'
+			}
+			'TypeLib' = s '{90D6B2D3-087E-4AF8-9E1F-8883A0ECE632}'
+			'Version' = s '1.0'
+		}
+	}
+}

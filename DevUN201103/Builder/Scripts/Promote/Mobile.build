@@ -1,0 +1,13 @@
+
+CarbonCopyAddress builder-notify-promotion@epicgames.com
+successaddress shane.caudle@epicgames.com
+
+dependency #LatestApprovedBuild
+game Mobile
+
+getchanges
+
+report Mobile MobileMaps MobileContent Engine Audio Lightmass Win32 Win64 Mobile iPhone Android
+
+tag latestUnrealEngine3_Mobile
+

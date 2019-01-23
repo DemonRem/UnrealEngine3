@@ -1,0 +1,39 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+triggeraddress
+failaddress scott.sherman@epicgames.com
+successaddress
+
+report UDK UDKMaps UDKContent Engine Audio GFx Win32
+
+Game UDK
+Platform Win32
+
+timeout 120
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+define STEAM
+CreateNewLabel
+
+preheatmapoven
+use32bit
+
+status Cooking UT3 PC VCTF maps
+CookMaps VCTF-Necropolis VCTF-SandStorm
+
+status Cooking UT3 PC DM maps
+CookMaps DM-Deck DM-Sanctuary
+
+timeout 120
+
+status	Publishing build to \\prop-06/Builds/UDK/PC
+Publish \\prop-06/Builds/UDK/PC
+
+UpdateFolder LatestPublishedUTPCBuild
+
+trigger Steam Make Version

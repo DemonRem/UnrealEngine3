@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PIB.FileWebServices.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="RootFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">c:\inetpub\pib\data\LatestBuild\UnrealEngine3</Value>
+    </Setting>
+    <Setting Name="TOCFileName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UDKGame\PCConsoleTOC.txt</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

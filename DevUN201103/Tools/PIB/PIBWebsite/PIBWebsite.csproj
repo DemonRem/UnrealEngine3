@@ -1,0 +1,249 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8EC288C4-F87A-416A-9FDC-77CBCB6F6799}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PIBWebSite</RootNamespace>
+    <AssemblyName>PIBWebSite</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkSubset>Full</TargetFrameworkSubset>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="about.htm" />
+    <Content Include="css\all.css" />
+    <Content Include="css\ie.css" />
+    <Content Include="games.htm" />
+    <Content Include="images\ad01.gif" />
+    <Content Include="images\ad02.gif" />
+    <Content Include="images\ad03.gif" />
+    <Content Include="images\ad04.gif" />
+    <Content Include="images\arrow.gif" />
+    <Content Include="images\bg-body-i.jpg" />
+    <Content Include="images\bg-body.gif" />
+    <Content Include="images\bg-button.png" />
+    <Content Include="images\bg-compare-box.png" />
+    <Content Include="images\bg-compb-b.png" />
+    <Content Include="images\bg-compb-c.png" />
+    <Content Include="images\bg-compb-t.png" />
+    <Content Include="images\bg-date.png" />
+    <Content Include="images\bg-drpdwn-b.png" />
+    <Content Include="images\bg-drpdwn-t.png" />
+    <Content Include="images\bg-features.png" />
+    <Content Include="images\bg-footer-i.gif" />
+    <Content Include="images\bg-footer.gif" />
+    <Content Include="images\bg-frame.png" />
+    <Content Include="images\bg-gall-title.png" />
+    <Content Include="images\bg-gallery.jpg" />
+    <Content Include="images\bg-game-det.png" />
+    <Content Include="images\bg-heading.png" />
+    <Content Include="images\bg-heading2.png" />
+    <Content Include="images\bg-html.gif" />
+    <Content Include="images\bg-img-shdw.png" />
+    <Content Include="images\bg-img-shdw01.png" />
+    <Content Include="images\bg-img-shdw02.png" />
+    <Content Include="images\bg-img-shdw03.png" />
+    <Content Include="images\bg-img-shdw04.png" />
+    <Content Include="images\bg-line.gif" />
+    <Content Include="images\bg-line2.gif" />
+    <Content Include="images\bg-line3.gif" />
+    <Content Include="images\bg-logo01.png" />
+    <Content Include="images\bg-logo02.png" />
+    <Content Include="images\bg-logo03.png" />
+    <Content Include="images\bg-logo04.png" />
+    <Content Include="images\bg-nav-item.gif" />
+    <Content Include="images\bg-page-l.jpg" />
+    <Content Include="images\bg-page01.gif" />
+    <Content Include="images\bg-search-text.png" />
+    <Content Include="images\bg-side-heading.png" />
+    <Content Include="images\bg-site.png" />
+    <Content Include="images\bg-tab-visual.png" />
+    <Content Include="images\bg-tab01.png" />
+    <Content Include="images\bg-tab02.png" />
+    <Content Include="images\bg-tab03.png" />
+    <Content Include="images\bg-tab04.png" />
+    <Content Include="images\bg-tc-b.png" />
+    <Content Include="images\bg-tc-c.png" />
+    <Content Include="images\bg-tc-t.png" />
+    <Content Include="images\bg-top-bar.png" />
+    <Content Include="images\bg-wrapper-i.jpg" />
+    <Content Include="images\bg-wrapper.jpg" />
+    <Content Include="images\btn-next.png" />
+    <Content Include="images\btn-prev.png" />
+    <Content Include="images\bullet-nav.gif" />
+    <Content Include="images\bullet01.gif" />
+    <Content Include="images\facebook.gif" />
+    <Content Include="images\ico-facebook.gif" />
+    <Content Include="images\ico-twitter.gif" />
+    <Content Include="images\ico-youtube.gif" />
+    <Content Include="images\ico01.gif" />
+    <Content Include="images\ico02.gif" />
+    <Content Include="images\ico03.gif" />
+    <Content Include="images\img01.jpg" />
+    <Content Include="images\img02.jpg" />
+    <Content Include="images\img03.jpg" />
+    <Content Include="images\img04.jpg" />
+    <Content Include="images\img05.jpg" />
+    <Content Include="images\img06.jpg" />
+    <Content Include="images\img07.jpg" />
+    <Content Include="images\img08.jpg" />
+    <Content Include="images\img09.jpg" />
+    <Content Include="images\img1.jpg" />
+    <Content Include="images\img10.jpg" />
+    <Content Include="images\img11.png" />
+    <Content Include="images\img12.png" />
+    <Content Include="images\img13.jpg" />
+    <Content Include="images\img14.jpg" />
+    <Content Include="images\img15.gif" />
+    <Content Include="images\img16.jpg" />
+    <Content Include="images\img17.jpg" />
+    <Content Include="images\img18.gif" />
+    <Content Include="images\logo.png" />
+    <Content Include="images\logo2.png" />
+    <Content Include="images\none.gif" />
+    <Content Include="images\play.gif" />
+    <Content Include="images\quot01.gif" />
+    <Content Include="images\quot02.gif" />
+    <Content Include="images\quot03.gif" />
+    <Content Include="images\quot04.gif" />
+    <Content Include="images\rss.gif" />
+    <Content Include="images\rss01.gif" />
+    <Content Include="images\separator.gif" />
+    <Content Include="images\separator05.png" />
+    <Content Include="images\separator06.gif" />
+    <Content Include="images\separator07.gif" />
+    <Content Include="images\separator08.png" />
+    <Content Include="images\separator09.gif" />
+    <Content Include="images\separator2.png" />
+    <Content Include="images\separator3.gif" />
+    <Content Include="images\separator4.gif" />
+    <Content Include="images\ShadowComplex-background.jpg" />
+    <Content Include="images\ShadowComplex-logo.png" />
+    <Content Include="images\ShadowComplex-tab.png" />
+    <Content Include="images\text-epic-games.gif" />
+    <Content Include="images\timer.jpg" />
+    <Content Include="images\twitter.gif" />
+    <Content Include="images\twitter01.gif" />
+    <Content Include="images\twitter02.gif" />
+    <Content Include="images\txt-480-01.gif" />
+    <Content Include="images\txt-480.png" />
+    <Content Include="images\txt-720hd-01.gif" />
+    <Content Include="images\txt-720hd.png" />
+    <Content Include="images\txt-apply.png" />
+    <Content Include="images\txt-community.gif" />
+    <Content Include="images\txt-compare.png" />
+    <Content Include="images\txt-enlist.png" />
+    <Content Include="images\txt-epic.gif" />
+    <Content Include="images\txt-epic01.gif" />
+    <Content Include="images\txt-games.gif" />
+    <Content Include="images\txt-learn-more.png" />
+    <Content Include="images\txt-news.png" />
+    <Content Include="images\txt-news01.png" />
+    <Content Include="images\txt-play-demo.png" />
+    <Content Include="images\txt-play-trailer.png" />
+    <Content Include="images\txt-search.png" />
+    <Content Include="images\txt-share.gif" />
+    <Content Include="images\txt-technology.gif" />
+    <Content Include="images\txt-trailer.gif" />
+    <Content Include="images\txt-trans.png" />
+    <Content Include="images\txt-trans01.png" />
+    <Content Include="images\txt-unreal.gif" />
+    <Content Include="images\UDK-background.jpg" />
+    <Content Include="images\UDK-logo.png" />
+    <Content Include="images\UDK-tab.png" />
+    <Content Include="images\you-tube.gif" />
+    <Content Include="index.aspx" />
+    <Content Include="js\ie-hover-ns-pack.js" />
+    <Content Include="js\ie-png.js" />
+    <Content Include="js\tabs.js" />
+    <Content Include="tech.htm" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="index.aspx.cs">
+      <DependentUpon>index.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="index.aspx.designer.cs">
+      <DependentUpon>index.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StartService.bat" />
+    <None Include="StopService.bat" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>53536</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

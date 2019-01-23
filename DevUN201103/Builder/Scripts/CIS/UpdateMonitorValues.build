@@ -1,0 +1,13 @@
+//
+// Update the values used by the CIS Monitor
+//
+
+watchstart CISUpdateMonitorValues
+
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+status Processing completed CIS jobs for the CIS Monitor...
+CISUpdateMonitorValues
+
+// Done
+watchstop

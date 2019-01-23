@@ -1,0 +1,114 @@
+// Cooks all Gear maps for Xenon
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+failaddress gil.gribb@epicgames.com;Jonathan.Taylor@epicgames.com;Alex.Conner@epicgames.com;Scott.Bigwood@epicgames.com;Prince.Arrington@epicgames.com;John.Scott@epicgames.com;Derek.Cornish@epicgames.com;Brian.Lemon@epicgames.com
+successaddress gil.gribb@epicgames.com;Jonathan.Taylor@epicgames.com;Alex.Conner@epicgames.com;Scott.Bigwood@epicgames.com;Prince.Arrington@epicgames.com;John.Scott@epicgames.com;Derek.Cornish@epicgames.com;Brian.Lemon@epicgames.com
+
+
+report Gear GearMaps GearContent Engine Audio GFx Xbox360
+
+dependency #Head
+
+status	Syncing to head
+sync
+
+checkout Development/Src/Core/Src/UnObjVer.cpp
+checkout Development/Src/Launch/Resources/Version.h
+checkout Development/Src/Launch/Resources/PCLaunch.rc
+checkout Binaries/PIB/NP/XPIFiles/install.rdf
+checkout Binaries/PIB/AX/ATLUE3.inf
+checkout Binaries/PIB/GC/manifest.json
+checkout Binaries/build.properties
+
+checkout Development/Src/ExampleGame/Live/xex.xml
+checkout Development/Src/GearGame/Live/xex.xml
+checkout Development/Src/NanoGame/Live/xex.xml
+checkout Development/Src/UTGame/Live/xex.xml
+
+checkout Development/Src/IPhone/Resources/IPhone-Info.plist
+checkout MobileGame/Build/IPhone/IPhone-Info.plist
+
+bumpengineversion
+
+Status Cleaning
+clean
+
+timeout 60
+
+BuildUBT
+
+status	building win64 PC gear exe
+Game Gear
+platform win64
+buildconfig release
+
+checkoutgame Gear
+UnrealBuild
+
+timeout 60
+
+
+// clean out defines
+define
+
+status	Building script for Gear
+scriptconfig
+checkout GearGame/Script/*.u
+checkout GearGame/Script/Manifest.txt
+buildscript Gear
+
+status	Building final release script for Gear
+scriptconfig final_release
+checkout GearGame/ScriptFinalRelease/*.u
+checkout GearGame/ScriptFinalRelease/Manifest.txt
+buildscript Gear
+
+
+// Delete the next line for FR script
+scriptconfig
+
+
+platform Xbox360
+
+preheatmapoven
+
+timeout 180
+
+status Building local shader cache
+CookShaderBuild
+
+checkouthashes
+
+timeout 120
+language INT
+languages INT FRA DEU ESN ITA
+
+Status Cook Everything
+cookinimaps SPMaps1+SPMaps2+SPMaps3+SPMaps4+SPMaps5+MPMaps1+MPMaps2+MPMaps3+DLCMPMaps1+DLCMPMaps2
+
+timeout 60
+
+status	building 360 gear exe
+checkoutgame Gear
+Game Gear
+platform Xbox360
+
+buildconfig release
+UnrealBuild
+
+buildconfig Test
+UnrealBuild
+
+buildconfig Shipping
+UnrealBuild
+
+timeout 120
+
+status Publishing to \\prop-05\Builds\Gear\Xenon
+blockonpublish
+define GIL_TEST
+publish \\prop-05\Builds\Gear\Xenon
+
+

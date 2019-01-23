@@ -1,0 +1,37 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+triggeraddress 
+failaddress scott.sherman@epicgames.com
+successaddress
+
+report UDK UDKMaps UDKContent Engine Audio GFx Win32
+
+Game UDK
+Platform PCConsole
+
+timeout 120
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+TrackFileSize Binaries/Win32/UDKGameDll.dll
+
+define PIB
+CreateNewLabel
+
+preheatmapoven
+
+status Cooking UT3 PC DM map
+openfordelete UDKGame/Content/RefShaderCache-PC-D3D-SM3.upk
+Cookconfig SystemSettings=PIB
+CookMaps DM-Deck_reduced
+
+timeout 120
+
+status Publishing build to \\prop-06/Builds/UDK/PCConsole
+PublishTagset PIB \\prop-06/Builds/UDK/PCConsole
+
+revert

@@ -1,0 +1,13 @@
+// Promotes a QA build
+
+CarbonCopyAddress builder-notify-promotion@epicgames.com
+successaddress 
+
+dependency #LatestApprovedQABuild
+
+getchanges
+
+report Engine Editor Example ExampleMaps ExampleContent Mobile MobileMaps MobileContent UDK UDKMaps UDKContent Lightmass Win32 Win64 Xbox360 PS3 Tools Loc Online GameSpy G4WLive Swarm Security Build Install UnrealProp
+
+tag latestUnrealEngine3_QACandidate
+

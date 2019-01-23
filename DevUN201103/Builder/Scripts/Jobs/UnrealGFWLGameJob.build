@@ -1,0 +1,46 @@
+watchstart UnrealGameJob_%JobGame%_%JobPlatform%_%JobConfig%
+
+errormode %JobParameter%
+UBTDisableXGE
+
+status	Syncing to build label
+watchstart SyncBuildLabel
+sync
+watchstop
+
+Status Cleaning
+clean
+
+BuildUBT
+
+timeout 30
+buildconfig %JobConfig%
+
+Status	Compiling %JobGame% %JobPlatform% %JobConfig%
+
+watchstart UBT_%JobGame%_%JobPlatform%_%JobConfig%
+define %JobDefine%
+checkoutGFWLgame %JobGame%
+Game %JobGame%
+UnrealBuild
+watchstop
+
+errormode suppresserrors
+status	Updating source and symbol server
+watchstart UpdateSymbolServer_%JobGame%_%JobPlatform%_%JobConfig%
+getengineversion
+updatesymbolserver
+watchstop
+errormode %JobParameter%
+
+checkoutcat %JobGame%
+makegfwlcat
+signcat
+signbinary
+define
+
+Status	Submitting %JobGame% %JobPlatform% %JobConfig% files
+submitandtag
+
+watchstop
+

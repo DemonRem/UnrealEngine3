@@ -1,0 +1,144 @@
+//
+// CIS Compile PC (Example)
+//
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror ExampleError
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 30
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Syncing to changelist
+watchstart CISCompilePC_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Building UBT
+BuildUBT
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Checking out UnrealEdCSharp
+buildconfig %JobConfig%
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+Status Checking out Swarm
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Building Swarm
+buildconfig %JobConfig%
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+buildconfig %JobConfig%
+game Example
+
+watchstart CISCompileWin32
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Building ExampleGame %JobConfig% Win32
+platform Win32
+checkoutgame Example
+unrealbuild
+
+watchstop
+
+watchstart CISCompileWin64
+
+timeout 60
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Building ExampleGame %JobConfig% Win64
+platform Win64
+checkoutgame Example
+unrealbuild
+
+watchstop
+
+platform Win32
+use64bit
+timeout 10
+
+watchstart CISCompileScriptExample
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Building ExampleGame Script Release
+scriptconfig
+checkout ExampleGame/Script/*.u
+checkout ExampleGame/Script/Manifest.txt
+buildscript Example
+
+watchstop
+
+watchstart CISCompileScriptExampleFR
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) Building ExampleGame Script FinalRelease
+scriptconfig final_release
+checkout ExampleGame/ScriptFinalRelease/*.u
+checkout ExampleGame/ScriptFinalRelease/Manifest.txt
+buildscript Example
+
+watchstop
+
+watchstart CISWin32ExampleSmokeTest
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) ExampleGame Win32 Smoke Test
+Use32bit
+SmokeTest
+
+watchstop
+
+watchstart CISWin64ExampleSmokeTest
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) ExampleGame Win64 Smoke Test
+Use64bit
+SmokeTest
+
+watchstop
+
+watchstart CISWin32ExampleAdditionalSmokeTests
+
+use32bit
+
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) ExampleGame Load All Packages
+LoadPackages
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) ExampleGame Cook PC Packages
+CookPackages PC
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) ExampleGame Cook Xenon Packages
+CookPackages Xenon
+status (CIS #BranchFriendlyName Example: CL %JobLabel%) ExampleGame Cook PS3 Packages
+CookPackages PS3
+
+watchstop

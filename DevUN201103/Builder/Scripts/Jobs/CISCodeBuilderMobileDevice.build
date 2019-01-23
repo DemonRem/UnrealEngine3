@@ -1,0 +1,50 @@
+//
+// CIS Compile MobileDevice
+//
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror MobileDeviceError
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 20
+
+status (CIS #BranchFriendlyName MobileDevice: CL %JobLabel%) Syncing to changelist
+watchstart CISCompileMobile_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName MobileDevice: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName MobileDevice: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName MobileDevice: CL %JobLabel%) Building UBT
+BuildUBT
+
+watchstart CISCompileMobile
+
+buildconfig %JobConfig%
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building Mobile %JobConfig% IPhoneDevice
+platform IPhoneDevice
+checkoutgame Mobile
+game Mobile
+unrealbuild
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building NanoMobile %JobConfig% IPhoneDevice
+platform IPhoneDevice
+checkoutgame NanoMobile
+game NanoMobile
+unrealbuild
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building Mobile %JobConfig% NGP
+platform NGP
+checkoutgame Mobile
+game Mobile
+unrealbuild
+
+watchstop

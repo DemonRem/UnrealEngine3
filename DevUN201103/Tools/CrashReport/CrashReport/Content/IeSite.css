@@ -1,0 +1,14 @@
+﻿#main 
+{
+    margin: 0;
+    padding: 0;
+    margin-top: -12px;
+    
+}
+#mainRight, #mainLeft
+{
+ margin-top: 0;
+}
+#CrashesTable {
+    margin-top: -10px;
+}

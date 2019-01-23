@@ -1,0 +1,129 @@
+//
+// CIS Compile PC (Mobile)
+//
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror MobileError
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 30
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Syncing to changelist
+watchstart CISCompilePC_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building UBT
+BuildUBT
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Checking out UnrealEdCSharp
+buildconfig %JobConfig%
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+Status Checking out Swarm
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Building Swarm
+buildconfig %JobConfig%
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+buildconfig %JobConfig%
+game Mobile
+
+watchstart CISCompileWin32
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building MobileGame %JobConfig% Win32
+platform Win32
+checkoutgame Mobile
+unrealbuild
+
+watchstop
+
+watchstart CISCompileWin64
+
+timeout 60
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building MobileGame %JobConfig% Win64
+platform Win64
+checkoutgame Mobile
+unrealbuild
+
+watchstop
+
+platform Win32
+use64bit
+timeout 10
+
+watchstart CISCompileScriptMobile
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building MobileGame Script Release
+scriptconfig
+checkout MobileGame/Script/*.u
+checkout MobileGame/Script/Manifest.txt
+buildscript Mobile
+
+watchstop
+
+watchstart CISCompileScriptMobileFR
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) Building MobileGame Script FinalRelease
+scriptconfig final_release
+checkout MobileGame/ScriptFinalRelease/*.u
+checkout MobileGame/ScriptFinalRelease/Manifest.txt
+buildscript Mobile
+
+watchstop
+
+watchstart CISWin32MobileSmokeTest
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) MobileGame Win32 Smoke Test
+Use32bit
+SmokeTest
+
+watchstop
+
+watchstart CISWin64MobileSmokeTest
+
+status (CIS #BranchFriendlyName Mobile: CL %JobLabel%) MobileGame Win64 Smoke Test
+Use64bit
+SmokeTest
+
+watchstop

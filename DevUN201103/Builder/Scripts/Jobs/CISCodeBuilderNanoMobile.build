@@ -1,0 +1,129 @@
+//
+// CIS Compile PC (NanoMobile)
+//
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror NanoMobileError
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 30
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Syncing to changelist
+watchstart CISCompilePC_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Building UBT
+BuildUBT
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Checking out UnrealEdCSharp
+buildconfig %JobConfig%
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+Status Checking out Swarm
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Building Swarm
+buildconfig %JobConfig%
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+buildconfig %JobConfig%
+game NanoMobile
+
+watchstart CISCompileWin32
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Building NanoMobile %JobConfig% Win32
+platform Win32
+checkoutgame NanoMobile
+unrealbuild
+
+watchstop
+
+watchstart CISCompileWin64
+
+timeout 60
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Building NanoMobile %JobConfig% Win64
+platform Win64
+checkoutgame NanoMobile
+unrealbuild
+
+watchstop
+
+platform Win32
+Use64bit
+timeout 10
+
+watchstart CISCompileScriptNanoMobile
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Building NanoMobile Script Release
+scriptconfig
+checkout NanoMobileGame/Script/*.u
+checkout NanoMobileGame/Script/Manifest.txt
+buildscript NanoMobile
+
+watchstop
+
+watchstart CISCompileScriptNanoMobileFR
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) Building NanoMobile Script FinalRelease
+scriptconfig final_release
+checkout NanoMobileGame/ScriptFinalRelease/*.u
+checkout NanoMobileGame/ScriptFinalRelease/Manifest.txt
+buildscript NanoMobile
+
+watchstop
+
+watchstart CISWin32NanoMobileSmokeTest
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) NanoMobileGame Win32 Smoke Test
+Use32bit
+SmokeTest
+
+watchstop
+
+watchstart CISWin64NanoMobileSmokeTest
+
+status (CIS #BranchFriendlyName NanoMobile: CL %JobLabel%) NanoMobileGame Win64 Smoke Test
+Use64bit
+SmokeTest
+
+watchstop

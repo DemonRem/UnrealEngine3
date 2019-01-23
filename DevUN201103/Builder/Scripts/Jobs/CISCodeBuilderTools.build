@@ -1,0 +1,276 @@
+//
+// CIS Compile Tools
+//
+// Compiles all tools built by a daily full build but doesn't sign
+// or check the resulting binaries back in
+//
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Starting up
+
+errormode checkerrors
+
+saveerror ToolsError
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 15
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Syncing to changelist
+watchstart CISCompileTools_P4
+sync
+watchstop
+
+watchstart CISCompileTools
+
+platform Win32
+buildconfig Release
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building Building Swarm
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building Stats viewer
+checkout Binaries/Stats.dll
+checkout Binaries/Stats.pdb
+checkout Binaries/StatsComparison.exe
+checkout Binaries/StatsComparison.exe.config
+checkout Binaries/StatsComparison.pdb
+checkout Binaries/StatsThreshold.exe
+checkout Binaries/StatsThreshold.exe.config
+checkout Binaries/StatsThreshold.pdb
+checkout Binaries/StatsViewer.exe
+checkout Binaries/StatsViewer.exe.config
+checkout Binaries/StatsViewer.pdb
+msvc9full Development/Tools/StatsViewer/StatsViewer
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building script profiler
+checkout Binaries/GameplayProfiler.exe
+checkout Binaries/GameplayProfiler.exe.config
+checkout Binaries/GameplayProfiler.pdb
+msvc9full Development/Tools/GameplayProfiler/GameplayProfiler
+
+// NOTE: StandaloneSymbolParser is built by MemoryProfiler2, XeTools, and PS3Tools so it won't be signed until after all of those projects have been built
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building MemoryProfiler2
+Checkout Binaries/MemoryProfiler2.exe
+Checkout Binaries/MemoryProfiler2.exe.config
+Checkout Binaries/MemoryProfiler2.pdb
+Checkout Binaries/Win32/StandaloneSymbolParser.dll
+Checkout Binaries/Win32/StandaloneSymbolParser.pdb
+Checkout Binaries/Win64/StandaloneSymbolParser.dll
+Checkout Binaries/Win64/StandaloneSymbolParser.pdb
+msvc9full Development/Tools/MemoryProfiler2/MemoryProfiler2
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building NetworkProfiler
+Checkout Binaries/NetworkProfiler.exe
+Checkout Binaries/NetworkProfiler.exe.config
+Checkout Binaries/NetworkProfiler.pdb
+msvc9full Development/Tools/NetworkProfiler/NetworkProfiler
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building MemLeakCheckDiffer
+Checkout Binaries/MemLeakCheckDiffer.exe
+Checkout Binaries/MemLeakCheckDiffer.exe.config
+Checkout Binaries/MemLeakCheckDiffer.pdb
+msvc9full Development/Tools/MemLeakCheckDiffer/MemLeakCheckDiffer
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building tools dlls
+checkout Binaries/PS3/PS3Tools.dll
+checkout Binaries/PS3/PS3Tools.pdb
+msvc9full Development/Src/PS3/PS3Tools/PS3Tools
+
+// Put this between PS3Tools and XeTools to reduce chances of contention with mt.exe on StandaloneSymbolParser
+checkout Binaries/Windows/WindowsTools.dll
+checkout Binaries/Windows/WindowsTools.pdb
+msvc9full Development/Src/Windows/WindowsTools/WindowsTools
+
+checkout Binaries/Xenon/XeTools.dll
+checkout Binaries/Xenon/XeTools.pdb
+msvc9full Development/Src/Xenon/XeTools/XeTools
+
+checkout Binaries/IPhone/IPhoneTools.dll
+checkout Binaries/IPhone/IPhoneTools.pdb
+msvc9full Development/Src/IPhone/IPhoneTools/IPhoneTools
+
+checkout Binaries/NGP/NGPTools.dll
+checkout Binaries/NGP/NGPTools.pdb
+msvc9full Development/Src/NGP/NGPTools/NGPTools
+
+buildconfig Release|x64
+
+checkout Binaries/PS3/PS3Tools_x64.dll
+checkout Binaries/PS3/PS3Tools_x64.pdb
+msvc9full Development/Src/PS3/PS3Tools/PS3Tools
+
+// Put this between PS3Tools and XeTools to reduce chances of contention with mt.exe on StandaloneSymbolParser
+checkout Binaries/Windows/WindowsTools_x64.dll
+checkout Binaries/Windows/WindowsTools_x64.pdb
+msvc9full Development/Src/Windows/WindowsTools/WindowsTools
+
+checkout Binaries/Xenon/XeTools_x64.dll
+checkout Binaries/Xenon/XeTools_x64.pdb
+msvc9full Development/Src/Xenon/XeTools/XeTools
+
+checkout Binaries/IPhone/IPhoneTools_x64.dll
+checkout Binaries/IPhone/IPhoneTools_x64.pdb
+msvc9full Development/Src/IPhone/IPhoneTools/IPhoneTools
+
+checkout Binaries/NGP/NGPTools_x64.dll
+checkout Binaries/NGP/NGPTools_x64.pdb
+msvc9full Development/Src/NGP/NGPTools/NGPTools
+
+buildconfig Release
+
+// End StandaloneSymbolParser building
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building UnrealFrontEnd and UnrealConsole
+checkout Binaries/CookerSync.exe
+checkout Binaries/CookerSync.exe.config
+checkout Binaries/CookerSync.pdb
+checkout Binaries/ConsoleInterface.dll
+checkout Binaries/ConsoleInterface.pdb
+checkout Binaries/ConsoleInterface_x64.dll
+checkout Binaries/ConsoleInterface_x64.pdb
+checkout Binaries/UnrealConsole.exe
+checkout Binaries/UnrealConsole.exe.config
+checkout Binaries/UnrealConsole.pdb
+checkout Binaries/UnrealControls.dll
+checkout Binaries/UnrealControls.pdb
+checkout Binaries/UnrealFrontend.exe
+checkout Binaries/UnrealFrontend.exe.config
+checkout Binaries/UnrealFrontend.pdb
+checkout Binaries/UnrealConsoleRemoting.dll
+checkout Binaries/UnrealConsoleRemoting.pdb
+checkout Binaries/Ionic.Zip.Reduced.dll
+checkout Binaries/Interop.IMAPI2FS.dll
+msvc9full Development/Tools/UnrealFrontend/UnrealFrontend
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building CrashReport
+checkout Binaries/AutoReporter.exe
+checkout Binaries/AutoReporter.exe.config
+checkout Binaries/AutoReporter.pdb
+checkout Binaries/AutoReporter.XmlSerializers.dll
+msvc9full Development/Tools/CrashReport/CrashReport
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building Lightmass (32 bit)
+buildconfig Release|Win32
+checkout Binaries/Win32/UnrealLightmass.exe
+checkout Binaries/Win32/UnrealLightmass.pdb
+msvc9full Development/Tools/UnrealLightmass/UnrealLightmass
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building Lightmass (64 bit)
+buildconfig Release|x64
+checkout Binaries/Win64/UnrealLightmass.exe
+checkout Binaries/Win64/UnrealLightmass.pdb
+msvc9full Development/Tools/UnrealLightmass/UnrealLightmass
+
+buildconfig Release
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building UnrealLoc
+Checkout Binaries/UnrealLoc.exe
+Checkout Binaries/UnrealLoc.exe.config
+Checkout Binaries/UnrealLoc.pdb
+msvc9full Development/Tools/UnrealLoc/UnrealLoc
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building UnrealDVDLayout
+Checkout Binaries/UnrealDVDLayout.exe
+Checkout Binaries/UnrealDVDLayout.exe.config
+Checkout Binaries/UnrealDVDLayout.pdb
+msvc9full Development/Tools/UnrealDVDLayout/UnrealDVDLayout
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building PackageDiffFrontEnd
+Checkout Binaries/PackageDiffFrontEnd.exe
+Checkout Binaries/PackageDiffFrontEnd.exe.config
+Checkout Binaries/PackageDiffFrontEnd.pdb
+msvc9full Development/Tools/PackageDiffFrontEnd/PackageDiffFrontEnd
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building ShaderCompilerWorker (32 bit)
+Checkout Binaries/Win32/UE3ShaderCompileWorker.exe
+Checkout Binaries/Win32/UE3ShaderCompileWorker.pdb
+msvc9full Development/Tools/ShaderCompileWorker/ShaderCompileWorker
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building ShaderCompilerWorker (64 bit)
+buildconfig Release|x64
+Checkout Binaries/Win64/UE3ShaderCompileWorker.exe
+Checkout Binaries/Win64/UE3ShaderCompileWorker.pdb
+msvc9full Development/Tools/ShaderCompileWorker/ShaderCompileWorker
+buildconfig Release
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building UnSetup
+Checkout Binaries/UnSetup.exe
+Checkout Development/Install/InstallFiles/Binaries/UnSetup.exe
+Checkout Binaries/UnSetup.pdb
+Checkout Binaries/Win32/UnSetupNativeWrapper.exe
+Checkout Binaries/Win32/UnSetupNativeWrapper.pdb
+Checkout Binaries/Win32/UnSetupNativeRedistWrapper.exe
+Checkout Binaries/Win32/UnSetupNativeRedistWrapper.pdb
+msvc9full Development/Tools/UnSetup/UnSetup
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building UDKLift.exe
+Checkout Binaries/UDKLift.exe
+Checkout Binaries/UDKLift.pdb
+msvc9full Development/Tools/UDKLift/UDKLift
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building RPCUtility.exe
+Checkout Binaries/IPhone/RPCUtility.exe
+Checkout Binaries/IPhone/RPCUtility.pdb
+msvc9full Development/Tools/Mobile/RPCUtility/RPCUtility
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building iPhonePackager.exe
+Checkout Binaries/IPhone/iPhonePackager.exe
+Checkout Binaries/IPhone/iPhonePackager.pdb
+Checkout Binaries/IPhone/MobileDeviceInterface.dll
+Checkout Binaries/IPhone/MobileDeviceInterface.pdb
+Checkout Binaries/IPhone/Ionic.Zip.Reduced.dll
+
+msvc9full Development/Tools/Mobile/IPhone/iPhonePackager/iPhonePackager
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building DVDLogParser.exe
+Checkout Binaries/Xenon/DVDLogParser.exe
+Checkout Binaries/Xenon/DVDLogParser.pdb
+msvc9full Development/Tools/Xenon/DVDLogParser/DVDLogParser
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building XboxPackager.exe
+Checkout Binaries/Xenon/XboxPackager.exe
+Checkout Binaries/Xenon/XboxPackager.pdb
+msvc9full Development/Tools/Xenon/XboxPackager/XboxPackager
+
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Building PIB
+Checkout Binaries\PIB\Ionic.Zip.Reduced.dll
+Checkout Binaries\PIB\PackageCAB.exe
+Checkout Binaries\PIB\PackageCAB.pdb
+Checkout Binaries\PIB\PackageCRX.exe
+Checkout Binaries\PIB\PackageCRX.pdb
+Checkout Binaries\PIB\PackageXPI.exe
+Checkout Binaries\PIB\PackageXPI.pdb
+Checkout Binaries\PIB\AX\ATLUE3.dll
+Checkout Binaries\PIB\AX\ATLUE3.pdb
+Checkout Binaries\PIB\NP\npue3.dll
+Checkout Binaries\PIB\NP\XPIFiles\plugins\npue3.dll
+Checkout Binaries\PIB\GC\npue3.dll
+Checkout Binaries\PIB\NP\npue3.pdb
+Checkout Binaries\PIB\WebServices\PIB.FileWebServices.exe
+Checkout Binaries\PIB\WebServices\PIB.FileWebServices.exe.config
+Checkout Binaries\PIB\WebServices\PIB.FileWebServices.pdb
+Checkout Binaries\Win32\UDKGameDLLLauncher.exe
+Checkout Binaries\Win32\UDKGameDLLLauncher.pdb
+
+msvc9full Development\Tools\PIB\PIB
+
+watchstop
+
+watchstart CISPCCheckForUCInVCProjFiles
+status (CIS #BranchFriendlyName Tools: CL %JobLabel%) Checking for UC files in VC Projects
+CheckForUCInVCProjFiles
+watchstop

@@ -1,0 +1,52 @@
+// Clearing out cooked data
+
+unofficial
+
+Status Cleaning
+clean
+
+platform Win32
+game Example
+preheatmapoven
+
+game Gear
+preheatmapoven
+
+game Nano
+preheatmapoven
+
+game UDK
+preheatmapoven
+
+platform SonyPS3
+game Example
+preheatmapoven
+
+game Gear
+preheatmapoven
+
+game Nano
+preheatmapoven
+
+game UDK
+preheatmapoven
+
+platform Xenon
+game Example
+preheatmapoven
+
+game Gear
+preheatmapoven
+
+game Nano
+preheatmapoven
+
+game UDK
+preheatmapoven
+
+Status Syncing to head
+sync
+
+Status Checking Consistency
+checkconsistency ...
+

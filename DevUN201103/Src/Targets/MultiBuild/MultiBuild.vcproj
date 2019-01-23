@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="MultiBuild"
+	ProjectGUID="{364B4074-63E3-40E8-9348-9FC7E93EE9CD}"
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK"
+	Keyword="MakeFileProj"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="..\..\Intermediate\Unused"
+			IntermediateDirectory="..\..\Intermediate\Unused"
+			ConfigurationType="0"
+			BuildLogFile="..\..\Intermediate\BuildLogs\MultiBuild\BuildLog.htm"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="..\..\..\Intermediate\UnrealBuildTool\Release\UnrealBuildTool.exe -targets Targets\MultiBuild\targets.txt -noLTCG -nodebuginfo -nopch"
+				ReBuildCommandLine=""
+				CleanCommandLine="@cd ..&#x0D;&#x0A;Clean.exe"
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<File
+			RelativePath=".\targets.txt"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

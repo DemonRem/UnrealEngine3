@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoReporter", "AutoReporter\AutoReporter.csproj", "{251BEFF6-C823-4D84-A873-7B89EA3B07D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrashReport", "CrashReport\CrashReport.csproj", "{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AutoReportService", "AutoReportService", "{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}"
+	ProjectSection(WebsiteProperties) = preProject
+		SccProjectName = "Perforce Project"
+		SccAuxPath = ""
+		SccLocalPath = "."
+		SccProvider = "MSSCCI:Perforce SCM"
+		TargetFramework = "3.5"
+		Debug.AspNetCompiler.VirtualPath = "/AutoReportService"
+		Debug.AspNetCompiler.PhysicalPath = "AutoReportService\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\AutoReportService\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/AutoReportService"
+		Release.AspNetCompiler.PhysicalPath = "AutoReportService\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\AutoReportService\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "58455"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccProjectUniqueName0 = AutoReporter\\AutoReporter.csproj
+		SccProjectName0 = Perforce\u0020Project
+		SccLocalPath0 = AutoReporter
+		SccProvider0 = MSSCCI:Perforce\u0020SCM
+		SccProjectUniqueName1 = CrashReport\\CrashReport.csproj
+		SccProjectName1 = Perforce\u0020Project
+		SccLocalPath1 = CrashReport
+		SccProvider1 = MSSCCI:Perforce\u0020SCM
+		SccWebProject2 = true
+		SccProjectUniqueName2 = AutoReportService
+		SccProjectName2 = Perforce\u0020Project
+		SccLocalPath2 = D:\\Code\\UnrealEngine3\\Development\\Tools\\CrashReport\\AutoReportService
+		SccProvider2 = MSSCCI:Perforce\u0020SCM
+		SccProjectEnlistmentChoice2 = 2
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		DebugAutoReporter|Any CPU = DebugAutoReporter|Any CPU
+		DebugAutoReportService|Any CPU = DebugAutoReportService|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.DebugAutoReporter|Any CPU.ActiveCfg = DebugAutoReporter|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.DebugAutoReporter|Any CPU.Build.0 = DebugAutoReporter|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.DebugAutoReportService|Any CPU.ActiveCfg = DebugAutoReportService|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.DebugAutoReportService|Any CPU.Build.0 = DebugAutoReportService|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{251BEFF6-C823-4D84-A873-7B89EA3B07D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.DebugAutoReporter|Any CPU.ActiveCfg = DebugAutoReporter|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.DebugAutoReporter|Any CPU.Build.0 = DebugAutoReporter|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.DebugAutoReportService|Any CPU.ActiveCfg = DebugAutoReportService|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.DebugAutoReportService|Any CPU.Build.0 = DebugAutoReportService|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A6D44E8-D8F2-4540-8A4A-0EF1A87D65AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.DebugAutoReporter|Any CPU.ActiveCfg = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.DebugAutoReporter|Any CPU.Build.0 = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.DebugAutoReportService|Any CPU.ActiveCfg = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.DebugAutoReportService|Any CPU.Build.0 = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{916A2E6A-7CBC-4A8D-AF93-0C4087A20A42}.Release|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

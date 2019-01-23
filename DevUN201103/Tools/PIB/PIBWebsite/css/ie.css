@@ -1,0 +1,90 @@
+﻿* html body { width:expression(document.documentElement.clientWidth < 980 ? "980px" : "auto"); }
+.w1 { min-height:100%; }
+* html .w1 { height:100%;}
+.w2 { padding-bottom:expression(document.getElementById("footer").offsetHeight + "px"); }
+.inner .w2 { padding-bottom:0 !important; }
+#footer {
+	position:relative;
+	margin-top:expression(- this.offsetHeight + "px");
+}
+* html .logo {
+	background-position: -9999px -9999px;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/logo.png', sizingmethod='crop'); 
+}
+* html .f-logo {
+	background-position: -9999px -9999px;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/logo2.png', sizingmethod='crop'); 
+}
+* html .visual {
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/bg-frame.png', sizingmethod='crop'); 
+}
+* html #nav li {
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/separator2.png', sizingmethod='crop'); 
+}
+* html .navigation li { z-index: expression( runtimeStyle.zIndex = 1, this == parentNode.firstChild ? (className += " first-child") : 0 ); }
+* html .opportunities h2 {
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/bg-heading2.png', sizingmethod='crop'); 
+}
+* html .news h2 {
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/bg-heading.png', sizingmethod='crop'); 
+}
+* html .button {
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/bg-button.png', sizingmethod='crop'); 
+}
+* html .menu-bar {
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/bg-top-bar.png', sizingmethod='scale'); 
+}
+* html #footer-inner .menu-bar{
+	filter:none;
+	background:url(../images/bg-footer-i.gif) repeat-x !important;
+}
+* html .tabset ul li{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .tab-detalis ul a{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .tab-more strong a{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .apply{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);	
+}
+* html .fi-head ul li{
+	z-index: expression( runtimeStyle.zIndex = 1, this == parentNode.firstChild ? (className += " first-child") : 0 );
+}
+* html .search-form a{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html #footer-inner .navigation li{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html #footer-inner .social a{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .side-socials ul a{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .more-links li{
+	z-index: expression( runtimeStyle.zIndex = 1, this == parentNode.firstChild ? (className += " first-child") : 0 );
+}
+* html .btn-next{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .btn-prev{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}
+* html .tc-b{
+	background: none;
+	filter: progid:dximagetransform.microsoft.alphaimageloader(src='images/bg-tc-b.png', sizingmethod='crop'); 
+	position:static !important;
+}
+* html .game-visual ul a{
+	behavior: expression(this.onmouseover = new Function("this.className += ' hover'"), this.onmouseout = new Function("this.className = this.className.replace(' hover','')"), this.style.behavior = null);
+}

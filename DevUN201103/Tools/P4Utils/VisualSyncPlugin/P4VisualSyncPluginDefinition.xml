@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--perforce-xml-version=1.0-->
+<CustomToolDefList varName="customtooldeflist" >
+ <CustomToolFolder>
+  <Name>Epic Tools</Name>
+  <AddToContext>true</AddToContext>
+  <CustomToolDefList>
+   <CustomToolDef>
+    <Definition>
+     <Name>Get Latest Monthly QA Build Revision...</Name>
+     <Command>C:\EpicP4VisualSyncPlugin\P4VisualSyncPlugin.exe</Command>
+     <Arguments>LatestApprovedQABuild %D</Arguments>
+     <InitDir>$r</InitDir>
+    </Definition>
+    <Console>
+     <CloseOnExit>false</CloseOnExit>
+    </Console>
+    <AddToContext>true</AddToContext>
+    <Refresh>true</Refresh>
+   </CustomToolDef>
+   <CustomToolDef>
+    <Definition>
+     <Name>Get Latest QA Promoted Revision...</Name>
+     <Command>C:\EpicP4VisualSyncPlugin\P4VisualSyncPlugin.exe</Command>
+     <Arguments>LatestApprovedBuild %D</Arguments>
+     <InitDir>$r</InitDir>
+    </Definition>
+    <Console>
+     <CloseOnExit>false</CloseOnExit>
+    </Console>
+    <AddToContext>true</AddToContext>
+    <Refresh>true</Refresh>
+   </CustomToolDef>
+   <CustomToolDef>
+    <Definition>
+     <Name>Get Latest CIS Approved Revision...</Name>
+     <Command>C:\EpicP4VisualSyncPlugin\P4VisualSyncPlugin.exe</Command>
+     <Arguments>CIS_LastGoodOverall %D</Arguments>
+     <InitDir>$r</InitDir>
+    </Definition>
+    <Console>
+     <CloseOnExit>false</CloseOnExit>
+    </Console>
+    <AddToContext>true</AddToContext>
+    <Refresh>true</Refresh>
+   </CustomToolDef>
+  </CustomToolDefList>
+ </CustomToolFolder>
+</CustomToolDefList>

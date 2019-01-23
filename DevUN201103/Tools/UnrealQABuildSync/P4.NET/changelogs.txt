@@ -1,0 +1,3 @@
+2010-07-19 Kwangsub Shin
+
+    * ClientApi_m.cpp : Now p4.net uses the OS default encoding to support the unicode charaters.

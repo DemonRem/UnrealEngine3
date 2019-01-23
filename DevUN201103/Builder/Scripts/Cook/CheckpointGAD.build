@@ -1,0 +1,24 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Tools@epicgames.com
+failaddress mike.fricker@epicgames.com
+
+Dependency #LatestBuild
+
+status	Syncing to latest build
+artistsync
+
+timeout 60
+
+Game %Game%
+Platform Win32
+
+checkoutgadcheckpoint
+
+status	Checkpointing game asset database for %Game%
+CheckpointGameAssetDatabase
+
+status	Submitting updated checkpoint file for game asset database
+submitandtag
+
+

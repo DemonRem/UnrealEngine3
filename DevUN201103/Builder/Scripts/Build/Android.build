@@ -1,0 +1,29 @@
+errormode checkerrors
+
+unofficial
+
+triggeraddress niklas.smedberg@epicgames.com
+failaddress niklas.smedberg@epicgames.com
+successaddress niklas.smedberg@epicgames.com
+
+timeout 30
+
+status	Syncing to head
+sync
+
+Game Mobile
+platform Android
+buildconfig Release
+
+UBTDisableXGE
+
+clean
+
+BuildUBT
+
+Status	Compiling Mobile Android Release
+checkoutgame Mobile
+UnrealBuild
+
+Status	Submitting Mobile Android Release
+submitandtag

@@ -1,0 +1,352 @@
+[AutoExpand]
+
+; Unreal Engine
+FFontCharacter=X=<USize>,V=<VSize>
+FGuid=<A,X>,<B,X>,<C,X>,<D,X>
+Lightmass::FGuid=<A,X>,<B,X>,<C,X>,<D,X>
+TSet<*,*,*>::FElement=<Value>
+Lightmass::TSet<*,*,*>::FElement=<Value>
+FScriptInterface=<InterfacePointer> (<ObjectPointer>)
+FScriptLocation=Pos=<CodeTop>, Line=<InputLine>
+
+[Visualizer]
+
+;------------------------------------------------------------------------------
+;	Unreal Engine classes
+;------------------------------------------------------------------------------
+
+FName|Lightmass::FName{
+	preview
+	(
+		#if(($e.Index) < ($e.Names.ArrayNum))
+		(
+			#if(($e.Index) >= 0)
+			(
+				#if(($e.Number) > 0)
+				(
+					#if(((((FNameEntry**)$e.Names.AllocatorInstance.Data)[$e.Index])->Index) & 1)
+					(
+						#([(((FNameEntry**)$e.Names.AllocatorInstance.Data)[$e.Index])->UniName, su], "_", ($e.Number)-1)
+					)
+					#else
+					(
+						#([(((FNameEntry**)$e.Names.AllocatorInstance.Data)[$e.Index])->AnsiName, s], "_", ($e.Number)-1)
+					)
+				)
+				#else
+				(
+					#if(((((FNameEntry**)$e.Names.AllocatorInstance.Data)[$e.Index])->Index) & 1)
+					(
+						#([(((FNameEntry**)$e.Names.AllocatorInstance.Data)[$e.Index])->UniName, su])
+					)
+					#else
+					(
+						#([(((FNameEntry**)$e.Names.AllocatorInstance.Data)[$e.Index])->AnsiName, s])
+					)
+				)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Invalid"
+		)
+	)
+}
+
+TArray<*,*>|TArrayNoInit<*,*>|Lightmass::TArray<*,*>|Lightmass::TArrayNoInit<*,*> {
+	preview
+	(
+		#if(($e.ArrayNum) >= 0)
+		(
+			#if(($e.ArrayNum) == 0)
+			(
+				"Empty"
+			)
+			#else
+			(
+				#if(($e.ArrayNum) <= ($e.ArrayMax))
+				(
+					#("Num=", $e.ArrayNum)
+				)
+				#else
+				(
+					"Invalid"
+				)
+			)
+		)
+		#else
+		(
+			"Invalid"
+		)
+	)
+	children
+	(
+		#if(($e.ArrayNum) >= 0)
+		(
+			#if(($e.ArrayNum) <= ($e.ArrayMax))
+			(
+				#if(($e.ArrayNum) > 0)
+				(
+					#(
+						#array 
+						(
+							expr: *(($T1 *)$e.AllocatorInstance.Data + $i),
+							size: $e.ArrayNum
+						),
+						#([Members]: [$e,!])
+					)
+				)
+				#else
+				(
+					[Members]: [$e,!]
+				)
+			)
+		)
+	)
+}
+
+TBitArray<*>|Lightmass::TBitArray<*> {
+	preview
+	(
+		#($e.NumBits, " / ", $e.MaxBits)
+	)
+	children
+	(
+		#if(($e.NumBits >= 0) && ($e.NumBits <= $e.MaxBits))
+		(
+			#if($e.SecondaryData.Data != 0)
+			(
+				#array
+				(
+					expr: (((unsigned long*)$e.SecondaryData.Data)[$i / 32] >> ($i % 32)),
+					size: $e.NumBits
+				) : (bool)($e & 1)
+			)
+			#else
+			(
+				#array
+				(
+					expr: (((unsigned long*)$e.InlineData)[$i / 32] >> ($i % 32)),
+					size: $e.NumBits
+				) : (bool)($e & 1)
+			)
+		)
+		#else
+		(
+			"Invalid"
+		)
+	)
+}
+
+TSparseArray<*,*>|Lightmass::TSparseArray<*,*> {
+	children
+	(
+		#if($e.Data.ArrayNum >= 0 && $e.Data.ArrayNum <= $e.Data.ArrayMax)
+		(
+			#if(($e.Data.ArrayNum) > 0)
+			(
+				#(
+					#array 
+					(
+						expr: ((($T1 *)$e.Data.AllocatorInstance.Data)[$i]),
+						size: $e.Data.ArrayNum
+					),
+					#([Members]: [$e,!])
+				)
+			)
+			#else
+			(
+				#([Members]: [$e,!])
+			)
+		)
+		
+	)
+}
+
+TSet<*,*,*>::FElement|Lightmass::TSet<*,*,*>::FElement {
+	preview 
+	(
+		#($e.Value)
+	)
+}
+
+TMapBase<*,*,*,*>::FPair|Lightmass::TMapBase<*,*,*,*>::FPair {
+	preview 
+	(
+		#("(", $e.Key, ", ", $e.Value, ")")
+	)
+}
+
+TMapBase<*,*,*,*>|Lightmass::TMapBase<*,*,*,*> {
+	preview
+	(
+		#if(($e.Pairs.Elements.Data.ArrayNum) > 0)
+		(
+			#if(($e.Pairs.Elements.Data.ArrayNum) <= ($e.Pairs.Elements.Data.ArrayMax))
+			(
+				#("Num=", $e.Pairs.Elements.Data.ArrayNum)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Empty"
+		)
+	)
+	
+	children
+	(
+		#if(($e.Pairs.Elements.Data.ArrayNum) > 0)
+		(
+			#if(($e.Pairs.Elements.Data.ArrayNum) <= ($e.Pairs.Elements.Data.ArrayMax))
+			(
+				#(
+					#array
+					(
+						expr: ((TSet<TMapBase<$T1,$T2,$T3,$T4>::FPair,TMapBase<$T1,$T2,$T3,$T4>::KeyFuncs,$T4>::FElement *)$e.Pairs.Elements.Data.AllocatorInstance.Data + $i)->Value,
+						size: $e.Pairs.Elements.Data.ArrayNum
+					),
+					[Members]: [$e,!]
+				)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Empty"
+		)
+	)
+}
+
+TMap<*,*,*>|Lightmass::TMap<*,*,*> {
+	preview
+	(
+		#if(($e.Pairs.Elements.Data.ArrayNum) > 0)
+		(
+			#if(($e.Pairs.Elements.Data.ArrayNum) <= ($e.Pairs.Elements.Data.ArrayMax))
+			(
+				#("Num=", $e.Pairs.Elements.Data.ArrayNum)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Empty"
+		)
+	)
+	
+	children
+	(
+		#if(($e.Pairs.Elements.Data.ArrayNum) > 0)
+		(
+			#if(($e.Pairs.Elements.Data.ArrayNum) <= ($e.Pairs.Elements.Data.ArrayMax))
+			(
+				#(
+					#array
+					(
+						expr: ((TSet<TMapBase<$T1,$T2,0,$T3>::FPair,TMapBase<$T1,$T2,0,$T3>::KeyFuncs,$T3>::FElement *)$e.Pairs.Elements.Data.AllocatorInstance.Data + $i)->Value,
+						size: $e.Pairs.Elements.Data.ArrayNum
+					),
+					[Members]: [$e,!]
+				)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Empty"
+		)
+	)
+}
+
+TMultiMap<*,*,*>|Lightmass::TMultiMap<*,*,*> {
+	preview
+	(
+		#if(($e.Pairs.Elements.Data.ArrayNum) > 0)
+		(
+			#if(($e.Pairs.Elements.Data.ArrayNum) <= ($e.Pairs.Elements.Data.ArrayMax))
+			(
+				#("Num=", $e.Pairs.Elements.Data.ArrayNum)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Empty"
+		)
+	)
+	
+	children
+	(
+		#if(($e.Pairs.Elements.Data.ArrayNum) > 0)
+		(
+			#if(($e.Pairs.Elements.Data.ArrayNum) <= ($e.Pairs.Elements.Data.ArrayMax))
+			(
+				#(
+					#array
+					(
+						expr: ((TSet<TMapBase<$T1,$T2,1,$T3>::FPair,TMapBase<$T1,$T2,1,$T3>::KeyFuncs,$T3>::FElement *)$e.Pairs.Elements.Data.AllocatorInstance.Data + $i)->Value,
+						size: $e.Pairs.Elements.Data.ArrayNum
+					),
+					[Members]: [$e,!]
+				)
+			)
+			#else
+			(
+				"Invalid"
+			)
+		)
+		#else
+		(
+			"Empty"
+		)
+	)
+}
+
+TDoubleLinkedList<*>|FEditPropertyChain|Lightmass::TDoubleLinkedList<*> {
+	children
+	(
+		#list
+		(
+			head: $e.HeadNode,
+			next: NextNode,
+			size: $c.ListSize
+		) : $e.Value
+	)
+}
+
+FString|FStringNoInit|FStringOutputDevice|FFilename|Lightmass::FString|Lightmass::FStringNoInit|Lightmass::FStringOutputDevice|Lightmass::FFilename{
+	preview
+	( 
+		#if((($e.ArrayNum) <= ($e.ArrayMax)) && (($e.ArrayNum) >= 0))
+		(
+			#("(", ($e.ArrayNum - 1), ") ", [$e.AllocatorInstance.Data,su]) 
+		)
+		#else ( "Invalid" )
+	)
+	
+	stringview
+	( 
+		#if((($e.ArrayNum) <= ($e.ArrayMax)) && (($e.ArrayNum) >= 0)) ( [$e.AllocatorInstance.Data,sub] )
+		#else ( "Invalid" )
+	)
+}

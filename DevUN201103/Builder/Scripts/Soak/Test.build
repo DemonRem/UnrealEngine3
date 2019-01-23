@@ -1,0 +1,142 @@
+// Cooks all Gear maps for Xenon
+
+watchstart Gears2Cook_Xenon
+
+errormode checkerrors
+
+// CarbonCopyAddress Builder-Notify-Cook@epicgames.com
+// failaddress rift-coders@epicgames.com;scott.sherman@epicgames.com;Jess.Ammerman@epicgames.com
+successaddress 
+
+report Gear GearMaps GearContent Engine Audio GFx Xbox360
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform %Platform%
+scriptconfig %Config%
+use32bit
+
+preheatmapoven
+
+timeout 180
+
+cookconfig %Config%
+define %Config%
+
+Status Cooking text only INT
+language INT
+cookmaps GearStart GearStart_E3Demo
+
+Status Cooking text only FRA
+language FRA
+cookmaps GearStart
+
+Status Cooking text only ITA
+language ITA
+cookmaps GearStart
+
+Status Cooking text only DEU
+language DEU
+cookmaps GearStart
+
+Status Cooking text only ESN
+language ESN
+cookmaps GearStart
+
+Status Cooking text only ESM
+language ESM
+cookmaps GearStart
+
+Status Cooking text only PTB
+language PTB
+cookmaps GearStart
+
+Status Cooking text only RUS
+language RUS
+cookmaps GearStart
+
+Status Cooking text only POL
+language POL
+cookmaps GearStart
+
+Status Cooking text only HUN
+language HUN
+cookmaps GearStart
+
+Status Cooking text only CZE
+language CZE
+cookmaps GearStart
+
+Status Cooking text only JPN
+language JPN
+cookmaps GearStart
+
+Status Cooking text only KOR
+language KOR
+cookmaps GearStart
+
+Status Cooking text only CHN
+language CHN
+cookmaps GearStart
+
+timeout 240
+language INT
+
+Status Cook SP maps 1/4
+cookinimaps SPMaps1
+
+Status Cook SP maps 2/4
+cookinimaps SPMaps2
+
+Status Cook SP maps 3/4
+cookinimaps SPMaps3
+
+Status Cook SP maps 4/4
+cookinimaps SPMaps4
+
+Status Cook Rift MP maps 1/2
+cookinimaps MPMaps1
+
+Status Cook Rift MP maps 2/2
+cookinimaps MPMaps2
+
+Status Cook DLC MP maps 1/2
+cookinimaps DLCMPMaps1
+
+Status Cook DLC MP maps 2/2
+cookinimaps DLCMPMaps2
+
+// timeout 120
+// 
+// TrackFileSize %Game%Game/CookedXenon/Textures.tfc
+// TrackFileSize %Game%Game/CookedXenon/Lighting.tfc
+// TrackFileSize %Game%Game/CookedXenon/CharTextures.tfc
+// TrackFolderSize %Game%Game/CookedXenon
+// 
+// watchstart Gears2Publish_Xenon_UnProp
+// 
+status Publishing to c:\Builds
+blockonpublish
+define %Config%
+publish c:\Builds
+// 
+// watchstop
+// 
+// watchstart Gears2Publish_Xenon_Root
+// 
+// status Publishing to \\epicgames.net\root\Rift\Builds\Xbox360
+// blockonpublish
+// define %Config%
+// publish \\epicgames.net\root\Rift\Builds\Xbox360
+// 
+// watchstop
+// 
+// UpdateFolder LatestPublishedGearXenonBuild_%Config%
+
+// trigger Rift Layouts %Config%
+
+watchstop

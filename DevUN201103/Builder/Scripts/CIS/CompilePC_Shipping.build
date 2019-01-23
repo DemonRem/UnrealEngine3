@@ -1,0 +1,125 @@
+//
+// CIS Compile PC
+//
+// Compiles only supported PC game targets using the buildconfig provided by
+// a database parameter.
+//
+
+status Starting up...
+
+// Set up top-level parameters
+CarbonCopyAddress Builder-Notify-Verification@epicgames.com
+successaddress 
+failaddress 
+
+errormode checkerrors
+
+timeout 120
+
+dependency %Game%
+
+// Initialization phase
+status Syncing...
+watchstart CISCompilePC_P4
+sync
+watchstop
+
+watchstart CISCompilePC
+
+status Checking file consistency...
+checkconsistency Development/Src/...
+
+status Cleaning...
+clean
+
+status Building UBT...
+BuildUBT
+
+// -----------------------------------
+
+buildconfig Release
+checkout Binaries/Editor/Release/UnrealEdCSharp.dll
+checkout Binaries/Editor/Release/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/Release/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/Release/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/Release
+copy Binaries/Editor/Release/UnrealEdCSharp.dll 
+copy Binaries/Editor/Release/UnrealEdCSharp.pdb 
+
+checkout Binaries/Win64/Editor/Release/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/Release/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/Release
+copy Binaries/Editor/Release/UnrealEdCSharp.dll 
+copy Binaries/Editor/Release/UnrealEdCSharp.pdb 
+
+buildconfig Debug
+checkout Binaries/Editor/Debug/UnrealEdCSharp.dll
+checkout Binaries/Editor/Debug/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/Debug/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/Debug/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/Debug
+copy Binaries/Editor/Debug/UnrealEdCSharp.dll 
+copy Binaries/Editor/Debug/UnrealEdCSharp.pdb 
+
+checkout Binaries/Win64/Editor/Debug/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/Debug/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/Debug
+copy Binaries/Editor/Debug/UnrealEdCSharp.dll 
+copy Binaries/Editor/Debug/UnrealEdCSharp.pdb
+
+// -----------------------------------
+
+Status Checking out Swarm binaries
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Building Swarm Agent
+buildconfig Release
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+// -----------------------------------
+
+// A define all builds will use
+define %DatabaseParameter%
+
+// Build targets
+status Building PC %Config% Targets
+
+platform Win32
+buildconfig %Config%
+
+game Example
+unrealbuild
+
+game Gear
+unrealbuild
+
+game Nano
+unrealbuild
+
+game UDK
+checkoutgame UDK
+unrealbuild
+
+// Done
+watchstop

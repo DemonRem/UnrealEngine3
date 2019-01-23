@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4ChangeParser", "P4ChangeParser\P4ChangeParser.csproj", "{040CFDC0-DDD7-4AAB-9251-9B708D9B9295}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4Core", "P4Core\P4Core.csproj", "{66989C80-1B10-43EC-A3A6-F3FDF87B7062}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4Inquiry", "P4Inquiry\P4Inquiry.csproj", "{16B66224-0BB5-4CDD-B5AF-1FB3FD391D83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4ChangeParserConsoleApp", "P4ChangeParserConsoleApp\P4ChangeParserConsoleApp.csproj", "{F0C8BBD1-BF89-4C55-9828-38812BC4FE58}"
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 5
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = P4ChangeParser\\P4ChangeParser.csproj
+		SccLocalPath1 = .
+		SccProjectFilePathRelativizedFromConnection1 = P4ChangeParser\\
+		SccProjectUniqueName2 = P4Core\\P4Core.csproj
+		SccLocalPath2 = .
+		SccProjectFilePathRelativizedFromConnection2 = P4Core\\
+		SccProjectUniqueName3 = P4Inquiry\\P4Inquiry.csproj
+		SccLocalPath3 = .
+		SccProjectFilePathRelativizedFromConnection3 = P4Inquiry\\
+		SccProjectUniqueName4 = P4ChangeParserConsoleApp\\P4ChangeParserConsoleApp.csproj
+		SccLocalPath4 = .
+		SccProjectFilePathRelativizedFromConnection4 = P4ChangeParserConsoleApp\\
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{040CFDC0-DDD7-4AAB-9251-9B708D9B9295}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{040CFDC0-DDD7-4AAB-9251-9B708D9B9295}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{040CFDC0-DDD7-4AAB-9251-9B708D9B9295}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{040CFDC0-DDD7-4AAB-9251-9B708D9B9295}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66989C80-1B10-43EC-A3A6-F3FDF87B7062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66989C80-1B10-43EC-A3A6-F3FDF87B7062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66989C80-1B10-43EC-A3A6-F3FDF87B7062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66989C80-1B10-43EC-A3A6-F3FDF87B7062}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B66224-0BB5-4CDD-B5AF-1FB3FD391D83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16B66224-0BB5-4CDD-B5AF-1FB3FD391D83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16B66224-0BB5-4CDD-B5AF-1FB3FD391D83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16B66224-0BB5-4CDD-B5AF-1FB3FD391D83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0C8BBD1-BF89-4C55-9828-38812BC4FE58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0C8BBD1-BF89-4C55-9828-38812BC4FE58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0C8BBD1-BF89-4C55-9828-38812BC4FE58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0C8BBD1-BF89-4C55-9828-38812BC4FE58}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,39 @@
+// ATLUE3.idl : IDL source for ATLUE3
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ATLUE3.tlb) and marshalling code.
+
+#include "olectl.h"
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(A5F3DAF9-E0D8-49A4-B005-34F381D0F089),
+	dual,
+	nonextensible,
+	helpstring("IATLUE3Control Interface"),
+	pointer_default(unique)
+]
+interface IATLUE3Control : IDispatch{
+};
+
+[
+	uuid(90D6B2D3-087E-4AF8-9E1F-8883A0ECE632),
+	version(1.0),
+	helpstring("ATLUE3 1.0 Type Library")
+]
+library ATLUE3Lib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(8AF65954-58E5-4DC5-8DD0-A28B13E77AC7),
+		control,
+		helpstring("ATLUE3Control Class")
+	]
+	coclass ATLUE3Control
+	{
+		[default] interface IATLUE3Control;
+	};
+};

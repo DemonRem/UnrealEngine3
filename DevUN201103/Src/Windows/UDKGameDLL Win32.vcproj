@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="UDKGameDLL Win32"
+	ProjectGUID="{11901AAD-0B85-4DE0-85A3-508BE081F4A6}"
+	RootNamespace="UTGame Win32 DLL"
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK"
+	Keyword="MakeFileProj"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="..\..\Intermediate\Unused"
+			IntermediateDirectory="..\..\Intermediate\Unused"
+			ConfigurationType="0"
+			BuildLogFile="..\..\Intermediate\BuildLogs\$(ProjectName) $(ConfigurationName)\BuildLog.htm"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="@cd ..&#x0D;&#x0A;@call Targets/Build.bat $(ProjectName) $(ConfigurationName) -output &quot;$(TargetPath)&quot;"
+				ReBuildCommandLine="@cd ..&#x0D;&#x0A;@call Targets/CleanGame.bat UDKGame Win32-DLL $(ConfigurationName) $(TargetPath)&#x0D;&#x0A;@call Targets/Build.bat $(ProjectName) $(ConfigurationName) -output &quot;$(TargetPath)&quot;"
+				CleanCommandLine="@cd ..&#x0D;&#x0A;@call Targets/CleanGame.bat UDKGame Win32-DLL $(ConfigurationName) $(TargetPath)"
+				Output="../../../Binaries/Win32/Debug-UDKGameDLL.dll"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="..\..\Intermediate\Unused"
+			IntermediateDirectory="..\..\Intermediate\Unused"
+			ConfigurationType="0"
+			BuildLogFile="..\..\Intermediate\BuildLogs\$(ProjectName) $(ConfigurationName)\BuildLog.htm"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="@cd ..&#x0D;&#x0A;@call Targets/Build.bat $(ProjectName) $(ConfigurationName) -output &quot;$(TargetPath)&quot;"
+				ReBuildCommandLine="@cd ..&#x0D;&#x0A;@call Targets/CleanGame.bat UDKGame Win32-DLL $(ConfigurationName) $(TargetPath)&#x0D;&#x0A;@call Targets/Build.bat $(ProjectName) $(ConfigurationName) -output &quot;$(TargetPath)&quot;"
+				CleanCommandLine="@cd ..&#x0D;&#x0A;@call Targets/CleanGame.bat UDKGame Win32-DLL $(ConfigurationName) $(TargetPath)"
+				Output="../../../Binaries/Win32/UDKGameDLL.dll"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

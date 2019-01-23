@@ -1,0 +1,13 @@
+
+CarbonCopyAddress builder-notify-promotion@epicgames.com;builder-notify-nano@epicgames.com
+successaddress
+
+dependency #LatestApprovedBuild
+game NanoMobile
+
+getchanges
+
+report NanoMobile NanoMobileMaps NanoMobileContent Engine Audio Lightmass Win32 Win64 Mobile iPhone Android
+
+tag latestUnrealEngine3_NanoMobile
+

@@ -1,0 +1,178 @@
+// Cooks all Gear maps for Xenon
+
+watchstart %Game%_%Platform%_DumpMapSummary
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Tools@epicgames.com
+failaddress Peter.Knepley@epicgames.com
+successaddress Peter.Knepley@epicgames.com
+
+report Gear GearMaps GearContent Engine Audio GFx Xbox360
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform Win32
+scriptconfig %Config%
+
+preheatmapoven
+
+timeout 180
+
+define %Config%
+language INT
+
+status Dumping map summary for SP_Nightmare_P
+DumpMapSummary SP_Nightmare_P
+
+status Dumping map summary for SP_Ravens_P
+DumpMapSummary SP_Ravens_P 
+
+status Dumping map summary for SP_Hanover_P
+DumpMapSummary SP_Hanover_P
+
+status Dumping map summary for SP_Stadium_P 
+DumpMapSummary SP_Stadium_P
+
+status Dumping map summary for SP_Warehouse_P
+DumpMapSummary SP_Warehouse_P
+
+status Dumping map summary for SP_Bridge_P
+DumpMapSummary SP_Bridge_P
+
+status Dumping map summary for SP_Wreckage_P
+DumpMapSummary SP_Wreckage_P 
+
+status Dumping map summary for SP_Badlands_P
+DumpMapSummary SP_Badlands_P
+
+status Dumping map summary for SP_Badlands2_P
+DumpMapSummary SP_Badlands2_P
+
+status Dumping map summary for SP_Blimp1_P
+DumpMapSummary SP_Blimp1_P 
+
+status Dumping map summary for SP_Blimp2_P
+DumpMapSummary SP_Blimp2_P 
+
+status Dumping map summary for SP_Fort_P
+DumpMapSummary SP_Fort_P
+
+status Dumping map summary for SP_Airfield_P
+DumpMapSummary SP_Airfield_P 
+
+status Dumping map summary for SP_Convoy_P
+DumpMapSummary SP_Convoy_P
+
+status Dumping map summary for SP_Freeway_P
+DumpMapSummary SP_Freeway_P 
+
+status Dumping map summary for SP_Imulsion_P
+DumpMapSummary SP_Imulsion_P 
+
+status Dumping map summary for SP_Mercy_P 
+DumpMapSummary SP_Mercy_P
+
+status Dumping map summary for SP_Char_P
+DumpMapSummary SP_Char_P
+
+status Dumping map summary for SP_OldShipyard_P
+DumpMapSummary SP_OldShipyard_P
+
+status Dumping map summary for SP_Maelstrom_P
+DumpMapSummary SP_Maelstrom_P
+
+status Dumping map summary for SP_Maelstrom2_P
+DumpMapSummary SP_Maelstrom2_P
+
+status Dumping map summary for SP_Coast_P
+DumpMapSummary SP_Coast_P
+
+status Dumping map summary for SP_Azura_P
+DumpMapSummary SP_Azura_P
+
+status Dumping map summary for SP_Azura2_P
+DumpMapSummary SP_Azura2_P
+
+status Dumping map summary for SP_Tower_P
+DumpMapSummary SP_Tower_P
+
+status Dumping map summary for MP_Azura
+DumpMapSummary MP_Azura
+
+status Dumping map summary for MP_DryDock
+DumpMapSummary MP_DryDock
+
+status Dumping map summary for MP_OldTown
+DumpMapSummary MP_OldTown
+
+status Dumping map summary for MP_GridlockG3
+DumpMapSummary MP_GridlockG3
+
+status Dumping map summary for MP_Checkout
+DumpMapSummary MP_Checkout
+
+status Dumping map summary for MP_Mercy
+DumpMapSummary MP_Mercy
+
+status Dumping map summary for MP_Overpass
+DumpMapSummary MP_Overpass
+
+status Dumping map summary for MP_Rustlung
+DumpMapSummary MP_Rustlung
+
+status Dumping map summary for MP_Sandbar
+DumpMapSummary MP_Sandbar 
+
+status Dumping map summary for MP_Thrashball
+DumpMapSummary MP_Thrashball
+
+status Dumping map summary for MP_Trenches
+DumpMapSummary MP_Trenches
+
+status Dumping map summary for MP_Aftermath
+DumpMapSummary MP_Aftermath
+
+status Dumping map summary for MP_Artillery
+DumpMapSummary MP_Artillery
+
+status Dumping map summary for MP_BloodDriveG3
+DumpMapSummary MP_BloodDriveG3
+
+status Dumping map summary for MP_ClocktowerG3
+DumpMapSummary MP_ClocktowerG3
+
+status Dumping map summary for MP_Cove
+DumpMapSummary MP_Cove
+
+status Dumping map summary for MP_DayOneG3
+DumpMapSummary MP_DayOneG3
+
+status Dumping map summary for MP_GroundZero
+DumpMapSummary MP_GroundZero
+
+status Dumping map summary for MP_Hotel
+DumpMapSummary MP_Hotel
+
+status Dumping map summary for MP_JacintoG3
+DumpMapSummary MP_JacintoG3
+
+status Dumping map summary for MP_RiverG3
+DumpMapSummary MP_RiverG3
+
+timeout 120
+
+watchstart %Game%_%Platform%_DumpMapSummary_Publish
+
+status Publishing to \\epicgames.net\root\Rift\Builds\Xbox360
+blockonpublish
+define %Config%
+publishTagset MapSummary \\epicgames.net\root\Rift\Builds\Xbox360
+
+watchstop
+
+watchstop

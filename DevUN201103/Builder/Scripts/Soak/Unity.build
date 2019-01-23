@@ -1,0 +1,91 @@
+watchstart UnityBuildTest
+
+errormode checkerrors
+
+failaddress 
+successaddress 
+
+status Syncing to #head
+sync
+
+clean
+
+BuildUBT
+
+timeout 120
+
+buildconfig %Config%
+unity %DatabaseParameter%
+
+platform Win32
+
+status Unity compile Win32 %Config% Example
+checkoutgame Example
+game Example
+unrealbuild
+
+status Unity compile Win32 %Config% Gear
+checkoutgame Gear
+game Gear
+unrealbuild
+
+status Unity compile Win32 %Config% Nano
+checkoutgame Nano
+game Nano
+unrealbuild
+
+status Unity compile Win32 %Config% UDK
+checkoutgame UDK
+game UDK
+unrealbuild
+
+
+platform Xbox360
+
+status Unity compile Xenon %Config% Example
+checkoutgame Example
+game Example
+unrealbuild
+
+status Unity compile Xenon %Config% Gear
+checkoutgame Gear
+game Gear
+unrealbuild
+
+status Unity compile Xenon %Config% Nano
+checkoutgame Nano
+game Nano
+unrealbuild
+
+status Unity compile Xenon %Config% UDK
+checkoutgame UDK
+game UDK
+unrealbuild
+
+
+platform SonyPS3
+
+status Unity compile PS3 %Config% Example
+checkoutgame Example
+game Example
+unrealbuild
+
+status Unity compile PS3 %Config% Gear
+checkoutgame Gear
+game Gear
+unrealbuild
+
+status Unity compile PS3 %Config% Nano
+checkoutgame Nano
+game Nano
+unrealbuild
+
+status Unity compile PS3 %Config% UDK
+checkoutgame UDK
+game UDK
+unrealbuild
+
+
+watchstop
+
+

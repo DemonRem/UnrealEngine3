@@ -1,0 +1,81 @@
+// Cooks all Rift maps for PS3
+
+watchstart RiftCook_%Platform%
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com;builder-notify-rift@epicgames.com
+failaddress scott.sherman@epicgames.com;josh.adams@epicgames.com
+successaddress
+
+report %Game% %Game%Maps %Game%Content Engine Audio GFx PS3
+
+dependency #LatestBuild
+
+status	Syncing to latest build
+sync
+
+Game %Game%
+platform %Platform%
+scriptconfig %Config%
+
+timeout 240
+preheatmapoven
+
+status Building local shader cache
+CookShaderBuild
+
+define
+
+timeout 240
+checkouthashes
+language INT
+languages INT FRA ITA DEU ESN ESM JPN
+textlanguages PTB CZE HUN POL RUS KOR CHN
+
+Status Cooking all Rift maps
+cookinimaps SPMaps1+SPMaps2+SPMaps3+SPMaps4+SPMaps5+MPMaps1+MPMaps2+MPMaps3
+
+TrackFileSize %Game%Game/Cooked%DatabaseParameter%/Textures.tfc
+TrackFileSize %Game%Game/Cooked%DatabaseParameter%/Lighting.tfc
+TrackFileSize %Game%Game/Cooked%DatabaseParameter%/CharTextures.tfc
+TrackFolderSize %Game%Game/Cooked%DatabaseParameter%
+TrackFolderSize %Game%Game/Movies
+
+timeout 60
+
+UBTDisableXGE
+BuildUBT
+
+Game %Game%
+platform %Platform%
+
+status	Building Rift %Platform% Release
+buildconfig Release
+checkoutgame %Game%
+UnrealBuild
+
+status	Building Rift %Platform% Shipping
+buildconfig Shipping
+checkoutgame %Game%
+UnrealBuild
+
+status	Building Rift %Platform% Test
+buildconfig Test
+checkoutgame %Game%
+UnrealBuild
+
+timeout 120
+
+watchstart RiftPublish_%Platform%_UnProp
+
+status Publishing to \\prop-05\Builds\%Game%\%Platform%
+define DVD %Config%
+publish \\prop-05\Builds\%Game%\%Platform%
+
+watchstop
+watchstop
+
+UpdateFolder LatestPubGear%Platform%_DVD_%Config%
+
+trigger Rift Layouts %Platform% %Config%

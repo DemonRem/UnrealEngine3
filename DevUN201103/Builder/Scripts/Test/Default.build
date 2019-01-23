@@ -1,0 +1,44 @@
+errormode checkerrors
+
+triggeraddress
+failaddress
+successaddress
+
+status Syncing to original source
+dependency #LatestPubGearXenonBuild_DVD_%Config%
+define
+sync
+
+Game %Game%
+
+clean
+preheatmapoven
+
+Platform %Platform%
+timeout 120
+
+status Getting cooked build from \\epicgames.net\Root\Rift\Builds\Xbox360
+define DVD %Config%
+language INT
+GetPublishedData CookedData \\epicgames.net\Root\Rift\Builds\Xbox360
+
+language INT
+
+Status Creating INT layout
+
+languages INT
+checkoutlayout
+CreateDVDLayout
+
+status Publishing INTSku build
+define INTSku
+
+timeout 30
+
+Status Publishing layout
+language INT
+publishtozip
+publishlayout c:\Builds
+
+Status making iso
+MakeISO c:\Builds

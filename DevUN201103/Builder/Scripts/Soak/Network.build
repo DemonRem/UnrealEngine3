@@ -1,0 +1,16 @@
+// Cooks all UT maps for PC (the fast compress)
+
+errormode checkerrors
+
+failaddress john.scott@epicgames.com
+successaddress john.scott@epicgames.com
+
+status Syncing to latest build
+dependency #LatestBuild
+sync
+
+status Syncing to a build from March 2009
+dependency UnrealEngine3_[2009-03-04_02.00]
+sync
+
+

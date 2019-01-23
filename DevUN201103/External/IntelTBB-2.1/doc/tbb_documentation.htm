@@ -1,0 +1,479 @@
+<html>
+<head>
+<title>Intel&reg; Threading Building Blocks Documentation</title>
+<style>
+body { 
+	color:#333333;
+	background-color:#ffffff; 
+	font-family: Verdana, Arial, sans-serif; 
+	font-size: 10pt; 
+	margin-left: 30px;
+}
+p { 
+	font-size: inherit; 
+	line-height: 120%; 
+	margin-top: 0; 
+	margin-bottom: 5pt;
+}
+p.Note { 
+	margin-top:0; 
+	margin-left:25px;
+	margin-bottom:10pt;
+}
+p.twoColumnListHead { 
+	color:#000000; 
+	padding:4px; 
+	text-align:left; 
+	width:auto; 
+	margin-top:0; 
+	margin-bottom:0; 
+	margin-left:0;
+	font-weight:bold;
+}	
+p.pRelatedLink { 
+	margin-top: 0; 
+	margin-bottom: 0;
+}
+p.pRelatedLink { 
+	margin-top: 0px; 
+	margin-bottom: 0px;
+}
+table { 
+	margin-bottom:5pt; 
+	border-collapse:collapse; 
+	margin-top:0.3em; 
+	font-size: 10pt;
+}	
+td { 
+	border: 1px #bababa solid; 
+	vertical-align: top; 
+	font-size: inherit;
+	margin-bottom: 0px;
+}
+td, P.TableCell, td p{ 
+	margin-top: 0; 
+	margin-left: 0;
+	padding: 5px; 
+	text-align: left; 
+	font-size: inherit; 
+	line-height: 120%;
+}
+tr { 
+	vertical-align:top;
+}
+td.noBorder { 
+	border:0px none;
+}
+th, th h3{ 
+	padding: 4px; 
+	text-align: left; 
+	background-color: #555555; 
+	font-weight: bold; 
+	margin-top: 0; 
+	margin-bottom: 0; 
+	color: #FFFFFF; 
+	font-size: 11pt;	
+}
+th { 
+	border:1px #bababa solid;
+}
+th h3.TableHead, th h3 { 
+	padding:0;
+}		
+h3.TableHead{ 
+	padding: 4px; 
+	text-align: left; 
+	background-color: #555555; 
+	font-weight: bold; 
+	margin-top: 0; 
+	margin-bottom: 0; 
+	color: #FFFFFF; 
+	font-size: 11pt;	
+}
+h1 {
+	color: #0860a8;
+	font-size: 15pt;
+	padding-bottom: 1px;
+	margin-left: 0pt;
+	margin-right: 1pt;
+	margin-bottom: 0px;
+	border-bottom: 1px solid #0860A8;
+	font-weight: normal;
+}
+h1.title { 
+	border-bottom:0 none; 
+	margin-left:0;
+	font-weight: normal;
+}
+h2 {
+	color: #0860a8;
+	font-weight: lighter;
+	margin-top: 5pt;
+	margin-bottom: 0;
+	font-size: 13pt;
+}
+h3 {
+	color: #333333;
+	font-weight: bold;
+	margin-top: 5pt;
+	margin-bottom: 0;
+	font-size: 10.5pt;
+}
+h3.NoteTipHead {
+	color:#006699;
+	margin-top:11pt;
+	padding-bottom:0;
+	line-height: 18px;
+	text-transform: uppercase;
+}
+h3.NoteTipHead img {
+	vertical-align: middle;
+}
+ul { 
+	margin-bottom: 1em; 
+	font-size: inherit; 
+	margin-top: 0px; 
+	line-height: 100%; 
+}
+ul ol { 
+	margin-bottom: 0em; 
+	font-size: inherit;
+	list-style-type: decimal;
+}
+ul ul { 
+	margin-bottom:0px; 
+	font-size:inherit;
+}
+ul.Note {
+	margin-left:25px;
+}
+td ul { 
+	font-size:inherit;
+}
+ol { 
+	margin-bottom: 1em; 
+	font-size: inherit; 
+	margin-top: 0px; 
+	line-height: 100%;
+	list-style-type: decimal;
+}
+ol ol { 
+	list-style: lower-alpha; 
+	margin-bottom: 0em; 
+	font-size: inherit;
+}
+ol.Note {
+	margin-left:25px;
+}
+td ol { 
+	font-size:inherit;
+}
+ol ul { 
+	margin-bottom:0px; 
+	font-size:inherit;
+}
+li { 
+	font-size: inherit; 
+	margin-top: 0px; 
+	line-height: 130%;
+}
+li p, ol p, ul p { 
+	margin-bottom:0.2em; 
+	margin-top:0.2em; 
+	margin-left:0; 
+	padding-left:0; 
+	font-size:inherit;
+}
+li table, td table, dd table { 
+	margin-left:0;
+}
+indent li p { 
+	margin-bottom: 0.2em; 
+	margin-top: 0.2em; 
+	margin-left: -2em;
+}
+P.Preformatted, pre { 
+	line-height: 90%; 
+	x-text-tab-stops: repeat 1in; 
+	margin-top:0; 
+	margin-bottom:0; 
+	font-size: 10pt; 
+	font-family: "Courier New", Courier, monospace; 
+	background-color: #eeeeee;
+}
+td P.Preformatted, td pre { 
+	line-height: 90%; 
+	x-text-tab-stops: repeat 1in; 
+	margin-top:0; 
+	margin-bottom:0; 
+	margin-left: 0px;
+	font-size: 10pt; 
+	font-family: "Courier New", Courier, monospace; 
+	background-color: #eeeeee;
+}
+SPAN.Code, .Code { 
+	font-family: "Courier New", Courier, monospace;
+}
+blockquote { 
+	margin-top: 0; 
+	margin-bottom: 0;
+}
+HR { 
+	color: #555555; 
+	border: 0; 
+	background: #555555; 
+	height: 1px; 
+	margin-left: 0;
+}
+SPAN.Big { 
+	font-weight:bold; 
+	font-size:105%;
+}
+.welcomeImg { 
+	padding-left: 0px; 
+	padding-bottom: 0px; 
+	margin-left: 0px;
+}
+.IntelExt {
+	color:#008080;
+} 
+dl { 
+	margin-bottom: 1em; 
+	font-size: inherit; 
+	margin-top: 0px; 
+	line-height: 150%; 
+}	
+dt { 
+	font-weight: bold; 
+	margin-top: 1em;
+}
+dd {
+	font-size: inherit; 
+	margin-left: 0px; 
+}
+dd p {
+	margin-bottom: 0.2em; 
+	margin-top: 0.2em; 
+	font-size: inherit;
+}
+.link_buttons {
+	background-color: #EEEEEE;
+	border-color: #EEEEEE;
+	border-width: 1px;
+	padding: 4px;
+}
+a:link {
+	color: #0860a8;
+	text-decoration: none;
+}
+a:visited { 
+	color:#0860a8;
+	text-decoration: none;	
+}
+a:active {
+	color: #0860a8;
+	text-decoration: underline;
+}
+a:hover {
+	color: #0860a8;
+	text-decoration: underline;
+}
+#mainmenu {
+ text-align: left;
+ font-family: verdana, tahoma, Arial, "sans serif";
+ width: 200px;
+ color: #0860a8;
+ background-color: #f5f5f5;
+ border: 1px #0860a8 solid;
+ padding-top: 10px;
+ padding-right: 10px;
+ padding-bottom: 10px;
+ padding-left: 10px;
+ float: right;
+ z-index: 0;
+ margin: .1em;
+}
+
+#mainmenu a.mainmenulinks, a.mainmenulinks:visited, a.mainmenulinks:hover, a.mainmenulinks:active {
+ font-family: verdana, Helvetica, sans-serif;  
+ font-style: normal; 
+ font-size: 8pt; 
+ font-weight: normal; 
+ color: #000000;
+ text-decoration: underline;
+}
+
+</style>
+</head>
+<body>
+<h1>Intel&reg; Threading Building Blocks Documentation</h1>
+
+<div align="left">
+	<table id="table1" cellspacing="0">
+		<tr>
+			<th>Document</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>
+			<a href="Getting_Started.pdf">Getting Started Guide</a></td>
+			<td>
+			Brief guide that uses a simple example to demonstrate how to use 
+			Intel&reg; Threading Building Blocks from start to finish.
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<a href="Tutorial.pdf">Tutorial</a></td>
+			<td>
+			Detailed tutorial covering the use of all the major features of
+			Intel&reg; Threading Building Blocks.
+			Includes information on the following topics:
+			    <ul>
+			    <li>Parallelizing Simple Loops
+			    <li>Parallelizing Complex Loops
+			    <li>Containers
+			    <li>Mutual Exclusion
+			    <li>Atomic Operations
+			    <li>Timing
+			    <li>Memory Allocation
+			    <li>Task Scheduling
+			    </ul>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<a href="Reference.pdf">Reference Manual</a></td>
+			<td>
+			Complete, detailed reference manual for all the functions and interfaces
+			provided by Intel&reg; Threading Building Blocks.
+			Includes information on the following topics:
+			    <ul>
+			    <li>Algorithms
+			    <li>Containers
+			    <li>Memory Allocation
+			    <li>Synchronization
+			    <li>Timing
+			    <li>Task Scheduling
+			    </ul>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<a href="html/index.html">Class Hierarchy Documentation</a></td>
+			<td>
+			Detailed, cross-linked documentation on the class hierarchy with several views.
+			Includes the following major views: 
+			    <ul>
+			    <li>Namespace List
+			    <li>Class Hierarchy
+			    <li>Compound List
+			    <li>File List
+			    <li>Namespace Members
+			    <li>Compound Members
+			    </ul>
+			</td>
+		</tr>
+		<tr>
+			<td id="examplesText">Examples
+				<script type="text/javascript">
+				  document.getElementById('examplesText').innerHTML="<a id=\"examplesLink\" ></a>";
+				  document.getElementById('examplesLink').title="open";
+				  document.getElementById('examplesLink').target="_self";
+				  if(document.URL.match("Documentation")){
+				    if(navigator.platform.match("Mac")){
+				      document.getElementById('examplesLink').innerHTML="Examples";
+				      document.getElementById('examplesLink').href="../../../Frameworks/tbb/examples/index.html";
+				    }else{
+				      document.getElementById('examplesLink').innerHTML="Examples";
+				      document.getElementById('examplesLink').href="../../../tbb/examples/index.html";
+				    }
+				  }else{
+				    document.getElementById('examplesLink').innerHTML="Examples";
+				    document.getElementById('examplesLink').href="../examples/index.html";
+				  }
+				</script>
+           </td>
+			<td>
+			Compilation-ready samples that demonstrate how to use the 
+			library.
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<a href="Release_Notes.txt">Release Notes</a></td>
+			<td>
+			Detailed notes and errata for this release.
+			</td>
+		</tr>
+		</table>
+</div>
+
+<hr>
+
+<h2><a name="legal"></a>Disclaimer and Legal Information</h2>
+
+<p>
+INFORMATION IN THIS DOCUMENT IS PROVIDED IN CONNECTION WITH INTEL&reg;
+PRODUCTS.  NO LICENSE, EXPRESS OR IMPLIED, BY ESTOPPEL OR OTHERWISE, TO
+ANY INTELLECTUAL PROPERTY RIGHTS IS GRANTED BY THIS DOCUMENT.  EXCEPT AS
+PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS,
+INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS ANY EXPRESS
+OR IMPLIED WARRANTY, RELATING TO SALE AND/OR USE OF INTEL PRODUCTS
+INCLUDING LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR
+PURPOSE, MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT OR
+OTHER INTELLECTUAL PROPERTY RIGHT.
+</p><p>
+UNLESS OTHERWISE AGREED IN WRITING BY INTEL, THE INTEL PRODUCTS ARE NOT
+DESIGNED NOR INTENDED FOR ANY APPLICATION IN WHICH THE FAILURE OF THE
+INTEL PRODUCT COULD CREATE A SITUATION WHERE PERSONAL INJURY OR DEATH
+MAY OCCUR.  Intel may make changes to specifications and product
+descriptions at any time, without notice.  Designers must not rely on
+the absence or characteristics of any features or instructions marked
+"reserved" or "undefined."  Intel reserves these for future definition
+and shall have no responsibility whatsoever for conflicts or
+incompatibilities arising from future changes to them.  The information
+here is subject to change without notice.  Do not finalize a design with
+this information.
+</p><p>
+The products described in this document may contain design defects or
+errors known as errata which may cause the product to deviate from
+published specifications.  Current characterized errata are available on
+request.
+</p><p>
+Contact your local Intel sales office or your distributor to obtain the
+latest specifications and before placing your product order.  Copies of
+documents which have an order number and are referenced in this
+document, or other Intel literature, may be obtained by calling
+1-800-548-4725, or by visiting Intel's Web Site.
+</p><p>
+Intel processor numbers are not a measure of performance.  Processor
+numbers differentiate features within each processor family, not across
+different processor families.  See
+http://www.intel.com/products/processor_number for details.
+</p><p>
+MPEG is an international standard for video compression/decompression
+promoted by ISO.  Implementations of MPEG CODECs, or MPEG enabled
+platforms may require licenses from various entities, including Intel
+Corporation.
+</p><p>
+BunnyPeople, Celeron, Celeron Inside, Centrino, Centrino Atom, Centrino
+Atom Inside, Centrino Inside, Centrino logo, Core Inside, FlashFile,
+i960, InstantIP, Intel, Intel logo, Intel386, Intel486, IntelDX2,
+IntelDX4, IntelSX2, Intel Atom, Intel Atom Inside, Intel Core, Intel
+Inside, Intel Inside logo, Intel. Leap ahead., Intel. Leap ahead. logo,
+Intel NetBurst, Intel NetMerge, Intel NetStructure, Intel SingleDriver,
+Intel SpeedStep, Intel StrataFlash, Intel Viiv, Intel vPro, Intel
+XScale, Itanium, Itanium Inside, MCS, MMX, Oplus, OverDrive, PDCharm,
+Pentium, Pentium Inside, skoool, Sound Mark, The Journey Inside, Viiv
+Inside, vPro Inside, VTune, Xeon, and Xeon Inside are trademarks of
+Intel Corporation in the U.S. and other countries.
+</p><p>
+* Other names and brands may be claimed as the property of others.
+</p><p>
+Copyright &copy; 2005 - 2009, Intel Corporation.  All rights reserved.
+</p>
+
+</body>
+
+</html>

@@ -1,0 +1,129 @@
+//
+// CIS Compile PC (Nano)
+//
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror NanoError
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 30
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Syncing to changelist
+watchstart CISCompilePC_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Building UBT
+BuildUBT
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Checking out UnrealEdCSharp
+buildconfig %JobConfig%
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb
+ms9build UnrealEdCSharp/UnrealEdCSharp.csproj
+
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win32/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win32/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.dll
+checkout Binaries/Win64/Editor/%JobConfig%/UnrealEdCSharp.pdb
+
+copydest Binaries/Win64/Editor/%JobConfig%
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.dll 
+copy Binaries/Editor/%JobConfig%/UnrealEdCSharp.pdb 
+
+Status Checking out Swarm
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Building Swarm
+buildconfig %JobConfig%
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+buildconfig %JobConfig%
+game Nano
+
+watchstart CISCompileWin32
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Building Nano %JobConfig% Win32
+platform Win32
+checkoutgame Nano
+unrealbuild
+
+watchstop
+
+watchstart CISCompileWin64
+
+timeout 60
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Building Nano %JobConfig% Win64
+platform Win64
+checkoutgame Nano
+unrealbuild
+
+watchstop
+
+platform Win32
+Use64bit
+timeout 10
+
+watchstart CISCompileScriptNano
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Building Nano Script Release
+scriptconfig
+checkout NanoGame/Script/*.u
+checkout NanoGame/Script/Manifest.txt
+buildscript Nano
+
+watchstop
+
+watchstart CISCompileScriptNanoFR
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) Building Nano Script FinalRelease
+scriptconfig final_release
+checkout NanoGame/ScriptFinalRelease/*.u
+checkout NanoGame/ScriptFinalRelease/Manifest.txt
+buildscript Nano
+
+watchstop
+
+watchstart CISWin32NanoSmokeTest
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) NanoGame Win32 Smoke Test
+Use32bit
+SmokeTest
+
+watchstop
+
+watchstart CISWin64NanoSmokeTest
+
+status (CIS #BranchFriendlyName Nano: CL %JobLabel%) NanoGame Win64 Smoke Test
+Use64bit
+SmokeTest
+
+watchstop

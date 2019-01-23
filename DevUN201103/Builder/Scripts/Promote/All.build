@@ -1,0 +1,39 @@
+// Promotes all games
+
+errormode checkerrors
+
+dependency #LatestApprovedBuild
+
+status Syncing to promoted label
+sync
+
+Status Checking out Swarm binaries
+checkout Binaries/AgentInterface.dll
+checkout Binaries/AgentInterface.pdb
+checkout Binaries/Win32/AgentInterface.dll
+checkout Binaries/Win32/AgentInterface.pdb
+checkout Binaries/Win64/AgentInterface.dll
+checkout Binaries/Win64/AgentInterface.pdb
+checkout Binaries/SwarmAgent.exe
+checkout Binaries/SwarmAgent.exe.config
+checkout Binaries/SwarmAgent.pdb
+checkout Binaries/SwarmCoordinator.exe
+checkout Binaries/SwarmCoordinator.exe.config
+checkout Binaries/SwarmCoordinator.pdb
+checkout Binaries/SwarmCoordinatorInterface.dll
+checkout Binaries/SwarmCoordinatorInterface.pdb
+
+Status Building Swarm Agent
+platform PC
+buildconfig Release
+ms9build ../../Development/Tools/UnrealSwarm/UnrealSwarm.sln
+
+Status Publishing Swarm Agent
+msvc9deploy Development/Tools/UnrealSwarm/UnrealSwarm,Agent,\\devweb-01\Deploy\Swarm\SwarmAgent\
+
+trigger Promote ExampleGame
+trigger Promote RiftGame
+trigger Promote MobileGame
+trigger Promote NanoGame
+trigger Promote NanoMobileGame
+trigger Promote UDKGame

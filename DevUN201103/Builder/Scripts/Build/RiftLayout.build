@@ -1,0 +1,92 @@
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com;builder-notify-rift@epicgames.com
+triggeraddress
+failaddress scott.sherman@epicgames.com
+successaddress scott.sherman@epicgames.com;daniel.vogel@epicgames.com;rod.fergusson@epicgames.com
+
+status Syncing to original source
+dependency #LatestPubGear%Platform%_DVD_%Config%
+define
+sync
+
+Game %Game%
+
+clean
+preheatmapoven
+
+Platform %Platform%
+timeout 120
+
+status Getting cooked build from \\prop-05\Builds\%Game%\%Platform%
+define DVD %Config%
+language INT
+GetPublishedData CookedData \\prop-05\Builds\%Game%\%Platform%
+
+language INT
+
+// ---------------------------------------------
+
+buildconfig Release
+timeout 45
+
+status Creating hashes and signing inis
+scriptconfig %Config%
+checkouthashes
+createhashes
+
+// ---------------------------------------------
+
+timeout 15
+
+BuildUBT
+
+status	Building Xenon release executables
+buildconfig Release
+checkoutgame %Game%
+unrealbuild
+
+status	Building Xenon shipping executables
+buildconfig Shipping
+checkoutgame %Game%
+unrealbuild
+
+status	Building Xenon Test executables
+buildconfig Test
+checkoutgame %Game%
+unrealbuild
+
+status	Updating source and symbol server
+getengineversion
+updatesymbolserver
+
+// ---------------------------------------------
+
+Status Creating INT layout
+
+languages INT
+checkoutlayout
+CreateDVDLayout
+
+status Publishing INTSku build
+define INTSku
+
+timeout 60
+
+Status Publishing layout
+language INT
+publishlayout \\epicgames.net\Root\Rift\Builds\Xbox360
+
+// ---------------------------------------------
+
+status Submitting layout and hash files
+CreateNewLabel
+submitandtag
+
+checkouthashes
+renamecopy %Game%Game\Build\hashesnull.sha %Game%Game\Build\hashes.sha
+submit
+
+UpdateFolder LatestPublishedRiftDVDBuild
+
+trigger Tag DVD Assets Rift

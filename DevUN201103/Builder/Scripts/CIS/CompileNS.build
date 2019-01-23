@@ -1,0 +1,60 @@
+//
+// CIS Compile Xenon
+//
+// Compiles only supported Xenon game targets using the buildconfig provided by
+// a database parameter.
+//
+
+status Starting up...
+
+// Set up top-level parameters
+CarbonCopyAddress Builder-Notify-Verification@epicgames.com
+successaddress 
+failaddress 
+
+errormode checkerrors
+
+timeout 20
+
+dependency %Game%
+
+// Initialization phase
+status Syncing...
+watchstart CISCompileXenon_P4
+sync
+watchstop
+
+watchstart CISCompileXenon
+
+status Checking file consistency...
+checkconsistency Development/Src/...
+
+status Cleaning...
+clean
+
+status Building UBT...
+BuildUBT
+
+// A define all builds will use
+define %DatabaseParameter%
+
+// Build targets
+status Building Xenon %Config% Targets
+
+platform %Platform%
+buildconfig %Config%
+
+checkoutgame Example
+game Example
+unrealbuild
+
+checkoutgame Gear
+game Gear
+unrealbuild
+
+checkoutgame UDK
+game UDK
+unrealbuild
+
+// Done
+watchstop

@@ -1,0 +1,346 @@
+// Cooks all Rift maps for Xbox360
+
+errormode checkerrors
+
+CarbonCopyAddress Builder-Notify-Cook@epicgames.com;builder-notify-rift@epicgames.com
+failaddress rift-coders@epicgames.com;scott.sherman@epicgames.com
+successaddress rift-coders@epicgames.com
+
+report %Game% %Game%Maps %Game%Content Engine Audio GFx %Platform%
+
+status	Syncing to head
+sync
+
+Status Building all tools
+watchstart Rift_CookAll_BuildAllTools
+
+platform PC
+buildconfig Release
+
+status	Building Stats viewer
+checkout Binaries/Stats.dll
+checkout Binaries/Stats.pdb
+checkout Binaries/StatsComparison.exe
+checkout Binaries/StatsComparison.exe.config
+checkout Binaries/StatsComparison.pdb
+checkout Binaries/StatsThreshold.exe
+checkout Binaries/StatsThreshold.exe.config
+checkout Binaries/StatsThreshold.pdb
+checkout Binaries/StatsViewer.exe
+checkout Binaries/StatsViewer.exe.config
+checkout Binaries/StatsViewer.pdb
+msvc9full Development/Tools/StatsViewer/StatsViewer
+
+status	Building script profiler
+checkout Binaries/GameplayProfiler.exe
+checkout Binaries/GameplayProfiler.exe.config
+checkout Binaries/GameplayProfiler.pdb
+msvc9full Development/Tools/GameplayProfiler/GameplayProfiler
+
+// NOTE: StandaloneSymbolParser is built by MemoryProfiler2, XeTools, and PS3Tools so it won't be signed until after all of those projects have been built
+
+status Building MemoryProfiler2
+buildconfig Release|x64
+Checkout Binaries/MemoryProfiler2.exe
+Checkout Binaries/MemoryProfiler2.exe.config
+Checkout Binaries/MemoryProfiler2.pdb
+Checkout Binaries/Win32/StandaloneSymbolParser.dll
+Checkout Binaries/Win32/StandaloneSymbolParser.pdb
+Checkout Binaries/Win64/StandaloneSymbolParser.dll
+Checkout Binaries/Win64/StandaloneSymbolParser.pdb
+msvc9full Development/Tools/MemoryProfiler2/MemoryProfiler2
+
+buildconfig Release
+
+status Building NetworkProfiler
+Checkout Binaries/NetworkProfiler.exe
+Checkout Binaries/NetworkProfiler.exe.config
+Checkout Binaries/NetworkProfiler.pdb
+msvc9full Development/Tools/NetworkProfiler/NetworkProfiler
+
+status Building MemLeakCheckDiffer
+Checkout Binaries/MemLeakCheckDiffer.exe
+Checkout Binaries/MemLeakCheckDiffer.exe.config
+Checkout Binaries/MemLeakCheckDiffer.pdb
+msvc9full Development/Tools/MemLeakCheckDiffer/MemLeakCheckDiffer
+
+checkout Binaries/Xenon/XeTools.dll
+checkout Binaries/Xenon/XeTools.pdb
+msvc9full Development/Src/Xenon/XeTools/XeTools
+
+buildconfig Release|x64
+
+checkout Binaries/Xenon/XeTools_x64.dll
+checkout Binaries/Xenon/XeTools_x64.pdb
+msvc9full Development/Src/Xenon/XeTools/XeTools
+
+buildconfig Release
+
+status	Building UnrealFrontEnd and UnrealConsole
+checkout Binaries/CookerSync.exe
+checkout Binaries/CookerSync.exe.config
+checkout Binaries/CookerSync.pdb
+checkout Binaries/ConsoleInterface.dll
+checkout Binaries/ConsoleInterface.pdb
+checkout Binaries/ConsoleInterface_x64.dll
+checkout Binaries/ConsoleInterface_x64.pdb
+checkout Binaries/UnrealConsole.exe
+checkout Binaries/UnrealConsole.exe.config
+checkout Binaries/UnrealConsole.pdb
+checkout Binaries/UnrealControls.dll
+checkout Binaries/UnrealControls.pdb
+checkout Binaries/UnrealFrontend.exe
+checkout Binaries/UnrealFrontend.exe.config
+checkout Binaries/UnrealFrontend.pdb
+checkout Binaries/UnrealConsoleRemoting.dll
+checkout Binaries/UnrealConsoleRemoting.pdb
+checkout Binaries/Ionic.Zip.Reduced.dll
+checkout Binaries/Interop.IMAPI2FS.dll
+msvc9full Development/Tools/UnrealFrontend/UnrealFrontend
+
+status	Building Autoreporter
+checkout Binaries/AutoReporter.exe
+checkout Binaries/AutoReporter.exe.config
+checkout Binaries/AutoReporter.pdb
+checkout Binaries/AutoReporter.XmlSerializers.dll
+msvc9full Development/Tools/CrashReport/CrashReport
+
+buildconfig Release
+
+status Building UnrealDVDLayout
+Checkout Binaries/UnrealDVDLayout.exe
+Checkout Binaries/UnrealDVDLayout.exe.config
+Checkout Binaries/UnrealDVDLayout.pdb
+msvc9full Development/Tools/UnrealDVDLayout/UnrealDVDLayout
+
+buildconfig Release
+
+status Building DVDLogParser.exe
+Checkout Binaries/Xenon/DVDLogParser.exe
+Checkout Binaries/Xenon/DVDLogParser.pdb
+msvc9full Development/Tools/Xenon/DVDLogParser/DVDLogParser
+
+status Compiling UnrealCommand
+checkout Binaries\UnrealCommand.exe
+checkout Binaries\UnrealCommand.exe.config
+checkout Binaries\UnrealCommand.pdb
+
+msvc9full Development\Tools\UnrealCommand\UnrealCommand
+
+watchstop
+
+watchstart Rift_CookAll_CompileCookingBinaries
+
+consoleversionfiles Development/Src/%Game%Game/Live/xex.xml
+mobileversionfiles
+miscversionfiles Development/Src/Launch/Resources/Version.h;Development/Src/Launch/Resources/PCLaunch.rc;Binaries/build.properties
+
+checkout Development/Src/Core/Src/UnObjVer.cpp
+checkout Development/Src/Launch/Resources/Version.h
+checkout Development/Src/Launch/Resources/PCLaunch.rc
+checkout Binaries/build.properties
+
+checkout Development/Src/%Game%Game/Live/xex.xml
+
+bumpengineversion
+
+Status Cleaning
+clean
+
+timeout 60
+
+BuildUBT
+
+status	Building Rift Win64 Release
+UBTDisableXGE
+Game %Game%
+platform win64
+buildconfig Release
+
+checkoutgame %Game%
+UnrealBuild
+
+timeout 60
+
+status	Building script for Rift
+scriptconfig
+checkout %Game%Game/Script/*.u
+checkout %Game%Game/Script/Manifest.txt
+buildscript %Game%
+
+status	Building final release script for Rift
+scriptconfig final_release
+checkout %Game%Game/ScriptFinalRelease/*.u
+checkout %Game%Game/ScriptFinalRelease/Manifest.txt
+buildscript %Game%
+
+watchstop
+
+scriptconfig %Config%
+
+platform %Platform%
+preheatmapoven
+
+watchstart RiftCookAll_%Platform%
+
+timeout 180
+
+status Building local shader cache
+CookShaderBuild
+
+checkouthashes
+
+timeout 240
+language INT
+languages INT FRA ITA DEU ESN ESM JPN
+textlanguages PTB CZE HUN POL RUS KOR CHN
+
+Status Cooking all Rift maps
+cookinimaps SPMaps1+SPMaps2+SPMaps3+SPMaps4+SPMaps5+MPMaps1+MPMaps2+MPMaps3+DLCMPMaps1+DLCMPMaps2
+
+watchstop
+
+watchstart Rift_CookAll_CompileXboxBinaries
+timeout 60
+
+status	Building Rift %Platform% Release
+Game %Game%
+platform %Platform%
+buildconfig release
+
+checkoutgame %Game%
+UnrealBuild
+
+status	Building Rift %Platform% MProf
+define USE_MALLOC_PROFILER=1
+checkoutgame %Game%
+UnrealBuild
+define
+
+status	Building Rift %Platform% Shipping
+buildconfig Shipping
+UnrealBuild
+
+status	Building Rift %Platform% Test
+buildconfig Test
+UnrealBuild
+
+timeout 120
+define
+
+watchstop
+
+// FIXME: Need to create layouts here
+
+watchstart RiftPublish_%Platform%_UnProp
+
+status Publishing loc files to \\prop-05\Builds\%Game%\%Platform%
+define %Config%
+language FRA
+PublishLanguage \\prop-05\Builds\%Game%\%Platform%
+language ITA
+PublishLanguage \\prop-05\Builds\%Game%\%Platform%
+language DEU
+PublishLanguage \\prop-05\Builds\%Game%\%Platform%
+language ESN
+PublishLanguage \\prop-05\Builds\%Game%\%Platform%
+language ESM
+PublishLanguage \\prop-05\Builds\%Game%\%Platform%
+language JPN
+PublishLanguage \\prop-05\Builds\%Game%\%Platform%
+
+status Publishing common files to \\prop-05\Builds\%Game%\%Platform%
+language INT
+Publish \\prop-05\Builds\%Game%\%Platform%
+
+watchstop
+
+SendEmail
+
+watchstart Rift_CookAll_DedicatedServer
+
+Status Cooking for Dedicated Server
+
+Game %Game%
+platform Win32Server
+scriptconfig %Config%
+
+timeout 60
+preheatmapoven
+
+language
+languages INT
+
+Status Cooking all Rift maps for Dedicated Server
+cookinimaps MPMaps1+MPMaps2+DLCMPMaps1+DLCMPMaps2
+
+watchstop
+
+watchstart Rift_Cookall_CompileDedicatedBinaries
+
+timeout 60
+
+UBTDisableXGE
+BuildUBT
+
+Game %Game%
+platform Win32Server
+
+status	Building Rift Win32 Dedicated Server Release
+define WITH_PANORAMA=1 DEDICATED_SERVER=1
+buildconfig Release
+checkoutgame %Game%
+checkoutcat %Game%
+UnrealBuild
+
+status	Building Rift Win32 Dedicated Server Release MPROF
+define WITH_PANORAMA=1 DEDICATED_SERVER=1 USE_MALLOC_PROFILER=1
+checkoutgame %Game%
+checkoutcat %Game%
+UnrealBuild
+
+status	Building Rift Win32 Dedicated Server Shipping
+define WITH_PANORAMA=1 DEDICATED_SERVER=1
+buildconfig Shipping
+checkoutgame %Game%
+checkoutcat %Game%
+UnrealBuild
+
+
+
+errormode suppresserrors
+status	Updating source and symbol server
+updatesymbolserver
+errormode checkerrors
+
+buildconfig Release
+define WITH_PANORAMA=1 DEDICATED_SERVER=1
+makegfwlcat
+signcat
+signbinary
+
+buildconfig Release
+define WITH_PANORAMA=1 DEDICATED_SERVER=1 USE_MALLOC_PROFILER=1
+makegfwlcat
+signcat
+signbinary
+
+buildconfig Shipping
+define WITH_PANORAMA=1 DEDICATED_SERVER=1
+makegfwlcat
+signcat
+signbinary
+
+define
+
+watchstop
+
+timeout 120
+
+watchstart RiftMPDedicatedPublish_%Platform%_UnrealProp
+
+status Publishing to \\prop-05\Builds\Gear\Win32Server
+define DED %Config%
+publishtagset DedicatedServer \\prop-05\Builds\Gear\Win32Server
+
+watchstop

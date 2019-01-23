@@ -1,0 +1,53 @@
+//
+// CIS Compile PS3
+//
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Starting up...
+
+errormode checkerrors
+
+saveerror SonyPS3Error
+CarbonCopyAddress builder-notify-verification@epicgames.com
+
+timeout 20
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Syncing to changelist
+watchstart CISCompilePS3_P4
+sync
+watchstop
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Checking file consistency
+checkconsistency Development/Src/...
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Cleaning output directories
+clean
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Building UBT
+BuildUBT
+
+watchstart CISCompilePS3
+
+platform SonyPS3
+buildconfig %JobConfig%
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Building Example %JobConfig%
+checkoutgame Example
+game Example
+unrealbuild
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Building Gear %JobConfig%
+checkoutgame Gear
+game Gear
+unrealbuild
+
+// status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Building Nano %JobConfig%
+// checkoutgame Nano
+// game Nano
+// unrealbuild
+
+status (CIS #BranchFriendlyName PS3: CL %JobLabel%) Building UDK %JobConfig%
+checkoutgame UDK
+game UDK
+unrealbuild
+
+watchstop

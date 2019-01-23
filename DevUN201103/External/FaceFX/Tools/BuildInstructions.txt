@@ -1,0 +1,82 @@
+
+How to build the FaceFX animation package plugins for Unreal Engine 3:
+======================================================================
+
+General:
+--------
+
+1) Make sure you have correctly built the plugin configuration for the FaceFX SDK. To
+   do this, open the FaceFX_vs9 solution located in 
+   $UE3ROOT$\Development\External\FaceFX and build the "Release (Plugins)" solution
+   configuration.
+
+2) Make sure you have the SDK for the animation package you wish to build for in the
+   correct place. All supported packages have placeholder folders prepared in
+   $UE3ROOT$\Development\External\FaceFX\Tools\External. Place the "include" and "lib"
+   folders from your animation package SDK into the appropriate folder in that location.
+
+3) Open the Tools_vs9 solution located in $UE3ROOT$\Development\External\FaceFX\Tools.
+
+4) Select the appropriate animation package solution configuration (only use Release
+   configurations).
+
+	4a) Note that for Unreal Engine 3 you should ONLY build the "Native Coords"
+	    versions of the tools. The exception is MotionBuilder: it has no 
+	    "Native Coords" version.
+
+5) Build.
+
+
+3dsmax notes:
+-------------
+
+1) wm3.h and morpher.lib are required to build the 3dsmax plugins. Unfortunately, we are
+   not allowed to distribute these files as they are part of the 3dsmax SDK and samples. 
+   They can be found in the 3dsmax SDK samples (you have to build it yourself), though      you'll need to recompile it with the version of Visual Studio you're using and you'll    also need to modify the headers because Max uses STL code across dll boundaries. See     here (make sure you build 32-bit or 64-bit morpher.lib depending on which version
+   of the FaceFX plugin you're trying to build): 
+
+   http://dl3d.free.fr/phpBB2/viewtopic.php?p=4742&sid=55c0b62c8a8555f3493d58c3ea4b7d5e
+
+   What we did locally is contained in this post from the above linked thread:
+
+"But concerning our problem here, here is one solution that worked for me (I am using Max2010 32 bits, but I am quite sure it apply to 2009 as well, but you have to modify wm3.h. 
+
+Replace all occurence of the std::vector in wm3.h by some custom vector with minimalist feature: 
+
+Code: 
+
+template<typename> 
+struct   MR3_Vector 
+{ 
+   void*         allocator; 
+   T*            first; 
+   T*            last; 
+   T*            end; 
+    
+   size_t         size() 
+   { 
+      if(last&&first) 
+      { 
+         return(last-first); 
+      } 
+      return(0); 
+   } 
+    
+   T&               operator[](const unsigned int i) const 
+   { 
+      return(first[i]); 
+   } 
+}; 
+
+Just comment the method calls to std::vector in TargetCache, this code should not be called anyway during export, and it will not be called by Max since it's inline code."
+
+2) Once you have built these files, in order to compile the FxMax plugin, you need to
+   copy the files to their appropriate folders so that the build process can find them.
+
+	2a) The wm3.h file goes in FxMax\Inc\$3DSMAXVERSION$. For example, for 3dsmax 
+	    2010, the path would be FxMax\Inc\v2010\wm3.h.
+
+	2b) The morpher.lib file goes in FxMax\lib\$PLATFORM$\$3DSMAXVERSION$. For
+	    example, for 32-bit 3dsmax 2010, the path would be
+	    FxMax\lib\win32\v2010\morpher.lib and for 64-bit 3dsmax 2010 the path would
+	    be FxMax\lib\x64\v2010\morpher.lib.

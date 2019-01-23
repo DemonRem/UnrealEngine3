@@ -1,0 +1,212 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxSDK", "FxSDK\FxSDK_vs9.vcproj", "{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests\Tests_vs9.vcproj", "{8B939612-A20A-4F89-BDF3-DBD582E36252}"
+	ProjectSection(ProjectDependencies) = postProject
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD} = {932FCB01-FA64-43E6-967A-B0EFB0AE62BD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxGraphLayout", "Studio\FxGraphLayout\FxGraphLayout_vs9.vcproj", "{FD0F8A32-BE50-4533-AB97-DAA240E7188F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD} = {932FCB01-FA64-43E6-967A-B0EFB0AE62BD}
+		{8B939612-A20A-4F89-BDF3-DBD582E36252} = {8B939612-A20A-4F89-BDF3-DBD582E36252}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxCG", "FxCG\FxCG_vs9.vcproj", "{8BB9525F-CCB4-4850-B1C9-9E11B749300E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8B939612-A20A-4F89-BDF3-DBD582E36252} = {8B939612-A20A-4F89-BDF3-DBD582E36252}
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD} = {932FCB01-FA64-43E6-967A-B0EFB0AE62BD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxAnalysis", "FxAnalysis\FxAnalysis_vs9.vcproj", "{19037A8B-54A0-40CF-8412-C1F183D53787}"
+	ProjectSection(ProjectDependencies) = postProject
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD} = {932FCB01-FA64-43E6-967A-B0EFB0AE62BD}
+		{8B939612-A20A-4F89-BDF3-DBD582E36252} = {8B939612-A20A-4F89-BDF3-DBD582E36252}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analysis", "Analysis", "{2A3EF3C7-71A2-40D2-B153-C61A4B9E6FBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDK", "SDK", "{5FFCA9C6-A229-4FA5-8ADC-A43C8656598C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Studio Support", "Studio Support", "{61EB44A3-36D6-43F0-B0C3-D082617E16F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{FC924A0E-CC10-4D2A-90F6-834B9EEAC1FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxSDK_XBox360", "..\..\Src\Xenon\External\FaceFX\FxSDK\FxSDK_XBox360_vs9.vcproj", "{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug (Plugins)|Mixed Platforms = Debug (Plugins)|Mixed Platforms
+		Debug (Plugins)|Win32 = Debug (Plugins)|Win32
+		Debug (Plugins)|x64 = Debug (Plugins)|x64
+		Debug (Plugins)|Xbox 360 = Debug (Plugins)|Xbox 360
+		Debug (Unreal)|Mixed Platforms = Debug (Unreal)|Mixed Platforms
+		Debug (Unreal)|Win32 = Debug (Unreal)|Win32
+		Debug (Unreal)|x64 = Debug (Unreal)|x64
+		Debug (Unreal)|Xbox 360 = Debug (Unreal)|Xbox 360
+		Release (Plugins)|Mixed Platforms = Release (Plugins)|Mixed Platforms
+		Release (Plugins)|Win32 = Release (Plugins)|Win32
+		Release (Plugins)|x64 = Release (Plugins)|x64
+		Release (Plugins)|Xbox 360 = Release (Plugins)|Xbox 360
+		Release (Unreal)|Mixed Platforms = Release (Unreal)|Mixed Platforms
+		Release (Unreal)|Win32 = Release (Unreal)|Win32
+		Release (Unreal)|x64 = Release (Unreal)|x64
+		Release (Unreal)|Xbox 360 = Release (Unreal)|Xbox 360
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|Mixed Platforms.ActiveCfg = Debug|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|Mixed Platforms.Build.0 = Debug|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|Win32.ActiveCfg = Debug|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|Win32.Build.0 = Debug|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|x64.ActiveCfg = Debug|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|x64.Build.0 = Debug|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Plugins)|Xbox 360.ActiveCfg = Debug (Unreal)|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|Mixed Platforms.ActiveCfg = Debug (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|Mixed Platforms.Build.0 = Debug (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|Win32.ActiveCfg = Debug (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|Win32.Build.0 = Debug (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|x64.ActiveCfg = Debug (Unreal)|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|x64.Build.0 = Debug (Unreal)|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Debug (Unreal)|Xbox 360.ActiveCfg = Debug (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|Mixed Platforms.ActiveCfg = Release|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|Mixed Platforms.Build.0 = Release|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|Win32.ActiveCfg = Release|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|Win32.Build.0 = Release|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|x64.ActiveCfg = Release|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|x64.Build.0 = Release|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Plugins)|Xbox 360.ActiveCfg = Release (Unreal)|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|Mixed Platforms.ActiveCfg = Release (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|Mixed Platforms.Build.0 = Release (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|Win32.ActiveCfg = Release (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|Win32.Build.0 = Release (Unreal)|Win32
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|x64.ActiveCfg = Release (Unreal)|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|x64.Build.0 = Release (Unreal)|x64
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD}.Release (Unreal)|Xbox 360.ActiveCfg = Release (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|Mixed Platforms.ActiveCfg = Debug|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|Mixed Platforms.Build.0 = Debug|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|Win32.ActiveCfg = Debug|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|Win32.Build.0 = Debug|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|x64.ActiveCfg = Debug|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|x64.Build.0 = Debug|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Plugins)|Xbox 360.ActiveCfg = Debug (Unreal)|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|Mixed Platforms.ActiveCfg = Debug (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|Mixed Platforms.Build.0 = Debug (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|Win32.ActiveCfg = Debug (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|Win32.Build.0 = Debug (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|x64.ActiveCfg = Debug (Unreal)|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|x64.Build.0 = Debug (Unreal)|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Debug (Unreal)|Xbox 360.ActiveCfg = Debug (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|Mixed Platforms.ActiveCfg = Release|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|Mixed Platforms.Build.0 = Release|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|Win32.ActiveCfg = Release|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|Win32.Build.0 = Release|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|x64.ActiveCfg = Release|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|x64.Build.0 = Release|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Plugins)|Xbox 360.ActiveCfg = Release (Unreal)|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|Mixed Platforms.ActiveCfg = Release (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|Mixed Platforms.Build.0 = Release (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|Win32.ActiveCfg = Release (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|Win32.Build.0 = Release (Unreal)|Win32
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|x64.ActiveCfg = Release (Unreal)|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|x64.Build.0 = Release (Unreal)|x64
+		{8B939612-A20A-4F89-BDF3-DBD582E36252}.Release (Unreal)|Xbox 360.ActiveCfg = Release (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Plugins)|Mixed Platforms.ActiveCfg = Debug|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Plugins)|Win32.ActiveCfg = Debug|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Plugins)|x64.ActiveCfg = Debug|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Plugins)|Xbox 360.ActiveCfg = Debug (Unreal)|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|Mixed Platforms.ActiveCfg = Debug (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|Mixed Platforms.Build.0 = Debug (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|Win32.ActiveCfg = Debug (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|Win32.Build.0 = Debug (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|x64.ActiveCfg = Debug (Unreal)|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|x64.Build.0 = Debug (Unreal)|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Debug (Unreal)|Xbox 360.ActiveCfg = Debug (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Plugins)|Mixed Platforms.ActiveCfg = Release|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Plugins)|Win32.ActiveCfg = Release|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Plugins)|x64.ActiveCfg = Release|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Plugins)|Xbox 360.ActiveCfg = Release (Unreal)|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|Mixed Platforms.ActiveCfg = Release (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|Mixed Platforms.Build.0 = Release (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|Win32.ActiveCfg = Release (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|Win32.Build.0 = Release (Unreal)|Win32
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|x64.ActiveCfg = Release (Unreal)|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|x64.Build.0 = Release (Unreal)|x64
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F}.Release (Unreal)|Xbox 360.ActiveCfg = Release (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Plugins)|Mixed Platforms.ActiveCfg = Debug|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Plugins)|Win32.ActiveCfg = Debug|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Plugins)|x64.ActiveCfg = Debug|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Plugins)|Xbox 360.ActiveCfg = Debug (Unreal)|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|Mixed Platforms.ActiveCfg = Debug (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|Mixed Platforms.Build.0 = Debug (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|Win32.ActiveCfg = Debug (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|Win32.Build.0 = Debug (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|x64.ActiveCfg = Debug (Unreal)|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|x64.Build.0 = Debug (Unreal)|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Debug (Unreal)|Xbox 360.ActiveCfg = Debug (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Plugins)|Mixed Platforms.ActiveCfg = Release|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Plugins)|Win32.ActiveCfg = Release|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Plugins)|x64.ActiveCfg = Release|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Plugins)|Xbox 360.ActiveCfg = Release (Unreal)|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|Mixed Platforms.ActiveCfg = Release (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|Mixed Platforms.Build.0 = Release (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|Win32.ActiveCfg = Release (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|Win32.Build.0 = Release (Unreal)|Win32
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|x64.ActiveCfg = Release (Unreal)|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|x64.Build.0 = Release (Unreal)|x64
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E}.Release (Unreal)|Xbox 360.ActiveCfg = Release (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Plugins)|Mixed Platforms.ActiveCfg = Debug|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Plugins)|Win32.ActiveCfg = Debug|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Plugins)|x64.ActiveCfg = Debug|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Plugins)|Xbox 360.ActiveCfg = Debug (Unreal)|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|Mixed Platforms.ActiveCfg = Debug (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|Mixed Platforms.Build.0 = Debug (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|Win32.ActiveCfg = Debug (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|Win32.Build.0 = Debug (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|x64.ActiveCfg = Debug (Unreal)|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|x64.Build.0 = Debug (Unreal)|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Debug (Unreal)|Xbox 360.ActiveCfg = Debug (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Plugins)|Mixed Platforms.ActiveCfg = Release|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Plugins)|Win32.ActiveCfg = Release|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Plugins)|x64.ActiveCfg = Release|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Plugins)|Xbox 360.ActiveCfg = Release (Unreal)|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|Mixed Platforms.ActiveCfg = Release (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|Mixed Platforms.Build.0 = Release (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|Win32.ActiveCfg = Release (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|Win32.Build.0 = Release (Unreal)|Win32
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|x64.ActiveCfg = Release (Unreal)|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|x64.Build.0 = Release (Unreal)|x64
+		{19037A8B-54A0-40CF-8412-C1F183D53787}.Release (Unreal)|Xbox 360.ActiveCfg = Release (Unreal)|Win32
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Plugins)|Mixed Platforms.ActiveCfg = Debug|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Plugins)|Win32.ActiveCfg = Debug|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Plugins)|x64.ActiveCfg = Debug|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Plugins)|Xbox 360.ActiveCfg = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Unreal)|Mixed Platforms.ActiveCfg = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Unreal)|Mixed Platforms.Build.0 = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Unreal)|Win32.ActiveCfg = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Unreal)|x64.ActiveCfg = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Unreal)|Xbox 360.ActiveCfg = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Debug (Unreal)|Xbox 360.Build.0 = Debug (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Plugins)|Mixed Platforms.ActiveCfg = Release|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Plugins)|Win32.ActiveCfg = Release|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Plugins)|x64.ActiveCfg = Release|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Plugins)|Xbox 360.ActiveCfg = Release (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Unreal)|Mixed Platforms.ActiveCfg = Release (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Unreal)|Mixed Platforms.Build.0 = Release (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Unreal)|Win32.ActiveCfg = Release (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Unreal)|x64.ActiveCfg = Release (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Unreal)|Xbox 360.ActiveCfg = Release (Unreal)|Xbox 360
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097}.Release (Unreal)|Xbox 360.Build.0 = Release (Unreal)|Xbox 360
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{932FCB01-FA64-43E6-967A-B0EFB0AE62BD} = {5FFCA9C6-A229-4FA5-8ADC-A43C8656598C}
+		{C8EBD1E0-FA63-45AA-9E4F-7765BF01F097} = {5FFCA9C6-A229-4FA5-8ADC-A43C8656598C}
+		{8B939612-A20A-4F89-BDF3-DBD582E36252} = {FC924A0E-CC10-4D2A-90F6-834B9EEAC1FF}
+		{FD0F8A32-BE50-4533-AB97-DAA240E7188F} = {61EB44A3-36D6-43F0-B0C3-D082617E16F7}
+		{19037A8B-54A0-40CF-8412-C1F183D53787} = {2A3EF3C7-71A2-40D2-B153-C61A4B9E6FBE}
+		{8BB9525F-CCB4-4850-B1C9-9E11B749300E} = {2A3EF3C7-71A2-40D2-B153-C61A4B9E6FBE}
+	EndGlobalSection
+EndGlobal

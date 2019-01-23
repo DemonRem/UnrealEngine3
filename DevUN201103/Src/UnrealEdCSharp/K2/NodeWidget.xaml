@@ -1,0 +1,32 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="Wpf_K2.NodeWidget" >
+
+	<Border x:Name="MainBox" Background="White" BorderBrush="Black" BorderThickness="1">
+		<Border.ContextMenu>
+			<ContextMenu x:Name="SimpleNodeContext">
+				<MenuItem x:Name="NodeDelete" Header="Delete"/>
+				<MenuItem x:Name="NodeBreakAllLinks" Header="Break All Links"/>
+			</ContextMenu>
+		</Border.ContextMenu>			
+		<Grid x:Name="LayoutRoot">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition/>
+			</Grid.RowDefinitions>
+			<TextBlock x:Name="TitleText"  Text="NodeTitle" Grid.Row="0" MinWidth="150" FontWeight="Bold" Background="#FFAFAFAF" />
+			<Grid Grid.Row="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<StackPanel x:Name="InStackPanel" Grid.Column="0" />
+				<StackPanel x:Name="OutStackPanel" Grid.Column="1" />
+			</Grid>
+		</Grid>
+	</Border>
+</UserControl>
