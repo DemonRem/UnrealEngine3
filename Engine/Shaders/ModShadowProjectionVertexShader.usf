@@ -1,0 +1,17 @@
+/*=============================================================================
+	ModShadowProjectionVertexShader.usf: Vertex shader for projecting a shadow depth buffer onto the scene.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+float4x4 ViewProjectionMatrix REGISTER(252);
+
+void Main(
+	in float4 InPosition : POSITION,
+	out float4 OutPosition : POSITION,
+	out float4 OutScreenPosition : TEXCOORD0
+	)
+{
+	OutPosition = OutScreenPosition = MulMatrix(ViewProjectionMatrix,InPosition);
+}

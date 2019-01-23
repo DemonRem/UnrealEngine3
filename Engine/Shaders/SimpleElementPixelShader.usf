@@ -1,0 +1,26 @@
+/*=============================================================================
+	SimpleElementPixelShader.hlsl: Pixel shader for drawing simple elements.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+sampler2D Texture;
+
+half Gamma;
+
+
+void Main(
+	in float2 TextureCoordinate : TEXCOORD0,
+	in float4 Color : COLOR,
+	out float4 OutColor : COLOR0
+	)
+{
+	OutColor = tex2D(Texture,TextureCoordinate) * Color;	
+	if( Gamma != 1.0 )
+	{
+		// Gamma correct the output color.
+		OutColor.rgb = pow(saturate(OutColor.rgb),Gamma);	
+	}
+	OutColor = RETURN_COLOR(OutColor);
+}

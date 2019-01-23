@@ -1,0 +1,59 @@
+USE [CrashReport]
+GO
+/****** Object:  Table [dbo].[ReportData]    Script Date: 02/27/2007 17:46:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[ReportData](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[ComputerName] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[UserName] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[GameName] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[LanguageExt] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[TimeOfCrash] [datetime] NOT NULL,
+	[BuildVer] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[ChangelistVer] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[CommandLine] [varchar](512) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[BaseDir] [varchar](260) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[EngineMode] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[TTP] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[Status] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[Summary] [varchar](256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[CrashDescription] [varchar](1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[CallStack] [varchar](3000) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[Selected] [bit] NULL CONSTRAINT [DF_ReportData_Selected]  DEFAULT ((0)),
+	[FixedChangelist] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+ CONSTRAINT [PK_ReportData] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX  = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+
+
+
+
+USE [CrashReport]
+GO
+/****** Object:  Table [dbo].[CoderUsers]    Script Date: 02/27/2007 17:47:09 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[CoderUsers](
+	[UserName] [varchar](50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+ CONSTRAINT [PK_CoderUsers] PRIMARY KEY CLUSTERED 
+(
+	[UserName] ASC
+)WITH (PAD_INDEX  = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF

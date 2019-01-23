@@ -1,0 +1,36 @@
+/*=============================================================================
+	TranslucencyPixelShader.usf: Shader for rendering unlit translucency
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+void Main(
+	FVertexFactoryInterpolants Interpolants,
+	float4	ScreenPosition	: TEXCOORD5,
+	float3	CameraVector	: TEXCOORD6,
+	half4	Fog				: TEXCOORD7,
+	out float4 OutColor		: COLOR0
+	)
+{
+	FMaterialParameters MaterialParameters = GetMaterialParameters(Interpolants);
+	CalcMaterialParameters(MaterialParameters,CameraVector,ScreenPosition);
+	
+
+	half Opacity = GetMaterialOpacity(MaterialParameters);
+	half3 Color = GetMaterialEmissive(MaterialParameters);
+
+#if MATERIALBLENDING_TRANSLUCENT
+	OutColor = BlendAlphaLerpWithSceneColor(half4(Color * Fog.a + Fog.rgb, Opacity), ScreenPosition);
+#elif MATERIALBLENDING_ADDITIVE
+	OutColor = BlendAddToSceneColor(half4(Color * Fog.a, Opacity), ScreenPosition);
+#elif MATERIALBLENDING_MODULATE
+	OutColor = BlendModulateWithSceneColor(half4(Color, Opacity), ScreenPosition);
+#else
+	OutColor = RETURN_COLOR( float4(Color,1) );
+#endif
+}
+
+

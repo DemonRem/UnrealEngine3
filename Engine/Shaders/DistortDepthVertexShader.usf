@@ -1,0 +1,25 @@
+/*=============================================================================
+	DistortionDepthVertexShader.usf: Vertex shader for rendering distortion depths
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+float4x4 ViewProjectionMatrix REGISTER(252);
+float4 CameraPosition;
+
+/** transform mesh as normal */
+void Main(
+	FVertexFactoryInput Input,
+	out FVertexFactoryInterpolants FactoryInterpolants,
+	out float4	Position		: POSITION,
+	out float4	ScreenPosition	: TEXCOORD5,
+	out float3	CameraVector	: TEXCOORD6
+	)
+{
+	float4	WorldPosition = VertexFactoryGetWorldPosition(Input,FactoryInterpolants);	
+	ScreenPosition = Position = MulMatrix(ViewProjectionMatrix,WorldPosition);
+	CameraVector = VertexFactoryWorldToTangentSpace(Input,CameraPosition.xyz - WorldPosition.xyz * CameraPosition.w);
+}

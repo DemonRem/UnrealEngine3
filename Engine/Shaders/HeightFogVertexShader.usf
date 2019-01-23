@@ -1,0 +1,38 @@
+/*=============================================================================
+	HeightFogVertexShader.usf: Scene fogging vertex shader.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+/** world space min z height */
+float4 FogMinHeight;
+/** world space max z height */
+float4 FogMaxHeight;
+/** transform from [-1,1] screen space to world */
+float4x4 ScreenToWorld;
+/** world position of camera */
+float3 CameraPosition;
+
+void Main(
+	in float2 InPosition : POSITION,
+	out float4 OutPosition : POSITION,
+	out float2 OutTexCoord : TEXCOORD0,
+	out float4 OutScreenVector : TEXCOORD1,
+	out float4 OutMinHeightRelativeZ : TEXCOORD2,
+	out float4 OutMaxHeightRelativeZ : TEXCOORD3,
+	out float4 OutDummy : TEXCOORD4
+	)
+{	
+	// screenspace position from vb
+	OutPosition = float4(InPosition,0,1);
+	// texture coord from vb
+	OutTexCoord = InPosition * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz;
+	// deproject to world space
+	OutScreenVector = MulMatrix(ScreenToWorld,float4(InPosition,1,0));	
+	OutDummy = MulMatrix(ScreenToWorld,float4(0,0,0,1));
+	// z distance from fog min to camera position
+	OutMinHeightRelativeZ = FogMinHeight - CameraPosition.z;
+	// z distance from fog max to camera position
+	OutMaxHeightRelativeZ = FogMaxHeight - CameraPosition.z;
+}

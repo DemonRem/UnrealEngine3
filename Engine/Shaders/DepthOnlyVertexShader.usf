@@ -1,0 +1,19 @@
+/*=============================================================================
+	DepthOnlyVertexShader.hlsl: Depth-only vertex shader.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+float4x4 ViewProjectionMatrix REGISTER(252);
+
+void Main(
+	FVertexFactoryInput Input,
+	out float4 OutPosition : POSITION,
+	out FVertexFactoryInterpolants OutFactoryInterpolants
+	)
+{
+	OutPosition = MulMatrix(ViewProjectionMatrix,VertexFactoryGetWorldPosition(Input,OutFactoryInterpolants));
+}

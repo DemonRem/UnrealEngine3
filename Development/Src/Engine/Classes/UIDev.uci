@@ -1,0 +1,2 @@
+/** to allow local placement of widgets still under development, keep this file checked out and change this define to placeable */
+`define DevPlaceable	notplaceable

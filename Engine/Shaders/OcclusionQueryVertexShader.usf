@@ -1,0 +1,16 @@
+/*=============================================================================
+	OcclusionQueryVertexShader.hlsl: Vertex shader for drawing occlusion queries.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+float4x4 ViewProjectionMatrix REGISTER(252);
+
+void Main(
+	in float4 InPosition : POSITION,
+	out float4 OutPosition : POSITION
+	)
+{
+	OutPosition = MulMatrix(ViewProjectionMatrix,InPosition);
+}

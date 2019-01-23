@@ -1,0 +1,107 @@
+/*=============================================================================
+	Definitions.usf: Defines undefined defines to 0 as Cg can't handle them.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#define GEMINI_TODO										0
+
+#ifndef MATERIAL_TWOSIDED
+#define	MATERIAL_TWOSIDED								0
+#endif
+
+#ifndef MATERIALBLENDING_MASKED
+#define MATERIALBLENDING_MASKED							0
+#endif
+
+#ifndef MATERIALBLENDING_TRANSLUCENT
+#define MATERIALBLENDING_TRANSLUCENT					0
+#endif
+
+#ifndef MATERIALBLENDING_ADDITIVE
+#define MATERIALBLENDING_ADDITIVE						0
+#endif
+
+#ifndef MATERIALBLENDING_MODULATE
+#define MATERIALBLENDING_MODULATE						0
+#endif
+
+#ifndef MATERIAL_LIGHTINGMODEL_CUSTOM
+#define	MATERIAL_LIGHTINGMODEL_CUSTOM					0
+#endif
+
+#ifndef MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL
+#define MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL			0
+#endif
+
+#ifndef MATERIAL_LIGHTINGMODEL_PHONG
+#define MATERIAL_LIGHTINGMODEL_PHONG					0
+#endif
+
+#ifndef MATERIAL_LIGHTINGMODEL_CUSTOM
+#define	MATERIAL_LIGHTINGMODEL_CUSTOM					0
+#endif
+
+#ifndef MATERIAL_LIGHTINGMODEL_UNLIT
+#define	MATERIAL_LIGHTINGMODEL_UNLIT					0
+#endif
+
+#ifndef OPAQUELAYER
+#define OPAQUELAYER										0
+#endif
+
+#ifndef WORLD_COORDS
+#define WORLD_COORDS									0
+#endif
+
+#ifndef STATICLIGHTING_TEXTUREMASK
+#define STATICLIGHTING_TEXTUREMASK						0
+#endif
+
+#ifndef STATICLIGHTING_VERTEXMASK
+#define STATICLIGHTING_VERTEXMASK						0
+#endif
+
+#ifndef VERTEX_LIGHTMAP
+#define VERTEX_LIGHTMAP									0
+#endif
+
+#ifndef TEXTURE_LIGHTMAP
+#define TEXTURE_LIGHTMAP								0
+#endif
+
+#ifndef COMPILER_CG
+#define COMPILER_CG										0
+#endif
+
+#ifndef COMPILER_HLSL
+#define COMPILER_HLSL									0
+#endif
+
+#ifndef PS3
+#define PS3												0
+#endif
+
+#ifndef XBOX
+#define XBOX											0
+#endif
+
+#ifndef NEEDS_LIGHTMAP_COORDINATE
+#define NEEDS_LIGHTMAP_COORDINATE						0
+#endif
+
+#ifndef SUPPORTS_DEPTH_TEXTURES
+#define SUPPORTS_DEPTH_TEXTURES							0
+#endif
+
+#ifndef MANUAL_FP_BLEND
+#define MANUAL_FP_BLEND									0
+#endif
+
+#if XBOX
+#define UNROLL											[unroll]
+#define ISOLATE											[isolate]
+#else
+#define UNROLL
+#define ISOLATE
+#endif
+

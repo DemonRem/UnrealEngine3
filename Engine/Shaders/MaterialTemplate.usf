@@ -1,0 +1,266 @@
+/**
+ *
+ * Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+ */
+
+
+/*
+	Defined by the C++ code:
+		MATERIALBLENDING_SOLID
+		MATERIALBLENDING_MASKED
+		MATERIALBLENDING_TRANSLUCENT
+		MATERIALBLENDING_ADDITIVE
+		MATERIALBLENDING_MODULATE
+
+		MATERIAL_TWOSIDED
+		MATERIAL_LIGHTINGMODEL_PHONG
+		MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL
+		MATERIAL_LIGHTINGMODEL_UNLIT
+		MATERIAL_LIGHTINGMODEL_CUSTOM
+*/
+
+#define NUM_MATERIAL_TEXCOORDS %u
+
+#if WORLD_COORDS
+float3x3 LocalToWorldMatrix;
+float3x3 WorldToViewMatrix;
+#endif
+
+struct FMaterialParameters
+{
+#if NUM_MATERIAL_TEXCOORDS
+	float2 TexCoords[NUM_MATERIAL_TEXCOORDS];
+#endif
+	float4	VertexColor;
+	float3	TangentNormal,
+			TangentReflectionVector,
+			TangentCameraVector;
+	half3	TangentLightVector;
+	float4	ScreenPosition;
+#if WORLD_COORDS
+	float3x3	TangentBasisInverse;
+#endif
+};
+
+// Uniform material expressions.
+%s
+
+float DepthBiasedAlpha( FMaterialParameters Parameters, float InAlpha, float InBias, float InBiasScale )
+{
+	float Result;
+	half SceneDepth = PreviousDepth(Parameters.ScreenPosition);
+	float DepthBias = (1.0 - InBias) * InBiasScale;
+	float BlendAmt = saturate((SceneDepth - Parameters.ScreenPosition.w) / max(DepthBias,0.001));
+	Result = InAlpha * BlendAmt;
+	return Result;
+}
+
+float3 DepthBiasedBlend( FMaterialParameters Parameters, float3 InColor, float InBias, float InBiasScale )
+{
+	float3 Result;	
+	float3 SceneColor = PreviousLighting(Parameters.ScreenPosition).rgb;
+	half SceneDepth = PreviousDepth(Parameters.ScreenPosition);
+	float DepthBias = (1.0 - InBias) * InBiasScale;
+	
+	float BlendAmt = saturate((SceneDepth - Parameters.ScreenPosition.w) / max(DepthBias,0.001));
+	Result = lerp( SceneColor, InColor * 1.000001, BlendAmt );
+	
+	return Result;
+}
+
+half3 GetMaterialNormal(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+half3 GetMaterialEmissive(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+half3 GetMaterialDiffuseColor(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+half3 GetMaterialSpecularColor(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+half GetMaterialSpecularPower(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+half GetMaterialOpacity(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+#if MATERIALBLENDING_MASKED
+float GetMaterialMask(FMaterialParameters Parameters)
+{
+	return %s - %s;
+}
+#endif
+
+float2 GetMaterialDistortion(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+float3 GetMaterialTwoSidedLightingMask(FMaterialParameters Parameters)
+{
+	return %s;
+}
+
+#if MATERIAL_LIGHTINGMODEL_CUSTOM
+float3 GetMaterialCustomLighting(FMaterialParameters Parameters)
+{
+	return %s;
+}
+#endif
+
+float3 GetMaterialPointLightTransfer(FMaterialParameters Parameters,float3 WorldLightVector,half FalloffExponent)
+{
+	float3	TwoSidedLighting = 0;
+	float3	TwoSidedLightingMask = 0;
+	TwoSidedLightingMask = GetMaterialTwoSidedLightingMask(Parameters);
+	TwoSidedLighting = TwoSidedLightingMask * GetMaterialDiffuseColor(Parameters) * RadialAttenuation(WorldLightVector,FalloffExponent);
+
+	float3	Lighting = 0;
+#if MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL
+	Lighting = GetMaterialDiffuseColor(Parameters) * RadialAttenuation(WorldLightVector,FalloffExponent);
+#elif MATERIAL_LIGHTINGMODEL_PHONG
+	Lighting = PointLightPhong(
+		GetMaterialDiffuseColor(Parameters),
+		GetMaterialSpecularColor(Parameters),
+		GetMaterialSpecularPower(Parameters),
+		Parameters.TangentLightVector,
+		Parameters.TangentCameraVector,
+		Parameters.TangentNormal,
+		Parameters.TangentReflectionVector
+		) *
+		RadialAttenuation(WorldLightVector,FalloffExponent);
+#elif MATERIAL_LIGHTINGMODEL_CUSTOM
+	Lighting = GetMaterialCustomLighting(Parameters) * RadialAttenuation(WorldLightVector,FalloffExponent);
+#endif
+
+	return lerp(Lighting,TwoSidedLighting,TwoSidedLightingMask);
+}
+
+float3 GetMaterialHemisphereLightTransfer(FMaterialParameters Parameters,float3 SkyVector)
+{
+	float3	TwoSidedLighting = 0;
+	float3	TwoSidedLightingMask = 0;
+	TwoSidedLightingMask = GetMaterialTwoSidedLightingMask(Parameters);
+	TwoSidedLighting = TwoSidedLightingMask * GetMaterialDiffuseColor(Parameters);
+
+	float3	Lighting = 0;
+#if MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL
+	Lighting = GetMaterialDiffuseColor(Parameters);
+#elif MATERIAL_LIGHTINGMODEL_PHONG
+	Lighting = HemisphereLightPhong(GetMaterialDiffuseColor(Parameters),SkyVector,Parameters.TangentNormal);
+#elif MATERIAL_LIGHTINGMODEL_CUSTOM
+	Lighting = 0;//GetMaterialCustomLighting(Parameters);
+#endif
+
+	return lerp(Lighting,TwoSidedLighting,TwoSidedLightingMask);
+}
+
+float3 GetMaterialHemisphereLightTransferFull(FMaterialParameters Parameters,float3 SkyVector, float3 UpperColor, float3 LowerColor)
+{
+	float3	TwoSidedLighting = 0;
+	float3	TwoSidedLightingMask = 0;
+	TwoSidedLightingMask = GetMaterialTwoSidedLightingMask(Parameters);
+	TwoSidedLighting = TwoSidedLightingMask * GetMaterialDiffuseColor(Parameters);
+
+	float3	UpperLighting = 0;
+	float3  LowerLighting = 0;
+
+#if MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL
+	UpperLighting = GetMaterialDiffuseColor(Parameters);
+	LowerLighting = GetMaterialDiffuseColor(Parameters);	
+#elif MATERIAL_LIGHTINGMODEL_PHONG
+	//UpperLighting = HemisphereLightPhong(GetMaterialDiffuseColor(Parameters),SkyVector,Parameters.TangentNormal);
+	//LowerLighting = HemisphereLightPhong(GetMaterialDiffuseColor(Parameters),-SkyVector,Parameters.TangentNormal);
+
+	float  NormalContribution  = dot(SkyVector,Parameters.TangentNormal);
+	float2 ContributionWeights = pow(float2(0.5, 0.5f) + float2(0.5f, -0.5f) * NormalContribution, 2);
+
+	UpperLighting = GetMaterialDiffuseColor(Parameters) * ContributionWeights[0];
+	LowerLighting = GetMaterialDiffuseColor(Parameters) * ContributionWeights[1];
+#elif MATERIAL_LIGHTINGMODEL_CUSTOM
+	UpperLighting = 0;//GetMaterialCustomLighting(Parameters);
+	LowerLighting = 0;//GetMaterialCustomLighting(Parameters);
+#endif
+
+	return lerp(UpperLighting,TwoSidedLighting,TwoSidedLightingMask) * UpperColor +
+	       lerp(LowerLighting,TwoSidedLighting,TwoSidedLightingMask) * LowerColor;
+}
+
+#if MATERIALBLENDING_TRANSLUCENT
+	void GetMaterialClipping(FMaterialParameters Parameters) { clip(GetMaterialOpacity(Parameters) - 1.0 / 255.0); }
+	#if OPAQUELAYER
+		float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendBase(ScreenPosition,Color); }
+		float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendAdd(ScreenPosition,Color); }
+	#else
+		float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return TranslucentBlendBase(ScreenPosition,Color,GetMaterialDistortion(Parameters),GetMaterialOpacity(Parameters)); }
+		float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return TranslucentBlendAdd(ScreenPosition,Color,GetMaterialOpacity(Parameters)); }
+	#endif
+#elif MATERIALBLENDING_ADDITIVE
+	void GetMaterialClipping(FMaterialParameters Parameters) { clip(GetMaterialOpacity(Parameters) - 1.0 / 255.0); }
+	#if OPAQUELAYER
+		float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendBase(ScreenPosition,Color); }
+		float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendAdd(ScreenPosition,Color); }
+	#else
+		float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return AdditiveBlendBase(ScreenPosition,Color,GetMaterialDistortion(Parameters),GetMaterialOpacity(Parameters)); }
+		float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return AdditiveBlendAdd(ScreenPosition,Color,GetMaterialOpacity(Parameters)); }
+	#endif
+#elif MATERIALBLENDING_MODULATE
+	void GetMaterialClipping(FMaterialParameters Parameters) { clip(GetMaterialOpacity(Parameters) - 1.0 / 255.0); }
+	#if OPAQUELAYER
+		float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendBase(ScreenPosition,Color); }
+		float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendAdd(ScreenPosition,Color); }
+	#else
+		float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return ModulateBlendBase(ScreenPosition,Color,GetMaterialDistortion(Parameters)); }
+		float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return ModulateBlendAdd(ScreenPosition,Color); }
+	#endif
+#else
+	#if MATERIALBLENDING_MASKED
+		void GetMaterialClipping(FMaterialParameters Parameters) { clip(GetMaterialMask(Parameters)); }
+	#else
+		void GetMaterialClipping(FMaterialParameters Parameters) { return; }
+	#endif
+	float4 GetMaterialBlendBase(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendBase(ScreenPosition,Color); }
+	float4 GetMaterialBlendAdd(FMaterialParameters Parameters,float4 ScreenPosition,float3 Color) { GetMaterialClipping(Parameters); return OpaqueBlendAdd(ScreenPosition,Color); }
+#endif
+
+/** vectors needed for user material shaders */
+void CalcMaterialParameters(in out FMaterialParameters Parameters,float3 CameraVector,float4 ScreenPosition,half3 LightVector = 0)
+{
+	Parameters.ScreenPosition = ScreenPosition;
+	Parameters.TangentCameraVector = normalize(CameraVector);
+	Parameters.TangentLightVector = normalize((half3)LightVector);
+	Parameters.TangentNormal = normalize(GetMaterialNormal(Parameters));
+#if MATERIAL_TWOSIDED
+	Parameters.TangentNormal *= TwoSidedSign;
+#endif
+	Parameters.TangentReflectionVector = -Parameters.TangentCameraVector + Parameters.TangentNormal * dot(Parameters.TangentNormal,Parameters.TangentCameraVector) * 2.0;
+}
+
+/** Create the inverse of the tangent basis */
+float3x3 CalcInvTangentBasis( float4 Normal, float3 Tangent )
+{
+	// determinant of original tangent basis passed down in w component
+	float Det = (Normal.w - 0.5) * 2;
+	// scale bias from [0,1] to [-1,1] and normalize normal vector
+	float3 NormalV = normalize((float3(Normal.xyz) - 0.5) * 2);
+	// scale bias from [0,1] to [-1,1] and normalize tangent vector
+	float3 TangentV = normalize((Tangent - 0.5) * 2);
+	// flip binormal based on determinant of tangent basis
+	float3 BinormalV = normalize(cross(NormalV,TangentV) * Det);
+	// 3x3 tangent basis matrix	
+	return transpose(float3x3(TangentV, BinormalV, NormalV));
+}

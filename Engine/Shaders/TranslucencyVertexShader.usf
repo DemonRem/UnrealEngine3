@@ -1,0 +1,70 @@
+/*=============================================================================
+	TranslucencyVertexShader.usf: Shader for rendering unlit translucency
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+float4x4	ViewProjectionMatrix;
+float4		CameraPosition;
+
+static const float FLT_EPSILON = 0.001f;
+
+/** calculate ratio of distance between world z height and relative fog height */
+float4 LinePlaneIntersection(float3 RelativeB,float4 RelativeZ)
+{
+	return RelativeZ / (abs(RelativeB.z) <= FLT_EPSILON ? FLT_EPSILON : RelativeB.z);
+}
+/** used ot scale fog layer distance */
+half4	FogDistanceScale;
+/** any layer distance beyond this is clamped to full fog */
+half4	FogExtinctionDistance;
+/** lighting contribution from fog */
+half3	FogInScattering[4];
+/** distance at which fog will start */
+half4	FogStartDistance;
+/** world space min z height */
+float4 FogMinHeight;
+/** world space max z height */
+float4 FogMaxHeight;
+
+void Main(
+	FVertexFactoryInput Input,
+	out FVertexFactoryInterpolants FactoryInterpolants,
+	out float4	Position		: POSITION,
+	out float4	ScreenPosition	: TEXCOORD5,
+	out float3	CameraVector	: TEXCOORD6,
+	out half4	Fog				: TEXCOORD7
+	)
+{
+	float4	WorldPosition = VertexFactoryGetWorldPosition(Input,FactoryInterpolants);
+
+	float3	WorldVector = WorldPosition.xyz - CameraPosition.xyz;
+	float	Distance = length(WorldVector);
+
+			// maxfog - camera / z height
+	float4	MinHeightPercent = LinePlaneIntersection(WorldVector,FogMinHeight - CameraPosition.z);
+			// minfog - camera / z height
+	float4	MaxHeightPercent = LinePlaneIntersection(WorldVector,FogMaxHeight - CameraPosition.z);
+			// fog layer distance based on % over max/min fog heights
+	half4	LayerDistance = max(half4(0,0,0,0),half4(Distance,Distance,Distance,Distance)-FogStartDistance) * abs(saturate(MaxHeightPercent) - saturate(MinHeightPercent));
+
+			// clamp anything beyond the extinction distance to 0 scattering
+			// scattering falloff is exponential based on normalized layer distance
+	half4	Scattering = LayerDistance < FogExtinctionDistance ? exp2(FogDistanceScale * LayerDistance) : half4(0,0,0,0);			
+			// ratio of the inscattering color to be used
+	half4	InScattering = Scattering - 1;
+
+	Fog.rgb = 0;
+	Fog.a = 1;
+	for(int LayerIndex = 0;LayerIndex < 4;LayerIndex++)
+	{
+		Fog *= Scattering[LayerIndex];
+		Fog.rgb += InScattering[LayerIndex] * FogInScattering[LayerIndex];
+	}
+
+	ScreenPosition = Position = MulMatrix(ViewProjectionMatrix,WorldPosition);
+	CameraVector = VertexFactoryWorldToTangentSpace(Input,CameraPosition.xyz - WorldPosition.xyz * CameraPosition.w);
+}

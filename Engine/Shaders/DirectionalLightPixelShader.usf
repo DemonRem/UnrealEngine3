@@ -1,0 +1,46 @@
+/*=============================================================================
+	DirectionalLightPixelShader.hlsl: Directional light pixel shader.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#define NEEDS_LIGHTMAP_COORDINATE STATICLIGHTING_TEXTUREMASK
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+half3 LightColor;
+sampler2D ShadowTexture;
+
+void Main(
+	in float4 Position : POSITION,
+	in FVertexFactoryInterpolants FactoryInterpolants,
+	in float3 TangentLightVector : TEXCOORD4,
+	in float4 WorldLightVector : TEXCOORD5,
+	in float3 CameraVector : TEXCOORD6,
+	in float4 ScreenPosition : TEXCOORD7,
+	out float4 OutColor : COLOR0
+	)
+{
+	FMaterialParameters MaterialParameters = GetMaterialParameters(FactoryInterpolants);
+	CalcMaterialParameters(MaterialParameters,CameraVector,ScreenPosition,TangentLightVector);
+
+#if STATICLIGHTING_TEXTUREMASK
+	half	LightMask = Square(tex2D(ShadowTexture,GetLightMapCoordinate(FactoryInterpolants)).r);
+#elif STATICLIGHTING_VERTEXMASK
+	half	LightMask = WorldLightVector.w;
+#else
+	half	LightMask = 1;
+#endif
+
+	OutColor = GetMaterialBlendAdd(
+		MaterialParameters,
+		ScreenPosition,
+		GetLightAttenuation(ScreenPosition) *
+		LightMask *
+		GetMaterialPointLightTransfer(MaterialParameters,WorldLightVector.xyz,0) *
+		LightColor
+		);
+		
+	OutColor = BlendAddToSceneColor(OutColor, ScreenPosition);
+}

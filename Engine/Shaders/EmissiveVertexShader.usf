@@ -1,0 +1,53 @@
+/*=============================================================================
+	EmissiveVertexShader.hlsl: Emissive vertex shader
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#define NEEDS_LIGHTMAP_COORDINATE TEXTURE_LIGHTMAP
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+float4x4 ViewProjectionMatrix REGISTER(252);
+float4 CameraPosition;
+
+#if VERTEX_LIGHTMAP
+float3 LightMapScale[NUM_LIGHTMAP_COEFFICIENTS];
+#endif
+
+void Main(
+	FVertexFactoryInput Input,
+	out float4 Position : POSITION,
+	out FVertexFactoryInterpolants FactoryInterpolants,
+#if VERTEX_LIGHTMAP
+	float4 InLightMapA : TEXCOORD5,
+	float4 InLightMapB : TEXCOORD6,
+	float4 InLightMapC : TEXCOORD7,
+	out float3 LightMapA : TEXCOORD2,
+	out float3 LightMapB : TEXCOORD3,
+	out float3 LightMapC : TEXCOORD4,
+#endif
+	out float4 ScreenPosition : TEXCOORD5,
+	out float3 CameraVector : TEXCOORD6,
+	out float3 SkyVector : TEXCOORD7
+	)
+{
+	float4	WorldPosition = VertexFactoryGetWorldPosition(Input,FactoryInterpolants);
+	ScreenPosition = Position = MulMatrix(ViewProjectionMatrix,WorldPosition);
+	CameraVector = VertexFactoryWorldToTangentSpace(Input,CameraPosition.xyz - WorldPosition.xyz * CameraPosition.w);
+	SkyVector = VertexFactoryWorldToTangentSpace(Input,float3(0,0,1));
+
+	// The vertex light-map inputs are FColors, but are read as UBYTE4s on PS3.  Swizzle them appropriately.
+#if PS3
+#define LIGHTMAP_COMPONENT_SWIZZLE .gba
+#else
+#define LIGHTMAP_COMPONENT_SWIZZLE .rgb
+#endif
+	
+#if VERTEX_LIGHTMAP
+	LightMapA = pow( InLightMapA LIGHTMAP_COMPONENT_SWIZZLE, 2.2 ) * LightMapScale[0];
+	LightMapB = pow( InLightMapB LIGHTMAP_COMPONENT_SWIZZLE, 2.2 ) * LightMapScale[1];
+	LightMapC = pow( InLightMapC LIGHTMAP_COMPONENT_SWIZZLE, 2.2 ) * LightMapScale[2];
+#endif
+}

@@ -1,0 +1,155 @@
+;----------------------------------------------------------------------------
+; Descriptions
+;----------------------------------------------------------------------------
+; Strings that are used in place of the class name.
+; Returned by calling UClass::GetDescription
+;----------------------------------------------------------------------------
+[Objects]
+;----------------------------------------------------------------------------
+; Sound
+;----------------------------------------------------------------------------
+SoundNodeAttenuation="Attenuation"
+SoundNodeDelay="Delay"
+SoundNodeConcatenator="Concatenator"
+SoundNodeDistanceCrossFade="Distance CrossFade"
+SoundNodeLooping="Looping"
+SoundNodeMature="Sound Node Mature"
+SoundNodeMixer="Mixer"
+SoundNodeModulator="Modulator"
+SoundNodeModulatorContinuous="Continuous Modulator"
+SoundNodeOscillator="Oscillator"
+SoundNodeRandom="Random"
+
+;----------------------------------------------------------------------------
+;----------------------------------------------------------------------------
+; Particles
+;----------------------------------------------------------------------------
+;----------------------------------------------------------------------------
+; Base modules
+;----------------------------------------------------------------------------
+ParticleModuleAccelerationBase="Acceleration"
+ParticleModuleAttractorBase="Attraction"
+ParticleModuleBeamBase="Beam"
+ParticleModuleCollisionBase="Collision"
+ParticleModuleColorBase="Color"
+ParticleModuleKillBase="Kill"
+ParticleModuleLifetimeBase="Lifetime"
+ParticleModuleLocationBase="Location"
+ParticleModuleOrbitBase="Orbit"
+ParticleModuleOrientationBase="Orientation"
+ParticleModuleParameterBase="Parameter"
+ParticleModuleRotationBase="Rotation"
+ParticleModuleRotationRateBase="RotationRate"
+ParticleModuleSizeBase="Size"
+ParticleModuleSpawnBase="Spawn"
+ParticleModuleSubUVBase="SubUV"
+ParticleModuleTrailBase="Trail"
+ParticleModuleUberBase="Uber"
+ParticleModuleVelocityBase="Velocity"
+;----------------------------------------------------------------------------
+; Implemented modules
+;----------------------------------------------------------------------------
+ParticleModuleAcceleration="Acceleration"
+ParticleModuleAccelerationOverLifetime="Acceleration/Life"
+ParticleModuleAttractorParticle="Particle Attractor"
+ParticleModuleAttractorPoint="Point Attractor"
+ParticleModuleAttractorLine="Line Attractor"
+ParticleModuleBeamMultiTarget="MultiTarget"
+ParticleModuleBeamNoise="Noise"
+ParticleModuleBeamSource="Source"
+ParticleModuleBeamTarget="Target"
+ParticleModuleCollision="Collision"
+ParticleModuleColor="Initial Color"
+ParticleModuleColorByParameter="Parameter Color"
+ParticleModuleColorOverLife="Color Over Life"
+ParticleModuleColorScaleOverLife="Scale Color/Life"
+ParticleModuleKillBox="Kill Box"
+ParticleModuleKillHeight="Kill Height"
+ParticleModuleLifetime="Lifetime"
+ParticleModuleLocation="Initial Location"
+ParticleModuleLocationActor="Actor"
+ParticleModuleLocationDirect="Direct Location"
+ParticleModuleLocationEmitter="Emitter InitLoc"
+ParticleModuleLocationEmitterDirect="Emitter DirectLoc"
+ParticleModuleLocationPrimitiveCylinder="Cylinder"
+ParticleModuleLocationPrimitiveSphere="Sphere"
+ParticleModuleMeshRotation="Init Mesh Rotation"
+ParticleModuleMeshRotationRate="Init Mesh RotRate"
+ParticleModuleOrbit="Orbit"
+ParticleModuleOrbitOffset="Orbit Offset"
+ParticleModuleOrbitRotation="Orbit Rotate"
+ParticleModuleOrbitRotationRate="Orbit RotationRate"
+ParticleModuleOrientationAxisLock="Lock Axis"
+ParticleModuleParameterInitialColor="Init Color (param)"
+ParticleModuleRotation="Initial Rotation"
+ParticleModuleRotationOverLifetime="Rotation/Life"
+ParticleModuleRotationRate="Initial RotRate"
+ParticleModuleRotationRateMultiplyLife="RotRate/Life"
+ParticleModuleSize="Initial Size"
+ParticleModuleSizeMultiplyLife="Size By Life"
+ParticleModuleSizeMultiplyVelocity="Size By Velocity"
+ParticleModuleSizeScale="Size Scale"
+ParticleModuleSpawnPerUnit="Spawn PerUnit"
+ParticleModuleSubUV="SubImage Index"
+ParticleModuleSubUVDirect="SubUV Direct"
+ParticleModuleSubUVSelect="SubUV Select"
+ParticleModuleTrailSource="Source"
+ParticleModuleTrailSpawn="Spawn"
+ParticleModuleTrailTaper="Taper"
+ParticleModuleTypeDataBeam="Beam Data"
+ParticleModuleTypeDataBeam2="Beam Data"
+ParticleModuleTypeDataFlameThrower="Flame Thrower"
+ParticleModuleTypeDataMesh="Mesh Data"
+ParticleModuleTypeDataSubUV="SubUV Data"
+ParticleModuleTypeDataTrail="Trail Data"
+ParticleModuleTypeDataTrail2="Trail Data"
+ParticleModuleUberLTISIVCL="UberLTISIVCL"
+ParticleModuleUberLTISIVCLIL="UberLTISIVCLIL"
+ParticleModuleUberLTISIVCLILIRSSBLIRR="UberLTISIVCLILIRSSBLIRR"
+ParticleModuleVelocity="Initial Velocity"
+ParticleModuleVelocityInheritParent="Inherit Parent Vel."
+ParticleModuleVelocityOverLifetime="Velocity/Life"
+;----------------------------------------------------------------------------
+;----------------------------------------------------------------------------
+;InterpTracks
+;----------------------------------------------------------------------------
+InterpTrackDirector="Director Track"
+InterpTrackEvent="Event Track"
+InterpTrackFade="Fade Track"
+InterpTrackFloatProp="Float Property Track"
+InterpTrackVectorProp="Vector Property Track"
+InterpTrackColorProp="Color Property Track"
+InterpTrackMove="Movement Track"
+InterpTrackSlomo="Slomo Track"
+InterpTrackAnimControl="Anim Control Track"
+InterpTrackSound="Sound Track"
+InterpTrackFloatParticleParam="Float Particle Param Track"
+InterpTrackFloatMaterialParam="Float Material Param Track"
+InterpTrackVectorMaterialParam="Vector Material Param Track"
+InterpTrackBlurAlpha="Bloom Alpha"
+InterpTrackColorScale="Color Scale"
+InterpTrackFaceFX="FaceFX Track"
+InterpTrackToggle="Particle Toggle Track"
+
+;----------------------------------------------------------------------------
+; User Interface
+;----------------------------------------------------------------------------
+UILabel="Label"
+UIImage="Image"
+UIButton="Button"
+UILabelButton="Label Button"
+UICheckbox="Checkbox"
+UIEditBox="Editbox"
+
+UIStyle_Text="Text"
+UIStyle_Image="Image"
+UIStyle_Combo="Combo"
+
+UIState_Enabled="Enabled"
+UIState_Disabled="Disabled"
+UIState_Focused="Focused"
+UIState_Active="Active"
+UIState_Pressed="Pressed"
+UIState_TargetedTab="Targeted (Tab Button)"
+
+;----------------------------------------------------------------------------

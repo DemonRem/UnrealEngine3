@@ -1,0 +1,2377 @@
+<!--
+Copyright 1998-2007 Epic Games, Inc. All Rights Reserved.
+
+This is our build.xml file that Ant uses to run various targets (e.g. building, smoke testing, running commandlets, etc).
+
+
+ devenv /build debug /project proj1 myapp.sln
+
+<exec ... >
+  <env key="PATH" path="${java.library.path}:${basedir}/bin"/>
+</exec>
+
+NEXT TODO: refactor so we can pass in vars / set vars some how.   Not certain how to do this with the depends mechanic
+
+-->
+
+<project name="UnrealEngine3" default="UE3BuildTypes" basedir=".">
+    <description>
+        Unreal Engine build.xml
+    </description>
+
+  <!-- import tasks that we will utilize -->
+  <taskdef name="vc7" classname="net.sourceforge.jtaskdefs.VC7"/>
+  <taskdef name="text2xml" classname="com.gb.bci.ant.taskdefs.TextToXml"/>
+  <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+
+  <!-- set localMachine properties for this build (This is useful for setting properties that you need locally -->
+  <property file="..\Build\ContinuousIntegration\localMachine.properties"/>
+
+  <!-- set global properties for this build -->
+  <property file="..\Build\ContinuousIntegration\global.properties"/>
+
+  <!-- this will grab the values from the .properties file and inline them here -->
+  <property file="build.properties"/>
+
+
+  <property name="VS_DIR" value="C:\Program Files\Microsoft Visual Studio 8\Common7\IDE"/>
+<!--
+  <property name="compileOptions.logDir" value="C:\continuousIntegration\checkout\UE3_codeBuilder\UnrealEngine3\AutomatedBuildFilez"/>
+  <property name="compileOptions.logDir" value="../../AutomatedBuildFilez"/>
+-->
+  <property name="compileOptions.logDir" value="${unrealEngine3.src.dir}\..\..\AutomatedBuildFilez"/>
+
+
+
+  <property name="compileOptions.projectName" value="UnrealEngine3"/>
+
+
+
+  <property name="exampleGame.log.dotU" value="ExampleGameDotUMake"/>
+  <property name="exampleGame.log.smoketest.server" value="ExampleGameSmokeTest_Server"/>
+  <property name="exampleGame.log.smoketest.checkNativeClassSizes" value="ExampleGameSmokeTest_CheckNativeClassSizes"/>
+  <property name="exampleGame.log.loadPackages" value="ExampleGameLoadPackages"/>
+  <property name="exampleGame.log.xenonCooking" value="ExampleGameXenonCooking"/>
+  <property name="exampleGame.log.ps3Cooking" value="ExampleGamePS3Cooking"/>
+  <property name="exampleGame.log.pcCooking" value="ExampleGamePCCooking"/>
+
+  <property name="gearGame.log.dotU" value="GearGameDotUMake"/>
+  <property name="gearGame.log.smoketest.server" value="GearGameSmokeTest_Server"/>
+  <property name="gearGame.log.smoketest.checkNativeClassSizes" value="GearGameSmokeTest_CheckNativeClassSizes"/>
+  <property name="gearGame.log.loadPackages" value="GearGameLoadPackages"/>
+  <property name="gearGame.log.xenonCooking" value="GearGameXenonCooking"/>
+  <property name="gearGame.log.ps3Cooking" value="GearGamePS3Cooking"/>
+  <property name="gearGame.log.pcCooking" value="GearGamePCCooking"/>
+
+  <property name="ut2007.log.dotU" value="UT2007DotUMake"/>
+  <property name="ut2007.log.smoketest.server" value="UT2007SmokeTest_Server"/>
+  <property name="ut2007.log.smoketest.checkNativeClassSizes" value="UT2007SmokeTest_CheckNativeClassSizes"/>
+  <property name="ut2007.log.loadPackages" value="UT2007GameLoadPackages"/>
+  <property name="ut2007.log.xenonCooking" value="UT2007XenonCooking"/>
+  <property name="ut2007.log.ps3Cooking" value="UT2007PS3Cooking"/>
+  <property name="ut2007.log.pcCooking" value="UT2007PCCooking"/>
+  <property name="ut2007.log.benchmark.fps" value="UT2007BenchmarkFPS"/>
+
+  <property name="warfare.log.dotU" value="WarfareDotUMake"/>
+  <property name="warfare.log.smoketest.server" value="WarfareSmokeTest_Server"/>
+  <property name="warfare.log.smoketest.checkNativeClassSizes" value="WarfareSmokeTest_CheckNativeClassSizes"/>
+  <property name="warfare.log.loadPackages" value="WarfareLoadPackages"/>
+  <property name="warfare.log.xenonCooking" value="WarfareXenonCooking"/>
+  <property name="warfare.log.ps3Cooking" value="WarfarePS3Cooking"/>
+  <property name="warfare.log.pcCooking" value="WarfarePCCooking"/>
+  <property name="warfare.log.benchmark.fps" value="WarfareBenchmarkFPS"/>
+
+  <property name="dotU.commandLineParams" value="make -intermediate -full -unattended -warningsaserrors"/>
+  <property name="dotU.commandLineParams.final_release" value="make -intermediate -full -unattended -final_release"/>
+
+  <property name="dotU.loadpackages.commandLineParams" value="run editor.LoadPackageCommandlet -all -unattended -treatloadwarningsaserrors"/>
+
+
+  <property name="Xbox360.cooking.commandLineParams" value="run editor.cookpackages -platform=xenon -nopause -unattended -alwaysrecookscript -alwaysrecookmaps"/>
+  <property name="Xbox360.cookingFull.commandLineParams" value="run editor.cookpackages -platform=xenon -nopause -unattended -full"/>
+
+  <property name="PS3.cooking.commandLineParams" value="run editor.cookpackages -platform=ps3 -nopause -unattended -alwaysrecookscript -alwaysrecookmaps"/>
+  <property name="PS3.cookingFull.commandLineParams" value="run editor.cookpackages -platform=ps3 -nopause -unattended -full"/>
+
+  <property name="PC.cooking.commandLineParams" value="run editor.cookpackages -platform=pc -nopause -unattended -alwaysrecookscript -alwaysrecookmaps"/>
+  <property name="PC.cookingFull.commandLineParams" value="run editor.cookpackages -platform=pc -nopause -unattended -full"/>
+
+
+
+ <!-- -rebuild -->
+
+
+
+  <property name="smoketest.commandLineParams.server" value="run engine.smokeTestCommandlet -unattended -SERVER"/>
+  <property name="smoketest.commandLineParams.checkNativeClassSizes" value="run engine.smokeTestCommandlet -unattended -CHECK_NATIVE_CLASS_SIZES"/>
+
+  <property name="smoketest.timeoutPeriod" value="600000"/> <!-- 600 seconds -->
+
+  <property name="benchmark.timeoutPeriod" value="420000"/> <!-- 7 minutes -->
+
+ <property name="benchmark.numRuns" value="3"/> 
+
+<property file="..\Build\ContinuousIntegration\utGamePerfMapListing.properties"/>
+
+
+  <target name="init">
+    <tstamp/> <!-- Create the time stamp -->
+    <mkdir dir="${compileOptions.logDir}"/> <!-- AutomatedBuildFilez dir -->
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/CookedPC"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/CookedPS3"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/CookedXenon"/>
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/CookedPC"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/CookedPS3"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/CookedXenon"/>
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/CookedPC"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/CookedPS3"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/CookedXenon"/>
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/CookedPC"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/CookedPS3"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/CookedXenon"/>
+
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/Config"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/Logs"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/Script"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../ExampleGame/ScriptFinalRelease"/>
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/Config"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/Logs"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/Script"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../GearGame/ScriptFinalRelease"/>
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/Config"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/Logs"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/Script"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../UTGame/ScriptFinalRelease"/>
+
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/Config"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/Logs"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/Script"/>
+    <mkdir dir="${unrealEngine3.binaries.dir}/../WarGame/ScriptFinalRelease"/>
+
+  </target>
+
+  <!-- look at the various UE3_<type>.xml for the syncing -->
+  <target name="sync" depends="init">
+
+  </target>
+
+
+  <target name="cleanArtifactsDir">
+
+     <delete includeEmptyDirs="true" failonerror="false">
+        <fileset dir="${compileOptions.logDir}" defaultexcludes="no">
+              <include name="**/*" />
+        </fileset>
+     </delete>
+
+  </target>
+
+
+  <target name="cleanIniFiles" depends=""
+        description="delete all of the .ini files" >
+
+ <delete>
+    <fileset dir="../../ExampleGame/Config" >
+       <include name="Example*.ini"/>
+    </fileset>
+  </delete>
+
+  <delete>
+    <fileset dir="../../GearGame/Config" >
+       <include name="Gear*.ini"/>
+    </fileset>
+  </delete>
+
+ <delete>
+    <fileset dir="../../UTGame/Config" >
+       <include name="UT*.ini"/>
+    </fileset>
+  </delete>
+
+  <delete>
+    <fileset dir="../../WarGame/Config" >
+       <include name="War*.ini"/>
+    </fileset>
+  </delete>
+
+  </target>
+
+
+
+
+  <target name="cleanDotUDir" depends=""
+        description="delete all of the .u files" >
+
+ <delete>
+    <fileset dir="../../ExampleGame/Script" >
+       <include name="*.u"/>
+    </fileset>
+  </delete>
+
+
+ <delete>
+    <fileset dir="../../GearGame/Script" >
+       <include name="*.u"/>
+    </fileset>
+  </delete>
+
+
+ <delete>
+    <fileset dir="../../UTGame/Script" >
+       <include name="*.u"/>
+    </fileset>
+  </delete>
+
+  <delete>
+    <fileset dir="../../WarGame/Script" >
+       <include name="*.u"/>
+    </fileset>
+  </delete>
+
+  </target>
+
+
+ <target name="cleanLogDir" depends=""
+        description="delete all of the old log files" >
+
+    <delete>
+       <fileset dir="../../ExampleGame/Logs" >
+           <include name="**/*" />
+      </fileset>
+    </delete>
+
+
+ <delete>
+    <fileset dir="../../GearGame/Logs" >
+           <include name="**/*" />
+    </fileset>
+  </delete>
+
+
+ <delete>
+    <fileset dir="../../UTGame/Logs" >
+           <include name="**/*" />
+    </fileset>
+  </delete>
+
+  <delete>
+    <fileset dir="../../WarGame/Logs" >
+           <include name="**/*" />
+    </fileset>
+  </delete>
+
+  </target>
+
+
+
+  <target name="cleanLocalShaderCache" depends="">
+
+     <delete>
+       <fileset dir="../../" >
+         <include name="**/LocalShaderCache.upk"/>
+       </fileset>
+     </delete>
+
+  </target>
+
+
+
+
+
+
+  <target name="cleanGeneratedFiles" depends="init, cleanIniFiles, cleanArtifactsDir, cleanDotUDir, cleanLogDir, cleanLocalShaderCache">
+
+  </target>
+
+
+  <target name="cleanPC"
+        description="clean up" depends="init" >
+     <exec dir="${unrealEngine3.src.dir}" executable="C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\devenv" output="..\..\AutomatedBuildFilez\cleanOutputDebug.txt" failonerror="true">
+         <arg line="/clean debug UnrealEngine3.sln"/>
+     </exec>
+
+     <exec dir="${unrealEngine3.src.dir}" executable="C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\devenv" output="..\..\AutomatedBuildFilez\cleanOutputRelease.txt" failonerror="true">
+  <arg line="/clean release UnrealEngine3.sln"/>
+</exec>
+
+     <exec dir="${unrealEngine3.src.dir}" executable="C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\devenv" output="..\..\AutomatedBuildFilez\cleanOutputReleaseLTCG.txt" failonerror="true">
+  <arg line="/clean releaseLTCG UnrealEngine3.sln"/>
+</exec>
+
+
+  </target>
+
+
+
+  <target name="compilePC">
+    <echo message = "   -Building PC" />
+
+
+    <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "${compileOptions.rebuild.PC}"
+    />      
+
+</target>
+
+
+
+<target name="compile_verification_CHECK_PUREVIRTUALS">
+  <echo message = "   -Building PC with CHECK_PUREVIRTUALS 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DCHECK_PUREVIRTUALS#1"/>
+    </vc7>      
+
+</target>
+
+
+<target name="compile_verification_CHECK_NATIVE_MATCH">
+  <echo message = "   -Building PC with CHECK_NATIVE_MATCH 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DCHECK_NATIVE_MATCH#1"/>
+    </vc7>      
+
+</target>
+
+<!-- check native class sizes breaks the release compiler so we build in debug -->
+<target name="compile_verification_CHECK_NATIVE_CLASS_SIZES">
+  <echo message = "   -Building PC with CHECK_NATIVE_CLASS_SIZES 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "debug"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DCHECK_NATIVE_CLASS_SIZES#1"/>
+    </vc7>      
+
+</target>
+
+
+
+<!-- check native class sizes breaks the release compiler so we build in debug -->
+<target name="compile_verification_FINAL_RELEASE">
+  <echo message = "   -Building PC with FINAL_RELEASE 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "ReleaseLTCG"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+    </vc7>      
+
+  <echo message = "   -Building Xenon with FINAL_RELEASE 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "XeReleaseLTCG"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "false"
+      rebuild = "true"
+     >
+    </vc7>   
+
+
+  <!-- on second pass rebuild must always needs to be false -->
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "XeReleaseLTCG"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "false" 
+  />      
+
+</target>
+
+
+<target name="compile_verification_WITH_NOVODEX">
+  <echo message = "   -Building PC with WITH_NOVODEX 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_NOVODEX#0"/>
+    </vc7>      
+
+</target>
+
+
+<target name="compile_verification_WITH_FACEFX">
+  <echo message = "   -Building PC with WITH_FACEFX 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_FACEFX#0"/>
+    </vc7>      
+
+</target>
+
+
+
+<target name="compile_verification_USE_NULL_RHI">
+  <echo message = "   -Building PC with USE_NULL_RHI 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DUSE_NULL_RHI#1"/>
+    </vc7>      
+
+</target>
+
+
+
+
+
+<target name="compile_verification_WITH_SPEEDTREE">
+  <echo message = "   -Building PC with WITH_SPEEDTREE 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_SPEEDTREE#0"/>
+    </vc7>      
+
+</target>
+
+
+
+
+
+<target name="compile_verification_WITH_SPEECH_RECOGNITION">
+  <echo message = "   -Building PC with WITH_SPEECH_RECOGNITION 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_SPEECH_RECOGNITION#0"/>
+    </vc7>      
+
+</target>
+
+
+
+
+
+<target name="compile_verification_WITH_TTS">
+  <echo message = "   -Building PC with WITH_TTS 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_TTS#0"/>
+    </vc7>      
+
+</target>
+
+
+
+
+<target name="compile_verification_WITH_COLLADA">
+  <echo message = "   -Building PC with WITH_COLLADA 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_COLLADA#0"/>
+    </vc7>      
+
+</target>
+
+
+
+
+<target name="compile_verification_USE_BINK_CODEC">
+  <echo message = "   -Building PC with USE_BINK_CODEC 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DUSE_BINK_CODEC#0"/>
+    </vc7>      
+
+</target>
+
+
+
+
+<target name="compile_verification_WITH_MGS_EXTERNAL_LIBS">
+  <echo message = "   -Building PC with WITH_MGS_EXTERNAL_LIBS 0" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DWITH_MGS_EXTERNAL_LIBS#0"/>
+    </vc7>      
+
+</target>
+
+
+
+<target name="compile_verification_KEEP_XMEM_ALLOC_STATS">
+  <echo message = "   -Building PC with KEEP_XMEM_ALLOC_STATS 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PC}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DKEEP_XMEM_ALLOC_STATS#1"/>
+    </vc7>      
+
+  <echo message = "   -Building Xenon with KEEP_XMEM_ALLOC_STATS 1" />
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.Xbox360}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "false"
+      rebuild = "true"
+     >
+      <env key="CL" value="/DKEEP_XMEM_ALLOC_STATS#1"/>
+    </vc7>   
+
+  <!-- on second pass rebuild must always needs to be false -->
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.Xbox360}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "false" 
+  >
+      <env key="CL" value="/DKEEP_XMEM_ALLOC_STATS#1"/>
+  </vc7>      
+
+</target>
+
+
+
+
+
+
+<target name="compileXenonRebuild">
+  <echo message = "   -Building xenon rebuild" />
+
+
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.Xbox360}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "false"
+      rebuild = "${compileOptions.rebuild.Xbox360}"
+  />      
+
+</target>
+
+
+<!-- 
+     we need to build all of xenon first as the .vcproj will try to connect
+     to the xenon and will fail as we don't have one attached to the build machine.
+     Then we will rebuild them which will not try to connect to the xenon
+-->
+<target name="compileXenon" depends="compileXenonRebuild">
+  <echo message = "   -Building xenon looking for errors " />
+
+  <!-- rebuild must always needs to be false -->
+  <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.Xbox360}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}.log"
+      failonerror = "true"
+      rebuild = "false" 
+  />      
+
+</target>
+
+
+  <target name="compilePS3_ProDG">
+    <echo message = "   -Building PS3 with ProDG" />
+
+
+    <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}"
+      projectfolder = ""
+      project = "${compileOptions.projectName}"
+      buildmode = "${compileOptions.buildmode.PS3}"
+      logfile = "${compileOptions.logDir}/${compileOptions.projectName}_prodg.log"
+      failonerror = "true"
+      rebuild = "${compileOptions.rebuild.PS3}"
+    />      
+
+</target>
+
+
+<target name="cleanPS3_exampleGame" depends="init" >
+
+  <echo message = "   -cleaning PS3 exampleGame " />
+
+  <exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3Example_clean.log" failonerror="true">
+    <arg line="-k BUILDTYPE=release GAMENAME=EXAMPLEGAME clean"/>
+  </exec>
+
+</target>
+
+
+<target name="cleanPS3_utGame" depends="init" >
+
+  <echo message = "   -cleaning PS3 utGame " />
+
+  <exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3UTGame_clean.log" failonerror="true">
+    <arg line="-k BUILDTYPE=release GAMENAME=UTGAME clean"/>
+  </exec>
+
+</target>
+
+
+<target name="cleanPS3_warGame" depends="init" >
+
+  <echo message = "   -cleaning PS3 warGame " />
+
+  <exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3WarGame_clean.log" failonerror="true">
+    <arg line="-k BUILDTYPE=release GAMENAME=WARGAME clean"/>
+  </exec>
+
+</target>
+
+
+
+<target name="cleanPS3_exampleGameDebug" depends="init" >
+
+  <echo message = "   -cleaning PS3 exampleGameDebug " />
+
+  <exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3ExampleDebug_clean.log" failonerror="true">
+    <arg line="-k BUILDTYPE=debug GAMENAME=EXAMPLEGAME clean"/>
+  </exec>
+
+</target>
+
+
+<target name="compilePS3_exampleGameDebug">
+  <echo message = "   -Building PS3 exampleGame debug" />
+
+   <!-- Compile the code -->
+<exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3ExampleGameDebug.log" failonerror="true">
+  <arg line="-k BUILDTYPE=debug GAMENAME=EXAMPLEGAME -j${gccCompile.numThreads}"/>
+</exec>
+
+</target>
+
+
+<target name="compilePS3_rebuild_example_debug" depends="cleanPS3_exampleGameDebug" >
+  <echo message = "   -Rebuilding PS3 debug" />
+
+  <antcall target="compilePS3_exampleGameDebug" />
+  
+</target>
+
+
+
+
+<target name="compilePS3_rebuild" depends="cleanPS3_exampleGame, cleanPS3_utGame, cleanPS3_warGame">
+  <echo message = "   -Rebuilding PS3 " />
+
+  <antcall target="compilePS3_exampleGame" />
+  <antcall target="compilePS3_utGame" />
+  <antcall target="compilePS3_warGame" />
+  
+</target>
+
+
+
+<target name="compilePS3_exampleGame">
+  <echo message = "   -Building PS3 exampleGame release" />
+
+   <!-- Compile the code -->
+<exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3ExampleGame.log" failonerror="true">
+  <arg line="-k BUILDTYPE=release GAMENAME=EXAMPLEGAME -j${gccCompile.numThreads}"/>
+</exec>
+
+</target>
+
+
+<target name="compilePS3_utGame">
+  <echo message = "   -Building PS3 utGame release" />
+
+   <!-- Compile the code -->
+<exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3UTGame.log" failonerror="true">
+  <arg line="-k BUILDTYPE=release GAMENAME=UTGAME -j${gccCompile.numThreads}"/>
+</exec>
+
+</target>
+
+
+<target name="compilePS3_warGame">
+  <echo message = "   -Building PS3 warGame release" />
+
+   <!-- Compile the code -->
+<exec dir="${unrealEngine3.src.dir}\PS3" executable="make" output="${compileOptions.logDir}/ps3WarGame.log" failonerror="true">
+  <arg line="-k BUILDTYPE=release GAMENAME=WARGAME -j${gccCompile.numThreads}"/>
+</exec>
+
+</target>
+
+
+
+
+  <target name="buildExampleGameDotU" depends=""
+        description="compile the .uc files for" >
+
+     <echo message = "   -exampleGame build dot U" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.dotU}.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams}"/>
+     </exec>
+
+     <echo message = "   -exampleGame build dot U -final_release" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.dotU}_final_release.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams.final_release}"/>
+     </exec>
+
+  </target>
+
+
+
+
+
+  <target name="buildGearGameDotU" depends=""
+        description="compile the .uc files for" >
+
+     <echo message = "   -gearGame build dot U" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${gearGame.execName}" output="${compileOptions.logDir}/${gearGame.log.dotU}.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams}"/>
+     </exec>
+
+     <echo message = "   -gearGame build dot U -final_release" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${gearGame.execName}" output="${compileOptions.logDir}/${gearGame.log.dotU}_final_release.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams.final_release}"/>
+     </exec>
+
+  </target>
+
+
+
+
+
+
+
+
+
+  <target name="buildUT2007DotU" depends=""
+        description="compile the .uc files for" >
+
+    <echo message = "   -ut2007 build dot U" />
+
+    <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.dotU}.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams}"/>
+    </exec>
+
+    <echo message = "   -ut2007 build dot U -final_release" />
+
+    <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.dotU}_final_release.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams.final_release}"/>
+    </exec>
+
+  </target>
+
+
+
+  <target name="buildUT2007DotUSansPrivateContent" depends=""
+        description="compile the .uc files for" >
+
+    <echo message = "   -ut2007 build dot U sans private content" />
+
+    <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.dotU}.log" failonerror="true"> 
+       <arg line="make -intermediate -full -unattended"/>
+    </exec>
+
+  </target>
+
+
+
+
+  <target name="buildWarfareDotU" depends=""
+        description="compile the .uc files for" >
+
+    <echo message = "   -warfare build dot U" />
+
+    <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.dotU}.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams}"/>
+    </exec>
+
+    <echo message = "   -warfare build dot U -final_release" />
+
+    <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.dotU}_final_release.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams.final_release}"/>
+    </exec>
+
+  </target>
+
+
+  <target name="buildWarfareDotUBVT" depends=""
+        description="compile the .uc files for" >
+
+    <echo message = "   -warfare build dot U" />
+
+    <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.dotU}.log" failonerror="true"> 
+       <arg line="${dotU.commandLineParams} -MGS_AUTOMATION"/>
+    </exec>
+
+  </target>
+
+
+
+
+  <target name="xenonCookContent_exampleGame" depends="init"
+        description="cook the xenon content" >
+
+  <echo message = "   -exampleGame xenon cook content" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.xenonCooking}.log" failonerror="true"> 
+        <arg line="${Xbox360.cooking.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+  <target name="xenonCookContent_ut2007" depends="init"
+        description="cook the xenon content" >
+
+  <echo message = "   -ut2007 xenon cook content" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="${Xbox360.cooking.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+  <target name="xenonCookContent_warfare" depends="init"
+        description="cook the xenon content" >
+
+  <echo message = "   -warfare xenon cook content" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.xenonCooking}.log" failonerror="true"> 
+        <arg line="${Xbox360.cooking.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+
+  <target name="xenonCookContent_exampleGameFull" depends="init"
+        description="cook the xenon content -full" >
+
+  <echo message = "   -exampleGame xenon cook content -full" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.xenonCooking}.log" failonerror="true"> 
+        <arg line="${Xbox360.cookingFull.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+
+  <target name="xenonCookContent_gearGameFull" depends="init"
+        description="cook the xenon content -full" >
+
+  <echo message = "   -gearGame xenon cook content -full" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${gearGame.execName}" output="${compileOptions.logDir}/${gearGame.log.xenonCooking}.log" failonerror="true"> 
+        <arg line="${Xbox360.cookingFull.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+
+
+  <target name="xenonCookContent_ut2007Full" depends="init"
+        description="cook the xenon content -full" >
+
+  <echo message = "   -ut2007 xenon cook content -full" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="${Xbox360.cookingFull.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+  <target name="xenonCookContent_warfareFull" depends="init"
+        description="cook the xenon content -full" >
+
+  <echo message = "   -warfare xenon cook content -full" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.xenonCooking}.log" failonerror="true"> 
+        <arg line="${Xbox360.cookingFull.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+
+  <target name="ps3CookContent_exampleGameFull" depends="init"
+        description="cook the ps3 content -full" >
+
+  <echo message = "   -exampleGame ps3 cook content -full" />
+
+   <!-- cook the content -->
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.ps3Cooking}.log" failonerror="true"> 
+       <arg line="${PS3.cookingFull.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+  <target name="pcCookContent_exampleGameFull" depends="init"
+        description="cook the pc content -full" >
+
+  <echo message = "   -exampleGame pc cook content -full" />
+
+   <!-- cook the content -->
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.pcCooking}.log" failonerror="true"> 
+       <arg line="${PC.cookingFull.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+
+
+  <target name="cleanCookedXenon_utGame">
+
+    <!-- delete all of the cooked content -->
+     <delete includeEmptyDirs="true" failonerror="true">
+        <fileset dir="${unrealEngine3.binaries.dir}/../UTGame/CookedXenon" defaultexcludes="no">
+              <include name="**/*" />
+        </fileset>
+     </delete>
+
+  </target>
+
+  <target name="cleanCookedPS3_utGame">
+
+    <!-- delete all of the cooked content -->
+     <delete includeEmptyDirs="true" failonerror="true">
+        <fileset dir="${unrealEngine3.binaries.dir}/../UTGame/CookedPS3" defaultexcludes="no">
+              <include name="**/*" />
+        </fileset>
+     </delete>
+
+  </target>
+
+
+ <target name="cleanCookedXenon_warGame">
+
+    <!-- delete all of the cooked content -->
+     <delete includeEmptyDirs="true" failonerror="true">
+        <fileset dir="${unrealEngine3.binaries.dir}/../WarGame/CookedXenon" defaultexcludes="no">
+              <include name="**/*" />
+        </fileset>
+     </delete>
+
+  </target>
+
+  <target name="cleanCookedPS3_warGame">
+
+    <!-- delete all of the cooked content -->
+     <delete includeEmptyDirs="true" failonerror="true">
+        <fileset dir="${unrealEngine3.binaries.dir}/../WarGame/CookedPS3" defaultexcludes="no">
+              <include name="**/*" />
+        </fileset>
+     </delete>
+
+  </target>
+
+
+  <target name="ps3CookContent_utGame" depends="init"
+        description="cook the ps3 content for ut game" >
+
+    <!-- delete all of the cooked content -->
+     <delete includeEmptyDirs="true" failonerror="true">
+        <fileset dir="${unrealEngine3.binaries.dir}/../UTGame/CookedPS3" defaultexcludes="no">
+              <include name="**/*" />
+        </fileset>
+     </delete>
+
+
+   <!-- cook the content -->
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.ps3Cooking}.log" failonerror="true"> 
+       <arg line="${PS3.cooking.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+  <target name="loadPackages_exampleGame" depends="init"
+        description="load the example game content" >
+
+  <echo message = "   -exampleGame load all packages" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.loadPackages}.log" failonerror="true"> 
+        <arg line="${dotU.loadpackages.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+
+
+  <target name="loadPackages_ut2007" depends="init"
+        description="load the ut2007 game content" >
+
+    <echo message = "   -ut2007 load all packages" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.loadPackages}.log" failonerror="true"> 
+       <arg line="${dotU.loadpackages.commandLineParams}"/>
+     </exec>
+
+  </target>
+
+
+
+  <target name="loadPackages_warfare" depends="init"
+        description="load the warfare game content" >
+
+  <echo message = "   -warfare load all packages" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.loadPackages}.log" failonerror="true"> 
+      <arg line="${dotU.loadpackages.commandLineParams}"/>
+    </exec>
+
+  </target>
+
+
+
+  <target name="loadPackages_gearGame" depends="init"
+        description="load the gear game content" >
+
+  <echo message = "   -gearGame load all packages" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${gearGame.execName}" output="${compileOptions.logDir}/${gearGame.log.loadPackages}.log" failonerror="true"> 
+      <arg line="${dotU.loadpackages.commandLineParams}"/>
+    </exec>
+
+  </target>
+
+
+
+
+  <target name="smokeTest_exampleGame" depends="init"
+        description="launch the game and then quit.  used to see if the game runs and also if the CHECK_NATIVE_CLASS_SIZES" >
+
+  <echo message = "   -exampleGame smoketest" />
+
+  <echo message = "      -exampleGame smoketest server" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.smoketest.server}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+        <arg line="${smoketest.commandLineParams.server}"/>
+     </exec>
+
+  <echo message = "      -exampleGame smoketest checkNativeClassSizes" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${exampleGame.execName}" output="${compileOptions.logDir}/${exampleGame.log.smoketest.checkNativeClassSizes}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+        <arg line="${smoketest.commandLineParams.checkNativeClassSizes}"/>
+     </exec>
+
+  </target>
+
+
+  <target name="smokeTest_gearGame" depends="init"
+        description="launch the game and then quit.  used to see if the game runs and also if the CHECK_NATIVE_CLASS_SIZES" >
+
+  <echo message = "   -gearGame smoketest" />
+
+  <echo message = "      -gearGame smoketest server" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${gearGame.execName}" output="${compileOptions.logDir}/${gearGame.log.smoketest.server}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+        <arg line="${smoketest.commandLineParams.server}"/>
+     </exec>
+
+
+  <echo message = "      -gearGame smoketest checkNativeClassSizes" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${gearGame.execName}" output="${compileOptions.logDir}/${gearGame.log.smoketest.checkNativeClassSizes}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+        <arg line="${smoketest.commandLineParams.checkNativeClassSizes}"/>
+     </exec>
+
+  </target>
+
+
+
+  <target name="smokeTest_ut2007" depends="init"
+        description="launch the game and then quit.  used to see if the game runs and also if the CHECK_NATIVE_CLASS_SIZES" >
+
+  <echo message = "   -ut2007 smoketest" />
+
+  <echo message = "      -ut2007 smoketest server" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.smoketest.server}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+     <arg line="${smoketest.commandLineParams.server}"/>
+  </exec>
+
+
+  <echo message = "      -ut2007 smoketest checkNativeClassSizes" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.smoketest.checkNativeClassSizes}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+     <arg line="${smoketest.commandLineParams.checkNativeClassSizes}"/>
+  </exec>
+
+  </target>
+
+
+
+  <target name="smokeTest_warfare" depends="init"
+        description="launch the game and then quit.  used to see if the game runs and also if the CHECK_NATIVE_CLASS_SIZES" >
+
+  <echo message = "   -warfare smoketest" />
+
+  <echo message = "      -warfare smoketest server" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.smoketest.server}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+       <arg line="${smoketest.commandLineParams.server}"/>
+    </exec>
+
+
+  <echo message = "      -warfare smoketest checkNativeClassSizes" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.smoketest.checkNativeClassSizes}.log" failonerror="true" timeout="${smoketest.timeoutPeriod}" > 
+       <arg line="${smoketest.commandLineParams.checkNativeClassSizes}"/>
+    </exec>
+
+  </target>
+
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_CHECK_PUREVIRTUALS">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_CHECK_PUREVIRTUALS" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_CHECK_NATIVE_MATCH">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_CHECK_NATIVE_MATCH" />
+     <antcall target="buildDotU" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_CHECK_NATIVE_CLASS_SIZES">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_CHECK_NATIVE_CLASS_SIZES" />
+     <antcall target="buildDotU" />
+     <antcall target="smokeTest" />
+     <antcall target="loadPackages_exampleGame" />
+     <antcall target="xenonCookContent_exampleGame" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_FINAL_RELEASE">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_FINAL_RELEASE" />
+<!-- we need LTCG named .exe for these :-(
+     <antcall target="buildDotU" />
+     <antcall target="smokeTest" />
+     <antcall target="loadPackages_exampleGame" />
+     <antcall target="xenonCookContent_exampleGame" />
+-->
+  </target>
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_NOVODEX">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_NOVODEX" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_FACEFX">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_FACEFX" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_USE_NULL_RHI">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_USE_NULL_RHI" />
+  </target>
+
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_SPEEDTREE">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_SPEEDTREE" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_SPEECH_RECOGNITION">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_SPEECH_RECOGNITION" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_TTS">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_TTS" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_COLLADA">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_COLLADA" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_USE_BINK_CODEC">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_USE_BINK_CODEC" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_WITH_MGS_EXTERNAL_LIBS">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_WITH_MGS_EXTERNAL_LIBS" />
+  </target>
+
+
+  <!-- we need to do it this way as the depends clause will get merged together -->
+  <target name="UE3_KEEP_XMEM_ALLOC_STATS">
+     <antcall target="cleanGeneratedFiles" />
+     <antcall target="compile_verification_KEEP_XMEM_ALLOC_STATS" />
+  </target>
+
+
+<target name="statsViewer">
+
+  <echo message = "   -Building StatsViewer" />
+
+    <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}\..\Tools"
+      projectfolder = "StatsViewer"
+      project = "StatsViewer"
+      buildmode = "Release"
+      logfile = "${compileOptions.logDir}/statsViewer.log"
+      failonerror = "true"
+      rebuild = "true"
+    />     
+
+</target>
+
+
+<target name="unrealFrontEnd">
+
+  <echo message = "   -Building UnrealFrontEnd" />
+
+    <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}\..\Tools"
+      projectfolder = "UnrealFrontend"
+      project = "UnrealFrontend"
+      buildmode = "Release"
+      logfile = "${compileOptions.logDir}/unrealFrontend.log"
+      failonerror = "true"
+      rebuild = "true"
+    />     
+
+</target>
+
+
+<target name="unrealConsole">
+
+  <echo message = "   -Building UnrealConsole" />
+
+    <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}\..\Tools"
+      projectfolder = "UnrealConsole"
+      project = "UnrealConsole"
+      buildmode = "Release"
+      logfile = "${compileOptions.logDir}/unrealConsole.log"
+      failonerror = "true"
+      rebuild = "true"
+    />     
+
+</target>
+
+
+
+
+<target name="compilePS3TestBed">
+
+  <echo message = "   -Building PS3TestBed" />
+
+    <vc7 compilerfolder = "${VS_DIR}"
+      projectrootfolder = "${unrealEngine3.src.dir}\PS3"
+      projectfolder = "TestbedPS3"
+      project = "TestbedPS3"
+      buildmode = "Release"
+      logfile = "${compileOptions.logDir}/TestbedPS3.log"
+      failonerror = "true"
+      rebuild = "true"
+    />     
+
+</target>
+
+
+<!-- just run example game's sample for now -->
+<target name="runPS3TestBed">
+
+  <echo message = "   -running PS3TestBed" />
+
+       <exec dir="${unrealEngine3.binaries.dir}\PS3" executable="${unrealEngine3.binaries.dir}\PS3\RunSmokeTestOnPS3.bat" output="..\..\AutomatedBuildFilez\PS3TestBed_debug-examplegame_sample.log" failonerror="true">
+        <arg line="ps3-prestont Testbed\TestBedPS3_debug-examplegame_sample.opt"/>
+     </exec>
+
+</target>
+
+<!-- Implies FR -->
+<target name="runBVTs_loc">
+
+  <echo message = "   -running BVT loc" />
+
+     <exec dir="${unrealEngine3.binaries.dir}\..\WarGame\Build\BVTs\BVTScheduler" executable="${unrealEngine3.binaries.dir}\..\WarGame\Build\BVTs\BVTScheduler\BVTScheduler.exe" failonerror="false">
+        <arg line="${timestampForBVT} ${changelistBuiltFrom} ${bvt.distrib.projectFolder}"/>
+     </exec>
+
+</target>
+
+
+<target name="runBVTs_locNFR">
+
+  <echo message = "   -running BVT loc NFR" />
+
+     <exec dir="${unrealEngine3.binaries.dir}\..\WarGame\Build\BVTs\BVTScheduler" executable="${unrealEngine3.binaries.dir}\..\WarGame\Build\BVTs\BVTScheduler\BVTScheduler.exe" failonerror="false">
+        <arg line="${timestampForBVT} ${changelistBuiltFrom} ${bvt.distrib.projectFolder}"/>
+     </exec>
+
+</target>
+
+
+
+
+<target name="runBVTs_english">
+
+  <echo message = "   -running BVT english" />
+
+     <exec dir="C:\EpicBVT\bin\Release" executable="C:\EpicBVT\bin\Release\BVT.exe" failonerror="false">
+        <arg line="C:\continuousIntegration\checkout\UE3_xenonBVTBuilder ${timestampForBVT} c:\EpicBVT\MultipleXenon.txt c:\EpicBVT\epicdb.txt cookloadpush 0 int ${changelistBuiltFrom}"/>
+     </exec>
+
+</target>
+
+
+<target name="runBVTsFinalRelease_english">
+
+  <echo message = "   -running BVT english" />
+
+     <exec dir="C:\EpicBVT\bin\Release" executable="C:\EpicBVT\bin\Release\BVT.exe" failonerror="false">
+        <arg line="C:\continuousIntegration\checkout\UE3_xenonBVTFinalReleaseBuilder ${timestampForBVT}FR c:\EpicBVT\MultipleXenon.txt c:\EpicBVT\epicdb.txt cookloadpush 0 int ${changelistBuiltFrom}"/>
+     </exec>
+
+</target>
+
+
+
+
+<target name="runMiniBVTs_english">
+
+  <tstamp>
+    <format property="DATE_FOR_BUILD" pattern="yyyy-MM-dd_HH.mm" locale="en"/>
+  </tstamp>
+
+  <echo message = "   -running Mini BVT english ${DATE_FOR_BUILD}" />
+
+     <exec dir="C:\EpicBVT\bin\Release" executable="C:\EpicBVT\bin\Release\BVT.exe" failonerror="false">
+        <arg line="C:\continuousIntegration\checkout\UE3_xenonMiniBVTBuilder ${DATE_FOR_BUILD} c:\EpicBVT\MultipleXenon.txt c:\EpicBVT\epicdb.txt quickload 0 int ${changelistBuiltFrom}"/>
+     </exec>
+
+</target>
+
+
+<!-- we have to go through some pain to call the for /f "tokens=3" .... to get the current changelist -->
+<target name="setCurrChangeList">
+
+     <exec dir="${unrealEngine3.src.dir}\..\Build\ContinuousIntegration" executable="${unrealEngine3.src.dir}\..\Build\ContinuousIntegration\SetCurrChangeListProperty.bat" failonerror="false" resultproperty="currChangeList" output="..\..\AutomatedBuildFilez\SetCurrChangeListProperty.log">
+     </exec>
+
+<!--
+this is the command used to find the current changelist
+for /f "tokens=3" %i in ('p4 -ztag changes -m1 -s submitted //... ^|findstr change') do echo %i
+-->
+
+</target>
+
+<!-- need a better way to do this.  maybe property set and a for loop.  jsut get it working now tho! -->
+<!-- look at fixing the -novsync to be like gears shipping -->
+
+<property name="utGame.benchmark.CTF" value="numplay=12?timelimit=5?automatedperftesting=1 -norc -unattended -novsync -fixedseed -KillAllPopUpBlockingWindows"/>
+<property name="utGame.benchmark.DM" value="numplay=12?timelimit=5?automatedperftesting=1 -norc -unattended -novsync -fixedseed -KillAllPopUpBlockingWindows"/>
+<property name="utGame.benchmark.ONS" value="numplay=16?timelimit=5?automatedperftesting=1 -norc -unattended -novsync -fixedseed -KillAllPopUpBlockingWindows"/>
+
+<target name="benchmark_UTFPS_PC">
+
+  <echo message = "   -running benchmark_UTFPS_PC currChangeList: ${currChangeList} changelistBuiltFrom: ${changelistBuiltFrom}" />
+
+   <!-- CTF -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+
+        <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/UTGame.exe" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+            <arg line="${utgame.perfmap.ctf.@{i}}?${utGame.benchmark.CTF} -AutomatedBenchmarkingChangelist=${currChangeList} -resX=1280 -resY=720"/>
+        </exec>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+
+   <!-- DM -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.dm.@{i}} </echo>
+
+        <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/UTGame.exe" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+            <arg line="${utgame.perfmap.dm.@{i}}?${utGame.benchmark.DM} -AutomatedBenchmarkingChangelist=${currChangeList} -resX=1280 -resY=720"/>
+        </exec>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+
+   <!-- ONS -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ons}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ons.@{i}} </echo>
+
+        <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/UTGame.exe" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+            <arg line="${utgame.perfmap.ons.@{i}}?${utGame.benchmark.ONS} -AutomatedBenchmarkingChangelist=${currChangeList} -resX=1280 -resY=720"/>
+        </exec>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+
+</target>
+
+
+<!-- need to cook all of the benchmark maps --> 
+
+  <target name="xenonCookContent_ut2007_benchmark" depends="init"
+        description="cook the xenon content for the benchmarking" >
+
+  <echo message = "   -ut2007 xenon cook content for auto perf testing" />
+
+
+   <!-- CTF -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="false"> 
+       <arg line="${Xbox360.cooking.commandLineParams} ${utgame.perfmap.ctf.@{i}}"/>
+     </exec>
+       </sequential>
+    </for>
+
+
+   <!-- DM -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.dm.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="false"> 
+       <arg line="${Xbox360.cooking.commandLineParams} ${utgame.perfmap.dm.@{i}}"/>
+     </exec>
+      </sequential>
+    </for>
+
+
+   <!-- ONS -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ons}">
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ons.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="false"> 
+       <arg line="${Xbox360.cooking.commandLineParams} ${utgame.perfmap.ons.@{i}}"/>
+     </exec>
+      </sequential>
+    </for>
+
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbreboot" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line=""/>
+     </exec>
+
+     <sleep seconds="30" />
+
+     <!-- at the end we need to cookersync -->
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/CookerSync.exe" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="UT"/>
+     </exec>
+
+
+  </target>
+
+
+
+
+  <target name="ps3CookContent_ut2007_benchmark" depends="init"
+        description="cook the ps3 content for the benchmarking" >
+
+  <echo message = "   -ut2007 ps3 cook content for auto perf testing" />
+
+
+
+   <!-- CTF -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.ps3Cooking}.log" failonerror="false"> 
+       <arg line="${PS3.cooking.commandLineParams} ${utgame.perfmap.ctf.@{i}}"/>
+     </exec>
+       </sequential>
+    </for>
+
+
+   <!-- DM -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.dm.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.ps3Cooking}.log" failonerror="false"> 
+       <arg line="${PS3.cooking.commandLineParams} ${utgame.perfmap.dm.@{i}}"/>
+     </exec>
+      </sequential>
+    </for>
+
+
+   <!-- ONS -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ons}">
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ons.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${ut2007.execName}" output="${compileOptions.logDir}/${ut2007.log.ps3Cooking}.log" failonerror="false"> 
+       <arg line="${PS3.cooking.commandLineParams} ${utgame.perfmap.ons.@{i}}"/>
+     </exec>
+      </sequential>
+    </for>
+
+
+  </target>
+
+
+<property name="PS3Run.Dashes" value="-k -r -f${unrealEngine3.binaries.dir}\.. -p" />
+
+<target name="benchmark_UTFPS_PS3">
+
+  <echo message = "   -running benchmark_UTFPS_PS3 currChangeList: ${currChangeList} changelistBuiltFrom: ${changelistBuiltFrom}" />
+
+
+ <!-- CTF -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/PS3/PS3Run_Epic.exe" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="${PS3Run.Dashes} UTGAME-PS3Release.elf ${utgame.perfmap.ctf.@{i}}?${utGame.benchmark.CTF} -AutomatedBenchmarkingChangelist=${currChangeList} -basdir=CISPerfTesting"/>
+     </exec>
+      </sequential>
+      </for>
+       </sequential>
+    </for>
+
+
+   <!-- DM -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.dm.@{i}} </echo>
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/PS3/PS3Run_Epic.exe" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="${PS3Run.Dashes} UTGAME-PS3Release.elf ${utgame.perfmap.ons.@{i}}?${utGame.benchmark.CTF} -AutomatedBenchmarkingChangelist=${currChangeList} -basdir=CISPerfTesting"/>
+     </exec>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+
+   <!-- ONS -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ons}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+        <echo>i is @{i} and map is ${utgame.perfmap.ons.@{i}} </echo>
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/PS3/PS3Run_Epic.exe" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="${PS3Run.Dashes} UTGAME-PS3Release.elf ${utgame.perfmap.ons.@{i}}?${utGame.benchmark.ONS} -AutomatedBenchmarkingChangelist=${currChangeList} -basdir=CISPerfTesting"/>
+     </exec>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+
+</target>
+
+
+<target name="benchmark_UTFPS_Xenon">
+
+  <echo message = "   -running benchmark_UTFPS_Xenon currChangeList: ${currChangeList} changelistBuiltFrom: ${changelistBuiltFrom}" />
+
+ <!-- CTF -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+        <for param="j" begin="1" end="${benchmark.numRuns}">     
+          <sequential>
+            <echo>i is @{i} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbreboot" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="xe:\UnrealEngine3\UTGame-XeRelease.xex ${utgame.perfmap.ctf.@{i}}?${utGame.benchmark.CTF} -AutomatedBenchmarkingChangelist=${currChangeList}"/>
+     </exec>
+
+   <sleep minutes="6" />
+
+          </sequential>
+        </for>
+      </sequential>
+    </for>
+
+
+   <!-- DM -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+        <for param="j" begin="1" end="${benchmark.numRuns}">     
+          <sequential>
+            <echo>i is @{i} and map is ${utgame.perfmap.dm.@{i}} </echo>
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbreboot" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="xe:\UnrealEngine3\UTGame-XeRelease.xex ${utgame.perfmap.dm.@{i}}?${utGame.benchmark.DM} -AutomatedBenchmarkingChangelist=${currChangeList}"/>
+     </exec>
+
+   <sleep minutes="6" />
+
+          </sequential>
+        </for>
+      </sequential>
+    </for>
+
+
+   <!-- ONS -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ons}">
+      <sequential>
+        <for param="j" begin="1" end="${benchmark.numRuns}">     
+          <sequential>
+           <echo>i is @{i} and map is ${utgame.perfmap.ons.@{i}} </echo>
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbreboot" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="xe:\UnrealEngine3\UTGame-XeRelease.xex ${utgame.perfmap.ons.@{i}}?${utGame.benchmark.ONS} -AutomatedBenchmarkingChangelist=${currChangeList}"/>
+     </exec>
+
+     <sleep minutes="6" />
+
+          </sequential>
+        </for>
+      </sequential>
+    </for>
+
+
+</target>
+
+
+
+  <target name="copyStatsFromXenonBackToStatsDir_UT" >
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbcp" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="/Y /F /T xe:\UnrealEngine3\UTGame\Stats\*  ${unrealEngine3.binaries.dir}\..\UTGame\Stats"/>
+     </exec>
+  </target>
+
+  <target name="copyStatsFromXenonBackToStatsDir_War" >
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbcp" output="${compileOptions.logDir}/${warfare.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="/Y /F /T xe:\UnrealEngine3\WarGame\Stats\*  ${unrealEngine3.binaries.dir}\..\WarGame\Stats"/>
+     </exec>
+  </target>
+
+
+
+
+  <target name="xenonCookContent_war_benchmark" depends="init"
+        description="cook the xenon content for the benchmarking" >
+
+     <echo message = "   -war xenon cook content for auto perf testing" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.xenonCooking}.log" failonerror="false"> 
+       <arg line="${Xbox360.cooking.commandLineParams} MP_Mansion"/>
+     </exec>
+
+
+     <sleep seconds="30" />
+
+     <!-- at the end we need to cookersync -->
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/CookerSync.exe" output="${compileOptions.logDir}/${warfare.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="War"/>
+     </exec>
+
+    </target>
+
+
+
+  <target name="ps3CookContent_war_benchmark" depends="init"
+        description="cook the ps3 content for the benchmarking" >
+
+     <echo message = "   -war ps3 cook content for auto perf testing" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/${warfare.execName}" output="${compileOptions.logDir}/${warfare.log.ps3Cooking}.log" failonerror="false"> 
+       <arg line="${PS3.cooking.commandLineParams} MP_Mansion"/>
+     </exec>
+
+   </target>
+
+
+
+
+
+
+
+
+<property name="warGame.benchmark.flythrough" value="causeevent=automatedperftesting -seconds=300 -norc -unattended -novsync -fixedseed -KillAllPopUpBlockingWindows"/>
+
+<!-- mp_mansion?causeevent=automatedperftesting -seconds=300 -unattended -->
+
+<target name="benchmark_WarFPS_PC">
+
+  <echo message = "   -running benchmark_WarFPS_PC currChangeList: ${currChangeList} changelistBuiltFrom: ${changelistBuiltFrom}" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/WarGame.exe" output="${compileOptions.logDir}/${warfare.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="mp_mansion?${warGame.benchmark.flythrough} -AutomatedBenchmarkingChangelist=${currChangeList} -resX=1280 -resY=720"/>
+     </exec>
+
+</target>
+
+<target name="benchmark_WarFPS_PS3">
+
+  <echo message = "   -running benchmark_UTFPS_PS3 currChangeList: ${currChangeList} changelistBuiltFrom: ${changelistBuiltFrom}" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/PS3/PS3Run_Epic.exe" output="${compileOptions.logDir}/${warfare.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="-k -r -p WARGAME-PS3Release.elf MP_Manstion?${warGame.benchmark.flythrough} -AutomatedBenchmarkingChangelist=${currChangeList} -basdir=CISPerfTesting"/>
+     </exec>
+
+</target>
+
+<target name="benchmark_WarFPS_Xenon">
+
+  <echo message = "   -running benchmark_UTFPS_Xenon currChangeList: ${currChangeList} changelistBuiltFrom: ${changelistBuiltFrom}" />
+
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbreboot" output="${compileOptions.logDir}/${warfare.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line="xe:\UnrealEngine3\WarGame-XeRelease.xex MP_Mansion?${warGame.benchmark.flythrough} -AutomatedBenchmarkingChangelist=${currChangeList}"/>
+     </exec>
+
+   <sleep minutes="5" seconds="30" />
+
+</target>
+
+
+
+
+
+
+
+<target name="checkForMissingDotUCFiles">
+  <echo message = "   -checking for .uc files which have not been added to the correct .vcproj" />
+     <exec dir="${unrealEngine3.src.dir}\..\Build\" executable="${unrealEngine3.src.dir}\..\Build\CheckForMissingDotUCFiles.bat" failonerror="true" output="..\..\AutomatedBuildFilez\checkForMissingDotUCFiles.log">
+     </exec>
+
+</target>
+
+
+
+
+<!-- status spam -->
+
+ <target name="echo_buildUE3_Gemini" >
+  <echo message = "*** Building Unreal Engine 3 - Gemini ***" />
+ </target>
+
+ <target name="echo_buildUE3_PC" >
+  <echo message = "*** Building Unreal Engine 3 PC only ***" />
+ </target>
+
+ <target name="echo_buildUE3_PS3" >
+  <echo message = "*** Building Unreal Engine 3 PS3 only ***" />
+ </target>
+
+ <target name="echo_buildUE3_PS3_smokeTest" >
+  <echo message = "*** Building Unreal Engine 3 PS3 SmokeTest ***" />
+ </target>
+
+ <target name="echo_buildUE3_Xenon" >
+  <echo message = "*** Building Unreal Engine 3 Xenon only ***" />
+ </target>
+
+
+
+
+ <target name="echo_buildUE3" >
+  <echo message = "*** Building Unreal Engine 3 ***" />
+ </target>
+
+ <target name="echo_buildUE3_verification" >
+  <echo message = "*** Building Unreal Engine 3 Verification ***" />
+ </target>
+
+ <target name="echo_buildDotU" >
+  <echo message = "*** Building Dot U ***" />
+ </target>
+
+ <target name="echo_smokeTest" >
+  <echo message = "*** Running SmokeTests ***" />
+ <!-- <echo message = "  - disabled until the freezing issues are resolved" /> -->
+ </target>
+
+ <target name="echo_loadPackages" >
+  <echo message = "*** Loading All Packages ***" />
+ </target>
+
+
+ <target name="echo_cookXenonContent" >
+  <echo message = "*** Cooking Xenon Content ***" />
+ </target>
+
+
+ <target name="echo_ps3CookContent" >
+  <echo message = "*** Cooking PS3 Content ***" />
+ </target>
+
+
+ <target name="echo_tools" >
+  <echo message = "*** Building Tools ***" />
+ </target>
+
+
+ <target name="echo_runningBVTs" >
+  <echo message = "*** Running BVTs ***" />
+ </target>
+
+
+ <target name="echo_runningMiniBVTs" >
+  <echo message = "*** Running Mini BVTs ***" />
+ </target>
+
+
+
+ <target name="buildUE3_tools" depends="echo_tools, statsViewer, unrealFrontEnd, unrealConsole" > <!--  -->
+ </target>
+
+ <target name="buildUE3_Gemini" depends="echo_buildUE3_Gemini, cleanGeneratedFiles, compilePC, loadPackages, UE3_CHECK_NATIVE_MATCH, UE3_CHECK_NATIVE_CLASS_SIZES, compileXenon, compilePS3_rebuild_example_debug" >
+ </target>
+
+ <target name="buildUE3_PC" depends="echo_buildUE3_PC, cleanGeneratedFiles, compilePC" >
+ </target>
+
+ <target name="buildUE3_PS3" depends="echo_buildUE3_PS3, cleanGeneratedFiles, compilePS3_rebuild" >
+ </target>
+
+ <target name="buildUE3_PS3_smokeTest" depends="echo_buildUE3_PS3_smokeTest, cleanGeneratedFiles, buildUE3_PC, cleanIniFiles, buildExampleGameDotU, compilePS3_rebuild_example_debug, ps3CookContent_exampleGameFull, compilePS3TestBed, runPS3TestBed" >
+ </target>
+
+
+
+
+ <target name="buildUE3_Xenon" depends="echo_buildUE3_Xenon, cleanGeneratedFiles, compileXenon" >
+ </target>
+
+
+ <target name="buildUE3" depends="echo_buildUE3, cleanGeneratedFiles, compilePC, buildDotU, compileXenon, compilePS3_rebuild, buildUE3_tools" > <!-- -->
+ </target>
+
+
+ <target name="buildUE3_verification" depends="echo_buildUE3_verification, UE3_CHECK_PUREVIRTUALS, UE3_CHECK_NATIVE_MATCH, UE3_CHECK_NATIVE_CLASS_SIZES, UE3_FINAL_RELEASE, UE3_WITH_NOVODEX, UE3_USE_NULL_RHI, compilePS3_ProDG" >
+ </target>
+
+<!-- compileXenon_verification, , compilePS3 --> 
+
+
+  <target name="buildDotU" depends="echo_buildDotU, init, cleanIniFiles, cleanDotUDir, buildExampleGameDotU, buildGearGameDotU, buildUT2007DotU, buildWarfareDotU" >
+  </target>
+
+  <target name="buildDotU_SansPrivateContent" depends="echo_buildDotU, cleanIniFiles, buildExampleGameDotU, buildUT2007DotUSansPrivateContent" >
+  </target>
+
+
+ <target name="cookXenonContent" depends="echo_cookXenonContent, xenonCookContent_exampleGame, xenonCookContent_ut2007, xenonCookContent_warfare" >
+ </target>
+
+ <target name="cookXenonContentFull" depends="echo_cookXenonContent, xenonCookContent_exampleGameFull, xenonCookContent_gearGameFull, xenonCookContent_ut2007Full, xenonCookContent_warfareFull" >
+ </target>
+
+<!-- need to cook all ps3 games here -->
+ <target name="ps3CookContent" depends="echo_ps3CookContent, ps3CookContent_exampleGameFull" >
+ </target>
+
+ <target name="ps3CookContentFull" depends="echo_ps3CookContent, ps3CookContent_exampleGameFull" >
+ </target>
+
+
+
+
+ <target name="loadPackages" depends="echo_loadPackages, loadPackages_exampleGame, loadPackages_gearGame, loadPackages_ut2007, loadPackages_warfare" >
+ </target>
+
+
+  <target name="smokeTest" depends="echo_smokeTest, smokeTest_exampleGame, smokeTest_gearGame, smokeTest_ut2007, smokeTest_warfare" >
+  </target>
+
+  <target name="runXenonBVT" depends="echo_runningBVTs, runBVTs_english" > <!-- need to add the other langs here -->
+  </target>
+
+  <target name="runXenonBVTFinalRelease" depends="echo_runningBVTs, runBVTsFinalRelease_english" > <!-- need to add the other langs here -->
+  </target>
+
+  <target name="runXenonBVTLoc" depends="echo_runningBVTs, runBVTs_loc" > <!-- need to add the other langs here -->
+  </target>
+
+  <target name="runXenonBVTLocNFR" depends="echo_runningBVTs, runBVTs_locNFR" > <!-- need to add the other langs here -->
+  </target>
+
+
+  <target name="runXenonMiniBVT" depends="cleanGeneratedFiles, compilePC, cleanIniFiles, buildWarfareDotUBVT, compileXenon, echo_runningMiniBVTs, runMiniBVTs_english" > <!-- need to add the other langs here -->
+  </target>
+
+
+
+
+
+
+
+  <target name="UE3_benchmarkBuilder" depends="buildUE3_PC, buildDotU">
+  </target>
+
+  <target name="UE3_benchmarkDualCoreBuilder" depends="buildUE3_PC, buildDotU, smokeTest, loadPackages_exampleGame, xenonCookContent_exampleGame">
+  </target>
+
+
+  <target name="UE3_codeBuilder_worker" >
+    <!-- we put a limit on here as VS2005 often seems to crash when compiler UE3 -->
+    <!-- WEAK: this doesn't seem to be able to clear the VS2005 crash/error dialog that comes up and the process still is running -->
+    <limit hours="1" failonerror="true">
+       <antcall target="buildUE3" />
+       <antcall target="buildDotU" />
+       <antcall target="smokeTest" />
+       <antcall target="loadPackages_exampleGame" />
+       <antcall target="xenonCookContent_exampleGame" />
+       <antcall target="ps3CookContent_exampleGameFull" />
+       <antcall target="checkForMissingDotUCFiles" />
+    </limit>
+  </target>
+
+  <target name="UE3_codeBuilderLimitBased" depends="UE3_codeBuilder_worker" >
+  </target>
+  
+    <target name="UE3_codeBuilder" depends="buildUE3, buildDotU, smokeTest, loadPackages_exampleGame, pcCookContent_exampleGameFull, xenonCookContent_exampleGameFull, ps3CookContent_exampleGameFull, checkForMissingDotUCFiles" ></target>
+
+
+  <target name="UE3_codeBuilderPS3_SmokeTest" depends="buildUE3_PS3_smokeTest" >
+  </target>
+
+
+  <target name="UE3_contentBuilder_GearGame" depends="buildUE3_PC, cleanDotUDir, buildGearGameDotU, xenonCookContent_gearGameFull, loadPackages_gearGame">
+  </target>
+
+  <target name="UE3_contentBuilder_UTGame" depends="buildUE3_PC, cleanDotUDir, buildUT2007DotU, xenonCookContent_ut2007Full, loadPackages_ut2007">
+  </target>
+
+  <target name="UE3_contentBuilder_WarGame" depends="buildUE3_PC, cleanDotUDir, buildWarfareDotU, xenonCookContent_warfareFull, loadPackages_warfare">
+  </target>
+
+
+
+
+  <target name="UE3_dailyBuilder" depends="buildUE3_PC, buildUE3_PS3, buildUE3_Xenon, compile_verification_FINAL_RELEASE, buildDotU, smokeTest, loadPackages, cookXenonContentFull, ps3CookContentFull">
+  </target>
+
+
+  <target name="UE3_verificationBuilder_SansPS3" depends="buildUE3_PC">
+  </target>
+
+
+  <target name="UE3_verificationBuilder_SansUTPrivate" depends="buildUE3_PC, buildDotU_SansPrivateContent, loadPackages_exampleGame, loadPackages_ut2007">
+  </target>
+
+
+  <target name="UE3_verificationBuilder_ProdG" depends="cleanGeneratedFiles, compilePS3_ProDG">
+  </target>
+
+
+  <target name="UE3_xenonBVTBuilder" depends="runXenonBVT" >
+  </target>
+
+  <target name="UE3_xenonBVTFinalReleaseBuilder" depends="runXenonBVTFinalRelease" >
+  </target>
+
+  <target name="UE3_xenonMiniBVTBuilder" depends="runXenonMiniBVT" >
+  </target>
+
+  <target name="UE3_xenonBVTLocBuilder" depends="runXenonBVTLoc" >
+  </target>
+
+  <target name="UE3_xenonBVTLocNFRBuilder" depends="runXenonBVTLocNFR" >
+  </target>
+
+  <target name="UE3_verificationBuilder" depends="buildUE3_verification" >
+  </target>
+
+  <target name="UE3_verificationBuilder_CHECK_PUREVIRTUALS" depends="UE3_CHECK_PUREVIRTUALS" >
+  </target>
+
+  <target name="UE3_verificationBuilder_CHECK_NATIVE_MATCH" depends="UE3_CHECK_NATIVE_MATCH" >
+  </target>
+
+  <target name="UE3_verificationBuilder_CHECK_NATIVE_CLASS_SIZES" depends="UE3_CHECK_NATIVE_CLASS_SIZES" >
+  </target>
+
+  <target name="UE3_verificationBuilder_FINAL_RELEASE" depends="UE3_FINAL_RELEASE" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_NOVODEX" depends="UE3_WITH_NOVODEX" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_FACEFX" depends="UE3_WITH_FACEFX" >
+  </target>
+
+  <target name="UE3_verificationBuilder_USE_NULL_RHI" depends="UE3_USE_NULL_RHI" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_SPEEDTREE" depends="UE3_WITH_SPEEDTREE" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_SPEECH_RECOGNITION" depends="UE3_WITH_SPEECH_RECOGNITION" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_TTS" depends="UE3_WITH_TTS" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_COLLADA" depends="UE3_WITH_COLLADA" >
+  </target>
+
+  <target name="UE3_verificationBuilder_USE_BINK_CODEC" depends="UE3_USE_BINK_CODEC" >
+  </target>
+
+  <target name="UE3_verificationBuilder_WITH_MGS_EXTERNAL_LIBS" depends="UE3_WITH_MGS_EXTERNAL_LIBS" >
+  </target>
+
+  <target name="UE3_verificationBuilder_KEEP_XMEM_ALLOC_STATS" depends="UE3_KEEP_XMEM_ALLOC_STATS" >
+  </target>
+
+
+
+
+  <target name="UE3_benchmarkUTFPSBuilder" depends="setCurrChangeList, cleanGeneratedFiles, buildUE3_PC, buildUT2007DotU, smokeTest_ut2007, benchmark_UTFPS_PC" >
+  </target>
+
+  <target name="UE3_benchmarkUTFPSBuilder_PS3" depends="setCurrChangeList, cleanGeneratedFiles, buildUE3_PC, cleanPS3_utGame, compilePS3_utGame, buildUT2007DotU, smokeTest_ut2007, cleanCookedPS3_utGame, ps3CookContent_ut2007_benchmark, benchmark_UTFPS_PS3" >
+  </target>
+
+
+  <target name="UE3_benchmarkUTFPSBuilder-Xenon" depends="setCurrChangeList, cleanGeneratedFiles, buildUE3_PC, buildUE3_Xenon, buildUT2007DotU, smokeTest_ut2007, cleanCookedXenon_utGame, xenonCookContent_ut2007_benchmark, benchmark_UTFPS_Xenon, copyStatsFromXenonBackToStatsDir_UT" >
+  </target>
+
+
+  <target name="UE3_benchmarkWarFPSBuilder" depends="setCurrChangeList, cleanGeneratedFiles, buildUE3_PC, buildWarfareDotU, smokeTest_warfare, benchmark_WarFPS_PC" >
+  </target>
+
+  <target name="UE3_benchmarkWarFPSBuilder-PS3" depends="setCurrChangeList, cleanGeneratedFiles, buildUE3_PC, cleanPS3_warGame, compilePS3_warGame, buildWarfareDotU, smokeTest_warfare, cleanCookedPS3_warGame, ps3CookContent_war_benchmark, benchmark_WarFPS_PS3" >
+  </target>
+
+  <target name="UE3_benchmarkWarFPSBuilder-Xenon" depends="setCurrChangeList,  cleanGeneratedFiles, buildUE3_PC, buildUE3_Xenon, buildWarfareDotU, smokeTest_warfare, cleanCookedXenon_warGame, xenonCookContent_war_benchmark , benchmark_WarFPS_Xenon, copyStatsFromXenonBackToStatsDir_War" >
+  </target>
+
+
+    <!-- need to add more smoketests -->
+    <target name="UE3_smokeTest" depends="buildUE3, buildDotU, smokeTest" ></target>
+
+    <!-- will use the smoketest' smoketestes as this guy is just really to verify that the licensee clientspec can compile correctly -->
+    <target name="UE3_smokeTest_Licensee" depends="buildUE3, buildDotU, smokeTest, loadPackages_exampleGame, pcCookContent_exampleGameFull, xenonCookContent_exampleGameFull, ps3CookContent_exampleGameFull" ></target>
+
+
+
+
+
+
+  <target name="msewTest" >
+     <exec dir="${unrealEngine3.binaries.dir}" executable="xbreboot" output="${compileOptions.logDir}/${ut2007.log.benchmark.fps}.log" failonerror="false" timeout="${benchmark.timeoutPeriod}" > 
+        <arg line=""/>
+     </exec>
+
+     <sleep seconds="30" />
+
+       <exec dir="${unrealEngine3.binaries.dir}" executable="${unrealEngine3.binaries.dir}/CookerSync.exe" output="${compileOptions.logDir}/${ut2007.log.xenonCooking}.log" failonerror="true"> 
+       <arg line="UT -log"/>
+     </exec>
+  </target>
+
+
+
+     <!-- bogus testing shizzle -->
+      <target name="buildIt" >
+         <limit hours="1" failonerror="true">
+            <target name="buildIt2" >
+                 <echo message = "hi! buildIt2 here" />
+            </target>
+         </limit>
+      </target>
+
+
+
+<target name="looptest" >
+
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+  <echo>i is @{i} @{j} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+      <for param="j" begin="1" end="${benchmark.numRuns}">      
+      <sequential>
+  <echo>i is @{i} @{j} and map is ${utgame.perfmap.dm.@{i}} </echo>
+      </sequential>
+      </for>
+      </sequential>
+    </for>
+
+</target>
+
+
+  
+<target name="looptest2" >
+
+
+   <!-- CTF -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ctf}">
+      <sequential>
+        <for param="j" begin="1" end="${benchmark.numRuns}">     
+          <sequential>
+            <echo>i is @{i} and map is ${utgame.perfmap.ctf.@{i}} </echo>
+          </sequential>
+        </for>
+      </sequential>
+    </for>
+
+
+   <!-- DM -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.dm}">
+      <sequential>
+        <for param="j" begin="1" end="${benchmark.numRuns}">     
+          <sequential>
+            <echo>i is @{i} and map is ${utgame.perfmap.dm.@{i}} </echo>
+          </sequential>
+        </for>
+      </sequential>
+    </for>
+
+
+   <!-- ONS -->
+    <for param="i" begin="1" end="${utgame.perfmap.numMaps.ons}">
+      <sequential>
+        <for param="j" begin="1" end="${benchmark.numRuns}">     
+          <sequential>
+           <echo>i is @{i} and map is ${utgame.perfmap.ons.@{i}} </echo>
+          </sequential>
+        </for>
+      </sequential>
+    </for>
+
+</target>
+
+
+<target name="UE3_msweitzerBuilder" depends="buildExampleGameDotU" >
+
+</target>
+
+
+
+
+
+<!--
+UE3_CHECK_PUREVIRTUALS
+UE3_CHECK_NATIVE_CLASS_SIZES
+UE3_CHECK_NATIVE_MATCH
+UE3_FINAL_RELEASE
+UE3_WITH_NOVODEX
+UE3_WITH_FACEFX  // need special removal of the faceFX lib from clientspec
+UE3_USE_NULL_RHI
+
+UE3_WITH_SPEECH_RECOGNITION
+UE3_WITH_TTS
+UE3_WITH_COLLADA
+
+UE3_USE_BINK_CODEC
+UE3_WITH_MGS_EXTERNAL_LIBS
+-->
+
+
+  <target name="UE3BuildTypes">
+    <echo message = "***********************" />
+    <echo message = "*** UE3 Build types ***" />
+    <echo message = "***********************" />
+    <echo message = "" />
+
+    <echo message = "  -UE3_codeBuilder" />
+    <echo message = "  -UE3_sansBuilderPS3" />
+    <echo message = "  -UE3_sansBuilderUTPrivate" />
+    <echo message = "  -UE3_xenonBVTBuilder" />
+    <echo message = "  -UE3_xenonMiniBVTBuilder" />
+    <echo message = "  -UE3_verificationBuilder" />
+    <echo message = "  -UE3_benchmarkUTFPSBuilder" />
+
+    <echo message = "timestampForBVT=${timestampForBVT}" />
+
+    <limit hours="1" failonerror="true">
+       <echo message = "limit ant-contrib test" />
+    </limit>
+
+  </target>
+
+</project>

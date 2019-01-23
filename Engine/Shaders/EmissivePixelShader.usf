@@ -1,0 +1,104 @@
+/*=============================================================================
+	EmissivePixelShader.hlsl: Emissive pixel shader
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#define NEEDS_LIGHTMAP_COORDINATE TEXTURE_LIGHTMAP
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+half3 UpperSkyColor;
+half3 LowerSkyColor;
+
+half4 AmbientColorAndSkyFactor;
+static half3 AmbientColor = AmbientColorAndSkyFactor.rgb;
+static half SkyFactor = AmbientColorAndSkyFactor.a;
+
+#if TEXTURE_LIGHTMAP
+sampler2D LightMapTextures[NUM_LIGHTMAP_COEFFICIENTS];
+float3 LightMapScale[NUM_LIGHTMAP_COEFFICIENTS];
+#endif
+
+void Main(
+	FVertexFactoryInterpolants Interpolants,
+#if VERTEX_LIGHTMAP
+	float3 LightMapA		: TEXCOORD2,
+	float3 LightMapB		: TEXCOORD3,
+	float3 LightMapC		: TEXCOORD4,
+#endif
+	float4 ScreenPosition	: TEXCOORD5,
+	float3 CameraVector		: TEXCOORD6,
+	float3 SkyVector		: TEXCOORD7,
+	out float4 OutColor		: COLOR0
+	)
+{
+	FMaterialParameters MaterialParameters = GetMaterialParameters(Interpolants);
+	CalcMaterialParameters(MaterialParameters,CameraVector,ScreenPosition);
+
+	half3x3 LightMapBasis = half3x3(
+		half3(	0.0f,					sqrt(6.0f) / 3.0f,			1.0f / sqrt(3.0f)),
+		half3(	-1.0f / sqrt(2.0f),		-1.0f / sqrt(6.0f),			1.0f / sqrt(3.0f)),
+		half3(	+1.0f / sqrt(2.0f),		-1.0f / sqrt(6.0f),			1.0f / sqrt(3.0f))
+		);
+
+	half3 LightMapNormal = mul(LightMapBasis,MaterialParameters.TangentNormal);
+	half3 LightMapReflectionVector = mul(LightMapBasis,MaterialParameters.TangentReflectionVector);
+
+	half3 TwoSidedLightingMask = GetMaterialTwoSidedLightingMask(MaterialParameters);
+#if MATERIAL_LIGHTINGMODEL_NONDIRECTIONAL
+	TwoSidedLightingMask = 1;
+#endif
+
+	half3 LightTransfer = 0;
+
+#if !MATERIAL_LIGHTINGMODEL_CUSTOM
+	half3 DiffuseTransferCoefficients = saturate(LightMapNormal) * saturate(LightMapNormal) * (1 - TwoSidedLightingMask) + TwoSidedLightingMask;
+	half3 SpecularTransferCoefficients = pow(saturate(LightMapReflectionVector),GetMaterialSpecularPower(MaterialParameters) + 1) * (1 - TwoSidedLightingMask);
+#endif
+
+#if VERTEX_LIGHTMAP
+	half3 VertexLightMap[3] = { LightMapA, LightMapB, LightMapC };
+#endif
+
+	UNROLL
+	for(int CoefficientIndex = 0;CoefficientIndex < NUM_LIGHTMAP_COEFFICIENTS;CoefficientIndex++)
+	{
+#if TEXTURE_LIGHTMAP
+		half3 LightMap = tex2D(LightMapTextures[CoefficientIndex],GetLightMapCoordinate(Interpolants)).rgb * LightMapScale[CoefficientIndex];
+#elif VERTEX_LIGHTMAP
+		half3 LightMap = VertexLightMap[CoefficientIndex];
+#else
+		half3 LightMap = 0;
+#endif
+
+#if MATERIAL_LIGHTINGMODEL_CUSTOM
+		MaterialParameters.TangentLightVector = LightMapBasis[CoefficientIndex];
+		LightTransfer += LightMap * GetMaterialCustomLighting(MaterialParameters);
+#else
+		LightTransfer += LightMap * DiffuseTransferCoefficients[CoefficientIndex] * GetMaterialDiffuseColor(MaterialParameters);
+#ifndef DISABLE_LIGHTMAP_SPECULAR
+		LightTransfer += LightMap * SpecularTransferCoefficients[CoefficientIndex] * GetMaterialSpecularColor(MaterialParameters);
+#endif
+#endif
+	}
+
+	half3 Color = GetMaterialEmissive(MaterialParameters);
+
+#if !MATERIAL_LIGHTINGMODEL_UNLIT
+#if XBOX || PS3
+	// SkyFactor and AmbientColor are constants if we assume SHOW_Lighting to be always set. We make the assumption that on console 
+	// performance is more important than being able to toggle this flag and therefore use special shortcut.
+	Color += LightTransfer
+		+ GetMaterialHemisphereLightTransferFull(MaterialParameters,normalize(SkyVector),UpperSkyColor,LowerSkyColor);
+#else	
+	Color += LightTransfer
+		+ GetMaterialHemisphereLightTransfer(MaterialParameters,normalize(SkyVector)) * UpperSkyColor * SkyFactor
+		+ GetMaterialHemisphereLightTransfer(MaterialParameters,-normalize(SkyVector)) * LowerSkyColor * SkyFactor
+		+ GetMaterialDiffuseColor(MaterialParameters) * AmbientColor;
+#endif
+#endif
+
+	OutColor = RETURN_COLOR( GetMaterialBlendBase( MaterialParameters, ScreenPosition, Color ) );
+}

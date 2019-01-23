@@ -1,0 +1,171 @@
+/*=============================================================================
+	LocalDecalVertexFactory.hlsl: Local decal vertex factory shader code.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+float4x4 LocalToWorld;
+// @todo DB: PreviousLocalToWorld not needed for decals
+float4x4 PreviousLocalToWorld;
+float3x3 WorldToLocal;
+float4 ShadowCoordinateScaleBias;
+
+float4x4	BoneToDecal;
+float3		DecalLocation;
+float2		DecalOffset;
+
+struct FVertexFactoryInput
+{
+	float4	Position	: POSITION;
+	half3	TangentX	: TANGENT;
+	half3	TangentY	: BINORMAL;
+	half3	TangentZ	: NORMAL;
+#if NUM_MATERIAL_TEXCOORDS
+	float2	TexCoords[NUM_MATERIAL_TEXCOORDS] : TEXCOORD0;
+#endif
+#if NEEDS_LIGHTMAP_COORDINATE
+	float2	LightMapCoordinate : COLOR;
+#endif
+};
+
+struct FVertexFactoryInterpolants
+{
+#if WORLD_COORDS
+	// xyz=normal w=determinant
+	float4	TangentBasisNormal	: COLOR0;
+	float3	TangentBasisTangent	: COLOR1;
+#endif
+#if NEEDS_LIGHTMAP_COORDINATE
+	float2	LightMapCoordinate					: TEXCOORD0;
+#if NUM_MATERIAL_TEXCOORDS
+	float4	TexCoords[(NUM_MATERIAL_TEXCOORDS+1)/2]	: TEXCOORD1;
+#endif
+#else
+#if NUM_MATERIAL_TEXCOORDS
+	float4	TexCoords[(NUM_MATERIAL_TEXCOORDS+1)/2]	: TEXCOORD0;
+#endif
+#endif
+
+// Cg needs to have something in here
+// GEMINI_TODO: go back to making this only if needed
+#if COMPILER_CG //&& !WORLD_COORDS && !NEEDS_LIGHTMAP_COORDINATE && !NUM_MATERIAL_TEXCOORDS
+	float4 Dummy : TEXCOORD9;
+#endif
+};
+
+FMaterialParameters GetMaterialParameters(FVertexFactoryInterpolants Interpolants)
+{
+	FMaterialParameters	Result;
+#if NUM_MATERIAL_TEXCOORDS
+	UNROLL
+	for(int CoordinateIndex = 0;CoordinateIndex < NUM_MATERIAL_TEXCOORDS;CoordinateIndex += 2)
+	{
+		Result.TexCoords[CoordinateIndex] = Interpolants.TexCoords[CoordinateIndex/2].xy;
+		if(CoordinateIndex + 1 < NUM_MATERIAL_TEXCOORDS)
+		{
+			Result.TexCoords[CoordinateIndex + 1] = Interpolants.TexCoords[CoordinateIndex/2].wz;
+		}
+	}
+#endif
+	Result.VertexColor = 1;
+	Result.TangentNormal = 0;
+	Result.TangentCameraVector = 0;
+	Result.TangentReflectionVector = 0;
+	Result.ScreenPosition = 0;
+	Result.TangentLightVector = 0;
+#if WORLD_COORDS
+	Result.TangentBasisInverse = CalcInvTangentBasis(Interpolants.TangentBasisNormal,Interpolants.TangentBasisTangent);
+#endif
+	return Result;
+}
+
+#if NEEDS_LIGHTMAP_COORDINATE
+float2 GetLightMapCoordinate(FVertexFactoryInterpolants Interpolants)
+{
+	return Interpolants.LightMapCoordinate;
+}
+#endif
+
+float4 CalcWorldPosition(FVertexFactoryInput Input)
+{
+	return MulMatrix(LocalToWorld,Input.Position);
+}
+
+float2 ComputeDecalTexCoord(float4 Point)
+{
+	float2	OutPos = MulMatrix(BoneToDecal, Point-float4(DecalLocation,1)).xy;
+	return float2(-OutPos.x+0.5+DecalOffset.x, -OutPos.y+0.5+DecalOffset.y );
+}
+
+float4 VertexFactoryGetWorldPosition(FVertexFactoryInput Input,out FVertexFactoryInterpolants Interpolants)
+{
+#if NUM_MATERIAL_TEXCOORDS
+	// Ensure the unused components of the last packed texture coordinate are initialized.
+	Interpolants.TexCoords[(NUM_MATERIAL_TEXCOORDS + 1) / 2 - 1] = 0;
+
+	float2 DecalTexCoords = ComputeDecalTexCoord( Input.Position );
+	UNROLL
+	for(int CoordinateIndex = 0;CoordinateIndex < NUM_MATERIAL_TEXCOORDS;CoordinateIndex += 2)
+	{
+		Interpolants.TexCoords[CoordinateIndex / 2].xy = DecalTexCoords.xy;
+		if(CoordinateIndex + 1 < NUM_MATERIAL_TEXCOORDS)
+		{
+			Interpolants.TexCoords[CoordinateIndex / 2].wz = DecalTexCoords.xy;
+		}
+	}
+#endif
+
+#if NEEDS_LIGHTMAP_COORDINATE
+	Interpolants.LightMapCoordinate = Input.LightMapCoordinate * ShadowCoordinateScaleBias.xy + ShadowCoordinateScaleBias.wz;
+#endif
+
+#if WORLD_COORDS
+	Interpolants.TangentBasisNormal.xyz = Input.TangentZ / 255;
+	Interpolants.TangentBasisNormal.w = determinant(float3x3(Input.TangentX,Input.TangentY,Input.TangentZ) / 127.5 - 1) * 0.5 + 0.5;
+	Interpolants.TangentBasisTangent = Input.TangentX / 255;	
+#endif
+
+	return CalcWorldPosition(Input);
+}
+
+/** for depth-only pass */
+float4 VertexFactoryGetWorldPositionOnly(FVertexFactoryInput Input)
+{
+	return CalcWorldPosition(Input);
+}
+
+float4 VertexFactoryGetPreviousWorldPosition(FVertexFactoryInput Input,out FVertexFactoryInterpolants Interpolants)
+{
+#if NUM_MATERIAL_TEXCOORDS
+	// Ensure the unused components of the last packed texture coordinate are initialized.
+	Interpolants.TexCoords[(NUM_MATERIAL_TEXCOORDS + 1) / 2 - 1] = 0;
+
+	float2 DecalTexCoords = ComputeDecalTexCoord( Input.Position );
+	UNROLL
+	for(int CoordinateIndex = 0;CoordinateIndex < NUM_MATERIAL_TEXCOORDS;CoordinateIndex += 2)
+	{
+		Interpolants.TexCoords[CoordinateIndex / 2].xy = DecalTexCoords.xy;
+		if(CoordinateIndex + 1 < NUM_MATERIAL_TEXCOORDS)
+		{
+			Interpolants.TexCoords[CoordinateIndex / 2].wz = DecalTexCoords.xy;
+		}
+	}
+#endif
+
+#if NEEDS_LIGHTMAP_COORDINATE
+	Interpolants.LightMapCoordinate = Input.LightMapCoordinate * ShadowCoordinateScaleBias.xy + ShadowCoordinateScaleBias.wz;
+#endif
+
+#if WORLD_COORDS
+	Interpolants.TangentBasisNormal.xyz = Input.TangentZ / 255;
+	Interpolants.TangentBasisNormal.w = determinant(float3x3(Input.TangentX,Input.TangentY,Input.TangentZ) / 127.5 - 1) * 0.5 + 0.5;
+	Interpolants.TangentBasisTangent = Input.TangentX / 255;	
+#endif
+
+	return MulMatrix(PreviousLocalToWorld,Input.Position);
+}
+
+float3 VertexFactoryWorldToTangentSpace(FVertexFactoryInput Input,half3 WorldVector)
+{
+	// we use a straight mul here because we are generating the matrix, so we don't worry about column major vs row major (which is what MulMatrix manages per-platform)
+	return mul(float3x3(Input.TangentX,Input.TangentY,Input.TangentZ) / 127.5 - 1, MulMatrix(WorldToLocal,WorldVector));
+}

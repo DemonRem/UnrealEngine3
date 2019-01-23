@@ -1,0 +1,8 @@
+/**
+ * Copyright 1998-2007 Epic Games, Inc. All Rights Reserved.
+ */
+
+#include "UnIpDrv.h"
+
+IMPLEMENT_CLASS(UOnlineSubsystemCommonImpl);
+

@@ -1,0 +1,48 @@
+﻿[UDebuggerRegressionCommandlet]
+HelpDescription="U デバッガ実行のテストと復帰用コマンドレット"
+HelpUsage="gamename.exe UnrealScriptTest.UDebuggerRegression"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+
+[Test0003_Commandlet]
+HelpDescription="CIS の復帰テスト"
+HelpUsage="gamename.exe UnrealScriptTest.Test0003_Commandlet"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]="" 
+
+[Test0005_Commandlet]
+HelpDescription="CIS の回帰テスト"
+HelpUsage="gamename.exe UnrealScriptTest.Test0005_Commandlet"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+
+[Test0010_Commandlet]
+HelpDescription="CIS の回帰テスト"
+HelpUsage="gamename.exe UnrealScriptTest.Test0010_Commandlet"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+
+[Test0011_Commandlet]
+HelpDescription="CIS の回帰テスト"
+HelpUsage="gamename.exe UnrealScriptTest.Test0011_Commandlet"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+
+[Test0020_Commandlet]
+HelpDescription="CIS の回帰テスト"
+HelpUsage="gamename.exe UnrealScriptTest.Test0020_Commandlet"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+
+[TestCommandlet]
+HelpDescription="CIS の回帰テスト"
+HelpUsage="gamename.exe UnrealScriptTest.TestCommandlet"
+HelpWebLink=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""

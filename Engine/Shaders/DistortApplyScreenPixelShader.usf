@@ -1,0 +1,38 @@
+/*=============================================================================
+	DistortApplyScreenPixelShader.usf: Pixel shader for rendering screen distortion pass
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+static const half DistortionScaleBias = 4.0f;
+
+/** 
+* contains accumulated distortion values as 
+* R=positive horizontal offset
+* G=positive vertical offset
+* B=negative horizontal offset
+* A=negative vertical offset 
+*/
+sampler2D	AccumulatedDistortionTexture;
+
+/** distorts screen texture using accumulated distortion offsets */
+void Main(
+	in float2 TexCoord: TEXCOORD0,
+	out float4 OutColor : COLOR0
+	)
+{
+	// sample accumulated distortion and apply inverse scale
+	half4 AccumDist = tex2D(AccumulatedDistortionTexture,TexCoord)/DistortionScaleBias;
+	// offset = [R-B,G-A] and flip Y
+	float2 DistOffset = float2(AccumDist.r - AccumDist.b, AccumDist.g - AccumDist.a) * float2(1,-1);	
+	// sample screen using offset coords
+	half3 DistColor = tex2D(SceneColorTexture, TexCoord + DistOffset).xyz;
+
+#if SUPPORTS_DEPTH_TEXTURES    
+	OutColor = half4(DistColor,0);
+#else
+	half SceneDepth = CalcSceneDepth(TexCoord);
+	OutColor = RETURN_COLOR( half4(DistColor,SceneDepth) );
+#endif
+}

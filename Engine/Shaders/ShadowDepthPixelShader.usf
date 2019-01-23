@@ -1,0 +1,35 @@
+/*=============================================================================
+	ShadowDepthPixelShader.hlsl: Pixel shader for writing shadow depth.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+float InvMaxSubjectDepth;
+float DepthBias;
+
+void Main(
+	FVertexFactoryInterpolants Interpolants,
+	in float4 ShadowPosition : TEXCOORD7,
+	out float4 OutColor : COLOR0,
+	out float OutDepth : DEPTH
+	)
+{
+	FMaterialParameters MaterialParameters = GetMaterialParameters(Interpolants);
+	CalcMaterialParameters(MaterialParameters,0,0);
+
+	//GetMaterialClipping(MaterialParameters);
+
+	ShadowPosition.z *= InvMaxSubjectDepth;
+	ShadowPosition.z += DepthBias;
+
+#if MATERIALBLENDING_MASKED
+	ShadowPosition.z = GetMaterialMask(MaterialParameters) > 0 ? ShadowPosition.z : 100.0f;
+#endif
+
+	OutDepth = saturate(ShadowPosition.z);
+	// RETURN_COLOR not needed unless writing to SceneColor;	
+	OutColor = saturate(ShadowPosition.z);
+}

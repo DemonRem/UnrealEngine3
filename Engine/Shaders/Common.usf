@@ -1,0 +1,332 @@
+/*=============================================================================
+	Common.hlsl: Common shader code.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Definitions.usf"
+
+
+// When multiplying with a matrix that is passed in externally through a matrix parameter, you MUST use MulMatrix.
+// When multiplying by a generated matrix (float3x3(VecA, VecB, VecC)), you MUST use mul
+// Note that MulMatrix also works for multiplying vector by matrix (transforming by transposed matrix), e.g. MulMatrix( Vect, Mtx ).
+#if PS3
+	#define MulMatrix(Mtx, Vect)	mul(Vect, Mtx)
+	#define MulBone(Mtx, Vect)		mul(Mtx, Vect)
+
+	// PS3 needs to specify some constants in certain registers for proper compiling for some shaders
+	#define REGISTER(x)				:c##x
+
+	// On PS3, remap Tangent and Binormal to slot 5 and 6, so they don't overlap texcoord 6 and 7
+	#define TANGENT					ATTR5
+	#define BINORMAL				ATTR6
+
+	// Input semantic for pixel shaders to get the screenspace pixel position (window position)
+	#define VPOS					WPOS
+
+	// Clamp the base, so it's never <= 0.0f on PS3 (INF/NaN).
+	#define pow(x,y)				pow( max((x), 0.0001f), (y) )
+#else
+	#define MulMatrix(Mtx, Vect)	mul(Mtx, Vect)
+	#define MulBone(Mtx, Vect)		mul(Vect, Mtx)
+
+	#define REGISTER(x)
+
+	// It's necessary to use these whenever you're reading a depth value from a depth texture
+    #define texDepth2D				tex2D
+	#define texDepth2Dlod			tex2Dlod
+	#define texDepth2Dproj			tex2Dproj
+#endif
+
+
+#if XBOX
+	// SCENE_COLOR_BIAS_FACTOR.x = 2^SCENE_COLOR_BIAS_FACTOR_EXP (See XeD3DRenderTarget.cpp)
+	// This value is set to 1 when rendering to an LDR buffer.
+	// Note that 'c0' must match PSR_ColorBiasFactor in EPixelShaderRegisters (see RHI.h).
+	float4 SCENE_COLOR_BIAS_FACTOR : register(c0);
+	float4 BiasColor( float4 Color )
+	{
+		return float4( Color.rgb * SCENE_COLOR_BIAS_FACTOR.x, Color.a );
+	}
+	// RETURN_COLOR should only be used when rendering to the SceneColor surface
+	#define RETURN_COLOR( Color ) BiasColor( Color );
+#else
+	#define SCENE_COLOR_BIAS_FACTOR 1.0f 
+	// We don't use an inline function so we can avoid type promotion/ coercion.
+	#define RETURN_COLOR( Color ) ( Color )
+#endif
+
+//the largest value any color component is allowed to have, scene color is clamped to this in DOFAndBloomGatherPixelShader.usf
+//also used to pack color into the fixed point filter buffer, which requires a range of [0-1]
+#define MAX_SCENE_COLOR 4.0f
+
+float Square(float A)
+{
+	return A * A;
+}
+
+float4 ExpandRGBE( float4 RGBE )
+{
+	return float4( ldexp( RGBE.xyz, 255.0 * RGBE.w - 128.0 ), 1.0 );
+}
+
+float4 ExpandCompressedRGBE( float4 RGBE )
+{
+	return float4( ldexp( RGBE.xyz, 255.0 / 16.0 * RGBE.w - 8.0 ), 1.0 );
+}
+
+float4 GammaCorrect( float4 Color )
+{
+	return float4( pow( Color.xyz, 2.2 ), Color.w );
+}
+
+half3 PointLightPhong(half3 DiffuseColor,half3 SpecularColor,half SpecularPower, half3 L, float3 E, half3 N, float3 R)
+{
+	half3	DiffuseLighting = saturate(dot(N,L)),
+			SpecularLighting = pow(saturate(dot(R,L)),max(SpecularPower,0.0001));
+
+	return DiffuseColor * DiffuseLighting + SpecularLighting * SpecularColor;
+}
+
+half3 HemisphereLightPhong(half3 DiffuseColor, half3 S, half3 N)
+{
+	return DiffuseColor * Square(0.5 + 0.5 * dot(N,S));
+}
+
+sampler2D	SceneColorTexture;
+float4		ScreenPositionScaleBias;
+
+float4 PreviousLighting(float4 ScreenPosition)
+{
+	return tex2D(SceneColorTexture,ScreenPosition.xy / ScreenPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz);
+}
+
+float RadialAttenuation(float3 WorldLightVector,half FalloffExponent)
+{
+	return pow(
+		saturate(1.0f - dot(WorldLightVector,WorldLightVector)),
+		FalloffExponent
+		);
+}
+
+sampler2D	LightAttenuationTexture;
+
+half3 GetLightAttenuation(float4 ScreenPosition)
+{
+	return tex2D(LightAttenuationTexture, ScreenPosition.xy / ScreenPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz).rgb;
+}
+
+sampler2D 	SceneDepthTexture;
+float4		MinZ_MaxZRatio;
+
+#if SUPPORTS_DEPTH_TEXTURES
+half ConvertToClipSpaceW( half DeviceZ )
+{
+	//return MinZ_MaxZRatio[0] / (1.0 - (DeviceZ / MinZ_MaxZRatio[1]));
+	return 1.f / (DeviceZ * MinZ_MaxZRatio[2] - MinZ_MaxZRatio[3]);	
+}
+/** return the depth value stored in the depth buffer - but convert it to w first */
+half CalcSceneDepth( float2 ScreenUV )
+{
+	// get depth buffer z value
+    half DeviceZ = texDepth2D(SceneDepthTexture,ScreenUV).r;
+
+	// convert it to clip space w
+	return ConvertToClipSpaceW(DeviceZ);
+}
+#else
+half ConvertToClipSpaceW( half DeviceZ );
+/** return the depth value stored in lighting target's alpha */
+half CalcSceneDepth( float2 ScreenUV )
+{
+	// depth stored in alpha
+	return tex2D(SceneColorTexture,ScreenUV).a;
+}
+#endif
+
+/** return the scene lighting texture */
+half3 CalcSceneColor(float2 ScreenUV)
+{
+	return tex2D(SceneColorTexture,ScreenUV).rgb;
+}
+
+/** 
+* Used when doing a translucent blend to scene color, to allow the blending to be done in the shader if necessary. 
+* DestAlpha is not preserved in this function.
+* @param InColor - SourceColor in the blend equation
+* @param ScreenPosition - texture space pixel position
+*/
+float4 BlendAlphaLerpWithSceneColor(half4 InColor, float2 ScreenPosition)
+{
+#if MANUAL_FP_BLEND
+	return RETURN_COLOR(float4(lerp(CalcSceneColor(ScreenPosition), InColor.rgb, InColor.a), InColor.a));
+#else
+	return RETURN_COLOR(InColor);
+#endif
+}
+
+/** 
+* Used when doing a translucent blend to scene color, to allow the blending to be done in the shader if necessary. 
+* DestAlpha is preserved in this function.
+* @param InColor - SourceColor in the blend equation
+* @param ScreenPosition - projection space pixel position
+*/
+float4 BlendAlphaLerpWithSceneColor(half4 InColor, float4 ScreenPosition)
+{
+#if MANUAL_FP_BLEND
+	half4 previousLighting = PreviousLighting(ScreenPosition);
+	return RETURN_COLOR(float4(lerp(previousLighting.rgb, InColor.rgb, InColor.a), previousLighting.a));
+#else
+	return RETURN_COLOR(InColor);
+#endif
+}
+
+/** 
+* Used when doing a modulated blend weighted by alpha to scene color, to allow the blending to be done in the shader if necessary. 
+* DestAlpha is not preserved in this function.
+* @param InColor - SourceColor in the blend equation
+* @param ScreenPosition - texture space pixel position
+*/
+float4 BlendAlphaModulateWithSceneColor(half4 InColor, float2 ScreenPosition)
+{
+#if MANUAL_FP_BLEND
+	return RETURN_COLOR(float4(InColor.rgb + CalcSceneColor(ScreenPosition) * InColor.a, InColor.a));
+#else
+	return RETURN_COLOR(InColor);
+#endif
+}
+
+/** 
+* Used when doing an add blend to scene color, to allow the blending to be done in the shader if necessary. 
+* DestAlpha is preserved in this function.
+* @param InColor - SourceColor in the blend equation
+* @param ScreenPosition - projection space pixel position
+*/
+float4 BlendAddToSceneColor(half4 InColor, float4 ScreenPosition)
+{
+#if MANUAL_FP_BLEND
+	half4 previousLighting = PreviousLighting(ScreenPosition);
+	return RETURN_COLOR(float4(InColor + previousLighting.rgb, previousLighting.a));
+#else
+	return RETURN_COLOR(InColor);
+#endif
+}
+
+/** 
+* Used when doing a modulated blend to scene color, to allow the blending to be done in the shader if necessary. 
+* DestAlpha is preserved in this function.
+* @param InColor - SourceColor in the blend equation
+* @param ScreenPosition - projection space pixel position
+*/
+float4 BlendModulateWithSceneColor(half4 InColor, float4 ScreenPosition)
+{
+#if MANUAL_FP_BLEND
+	half4 previousLighting = PreviousLighting(ScreenPosition);
+	return float4(InColor.rgb * previousLighting.rgb, previousLighting.a);
+#else
+	// RETURN_COLOR not used for modulated blending
+	return InColor;
+#endif
+}
+
+half PreviousDepth(float4 ScreenPosition)
+{
+	return CalcSceneDepth(ScreenPosition.xy / ScreenPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz);
+}
+
+/** sample from previous lighting texture using distortion UV offsets */
+float4 CalcDistortionColor(float4 ScreenPosition, float2 DistortionUVOffsets)
+{
+	return PreviousLighting( ScreenPosition + float4(DistortionUVOffsets * float2(1,-1),0,0) );
+}
+
+/** handle BLEND_Modulated mode */
+float4 ModulateBlendBase(float4 ScreenPosition,float3 Color,float2 Distortion)
+{
+	return float4(CalcDistortionColor(ScreenPosition,Distortion) * Color,ScreenPosition.w);
+}
+float4 ModulateBlendAdd(float4 ScreenPosition,float3 Color)
+{
+	return float4(PreviousLighting(ScreenPosition) * Color,ScreenPosition.w);
+}
+
+/** handle BLEND_Additive mode */
+float4 AdditiveBlendBase(float4 ScreenPosition,float3 Color,float2 Distortion,float Opacity)
+{
+	return float4(CalcDistortionColor(ScreenPosition,Distortion).rgb + Color * Opacity,ScreenPosition.w);
+}
+float4 AdditiveBlendAdd(float4 ScreenPosition,float3 Color,float Opacity)
+{
+	return float4(PreviousLighting(ScreenPosition).rgb + Color * Opacity,ScreenPosition.w);
+}
+
+/** handle BLEND_Translucent mode */
+float4 TranslucentBlendBase(float4 ScreenPosition,float3 Color,float2 Distortion,float Opacity)
+{
+	return float4(
+		lerp(CalcDistortionColor(ScreenPosition,Distortion).rgb,Color,Opacity),
+		ScreenPosition.w
+		);
+}
+float4 TranslucentBlendAdd(float4 ScreenPosition,float3 Color,float Opacity)
+{
+	return float4(
+			PreviousLighting(ScreenPosition).rgb + Color * Opacity,
+			ScreenPosition.w
+			);
+}
+
+float4 OpaqueBlendBase(float4 ScreenPosition,float3 Color)
+{
+	return float4(Color,ScreenPosition.w);
+}
+
+float4 OpaqueBlendAdd(float4 ScreenPosition,float3 Color)
+{
+	return float4(Color,0);
+}
+
+#define FLOAT16_EPSILON	4.8875809e-4f
+
+float GetDepthCompareEpsilon(float Depth)
+{
+#if 1
+	// This is an approximate, much faster way to calculate the epsilon.
+	return Depth * FLOAT16_EPSILON * 2.0;
+#else
+	// This is the slower way to calculate the epsilon.
+	return exp2(ceil(log2(Depth))) * FLOAT16_EPSILON;
+#endif
+}
+
+half	TwoSidedSign;	// +1 if rendering the front side of a face, -1 if rendering the back side.
+
+/** 
+ * aligns the clip space position so that it can be used as a texture coordinate
+ * to properly align in screen space
+ */
+float4 ScreenAlignedPosition( float4 ScreenPosition )
+{
+	return float4(ScreenPosition.xy / ScreenPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz, ScreenPosition.z/ScreenPosition.w,1);
+}
+
+/** clips the fragment if it is closer than the previous depth */
+void ClipIfNearer( float4 ScreenPosition )
+{
+// Only draw pixels which are farther than PreviousDepth.		
+#if 0 //@todo xenon
+	clip( ScreenPosition.z/ScreenPosition.w - tex2D(SceneDepthTexture,ScreenPosition.xy / ScreenPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz).r - GetDepthCompareEpsilon(ScreenPosition.z/ScreenPosition.w) );
+#else
+	clip(ScreenPosition.w - PreviousDepth(ScreenPosition) - GetDepthCompareEpsilon(ScreenPosition.w));
+#endif
+}
+
+/** clips the fragment if it is farther away than the previous depth */
+void ClipIfFarther( float4 ScreenPosition )
+{
+// Only draw pixels which are nearer than PreviousDepth.
+#if 0 //@todo xenon
+	clip( tex2D(SceneDepthTexture,ScreenPosition.xy / ScreenPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz).r - ScreenPosition.z/ScreenPosition.w - GetDepthCompareEpsilon(ScreenPosition.z/ScreenPosition.w) );
+#else
+	clip(PreviousDepth(ScreenPosition) - ScreenPosition.w - GetDepthCompareEpsilon(ScreenPosition.w));
+#endif
+}

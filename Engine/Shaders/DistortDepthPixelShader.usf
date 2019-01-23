@@ -1,0 +1,29 @@
+/*=============================================================================
+	DistortionDepthPixelShader.usf: Pixel shader for rendering distortion depths
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+/** calculate distortion depth */
+void Main(
+	FVertexFactoryInterpolants Interpolants,
+	float4	ScreenPosition	: TEXCOORD5,
+	float3	CameraVector	: TEXCOORD6,
+	out float4 OutColor		: COLOR0	
+	)
+{
+	// material parameter inputs
+	FMaterialParameters MaterialParameters = GetMaterialParameters(Interpolants);
+	CalcMaterialParameters(MaterialParameters,CameraVector,ScreenPosition);
+
+	// clip 
+	GetMaterialClipping(MaterialParameters);
+
+	// output w depth in red
+	OutColor = half4(ScreenPosition.w,0,0,0);	
+}
+
+

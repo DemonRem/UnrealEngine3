@@ -1,0 +1,19 @@
+/*=============================================================================
+	LDRTranclucencyPixelShader.usf - Combines LDR translucency with scene color.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+sampler2D LDRTranslucencyTexture;
+
+void Main(
+	in float2 UV : TEXCOORD0,
+	out float4 OutColor : COLOR0
+	)
+{
+	// lookup the translucency value, which stores source color in rgb, and the amount of scene color to weight in alpha
+	half4 LDRTranslucency = tex2D(LDRTranslucencyTexture,UV);
+	//combine the translucency with scene color
+	OutColor = RETURN_COLOR( float4( CalcSceneColor(UV) * LDRTranslucency.a + LDRTranslucency.rgb, CalcSceneDepth(UV) ) );
+}

@@ -1,0 +1,96 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example", "example.vcproj", "{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B7982F40-40DA-49A0-8353-5F83897B2088} = {B7982F40-40DA-49A0-8353-5F83897B2088}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minigzip", "minigzip.vcproj", "{AE7EB9FC-651B-4F32-AC49-330AAC27874D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B7982F40-40DA-49A0-8353-5F83897B2088} = {B7982F40-40DA-49A0-8353-5F83897B2088}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib.vcproj", "{B7982F40-40DA-49A0-8353-5F83897B2088}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 4
+		SccLocalPath0 = .
+		CanCheckoutShared = true
+		SolutionUniqueID = {F1A1313F-8FEE-42E4-9585-E8028F045DF9}
+		SccProjectUniqueName1 = example.vcproj
+		SccLocalPath1 = .
+		CanCheckoutShared = true
+		SccProjectUniqueName2 = minigzip.vcproj
+		SccLocalPath2 = .
+		CanCheckoutShared = true
+		SccProjectUniqueName3 = zlib.vcproj
+		SccLocalPath3 = .
+		CanCheckoutShared = true
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		DLL ASM Debug = DLL ASM Debug
+		DLL ASM Release = DLL ASM Release
+		DLL Debug = DLL Debug
+		DLL Release = DLL Release
+		LIB ASM Debug = LIB ASM Debug
+		LIB ASM Release = LIB ASM Release
+		LIB Debug = LIB Debug
+		LIB Release = LIB Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL ASM Debug.ActiveCfg = DLL ASM Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL ASM Debug.Build.0 = DLL ASM Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL ASM Release.ActiveCfg = DLL ASM Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL ASM Release.Build.0 = DLL ASM Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL Debug.ActiveCfg = DLL Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL Debug.Build.0 = DLL Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL Release.ActiveCfg = DLL Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.DLL Release.Build.0 = DLL Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB ASM Debug.ActiveCfg = LIB ASM Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB ASM Debug.Build.0 = LIB ASM Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB ASM Release.ActiveCfg = LIB ASM Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB ASM Release.Build.0 = LIB ASM Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB Debug.ActiveCfg = LIB Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB Debug.Build.0 = LIB Debug|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB Release.ActiveCfg = LIB Release|Win32
+		{1EF0299B-CC03-4A10-9BBE-92BA06ED9ADE}.LIB Release.Build.0 = LIB Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL ASM Debug.ActiveCfg = DLL ASM Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL ASM Debug.Build.0 = DLL ASM Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL ASM Release.ActiveCfg = DLL ASM Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL ASM Release.Build.0 = DLL ASM Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL Debug.ActiveCfg = DLL Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL Debug.Build.0 = DLL Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL Release.ActiveCfg = DLL Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.DLL Release.Build.0 = DLL Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB ASM Debug.ActiveCfg = LIB ASM Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB ASM Debug.Build.0 = LIB ASM Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB ASM Release.ActiveCfg = LIB ASM Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB ASM Release.Build.0 = LIB ASM Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB Debug.ActiveCfg = LIB Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB Debug.Build.0 = LIB Debug|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB Release.ActiveCfg = LIB Release|Win32
+		{AE7EB9FC-651B-4F32-AC49-330AAC27874D}.LIB Release.Build.0 = LIB Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL ASM Debug.ActiveCfg = DLL ASM Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL ASM Debug.Build.0 = DLL ASM Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL ASM Release.ActiveCfg = DLL ASM Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL ASM Release.Build.0 = DLL ASM Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL Debug.ActiveCfg = DLL Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL Debug.Build.0 = DLL Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL Release.ActiveCfg = DLL Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.DLL Release.Build.0 = DLL Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB ASM Debug.ActiveCfg = LIB ASM Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB ASM Debug.Build.0 = LIB ASM Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB ASM Release.ActiveCfg = LIB ASM Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB ASM Release.Build.0 = LIB ASM Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB Debug.ActiveCfg = LIB Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB Debug.Build.0 = LIB Debug|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB Release.ActiveCfg = LIB Release|Win32
+		{B7982F40-40DA-49A0-8353-5F83897B2088}.LIB Release.Build.0 = LIB Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,122 @@
+/**
+ * Copyright 1998-2007 Epic Games, Inc. All Rights Reserved.
+ */
+
+/**
+ * This file is used to provide a common area for online constants to be added
+ */
+
+// Gamespy Character Limits
+const GS_USERNAME_MAXLENGTH					 = 15;
+const GS_PASSWORD_MAXLENGTH					 = 15;
+const GS_EMAIL_MAXLENGTH					 = 255;
+
+// Presence options
+const CONTEXT_PRESENCE_MENUPRESENCE              = 0;
+
+const CONTEXT_GAME_MODE							 = 0x0000800B;
+
+// Game modes
+const CONTEXT_GAME_MODE_DM                       = 0;
+const CONTEXT_GAME_MODE_CTF                      = 1;
+const CONTEXT_GAME_MODE_ONS                      = 2;
+
+const CONTEXT_BOTSKILL                           = 0;
+const CONTEXT_MAPNAME                            = 1;
+const CONTEXT_GOALSCORE                          = 3;
+const CONTEXT_NUMBOTS                            = 4;
+const CONTEXT_TIMELIMIT                          = 5;
+const CONTEXT_PURESERVER                         = 6;
+const CONTEXT_LOCKEDSERVER                       = 7;
+const CONTEXT_VSBOTS                             = 8;
+
+// Maps that can be displayed in server browser, presence, etc.
+const CONTEXT_MAPNAME_CUSTOM                     = 0;
+//@todo fill in maps
+
+// Bot skill choices
+const CONTEXT_BOTSKILL_AUTOADJUSTSKILL           = 0;
+const CONTEXT_BOTSKILL_NOVICE                    = 1;
+const CONTEXT_BOTSKILL_AVERAGE                   = 2;
+const CONTEXT_BOTSKILL_EXPERIENCED               = 3;
+const CONTEXT_BOTSKILL_SKILLED                   = 4;
+const CONTEXT_BOTSKILL_ADEPT                     = 5;
+const CONTEXT_BOTSKILL_MASTERFUL                 = 6;
+const CONTEXT_BOTSKILL_INHUMAN                   = 7;
+const CONTEXT_BOTSKILL_GODLIKE                   = 8;
+
+// Values for CONTEXT_GOALSCORE
+
+const CONTEXT_GOALSCORE_5                        = 0;
+const CONTEXT_GOALSCORE_10                       = 1;
+const CONTEXT_GOALSCORE_15                       = 2;
+const CONTEXT_GOALSCORE_20                       = 3;
+const CONTEXT_GOALSCORE_30                       = 4;
+
+// Values for CONTEXT_NUMBOTS
+
+const CONTEXT_NUMBOTS_0                          = 0;
+const CONTEXT_NUMBOTS_1                          = 1;
+const CONTEXT_NUMBOTS_2                          = 2;
+const CONTEXT_NUMBOTS_3                          = 3;
+const CONTEXT_NUMBOTS_4                          = 4;
+const CONTEXT_NUMBOTS_5                          = 5;
+const CONTEXT_NUMBOTS_6                          = 6;
+const CONTEXT_NUMBOTS_7                          = 7;
+const CONTEXT_NUMBOTS_8                          = 8;
+
+// Values for CONTEXT_TIMELIMIT
+
+const CONTEXT_TIMELIMIT_5                        = 0;
+const CONTEXT_TIMELIMIT_10                       = 1;
+const CONTEXT_TIMELIMIT_15                       = 2;
+const CONTEXT_TIMELIMIT_20                       = 3;
+const CONTEXT_TIMELIMIT_30                       = 4;
+
+// Values for CONTEXT_PURESERVER
+
+const CONTEXT_PURESERVER_NO                      = 0;
+const CONTEXT_PURESERVER_YES                     = 1;
+
+// Values for CONTEXT_LOCKEDSERVER
+
+const CONTEXT_LOCKEDSERVER_NO                    = 0;
+const CONTEXT_LOCKEDSERVER_YES                   = 1;
+
+// Values for CONTEXT_VSBOTS
+
+const  CONTEXT_VSBOTS_NONE                       = 0;
+const  CONTEXT_VSBOTS_1_TO_2                     = 1;
+const  CONTEXT_VSBOTS_1_TO_1                     = 2;
+const  CONTEXT_VSBOTS_2_TO_1                     = 3;
+const  CONTEXT_VSBOTS_3_TO_1                     = 4;
+const  CONTEXT_VSBOTS_4_TO_1                     = 5;
+
+
+// Various properties
+const PROPERTY_KILLS                             = 0x10000005;
+const PROPERTY_DEATHS                            = 0x10000006;
+const PROPERTY_LEADERBOARDRATING                 = 0x20000004;
+
+// Advertised via QoS
+const PROPERTY_CUSTOMMAPNAME                     = 0x40000001;
+const PROPERTY_CUSTOMGAMEMODE                    = 0x40000002;
+
+// Queries
+const QUERY_DM									 = 0;
+
+// Leaderboards
+const STATS_VIEW_DM_PLAYER_ALLTIME               = 1;
+const STATS_VIEW_DM_RANKED_ALLTIME               = 2;
+const STATS_VIEW_DM_TRUESKILL					 = 0xFFFF0000;
+const STATS_VIEW_CTF_TRUESKILL					 = 0xFFFF0001;
+const STATS_VIEW_ONS_TRUESKILL					 = 0xFFFF0002;
+
+// TrueSkill columns
+const STATS_COLUMN_TRUESKILL                     = 61;
+const STATS_COLUMN_SKILL_GAMESPLAYED             = 62;
+
+// DM columns
+const STATS_COLUMN_DM_KILLS                      = 1;
+const STATS_COLUMN_DM_DEATHS                     = 2;
+

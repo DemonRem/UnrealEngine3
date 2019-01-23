@@ -1,0 +1,133 @@
+/*=============================================================================
+	MotionBlurPixelShader.usf: Blurs based on velocity vector.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+#ifndef NUM_SAMPLES
+#define NUM_SAMPLES 5
+#endif
+
+
+/*=============================================================================
+ * Vertex Shader
+ *============================================================================*/
+
+void MainVertexShader(
+	float4 InPosition : POSITION,
+	float2 InScreenUV : TEXCOORD0,
+	out float4 OutPosition : POSITION,
+	out float4 OutScreenPosition : TEXCOORD0
+	)
+{
+	OutPosition = InPosition;								// Target position
+	OutScreenPosition = float4(InPosition.xy,InScreenUV);	// Background UV and position
+}
+
+
+/*=============================================================================
+ * Pixel Shader
+ *============================================================================*/
+
+sampler2D	VelocityBuffer;
+float4x4	ScreenToWorld;
+float4x4	PrevViewProjMatrix;
+
+float4 StaticVelocityParameters = { 0.5f, -0.5f, 16.0f/1280.0f, 16.0f/720.0f };
+float4 DynamicVelocityParameters = { 2.0f*16.0f/1280.0f, -2.0f*16.0f/720.0f, -16.0f/1280.0f, 16.0f/720.0f };
+
+void MainPixelShader( float4 ScreenPosition : TEXCOORD0, out float4 OutColor : COLOR0 )
+{
+	// NOTE: Maximum value for an fp16 depth-value is 65504.
+	float2	ScreenUV			= ScreenPosition.zw;
+	half2	DynamicVelocity2D	= tex2D( VelocityBuffer, ScreenUV ).xy;
+	half2	PixelVelocity;
+	half2	NominalVelocity;
+
+	// Non-zero if this pixel has dynamic velocity.
+	half	Selector		= DynamicVelocity2D.x + DynamicVelocity2D.y;
+
+//	BRANCH		// TODO: Re-enable this when we get February XDK!
+	if ( Selector > 0.0001f )
+	{
+		// Map dynamic velocity [0,0.5] -> [0,-1] and [0.5,1] -> [0,1].
+		NominalVelocity	= DynamicVelocity2D*2.0f - 1.0f;
+		half2 NegativeMask		= (NominalVelocity.xy < 0.0f);	// 1 for each negative component, 0 otherwise. Component-wise test!
+		NominalVelocity			= abs(NominalVelocity) - NegativeMask;
+
+		// Scale dynamic velocity from [-1,+1] to [-MAX_VELOCITY,+MAX_VELOCITY] pixels
+		PixelVelocity	= NominalVelocity*DynamicVelocityParameters.xy;
+	}
+	else
+	{
+		half	CurrDepth			= min( CalcSceneDepth( ScreenUV ), 65504);
+		if ( CurrDepth < 14.0f )
+			CurrDepth = 65504;
+		float4	ProjectedPosition	= float4( ScreenPosition.xy * CurrDepth, CurrDepth, 1 );
+//		float4	WorldPosition		= float4( MulMatrix(ScreenToWorld, ProjectedPosition).xyz, 1 );
+//		float4	PrevScreenPosition	= MulMatrix( PrevViewProjMatrix, WorldPosition );
+		float4	PrevScreenPosition	= MulMatrix( PrevViewProjMatrix, ProjectedPosition );
+		PrevScreenPosition.xy		/= PrevScreenPosition.w;
+
+		// Scale static velocity from projection space to texel space and clamp to +/- MAX_VELOCITY pixels.
+		half2	StaticVelocity	= ScreenPosition.xy - PrevScreenPosition.xy;
+		PixelVelocity			= clamp( StaticVelocity*StaticVelocityParameters.xy, -StaticVelocityParameters.zw, StaticVelocityParameters.zw );
+
+		NominalVelocity			= PixelVelocity/StaticVelocityParameters.zw;
+	}
+
+	// Make it nicely curved.
+	half Scale		= dot(NominalVelocity, NominalVelocity);
+	PixelVelocity	*= Scale;
+
+	// Average NUM_SAMPLES screen colors along the velocity vector.
+	half2 Step = PixelVelocity / NUM_SAMPLES;
+	ScreenUV -= 2*Step;
+	half3 Color = tex2D( SceneColorTexture, ScreenUV ).rgb;
+	for ( int i=1; i < NUM_SAMPLES; ++i )
+	{
+		ScreenUV += Step;
+		Color += tex2D( SceneColorTexture, ScreenUV ).rgb;
+	}
+
+	OutColor = RETURN_COLOR( float4(Color/NUM_SAMPLES, 1) );// + float4(PrevColor,0)
+//	OutColor = RETURN_COLOR( (Selector > 0.0001f) ? float4(DynamicVelocity2D,0,1) : float4(Color/NUM_SAMPLES,1) );
+}
+
+void MainPixelShaderDynamicVelocitiesOnly( float4 ScreenPosition : TEXCOORD0, out float4 OutColor : COLOR0 )
+{
+	half2	ScreenUV			= ScreenPosition.zw;
+	half2	DynamicVelocity		= tex2D( VelocityBuffer, ScreenUV ).xy;
+	half	VelocityThreshold	= DynamicVelocity.x + DynamicVelocity.y;
+
+//	BRANCH		// TODO: Re-enable this when we get February XDK!
+	if ( VelocityThreshold > 0.0001f )
+	{
+		// Map [0,0.5] -> [0,-1] and [0.5,1] -> [0,1].
+		half2	Velocity		= DynamicVelocity*2.0f - 1.0f;
+		half2	NegativeMask	= (Velocity.xy < 0.0f);	// 1 for each negative component, 0 otherwise. Component-wise test!
+		Velocity				= abs(Velocity) - NegativeMask;
+
+		// Scale velocity from [-1,+1] to [-MAX_VELOCITY,+MAX_VELOCITY] pixels
+		half	Scale			= dot(Velocity, Velocity);
+		half2	PixelVelocity	= Velocity*DynamicVelocityParameters.xy;
+		PixelVelocity			*= Scale;
+
+		half2 Step = PixelVelocity / NUM_SAMPLES;
+		ScreenUV -= 2*Step;
+		half3 Color = tex2D( SceneColorTexture, ScreenUV ).rgb;
+		for ( int i=1; i < NUM_SAMPLES; ++i )
+		{
+			ScreenUV += Step;
+			Color += tex2D( SceneColorTexture, ScreenUV ).rgb;
+		}
+		OutColor = RETURN_COLOR( float4(Color/NUM_SAMPLES, 1) );
+//		OutColor = RETURN_COLOR(float4(DynamicVelocity,0,1));
+	}
+	else
+	{
+		float3 Color = tex2D( SceneColorTexture, ScreenUV ).rgb;
+		OutColor = RETURN_COLOR( float4(Color, 1) );
+	}
+}

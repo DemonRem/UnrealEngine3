@@ -1,0 +1,20 @@
+/*=============================================================================
+	BloomBlendPixelShader.usf: Pixel shader for blending the blurred bloom colors with the scene color.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+sampler2D BlurredImage;
+
+half BloomAlpha;
+
+void Main(
+	in float2 UV : TEXCOORD0,
+	out float4 OutColor : COLOR0
+	)
+{
+	//Scale color back up as it was compressed to the [0-1] range to fit in the fixed point filter buffer
+	half3 filteredColor = half3(MAX_SCENE_COLOR * tex2D(BlurredImage,UV).rgb);
+	OutColor = BlendAlphaLerpWithSceneColor(half4(filteredColor, BloomAlpha), UV);
+}

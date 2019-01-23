@@ -1,0 +1,4 @@
+[General]
+PropNone=Nothing Selected
+PropSingle=%s Properties
+PropMulti=%s Properties (%i selected)

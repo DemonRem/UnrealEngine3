@@ -1,0 +1,294 @@
+[AnalyzeCookedContentCommandlet]
+HelpDescription="Displays statistics about cooked packages, such as the total disk space used by each type of asset or assets which are duplicated in multiple packages."
+HelpUsage="gamename.exe AnalyzeCookedContent"
+
+[AnalyzeCookedPackagesCommandlet]
+HelpDescription="@todo"
+HelpUsage="gamename.exe AnalyzeCookedPackages"
+
+[AnalyzeScriptCommandlet]
+HelpDescription="Analyzes all Unrealscript .u files and generates a list of potential optimizations."
+HelpUsage="gamename.exe AnalyzeScript"
+
+[BatchExportCommandlet]
+HelpDescription="Export objects in bulk from Unreal packages to various formats"
+HelpUsage="gamename.exe BatchExport <package.ext> <classname> <export_ext> [dest_path_name]"
+HelpWebLink="https://udn.epicgames.com/bin/view/Three/BatchExportCommandlet"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="Package whose objects you wish to export"
+HelpParamNames[1]="classname"
+HelpParamDescriptions[1]="Class of object to export"
+HelpParamNames[2]="export_ext"
+HelpParamDescriptions[2]="File extension to export to"
+HelpParamNames[3]="dest_path_name"
+HelpParamDescriptions[3]="Path to export files to."
+
+[CompareLocCommandlet]
+HelpDescription="Displays all differences between english localization files and their counterparts in another language."
+HelpUsage="gamename CompareLoc <lang_ext>"
+HelpParamNames[0]="lang_ext"
+HelpParamDescriptions[0]="Extension of the language to compare the english files against"
+
+[ConformCommandlet]
+HelpDescription="Makes two versions of the same package network compatible"
+HelpUsage="gamename.exe conform existing_file.ext old_file.ext"
+HelpParamNames[0]="existing_file.ext"
+HelpParamDescriptions[0]="Existing binary file to load, conform, and save."
+HelpParamNames[1]="old_file.ext"
+HelpParamDescriptions[1]="Old file to make source file binary compatible with."
+
+[CookPackagesXenonCommandlet]
+HelpDescription=Resaves packages so that they can be loaded on Xbox 360 (Xenon)
+HelpUsage=gamename.exe CookPackagesXenon [options] [packagename.ext...]
+HelpWebLink="https://udn.epicgames.com/bin/view/Three/CookPackagesXenonCommandlet"
+HelpParamNames[0]="-FULL"
+HelpParamDescriptions[0]="Recooks all packages. Deletes all packages in the cooked directory first."
+HelpParamNames[1]="-SEEKFREE"
+HelpParamDescriptions[1]="Creates seekfree cooked packages."
+HelpParamNames[2]="-SKIPMAPS"
+HelpParamDescriptions[2]="Skip cooking of map packages."
+HelpParamNames[3]="-ALWAYSRECOOKMAPS"
+HelpParamDescriptions[3]="Force recook of map packages."
+HelpParamNames[4]="-ALWAYSRECOOKSCRIPT"
+HelpParamDescriptions[4]="Force recook of script packages."
+HelpParamNames[5]="[packagename.ext]"
+HelpParamDescriptions[5]="Optional package name. If specified, only this package and all of its referenced packages will be cooked."
+
+[CreateDefaultStyleCommandlet]
+HelpDescription="Creates a package containing the default UISkin"
+HelpUsage="gamename.exe createdefaultstyle"
+
+[CutDownContentCommandlet]
+HelpDescription="Removes unused content from packages.   Processed packages are output to the UnrealEngine3/CutdownPackages/Packages/ directory"
+HelpUsage="gamename.exe cutdowncontent <package.ext> [package.ext...]"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="The name of the package to process.  Multiple packages can be specified on the commandline by separating each package name with a space"
+
+[DiffPackagesCommandlet]
+HelpDescription="Compares the property values of two packages (optionally against a common base) and prints out the differences"
+HelpUsage="gamename DiffPackages <first_packagename> <second_packagename> [-ancestor=<ancestor_packagename>] [-full | -most]"
+HelpParamNames[0]="first_packagename"
+HelpParamDescriptions[0]="The name of the first package to compare.  Can be just the package name, a relative pathname, or an absolute path name.  A qualified pathname is required when the package is outside the game directory or when comparing two packages with the same name but different locations."
+HelpParamNames[1]="second_packagename"
+HelpParamDescriptions[1]="The name of the second package to compare.  Can be just the package name, a relative pathname, or an absolute path name.  A qualified pathname is required when the package is outside the game directory or when comparing two packages with the same name but different locations."
+HelpParamNames[2]="ancestor=ancestor_packagename"
+HelpParamDescriptions[2]="When performing three-way comparisons, the name of the common ancestor to compare the two versions of the package against.  Can be just the package name, a relative pathname, or an absolute path name.  A qualified pathname is required when the package is outside the game directory or when comparing two packages with the same name but different locations."
+HelpParamNames[3]="-full"
+HelpParamDescriptions[3]="Indicates that all properties should be considered in the comparison.  Without this switch, properties declared in Object.uc and non-editable are ignored."
+HelpParamNames[4]="-most"
+HelpParamDescriptions[4]="Indicates that all properties except those declared in Object.uc should be considered in the comparison.  Without this switch, non-editable properties are ignored."
+HelpParamNames[5]=""
+HelpParamDescriptions[5]=
+HelpParamNames[6]=""
+HelpParamDescriptions[6]=
+
+[DumpEmittersCommandlet]
+HelpDescription="Particle system information dump - identifies emitters and their modules"
+HelpUsage=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+HelpParamNames[1]=""
+HelpParamDescriptions[1]=""
+
+[ExamineOutersCommandlet]
+HelpDescription="Displays the Outer for all subobjects in all packages, in a table view format"
+HelpUsage="gamename.exe ExamineOuters"
+HelpWebLink="https://udn.epicgames.com/bin/view/Three/ExamineOutersCommandlet"
+
+[ExportLocCommandlet]
+HelpDescription=Exports localized property values for the specified package"
+HelpUsage"gamename ExportLoc <package_name | -full> [-LanguageForCooking=<lang_ext>]"
+HelpParamNames[0]="package_name"
+HelpParamDescriptions[0]="the name of the package to export localized text for"
+HelpParamNames[1]="-FULL"
+HelpParamDescriptions[1]="uses the list of loc files in the localization directory to build a list of package names to export"
+HelpParamNames[2]="-LanguageForCooking=<lang_ext>"
+HelpParamDescriptions[2]="Specfies the language to export property values for; overrides the language setting configured in the Engine.ini"
+
+[FindQuestionableTextures]
+HelpDescription="Looks at all packages and prints out the textures with "spec" in their name that do NOT have an LODBias of 2"
+HelpUsage="gamename.exe FindQuestionableTextures"
+
+
+[FindSoundCuesWithMissingGroups]
+HelpDescription="Looks at all packages and prints out the SoundCues which do not have Sound Groups assigned to them"
+HelpUsage="gamename.exe FindSoundCuesWithMissingGroups"
+
+[AnalyzeFallbackMaterialsCommandlet]
+HelpDescription="Outputs a CSV file with information about what components were dropped to get a material to compile for the sm2 fallback."
+HelpUsage="gamename AnalyzeFallbackMaterials"
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+
+[FixupRedirectsCommandlet]
+HelpDescription="@todo"
+HelpUsage="gamename.exe FixupRedirects"
+
+[ListCorruptedComponentsCommandlet]
+HelpDescription="Displays components which have been corrupted in some way (incorrect Outer, incorrect ObjectArchetype, etc.) for all packages."
+HelpUsage="gamename.exe ListCorruptedComponents [-checkver]"
+HelpParamNames[0]="checkver"
+HelpParamDescriptions[0]="Indicates that only those packages that were saved with a package version earlier than the current package version should be checked"
+
+[ListPackagesReferencingCommandlet]
+HelpDescription="Displays a list of all packages which reference a particular package or asset."
+HelpUsage="gamename.exe ListPackagesReferencing <package[.ext] | Asset.Path.Name>"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="The package name to find references to (extension is optional)"
+HelpParamNames[1]="Asset.Path.Name"
+HelpParamDescriptions[1]="The fully qualified pathname for the asset to search for references to"
+
+[ListScriptReferencedContentCommandlet]
+HelpDescription="Lists all content referenced by defaultproperties of Unrealscript classes."
+HelpUsage="gamename.exe ListScriptReferencedContent"
+
+[LoadPackageCommandlet]
+HelpDescription="Loads the specified packages.  Used for debugging and/or detecting missing resources."
+HelpUsage="gamename.exe LoadPackage <package.ext [package.ext...]|-all>"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="The name of the package/s to load."
+HelpParamNames[1]="-all"
+HelpParamDescriptions[1]="Indicates that all packages should be loaded."
+
+[MakeCommandlet]
+HelpDescription="Compiles Unrealscript source (.uc files) into Unreal packages (.u files) for any packages which are out of date."
+HelpUsage="gamename.exe make [-switch...] [parm=value...]"
+HelpParamNames[0]="-full"
+HelpParamDescriptions[0]="Forces all packages to be recompiled, even if they are not out of date."
+HelpParamNames[1]="-nodelete"
+HelpParamDescriptions[1]="Do not delete dependent packages which are not out of date.  The default behavior is to rebuild any packages which occur after a package that is out of date in the EditPackages list."
+HelpParamNames[2]="-debug"
+HelpParamDescriptions[2]="Includes debugging information in the compiled binaries.  This is required in order to use the UnrealScript debugger."
+HelpParamNames[3]="-auto"
+HelpParamDescriptions[3]="Automatically checks out any autogenerated headers that need to be updated, without prompting.  Suppresses all prompts generated by the script compiler which are related to exporting autogenerated header files."
+HelpParamNames[4]="-unattended"
+HelpParamDescriptions[4]="Suppresses all prompts generated during the build by automatically answering \"Yes\"."
+HelpParamNames[5]="-silent"
+HelpParamDescriptions[5]="Similar to unattended, except that all build output (logging, etc.) is also suppressed."
+HelpParamNames[6]="-silentbuild"
+HelpParamDescriptions[6]="Suppresses all script compiler status messages from being displayed in the console output window."
+HelpParamNames[7]="-noconform"
+HelpParamDescriptions[7]="Script packages are normally automatically conformed (see help for the ConformCommandlet) if a package with the same name exists in the auto-conform directory (which can be different for each game)"
+HelpParamNames[8]="-WarningsAsErrors"
+HelpParamDescriptions[8]="Treats all script compilation warnings as errors, causing the build to fail"
+HelpParamNames[9]="-intermediate"
+HelpParamDescriptions[9]="Script preprocessor: outputs the post-processed versions of all unrealscript files to the preprocessor's intermediate directory, as specified by the ProcessedFileDirectory value in the preprocessor.  Useful for debugging UnrealScript macros."
+HelpParamNames[10]="-nopreprocess"
+HelpParamDescriptions[10]="Prevents the preprocessor from processing any UnrealScript macros.  This is useful only for debugging, as it will generally cause your script to fail to compile at all."
+
+[MergePackagesCommandlet]
+HelpDescription="Combines two unrealscript packages into a single package."
+HelpUsage="gamename.exe MergePackages <source_package.ext> <dest_package.ext>"
+HelpParamNames[0]="source_package.ext"
+HelpParamDescriptions[0]="The name of the first package to merge"
+HelpParamNames[1]="dest_package.ext"
+HelpParamDescriptions[1]="The name of the second package to merge.  All objects from source_package which do not exist in dest_package will be copied into this package."
+
+[PkgInfoCommandlet]
+HelpDescription="Display information about the resources contained within one or more packages"
+HelpUsage="gamename.exe pkginfo <package.ext> [package.ext...] [-switches...]"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="The name of the package/s to display resource information for."
+HelpParamNames[1]="-names"
+HelpParamDescriptions[1]="Displays information about the name table for the specified package/s"
+HelpParamNames[2]="-imports"
+HelpParamDescriptions[2]="Displays the external resources which are referenced by the objects contained in the specified package/s (ImportTable)"
+HelpParamNames[3]="-exports"
+HelpParamDescriptions[3]="Displays the resources which are contained in the specified package/s (ExportTable)"
+HelpParamNames[4]="-simple"
+HelpParamDescriptions[4]="Only relevant when used in combination with the -exports flag.  Causes only the name and size to be displayed, rather the full information for each export."
+HelpParamNames[5]="-all"
+HelpParamDescriptions[5]="Displays all data contained by the packge - essentially the same as specifying all three types on the command-line (-imports -exports -names)"
+
+[ResavePackagesCommandlet]
+HelpDescription="Resaves all packages which are not marked read-only."
+HelpUsage="gamename.exe ResavePackages [-switches...]"
+HelpParamNames[0]="-SKIPFAILS"
+HelpParamDescriptions[0]="Skip the assert when a package can not be opened"
+HelpParamNames[1]="-VERIFY"
+HelpParamDescriptions[1]="Load all packages, and display warnings for those packages which would have been resaved but were read-only or could not otherwise be saved."
+HelpParamNames[2]="-OnlySaveDirtyPackages"
+HelpParamDescriptions[2]="Indicates that only packages which are marked dirty should be resaved.  This is normally used for easily eliminating compatibility or fixup patches in the loading code (provided that the patch marks the package dirty)."
+HelpParamNames[3]="-AutoCheckOutPackages"
+HelpParamDescriptions[3]="Automatically checks out read-only packages which need to be resaved."
+HelpParamNames[4]="-MINVER=##"
+HelpParamDescriptions[4]="Indicates that only packages with a package version higher than ## should be resaved."
+HelpParamNames[5]="-MAXVER=##"
+HelpParamDescriptions[5]="Indicates that only packages with a package version lower than ## should be resaved."
+HelpParamNames[6]="-CHECKVER"
+HelpParamDescriptions[6]="Indicates that only packages that have a package version lower than the current package version should be resaved."
+HelpParamNames[7]="-SavePackagesThatHaveFailedLoads"
+HelpParamDescriptions[7]="if a package (when loaded) results in FailedLoad errors then we want to resave this package  (this is useful for removing a class or package and automatically removing all references to/from the worldstate)"
+HelpParamNames[8]="-cleanclasses"
+HelpParamDescriptions[8]="Removes any Class objects from packages which are not script packages."
+HelpParamNames[9]="-instancemissingsubobjects"
+HelpParamDescriptions[9]="Instances subobjects for any existing objects with subobject properties whose values point to the default object."
+
+[ScaleAudioVolumeCommandlet]
+HelpDescription="Scales the volume of audio data across all packages"
+HelpUsage="gamename.exe scaleaudiovolume <volumescale>"
+HelpParamNames[0]="volumescale"
+HelpParamDescriptions[0]="The amount to scale the audio by.  For example, specifying 1.1 makes all audio volumes 10 percent louder"
+
+[SetPackageFlagsCommandlet]
+HelpDescription="Sets certain allowed package flags on the specified package(s)"
+HelpUsage="gamename.exe SetPackageFlags <package/wildcard> <flag1=value> <flag2=value>..."
+HelpParamNames[0]="package/wildcard"
+HelpParamDescriptions[0]="The package(s) to modify flags for"
+HelpParamNames[1]="flagX=value"
+HelpParamDescriptions[1]="List of flags to modify and the desired value (true or false). Supported flags: ServerSideOnly, ClientOptional, AllowDownload"
+
+[ShowObjectCountCommandlet]
+HelpDescription="Displays the number of objects of the specified class in each package."
+HelpUsage="gamename.exe ShowObjectCount <package.classname> [package.classname package.classname ...] [-switches...]"
+HelpParamNames[0]="package.classname"
+HelpParamDescriptions[0]="The full pathname for the class to search for, e.g. Engine.LightComponent"
+HelpParamNames[1]="-ExactClass"
+HelpParamDescriptions[1]="Indicates that only objects that have this class should be counted.  Default behavior is to also count objects of derived classes of the specified class."
+HelpParamNames[2]="-IgnoreScript"
+HelpParamDescriptions[2]="Indicates that packages which contain unrealscript (usually only .u packages) should be ignored."
+HelpParamNames[3]="-IncludeCooked"
+HelpParamDescriptions[3]="Indicates that packages which have been cooked for a console platform should be searched as well."
+HelpParamNames[4]="-CookedOnly"
+HelpParamDescriptions[4]="Indicates that only those packages which have been cooked for a console platform should be searched."
+HelpParamNames[5]="-SkipClientOnly"
+HelpParamDescriptions[5]="Indicates that any objects which are only configured to load only on the client should be ignored."
+HelpParamNames[6]="-SkipServerOnly"
+HelpParamDescriptions[6]="Indicates that any objects which are only configured to load only on the server should be ignored."
+HelpParamNames[7]="-SkipEditorOnly"
+HelpParamDescriptions[7]="Indicates that any objects which are only configured to load only in the editor should be ignored."
+
+[ShowStylesCommandlet]
+HelpDescription="Display information about all UI styles contained in a UISkin package"
+HelpUsage="gamename.exe ShowStyles <package.ext> [package.ext package.ext ...]"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="The name of the package(s) to display data for. e.g. DefaultUISkin.upk.  Wildcards are accepted."
+
+[ShowTaggedPropsCommandlet]
+HelpDescription="Displays the property names and values that were saved into the specified package"
+HelpUsage="gamename.exe ShowTaggedProps <package.ext> <classname>"
+HelpParamNames[0]="package.ext"
+HelpParamDescriptions[0]="The name of the package to display data for. e.g. EditorResources.upk"
+HelpParamNames[1]="classname"
+HelpParamDescriptions[1]="The full pathname for the class to display serialized data for, e.g. Engine.LightComponent"
+
+[StripSourceCommandlet]
+HelpDescription="Removes source code from compiled script packages"
+HelpUsage="gamename.exe stripsource <packagename>.u"
+HelpParamNames[0]="packagename"
+HelpParamDescriptions[0]="The name of the script package to strip source code from.  Wildcards are not currently supported here."
+
+[TestCompressionCommandlet]
+HelpDescription=""
+HelpUsage=""
+HelpParamNames[0]=""
+HelpParamDescriptions[0]=""
+HelpParamNames[1]=""
+HelpParamDescriptions[1]=""
+
+[Errors]
+LoadWarningSuffix_redirection=" [redirection]"
+LoadWarningSuffix_circularredirection=" [circular redirection]"
+LoadWarningSuffix_privateobject=" [private]"
+
+

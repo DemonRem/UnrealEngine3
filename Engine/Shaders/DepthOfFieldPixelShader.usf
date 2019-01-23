@@ -1,0 +1,116 @@
+/*=============================================================================
+	DepthOfFieldPixelShader.usf: Pixel shader for rendering depth of field effect
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+/** offsets representing a poisson disc distribution */
+#define NUM_POISSON_TAPS 12
+static const float2 PoissonDiscOffsets[] = 
+{
+	float2(-0.326212f, -0.40581f),
+	float2(-0.840144f, -0.07358f),
+	float2(-0.695914f, 0.457137f),
+	float2(-0.203345f, 0.620716f),
+	float2(0.96234f, -0.194983f),
+	float2(0.473434f, -0.480026f),
+	float2(0.519456f, 0.767022f),
+	float2(0.185461f, -0.893124f),
+	float2(0.507431f, 0.064425f),
+	float2(0.89642f, 0.412458f),
+	float2(-0.32194f, -0.932615f),
+	float2(-0.791559f, -0.59771f)
+};
+
+
+/** sample the source texture using a poisson disc kernel with 13 taps */
+half4 SamplePoissonBlurColor(sampler2D SourceTex,
+							 float2 ScreenUV, 
+							 float2 TexelSize, 
+							 float DiscRadius )
+{
+	half4 Result = 0;
+	half TotalContribution = 0;
+
+	for( int TapIdx=0; TapIdx < NUM_POISSON_TAPS; TapIdx++ )
+	{
+		// sample at disc offset
+        float2 TapCoord = ScreenUV + TexelSize * PoissonDiscOffsets[TapIdx] * DiscRadius;
+        //Scale color back up as it was compressed to the [0-1] range to fit in the fixed point filter buffer
+		Result += MAX_SCENE_COLOR * tex2D( SourceTex, TapCoord );
+        // total taps summed
+		TotalContribution += 1;
+	}
+	// normalize the sum
+    return( Result / TotalContribution );
+}
+
+/** minimum blur amount allowed */
+static const float MIN_BLUR_AMT = 0.001f;
+
+/** focus distance */
+float FocusDistance;
+/** focus radius */
+float FocusRadius;
+/** exponent to apply to blur amount after it has been normalized to [0,1] */
+float FalloffExponent;
+/** affects the size of the Poisson disc kernel */
+float BlurKernelSize;
+/** clamp for min/max blur amount values - default would be [1,1] */
+float2 MinMaxBlurClamp;
+/** blur color for debugging etc */
+half4 ModulateBlurColor;
+
+/** downsampled and blurred scene */
+sampler2D	SceneBlurTexture;
+/** (blurwidth/screenwidth)/screenwidth , (blurheight/screenheight)/screenheight */
+float2 BlurTexelSize;
+
+/** 
+* blend between blurred and not blurred render target based on depth 
+*/
+void Main(
+	in float2 SceneTexCoord : TEXCOORD0,
+	in float2 TexCoord : TEXCOORD1,
+	out float4 OutColor : COLOR0
+	)
+{
+	// depth represented as clipspace w
+	half SceneDepth = CalcSceneDepth( SceneTexCoord );
+	// from lighting target
+	half3 SceneColor = CalcSceneColor( SceneTexCoord );
+	
+	// Blur amount based on ratio of distance to focus plane to the focus radius
+	// it is clamped to [-1,1]. Note that FocusDistance can be negative if it 
+	// falls behind the near plane.
+	float BlurAmount = clamp( (SceneDepth - FocusDistance) / FocusRadius, -1, 1 );
+	half BlurSign = sign(BlurAmount);	
+	// falloff exponent
+	BlurAmount = pow(abs(BlurAmount),FalloffExponent);
+	// early out if not enough to blur
+	if( BlurAmount <= MIN_BLUR_AMT ) 
+	{
+		OutColor = RETURN_COLOR( float4( SceneColor, SceneDepth ) );
+	}
+	else
+	{
+		// clamp near blur amount (samples in front of focus plane) (assumes FocusDistance > 0)
+		if( BlurSign < 0 ) {
+			BlurAmount = min(BlurAmount,MinMaxBlurClamp.x);
+		}
+		// clamp near blur amount (samples in front of focus plane) (assumes FocusDistance > 0)
+		else {
+			BlurAmount = min(BlurAmount,MinMaxBlurClamp.y);
+		}	
+
+		// disc size based on blur amount and user kernel size
+		// BlurSign also affects poisson sample offsets
+		float PoissonDiscSize = BlurKernelSize*BlurAmount*BlurSign;
+
+		// calc the blur color 
+		half4 BlurColor = SamplePoissonBlurColor( SceneBlurTexture, TexCoord, BlurTexelSize, PoissonDiscSize ) * ModulateBlurColor;
+		OutColor = RETURN_COLOR( float4( lerp( SceneColor, BlurColor.rgb, BlurAmount ), SceneDepth ) );
+	}
+}
+

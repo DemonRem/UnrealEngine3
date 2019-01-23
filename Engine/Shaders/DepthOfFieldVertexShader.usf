@@ -1,0 +1,22 @@
+/*=============================================================================
+	DepthOfFieldVertexShader.usf: Vertex shader for rendering depth of field effect
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+
+/** 
+* pass through the screenspace position/UV 
+*/
+void Main(
+	in float4 InPosition : POSITION,
+	in float2 InTexCoord : TEXCOORD0,
+	out float4 OutPosition : POSITION,
+	out float2 OutSceneTexCoord : TEXCOORD0,
+	out float2 OutTexCoord : TEXCOORD1
+	)
+{
+	OutPosition = InPosition;
+	OutSceneTexCoord = InPosition.xy / InPosition.w * ScreenPositionScaleBias.xy + ScreenPositionScaleBias.wz;
+	OutTexCoord = InTexCoord;
+}

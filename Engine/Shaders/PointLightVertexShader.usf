@@ -1,0 +1,37 @@
+/*=============================================================================
+	PointLightVertexShader.hlsl: Point light vertex shader.
+	Copyright © 1998-2007 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#define NEEDS_LIGHTMAP_COORDINATE STATICLIGHTING_TEXTUREMASK
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+float4x4 ViewProjectionMatrix REGISTER(252);
+float4 LightPositionAndInvRadius; // w = 1.0 / Radius
+float4 CameraPosition;
+
+void Main(
+	FVertexFactoryInput Input,
+#if STATICLIGHTING_VERTEXMASK
+	float LightMask : BLENDWEIGHT0,
+#endif
+	out float4 OutPosition : POSITION,
+	out FVertexFactoryInterpolants OutFactoryInterpolants,
+	out float3 OutTangentLightVector : TEXCOORD4,
+	out float4 OutWorldLightVector : TEXCOORD5,
+	out float3 OutCameraVector : TEXCOORD6,
+	out float4 OutScreenPosition : TEXCOORD7
+	)
+{
+	float4 WorldPosition = VertexFactoryGetWorldPosition(Input,OutFactoryInterpolants);
+	OutScreenPosition = OutPosition = MulMatrix(ViewProjectionMatrix,WorldPosition);
+	OutCameraVector = VertexFactoryWorldToTangentSpace(Input,CameraPosition.xyz - WorldPosition.xyz * CameraPosition.w);
+	OutTangentLightVector = VertexFactoryWorldToTangentSpace(Input,LightPositionAndInvRadius.xyz - WorldPosition.xyz);
+	OutWorldLightVector = float4((LightPositionAndInvRadius.xyz - WorldPosition.xyz) * LightPositionAndInvRadius.w,0);
+#if STATICLIGHTING_VERTEXMASK
+	OutWorldLightVector.w = LightMask;
+#endif
+}
