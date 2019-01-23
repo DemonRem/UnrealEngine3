@@ -1,0 +1,76 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxToolBase", "FxToolBase\FxToolBase.vcproj", "{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxMax", "FxMax\FxMax.vcproj", "{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07} = {83FC6FD6-1C61-4CD2-862D-25F1F1179F07}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxMaya", "FxMaya\FxMaya.vcproj", "{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07} = {83FC6FD6-1C61-4CD2-862D-25F1F1179F07}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 4
+		SccLocalPath0 = .
+		CanCheckoutShared = true
+		SolutionUniqueID = {5D1C9746-B974-42EE-A627-06A1ECD8B4B9}
+		SccProjectUniqueName1 = FxToolBase\\FxToolBase.vcproj
+		SccLocalPath1 = FxToolBase
+		CanCheckoutShared = true
+		SccProjectUniqueName2 = FxMax\\FxMax.vcproj
+		SccLocalPath2 = FxMax
+		CanCheckoutShared = true
+		SccProjectUniqueName3 = FxMaya\\FxMaya.vcproj
+		SccLocalPath3 = FxMaya
+		CanCheckoutShared = true
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Release Max 6 Native Coords = Release Max 6 Native Coords
+		Release Max 7 Native Coords = Release Max 7 Native Coords
+		Release Max 8 Native Coords = Release Max 8 Native Coords
+		Release Maya 6 Native Coords = Release Maya 6 Native Coords
+		Release Maya 6.5 Native Coords = Release Maya 6.5 Native Coords
+		Release Maya 7 Native Coords = Release Maya 7 Native Coords
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Max 6 Native Coords.ActiveCfg = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Max 6 Native Coords.Build.0 = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Max 7 Native Coords.ActiveCfg = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Max 7 Native Coords.Build.0 = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Max 8 Native Coords.ActiveCfg = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Max 8 Native Coords.Build.0 = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Maya 6 Native Coords.ActiveCfg = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Maya 6 Native Coords.Build.0 = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Maya 6.5 Native Coords.ActiveCfg = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Maya 6.5 Native Coords.Build.0 = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Maya 7 Native Coords.ActiveCfg = Release|Win32
+		{83FC6FD6-1C61-4CD2-862D-25F1F1179F07}.Release Maya 7 Native Coords.Build.0 = Release|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Max 6 Native Coords.ActiveCfg = Release Max 6 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Max 6 Native Coords.Build.0 = Release Max 6 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Max 7 Native Coords.ActiveCfg = Release Max 7 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Max 7 Native Coords.Build.0 = Release Max 7 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Max 8 Native Coords.ActiveCfg = Release Max 8 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Max 8 Native Coords.Build.0 = Release Max 8 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Maya 6 Native Coords.ActiveCfg = Release Max 7 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Maya 6.5 Native Coords.ActiveCfg = Release Max 7 Native Coords|Win32
+		{B0C92794-80A8-42A0-AE5E-F7789E0EC4D8}.Release Maya 7 Native Coords.ActiveCfg = Release Max 7 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Max 6 Native Coords.ActiveCfg = Release Maya 7 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Max 7 Native Coords.ActiveCfg = Release Maya 7 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Max 8 Native Coords.ActiveCfg = Release Maya 7 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Maya 6 Native Coords.ActiveCfg = Release Maya 6 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Maya 6 Native Coords.Build.0 = Release Maya 6 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Maya 6.5 Native Coords.ActiveCfg = Release Maya 6.5 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Maya 6.5 Native Coords.Build.0 = Release Maya 6.5 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Maya 7 Native Coords.ActiveCfg = Release Maya 7 Native Coords|Win32
+		{C1CAD1A1-DE58-4B06-9DBE-23DA68D4146B}.Release Maya 7 Native Coords.Build.0 = Release Maya 7 Native Coords|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

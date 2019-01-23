@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<CookerSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Platforms>
+    <string>Xenon</string>
+    <string>PS3</string>
+  </Platforms>
+  <Games>
+    <string>ExampleGame</string>
+    <string>UTGame</string>
+    <string>WarGame</string>
+	<string>GearGame</string>	  
+  </Games>
+  <PCConfigs>
+    <string>Release</string>
+    <string>Debug</string>
+  </PCConfigs>
+  <ConsoleConfigs>
+    <string>Release</string>
+    <string>ReleaseLTCG</string>
+    <string>Debug</string>
+  </ConsoleConfigs>
+</CookerSettings>

@@ -1,0 +1,99 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxSDK", "FxSDK\FxSDK.vcproj", "{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxCG", "FxCG\FxCG.vcproj", "{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB} = {A2D9E843-F4DB-4092-8B8F-199A32BACCEB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxGraphLayout", "FxGraphLayout\FxGraphLayout.vcproj", "{6686AA86-963F-4D63-967B-F7D23A930FAF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB} = {A2D9E843-F4DB-4092-8B8F-199A32BACCEB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxSDK_XBox360", "..\..\Src\Xenon\External\FaceFX\FxSDK\FxSDK_XBox360.vcproj", "{C4677DC8-541C-4183-9715-BB368973BAA6}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FxTests", "FxTests\FxTests.vcproj", "{2B6798AB-56CF-4D28-B502-258FD42F0BF6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB} = {A2D9E843-F4DB-4092-8B8F-199A32BACCEB}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 6
+		SccLocalPath0 = .
+		CanCheckoutShared = true
+		SolutionUniqueID = {2A2996ED-37C5-4B3E-A0FC-ECC2751B5730}
+		SccProjectUniqueName1 = FxSDK\\FxSDK.vcproj
+		SccLocalPath1 = FxSDK
+		CanCheckoutShared = true
+		SccProjectUniqueName2 = FxCG\\FxCG.vcproj
+		SccLocalPath2 = FxCG
+		CanCheckoutShared = true
+		SccProjectUniqueName3 = FxGraphLayout\\FxGraphLayout.vcproj
+		SccLocalPath3 = FxGraphLayout
+		CanCheckoutShared = true
+		SccProjectUniqueName4 = ..\\..\\Src\\Xenon\\External\\FaceFX\\FxSDK\\FxSDK_XBox360.vcproj
+		SccLocalPath4 = ..\\..\\Src\\Xenon\\External\\FaceFX\\FxSDK
+		CanCheckoutShared = true
+		SccProjectUniqueName5 = FxTests\\FxTests.vcproj
+		SccLocalPath5 = .
+		CanCheckoutShared = true
+		SccProjectFilePathRelativizedFromConnection5 = FxTests\\
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug XBox360 = Debug XBox360
+		Release = Release
+		Release Tools = Release Tools
+		Release XBox360 = Release XBox360
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Debug.ActiveCfg = Debug|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Debug.Build.0 = Debug|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Debug XBox360.ActiveCfg = Debug|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Release.ActiveCfg = Release|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Release.Build.0 = Release|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Release Tools.ActiveCfg = Release Tools|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Release Tools.Build.0 = Release Tools|Win32
+		{A2D9E843-F4DB-4092-8B8F-199A32BACCEB}.Release XBox360.ActiveCfg = Release|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Debug.ActiveCfg = Debug|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Debug.Build.0 = Debug|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Debug XBox360.ActiveCfg = Debug|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Release.ActiveCfg = Release|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Release.Build.0 = Release|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Release Tools.ActiveCfg = Release|Win32
+		{45F7CFD3-0DC8-4342-8E12-B364EF9A3B77}.Release XBox360.ActiveCfg = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Debug.ActiveCfg = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Debug.Build.0 = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Debug XBox360.ActiveCfg = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Release.ActiveCfg = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Release.Build.0 = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Release Tools.ActiveCfg = Release|Win32
+		{6686AA86-963F-4D63-967B-F7D23A930FAF}.Release XBox360.ActiveCfg = Release|Win32
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Debug.ActiveCfg = Debug|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Debug.Build.0 = Debug|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Debug XBox360.ActiveCfg = Debug|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Debug XBox360.Build.0 = Debug|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Release.ActiveCfg = Release|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Release.Build.0 = Release|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Release Tools.ActiveCfg = Release|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Release XBox360.ActiveCfg = Release|Xenon
+		{C4677DC8-541C-4183-9715-BB368973BAA6}.Release XBox360.Build.0 = Release|Xenon
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Debug.ActiveCfg = Debug|Win32
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Debug.Build.0 = Debug|Win32
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Debug XBox360.ActiveCfg = Debug|Win32
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Release.ActiveCfg = Release|Win32
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Release.Build.0 = Release|Win32
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Release Tools.ActiveCfg = Release|Win32
+		{2B6798AB-56CF-4D28-B502-258FD42F0BF6}.Release XBox360.ActiveCfg = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,7 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\8.0\ToolWindows\{840470d5-80a6-4917-9709-bec10f108c4c}]
+@="{2a839202-342e-4549-a6be-a62b9a87308f}"
+"Name"="Unreal Locals"
+"Window"="{0F887920-C2B6-11d2-9375-0080C747D9A0}"
+"Style"="Tabbed"
