@@ -1,0 +1,1532 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>p4api</name>
+    </assembly>
+    <members>
+        <member name="T:P4API.P4ExceptionLevels">
+            <summary>
+            Defines the exception levels available in P4Connection.
+            </summary>
+        </member>
+        <member name="F:P4API.P4ExceptionLevels.NoExceptionOnWarnings">
+            <summary>
+            Exceptions will only be thrown when Perforce has errors.  This is the default exception level.
+            </summary>
+        </member>
+        <member name="F:P4API.P4ExceptionLevels.NoExceptionOnErrors">
+            <summary>
+            Exceptions will never be thrown when Perforce has errors.
+            </summary>
+        </member>
+        <member name="F:P4API.P4ExceptionLevels.ExceptionOnBothErrorsAndWarnings">
+            <summary>
+            Exceptions will be thrown for both Errors and Warnings.
+            </summary>
+        </member>
+        <member name="T:P4API.MergeAction">
+            <summary>
+            Actions to take when resolving a file.
+            </summary>
+            <remarks>
+            <list>
+            <li>CMS_QUIT   user wants to quit</li>
+            <li>CMS_SKIP   skip the integration record</li>
+            <li>CMS_MERGED accepted merged theirs and yours</li>
+            <li>CMS_EDIT   accepted edited merge</li>
+            <li>CMS_THEIRS accepted theirs</li>
+            <li>CMS_YOUR   accepted yours</li>
+            </list>
+            </remarks>
+        </member>
+        <member name="T:P4API.MergeData">
+            <summary>
+            Contains information about the files being merged.
+            </summary>
+        </member>
+        <member name="M:P4API.MergeData.RunMergeTool">
+            <summary>
+            Runs the external merge tool configured by P4MERGE.
+            </summary>
+            <returns>True if the merge tool exits with code 0, false otherwise.</returns>
+        </member>
+        <member name="P:P4API.MergeData.BaseFile">
+            <summary>
+            Base file for the 3-way merge.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.YourFile">
+            <summary>
+            Your file for the 3-way merge.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.MergeHint">
+            <summary>
+            Perforce's recommended merge action.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.TheirFile">
+            <summary>
+            Thier file for the 3-way merge.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.ResultFile">
+            <summary>
+            File where merged result should be written.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.BaseName">
+            <summary>
+            Perforce name of the base file.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.YourName">
+            <summary>
+            Perforce name of your file.
+            </summary>
+        </member>
+        <member name="P:P4API.MergeData.TheirName">
+            <summary>
+            Perforce name of thier file.
+            </summary>
+        </member>
+        <member name="T:P4API.P4BaseRecordSet">
+            <summary>
+            Base functionality for P4Recordset and P4UnParsedRecordset.
+            </summary>
+            <remarks>This is a base class for internal use.  Do not use directly.</remarks>
+            <seealso cref="T:P4API.P4RecordSet"/>
+        </member>
+        <member name="M:P4API.P4BaseRecordSet.HasErrors">
+            <summary>
+            Checks the Recordset to determine if errors occured.
+            </summary>
+            <returns>True if the p4 command returned errors.</returns>
+            <remarks>This is the same as testing <c>Errors.Count</c>.</remarks>
+        </member>
+        <member name="M:P4API.P4BaseRecordSet.Dump">
+            <summary>
+            Dumps recordset data to the Trace listner.
+            </summary>
+            <remarks>Only availble for debug libraries.</remarks>
+        </member>
+        <member name="M:P4API.P4BaseRecordSet.HasWarnings">
+            <summary>
+            Checks the Recordset to determine if warnings occured.
+            </summary>
+            <remarks>This is the same as testing <c>Warnings.Count</c>.</remarks>
+            <returns>True if the p4 command returned warnings.</returns>
+        </member>
+        <member name="P:P4API.P4BaseRecordSet.Errors">
+            <summary>
+            Gets an array of error messages returned from the Perforce command.
+            </summary>
+            <remarks>These are the error messages that are returned from Perforce.</remarks>
+        </member>
+        <member name="P:P4API.P4BaseRecordSet.P4Messages">
+            <summary>
+            Gets an array of P4Messages returned from the Perforce command.
+            </summary>
+            <remarks>These are the error messages that are returned from Perforce.</remarks>
+        </member>
+        <member name="P:P4API.P4BaseRecordSet.ErrorMessage">
+            <summary>
+            Gets an error messages returned from the Perforce command.
+            </summary>
+            <remarks>Errors are concatanated to one string, seperated by new lines.</remarks>
+        </member>
+        <member name="P:P4API.P4BaseRecordSet.Warnings">
+            <summary>
+            Gets an array of warning messages returned from the Perforce command.
+            </summary>
+            <remarks>These are the warning messages that are returned from Perforce.</remarks>
+            <note>Perforce is not always intuitive in how it defines warnings vs. messages.
+            Always test various scenarios to determine whether the output is a warning or message.</note>
+            <value>Array of warnings returned from Perforce.</value>
+        </member>
+        <member name="T:P4API.P4Callback">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:P4API.P4Callback.Edit(System.IO.FileInfo)">
+            <summary>
+            Edits the specified f1.
+            </summary>
+            <param name="f1">The f1.</param>
+        </member>
+        <member name="M:P4API.P4Callback.Prompt(System.String,System.String@)">
+            <summary>
+            Prompts the specified MSG.
+            </summary>
+            <param name="msg">The MSG.</param>
+            <param name="rsp">The RSP.</param>
+        </member>
+        <member name="M:P4API.P4Callback.Finished">
+            <summary>
+            Finisheds this instance.
+            </summary>
+        </member>
+        <member name="M:P4API.P4Callback.Cancel">
+            <summary>
+            Cancels this instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:P4API.P4Callback.OutputContent(System.Byte[],System.Boolean)">
+            <summary>
+            Outputs the content.
+            </summary>
+            <param name="buffer">The buffer.</param>
+            <param name="IsText">if set to <c>true</c> [is text].</param>
+        </member>
+        <member name="M:P4API.P4Callback.InputData(System.Text.StringBuilder)">
+            <summary>
+            Inputs the data.
+            </summary>
+            <param name="buffer">The buffer.</param>
+        </member>
+        <member name="M:P4API.P4Callback.OutputRecord(P4API.P4Record)">
+            <summary>
+            Outputs the record.
+            </summary>
+            <param name="record">The record.</param>
+        </member>
+        <member name="M:P4API.P4Callback.OutputMessage(P4API.P4Message)">
+            <summary>
+            Outputs the message.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:P4API.P4Callback.OutputInfo(System.String)">
+            <summary>
+            Outputs the info.
+            </summary>
+            <param name="data">The data.</param>
+        </member>
+        <member name="M:P4API.P4Callback.ResolveFile(P4API.MergeData)">
+            <summary>
+            Resolves the file.
+            </summary>
+            <param name="mergeData">The merge data.</param>
+            <returns></returns>
+        </member>
+        <member name="P:P4API.P4Callback.SpecDef">
+            <summary>
+            Gets the spec def.
+            </summary>
+            <value>The spec def.</value>
+        </member>
+        <member name="P:P4API.P4Callback.ContentEncoding">
+            <summary>
+            Gets the content encoding.
+            </summary>
+            <value>The content encoding.</value>
+        </member>
+        <member name="T:P4API.OnPromptEventHandler">
+            <summary>
+            Delegate to handle the OnPrompt event.
+            </summary>
+            <param name="sender">Sender</param>
+            <param name="args">P4PromptEventArgs</param>
+            <remarks>Handle Perforce "prompts".  Prompts are from commands that ask the user to respond, such as:
+            <list>
+            <li>login</li>
+            <li>passwd</li>
+            <li>resolve (without an -a* switch)</li>
+            </list>
+            </remarks>
+            <seealso cref="E:P4API.P4Connection.OnPrompt"/>
+        </member>
+        <member name="T:P4API.P4Connection">
+            <summary>
+            A connection to a Perforce server instance.
+            </summary>
+            <remarks>
+        <p>
+          The P4Connection class is the main player in P4.Net. This represents a connection
+          to the Perforce server. Every utility that uses P4.Net will have some variation
+          of the following code:
+        </p>
+          <code language="C#" escaped="true">
+P4Connection p4 = new P4Connection();
+p4.Connect();
+
+// Run some commands
+p4.Disconnect();</code>
+        <p>
+          Rule number 1: Always remember to disconnect. This frees unmanaged memory, and cleanly
+          disconnects from the Perforce server. P4Connection implements IDisposable, and the
+          Dispose and Disconnect methods can be used interchangeably.
+        </p>
+        <p>
+          P4.Net is based off the command-line syntax (as are most other Perforce APIs). Almost
+          all of the commands you issue in P4.Net will use the same arguments as the p4 client
+          executable. For example, say you need to find the latest submitted changelist under
+          a given path (//depot/path).
+        </p>
+        <para>From the command line:</para>
+          <code language="C#">
+c:\&gt; p4 changes -m1 -s submitted //depot/path/...</code>
+        <para>From P4.Net:</para>
+          <code language="C#" escaped="true">
+P4Connect p4 = new P4Connection();
+p4.Connect();
+P4Recordset changes = p4.Run("changes", "-m1", "-s", "submitted", "//depot/path/...");
+p4.Disconnect();</code>
+        <p>
+          If you don’t know what all the arguments for p4 changes mean, then <c>p4 help changes</c>
+          is your best friend. The first step in building anything with P4.Net, is to know
+          the exact command lines you’d run manually.
+        </p>
+      </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:P4Connection"/> class.
+            </summary>
+        </member>
+        <member name="M:P4API.P4Connection.ConvertDate(System.Int32)">
+            <summary>
+            Converts Perforce date (integer) to .Net DateTime.
+            </summary>
+            <remarks>
+            The Perforce API returns most dates as an integer representing the number of seconds
+            since 1/1/1970 in UTC.  The command line client generally returns dates as strings
+            in the Perforce <b>server's</b> time zone.  The ConvertDate methods use the <b>client's</b> time zone for
+            the offset.
+            </remarks>
+            <returns>DateTime in .Net format.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.ConvertDate(System.String)">
+            <summary>
+            Converts Perforce date (integer value as a string) to .Net DateTime.
+            </summary> 
+            <remarks>
+            The Perforce API returns most dates as an integer representing the number of seconds
+            since 1/1/1970 in UTC.  The command line client generally returns dates as strings
+            in the Perforce <b>server's</b> time zone.  The ConvertDate methods use the <b>client's</b> time zone for
+            the offset.
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.ConvertDate(System.DateTime)">
+            <summary>
+            Converts .Net DateTime to Perforce date (integer).
+            </summary>
+            <remarks>
+            The Perforce API returns most dates as an integer representing the number of seconds
+            since 1/1/1970 in UTC.  The command line client generally returns dates as strings
+            in the Perforce <b>server's</b> time zone.  The ConvertDate methods use the <b>client's</b> time zone for
+            the offset.
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.IsServerCaseSensitive">
+            <summary>
+            Checks the case-sensitivity of the Perforce server.
+            </summary>
+            <returns>True when the connected server is case-sensitive.</returns>
+            <remarks>This must be called after connecting to the server.</remarks>
+        </member>
+        <member name="M:P4API.P4Connection.Connect">
+            <summary>
+            Connect to the Perforce server
+            </summary>
+        </member>
+        <member name="M:P4API.P4Connection.Disconnect">
+            <summary>
+            Disconnect from the Perforce Server
+            </summary>
+        </member>
+        <member name="M:P4API.P4Connection.Login(System.String)">
+            <summary>
+            Login to the Perforce Server
+            </summary>
+            <param name="password">The password.</param>
+        </member>
+        <member name="M:P4API.P4Connection.CreatePendingChangelist(System.String)">
+            <summary>
+            Creates a new pending changelist.
+            </summary>
+            <param name="Description">The description.</param>
+            <returns>P4PendingChangelist object representing the named pending changelist</returns>
+        </member>
+        <member name="M:P4API.P4Connection.IsValidConnection(System.Boolean,System.Boolean)">
+            <summary>
+            Determines if the Perforce connection is valid.
+            </summary>
+            <param name="checkLogin">if set to <c>true</c> it will check if the user is logged in.</param>
+            <param name="checkClient">if set to <c>true</c> it will verify the client exists.</param>
+            <returns>
+            	<c>true</c> if the connection is valid; otherwise, <c>false</c>.
+            </returns>
+            <remarks>
+            IsValidConnection performs the following 3 checks (depending on the arguments passed).
+            <list type="numbered">
+            <li>Runs p4 info, and verifies the server is valid.</li>
+            <li>If checkClient is true, verifies that p4 info returns a clientName that is not "*unknown*.</li>
+            <li>If checkLogin is true, verifies that p4 login -s does not have errors.</li>
+            </list>
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.Run(System.String,System.String[])">
+            <summary>
+            Executes a Perforce command in tagged mode.
+            </summary>
+            <param name="Command">The command.</param>
+            <param name="Args">The arguments to the Perforce command.  Remember to use a dash (-) in front of all switches</param>
+            <returns>A P4Recordset containing the results of the command.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.RunCallback(System.String,System.Boolean,P4API.P4Callback,System.String[])">
+            <summary>
+            Runs the specified command, calling the appropriate callback methods as Perforce returns information.
+            </summary>
+            <param name="Command">The Perforce command to run.</param>
+            <param name="tagged">If true, run the command with tagged (P4Records) output.</param>
+            <param name="Callback">A callback instance to recieve information as the command is run.</param>
+            <param name="Args">Arguments to the Perforce command</param>
+        </member>
+        <member name="M:P4API.P4Connection.RunUnParsed(System.String,System.String[])">
+            <summary>
+            Executes a Perforce command in non-tagged mode.
+            </summary>
+            <param name="Command">The command.</param>
+            <param name="Args">The args.</param>
+            <returns></returns>
+        </member>
+        <member name="M:P4API.P4Connection.Parse_Form(System.String,System.String)">
+            <summary>
+            Parse the raw text of a Perforce form into a P4Form object
+            </summary>
+            <param name="formCommand">The form command.</param>
+            <param name="formContents">Raw contents of the form spec.</param>
+            <returns>
+            A P4Form object.  The fields of the form can be read or updated.  If you update a filed, you can save it with Save_Form.
+            </returns>
+            <remarks>
+        Forms are the things that pop-up in an editor when run from a command line.  In
+        P4.Net (and most other Perforce APIs), you do not need to parse/format the text manually.
+        Instead, you can get/set the fields using the Fields and ArrayFields collections.
+        <P>The following is a list of common form commands:</P>
+        <list>
+          <li>client</li>
+          <li>branch</li>
+          <li>label</li>
+          <li>job</li>
+          <li>user</li>
+          <li>group</li>
+          <li>protect</li>
+          <li>triggers</li>
+          <li>branch</li>
+        </list>
+        <P>
+          When fetching or saving a form, <B>do not use the '-o' and '-i' flags</B>.  P4.Net will automatically include them.
+        </P>
+      </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.Fetch_Form(System.String,System.String[])">
+            <summary>
+            Fetch a form object from Perforce.
+            </summary>
+            <param name="FormCommand">The form command.</param>
+            <param name="Args">The args.</param>
+            <returns>
+            A Form object.  The fields of the form can be read or updated.  If you update a filed, you can save it with Save_Form.
+            </returns>
+            <remarks>
+        Forms are the things that pop-up in an editor when run from a command line.  In
+        P4.Net (and most other Perforce APIs), you do not need to parse/format the text manually.
+        Instead, you can get/set the fields using the Fields and ArrayFields collections.
+        <P>The following is a list of common form commands:</P>
+        <list>
+          <li>client</li>
+          <li>branch</li>
+          <li>label</li>
+          <li>job</li>
+          <li>user</li>
+          <li>group</li>
+          <li>protect</li>
+          <li>triggers</li>
+          <li>branch</li>
+        </list>
+        <P>
+          When fetching or saving a form, <B>do not use the '-o' and '-i' flags</B>.  P4.Net will automatically include them.
+        </P>
+      </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.Save_Form(P4API.P4Form)">
+            <summary>
+            Saves the form to Perforce.
+            </summary>
+            <param name="Form">The P4Form object retrieved from Fetch_Form.</param>
+            <remarks>
+        Forms are the things that pop-up in an editor when run from a command line.  In
+        P4.Net (and most other Perforce APIs), you do not need to parse/format the text manually.
+        Instead, you can get/set the fields using the Fields and ArrayFields collections.
+        <P>The following is a list of common form commands:</P>
+        <list>
+          <li>client</li>
+          <li>branch</li>
+          <li>label</li>
+          <li>job</li>
+          <li>user</li>
+          <li>group</li>
+          <li>protect</li>
+          <li>triggers</li>
+          <li>branch</li>
+        </list>
+        <P>
+          When fetching or saving a form, <B>do not use the '-o' and '-i' flags</B>.  P4.Net will automatically include them.
+        </P>
+      </remarks>
+            <returns>P4UnParsedRecordSet.  Output can be parsed to verify the form was processed correctly.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.Save_Form(System.String,System.String,System.String[])">
+            <summary>
+            Saves the form to Perforce.
+            </summary>
+            <param name="formCommand">The form command to run.</param>
+            <param name="formSpec">The formatted spec.</param>
+            <param name="args">Arguments to the form command.</param>
+            <returns>P4UnParsedRecordSet.  Output can be parsed to verify the form was processed correctly.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.Save_Form(System.String,System.String,System.Boolean)">
+            <summary>
+            Saves the form to Perforce.
+            </summary>
+            <param name="formCommand">The form command to run.</param>
+            <param name="formSpec">The formatted spec.</param>
+            <param name="Force">True to pass the '-f' flag when saving.</param>
+            <returns>P4UnParsedRecordSet.  Output can be parsed to verify the form was processed correctly.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.Save_Form(P4API.P4Form,System.Boolean)">
+            <summary>
+            Saves the form to Perforce.
+            </summary>
+            <param name="Form">The P4Form object retrieved from Fetch_Form.</param>
+            <param name="Force">True to pass the '-f' flag when saving.</param>
+            <remarks>
+        Forms are the things that pop-up in an editor when run from a command line.  In
+        P4.Net (and most other Perforce APIs), you do not need to parse/format the text manually.
+        Instead, you can get/set the fields using the Fields and ArrayFields collections.
+        <P>The following is a list of common form commands:</P>
+        <list>
+          <li>client</li>
+          <li>branch</li>
+          <li>label</li>
+          <li>job</li>
+          <li>user</li>
+          <li>group</li>
+          <li>protect</li>
+          <li>triggers</li>
+          <li>branch</li>
+        </list>
+        <P>
+          When fetching or saving a form, <B>do not use the '-o' and '-i' flags</B>.  P4.Net will automatically include them.
+        </P>
+      </remarks>
+            <returns>P4UnParsedRecordSet.  Output can be parsed to verify the form was processed correctly.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.Save_Form(P4API.P4Form,System.String[])">
+            <summary>
+            Saves the form to Perforce.
+            </summary>
+            <param name="Form">The P4Form object retrieved from Fetch_Form.</param>
+            <param name="args">Arguments passed to the form command.</param>
+            <remarks>
+        Forms are the things that pop-up in an editor when run from a command line.  In
+        P4.Net (and most other Perforce APIs), you do not need to parse/format the text manually.
+        Instead, you can get/set the fields using the Fields and ArrayFields collections.
+        <P>The following is a list of common form commands:</P>
+        <list>
+          <li>client</li>
+          <li>branch</li>
+          <li>label</li>
+          <li>job</li>
+          <li>user</li>
+          <li>group</li>
+          <li>protect</li>
+          <li>triggers</li>
+          <li>branch</li>
+        </list>
+        <P>
+          When fetching or saving a form, <B>do not use the '-o' and '-i' flags</B>.  P4.Net will automatically include them.
+        </P>
+      </remarks>
+            <returns>P4UnParsedRecordSet.  Output can be parsed to verify the form was processed correctly.</returns>
+        </member>
+        <member name="M:P4API.P4Connection.PrintBinary(System.String)">
+             <summary>
+             Print the contents of a file in Perforce to a byte array.
+             </summary>
+             <param name="depotPath">Perforce path to the file.</param>
+             <returns>
+             Contents of the file.
+             Text files will be encoded with ANSI encodinge.  
+             Unicode files will be encoded as UTF-8 (regardless of P4CHARSET setting).
+            </returns>
+        </member>
+        <member name="M:P4API.P4Connection.PrintText(System.String)">
+             <summary>
+             Print the contents of a file in Perforce to a string.
+             </summary>
+             <param name="depotPath">Perforce path to the file.</param>
+             <returns>Contents of the file.</returns>
+             <remarks>
+             Attempting to call PrintText on a binary file will likely cause corruption.<br/>
+             If a file is does not exist, a FileNotFound exception will be thrown (regardless
+             of the ExceptionLevel setting).<br/>
+             Depot Path, Client Path or Local Path can generally be used for the argument
+             depotPath (so long as the argument is valid for the <code>p4 print</code> command line.
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.PrintStream(System.IO.Stream,System.String,System.Text.Encoding)">
+             <summary>
+             Prints the contents of a Perforce file to a Stream.
+             </summary>
+             <param name="stream">Writable stream to write the contents to.</param>
+             <param name="depotPath">Perforce path of the file to print.</param>
+             <param name="encoding">Text encoding of the Stream.</param>
+             <remarks>
+             If a file is does not exist, a FileNotFound exception will be thrown (regardless
+             of the ExceptionLevel setting).<br/>
+             Depot Path, Client Path or Local Path can generally be used for the argument
+             depotPath (so long as the argument is valid for the <code>p4 print</code> command line.<br/>
+             Encoding will only be applied to files with a Perforce type of 'text' or 'unicode'.<br/>
+             The stream argument can be any valid stream, so long as it is initialized and writable.<br/>
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.PrintStream(System.IO.Stream,System.String)">
+             <summary>
+             Prints the contents of a Perforce file to a Stream.
+             </summary>
+             <param name="stream">Writable stream to write the contents to.</param>
+             <param name="depotPath">Perforce path of the file to print.</param>        
+             <remarks>
+             If a file is does not exist, a FileNotFound exception will be thrown (regardless
+             of the ExceptionLevel setting).<br/>
+             Depot Path, Client Path or Local Path can generally be used for the argument
+             depotPath (so long as the argument is valid for the <code>p4 print</code> command line.<br/>
+             The stream argument can be any valid stream, so long as it is initialized and writable.<br/>
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Connection.PrintStreamEvents(System.String[])">
+            <summary>
+            Runs a print command, and raises events for each file printed.
+            </summary>
+            <param name="args">Arguments to the <code>p4 print</code> command.</param>
+            <event>OnPrintStream</event>
+            <event>OnPrintEndFile</event>
+            <remarks>
+            This method is useful when you need to print several files with a single call
+            to the Perforce server.
+            </remarks>
+            <example><code language='c#'></code></example>
+        </member>
+        <member name="M:P4API.P4Connection.Dispose">
+            <summary>
+            Calls Disconnect.
+            </summary>
+        </member>
+        <member name="E:P4API.P4Connection.OnPrompt">
+            <summary>
+            Raised when Perforce is prompting for a response.
+            </summary>
+            <remarks>Handle Perforce "prompts".  Prompts are from commands that ask the user to respond, such as:
+            <list>
+            <li>login</li>
+            <li>passwd</li>
+            <li>resolve (without an -a* switch)</li>
+            </list>
+            </remarks>
+            <example>
+        The following sample will change the user's password.
+        <code language="C#" escaped="true">
+public class PasswordSetter
+{
+    private P4Connection _p4 = null;
+    private string _oldPassword = "";
+    private string _newPassword = "";
+    PasswordSetter(P4Connection p4)
+    {
+        _p4 = p4;
+    }
+
+    public void SetPassword(string OldPassword, string NewPassword)
+    {
+        OnPromptEventHandler eh = new OnPromptEventHandler(OnPrompt);
+        _p4.OnPrompt += eh;
+
+        _oldPassword = OldPassword;
+        _newPassword = NewPassword;
+
+        //run passwd
+        P4UnParsedRecordSet r = _p4.RunUnParsed("passwd");
+
+        //Clear the event just in case
+        _p4.OnPrompt -= eh;
+
+        //Clear the passwords from memory
+        _newPassword = "";
+        _oldPassword = "";
+    }
+
+    private void OnPrompt(object sender, P4PromptEventArgs e)
+    {
+        switch (e.Message)
+        {
+            case ("Enter old password: "):
+                e.Response = _oldPassword;
+                break;
+            case ("Enter new password: "):
+                e.Response = _newPassword;
+                break;
+            case ("Re-enter new password: "):
+                e.Response = _newPassword;
+                break;
+        }
+    }
+} 
+        </code>
+      </example>
+        </member>
+        <member name="E:P4API.P4Connection.OnPrintStream">
+            <summary>
+            Raised from P4PrintStreamEvents before a file is printed.
+            </summary>
+            <remarks> Handle this event to initialize a stream that P4API will write to.</remarks>
+        </member>
+        <member name="E:P4API.P4Connection.OnPrintEndFile">
+            <summary>
+            Raised from P4PrintStreamEvents after a file is printed.
+            </summary>
+            <remarks>
+            Use this event to close any streams that were created by the OnPrintStreamEventHandler event.
+            </remarks>
+        </member>
+        <member name="P:P4API.P4Connection.MaxScanRows">
+            <summary>
+            Gets/Sets a value that overrides the defined MaxScanRows.
+            </summary>
+            <remarks>Servers may set a limit for MaxScanRows for certain users.  Set this value to override.  
+            A value of 0 indicates no override.</remarks>
+            <value>Overrides the MaxScanRows defined at the server.</value>
+        </member>
+        <member name="P:P4API.P4Connection.MaxLockTime">
+            <summary>
+            Gets/Sets a value that overrides the defined MaxLockTime.
+            </summary>
+            <remarks>Servers may set a limit for MaxLockTime for certain users.  Set this value to override.  
+            A value of 0 indicates no override.</remarks>
+            <value>Overrides the MaxLockTime defined at the server.</value>
+        </member>
+        <member name="P:P4API.P4Connection.MaxResults">
+            <summary>
+            Gets/Sets a value that overrides the defined MaxResults.
+            </summary>
+            <remarks>Servers may set a limit for MaxResults for certain users.  Set this value to override.  
+            A value of 0 indicates no override.</remarks>
+            <value>Overrides the MaxResults defined at the server.</value>
+        </member>
+        <member name="P:P4API.P4Connection.Host">
+            <summary>
+            Gets/Sets the Host-name of the client.
+            </summary>
+            <remarks>Forcing the Host to a different name is useful when using a client that
+            was defined on a different host.  Of course, that can cause issues with the client's
+            have list, so use with caution.</remarks>
+            <value>The client Host name.</value>
+        </member>
+        <member name="P:P4API.P4Connection.Port">
+            <summary>
+            Gets/Sets the Perforce Server port.
+            </summary>
+            <value>The port.</value>
+            <remarks>Defaults to the value set in your Perforce environment.  Port can not be
+            changed after running Connect (not even after a Disconnect).  
+            To connect to a server on another port, create a new instance of P4Connection.
+            </remarks>
+        </member>
+        <member name="P:P4API.P4Connection.User">
+            <summary>
+            Gets/Sets the User login used to connect to Perforce.
+            </summary>
+            <value>The user.</value>
+            <remarks>Defaults to the value set in your Perforce environment.  
+            After you've set User, you can unset (revert to the default) by setting to User to null.</remarks>
+        </member>
+        <member name="P:P4API.P4Connection.Charset">
+            <summary>
+            Gets/Sets the client character set.
+            </summary>
+            <remarks>Defaults to the value set in your Perforce environment.  
+            After you've set Charset, you can unset (revert to the default) by setting to Charset to null.</remarks>
+            <value>The client's charset.</value>
+        </member>
+        <member name="P:P4API.P4Connection.CallingProgram">
+            <summary>
+            Get/Sets the name of the calling program.
+            </summary>
+            <remarks>This value is seen in p4 monitor and in the server log files.</remarks>
+            <value>Defaults to "P4.Net API".</value>
+        </member>
+        <member name="P:P4API.P4Connection.CallingVersion">
+            <summary>
+            Gets/Sets the version of the calling program's version.
+            </summary>
+            <remarks>This value is seen in p4 monitor and the server log files.</remarks>
+            <value>Defaults to the assembly version of the P4API.dll.</value>
+        </member>
+        <member name="P:P4API.P4Connection.Password">
+            <summary>
+            Sets the password to conenct with.
+            </summary>
+            <remarks>
+            Do not set the literal password with a server running security level 2 or higher.  
+            For those servers, Use the Login method and/or a ticket in place of the Password.
+            </remarks>
+            <value>The user's password.</value>
+        </member>
+        <member name="P:P4API.P4Connection.TicketFile">
+            <summary>
+            Sets the ticket file used for Authentication.
+            </summary>
+            <remarks>
+            Use this to override the default location of the TicketFile.
+            </remarks>
+            <value>Overrided the ticket file location.</value>
+        </member>
+        <member name="P:P4API.P4Connection.Client">
+            <summary>
+            Gets/Sets the client workspace.
+            </summary>
+            <remarks>Many Perforce commands require a valid client spec to be set in order to run.  
+            Defaults to the value set in your Perforce environment.  After you've set Client, you
+            can unset (revert to the default) by setting to Client to null.</remarks>
+            <value>The client name.</value>
+        </member>
+        <member name="P:P4API.P4Connection.CWD">
+            <summary>
+            Gets/Sets the current working directory.
+            </summary>
+            <remarks>Setting CWD can be used so that relative paths are specified.  Keep in mind that changing
+            the CWD also might cause P4CONFIG settings to change.</remarks>
+            <value>The current working directory for the Perforce connection.</value>
+        </member>
+        <member name="P:P4API.P4Connection.Api">
+            <summary>
+            Sets the client API protocol level.
+            </summary>
+            <remarks> Sets the API compatibility level desired. 
+            This is useful when writing scripts using Perforce commands that do not yet support tagged output. 
+            In these cases, upgrading to a later server that supports tagged output for the commands in question 
+            can break your script. Using this method allows you to lock your script to the 
+            output format of an older Perforce release and facilitate seamless upgrades. 
+            Note that this method must be called prior to calling Connect.
+            <br/>
+            See the http://kb.perforce.com/P4dServerReference/ProtocolLevels/PerforceClientLevels for the API integer levels that correspond to each Perforce release.
+            </remarks>
+            <value>The Perforce API level.</value>
+        </member>
+        <member name="P:P4API.P4Connection.ExceptionLevel">
+            <summary>
+            Gets/Sets the Exception level when running Perforce commands.
+            </summary>
+            <remarks><para>This property controls when P4.Net will throw exceptions
+            when the underlying Perforce commands raise errors and warnings.</para>
+            <para>The default is <paramref name="P4ExceptionLevels.NoExceptionOnWarnings"/></para></remarks>
+            <value>The exception level for the connection.</value>
+        </member>
+        <member name="P:P4API.P4Connection.ServerLevel">
+            <summary>
+            Checks the server level (version) of the Perforce server.
+            </summary>
+            <returns>The server's version level.</returns>
+            <remarks>See http://kb.perforce.com/P4dServerReference/ProtocolLevels/PerforceServerLevels for more informantion.</remarks>
+            <value>The server's version level.</value>
+        </member>
+        <member name="T:P4API.P4Form">
+            <summary>
+            Represents a Perforce 'Form' object.
+            </summary>
+            <remarks>
+        Forms are the things that pop-up in an editor when run from a command line.  In
+        P4.Net (and most other Perforce APIs), you do not need to parse/format the text manually.
+        Instead, you can get/set the fields using the Fields and ArrayFields collections.
+        <P>The following is a list of common form commands:</P>
+        <list>
+          <li>client</li>
+          <li>branch</li>
+          <li>label</li>
+          <li>job</li>
+          <li>user</li>
+          <li>group</li>
+          <li>protect</li>
+          <li>triggers</li>
+          <li>branch</li>
+        </list>
+        <P>
+          When fetching or saving a form, <B>do not use the '-o' and '-i' flags</B>.  P4.Net will automatically include them.
+        </P>
+      </remarks>
+            <example>
+        The following example updates the current client.  It changes the client root, and adds a line to the view.
+        <code language="C#" escaped="true">
+          P4Connection p4 = new P4Connection();
+          p4.Connect();
+
+          P4Form MyClient = p4.Fetch_Form("client");
+
+          //Change the root and properties
+          MyClient["Root"] = @"C:\p4\P4.NetClient";
+          MyClient["Description"] = "Created from P4.Net!";
+
+          //Fetch the clientName (for use later in building the view spec).
+          string clientName = MyClient["Client"];
+
+          // Build a new array, that has one more element than the current view
+          string[] NewView = new string[MyClient.ArrayFields["View"].Length + 1];
+
+          // Copy the existing view lines to the new array
+          MyClient.ArrayFields["View"].CopyTo(NewView,0);
+
+          // Set the new view line
+          NewView[NewView.Length - 1] = string.Format("//depot/newpath/... //{0}/newpath/...", clientName);
+
+          MyClient.ArrayFields["View"] = NewView;
+
+          // Save the form
+          P4UnParsedRecordSet MyResult = p4.Save_Form(MyClient);
+          p4.Disconnect();
+        </code>
+      </example>
+        </member>
+        <member name="T:P4API.P4Record">
+            <summary>
+            P4Record is a dictionary-like object that provides a means of interpreting Perforce results.
+            </summary>
+            <remarks>
+            The Perforce api provides "parsed" output in the form of key-value pairs.  
+            Keys are always strings (case sensitive).  From the raw api, the values come in 3 flavors:
+            <list>
+                <li>Simple strings.</li>
+                <li>List of strings.</li>
+                <li>Sparse multi-demensional list of strings.</li>    
+            </list>
+            P4.Net does not yet handle the third type (which only comes from certain output of p4 filelog).
+            <para>To access simple string values by key, use the Fields property (or the default indexer).</para>
+            <para>To access lists of strings by key, use the ArrayFields property.</para>
+            </remarks>
+        </member>
+        <member name="P:P4API.P4Record.Fields">
+            <summary>
+            Gets the FieldDictionary returned from the Perforce command.
+            </summary>
+            <value>The single-value fields returned for the current record.</value>
+        </member>
+        <member name="P:P4API.P4Record.ArrayFields">
+            <summary>
+            Gets the ArrayFieldDictionary returned from the Perforce command.
+            </summary>
+            <value>The array-value fields returned for the current record.</value>
+        </member>
+        <member name="P:P4API.P4Record.Item(System.String)">
+            <summary>
+            Returns the value of of the Field by key.  This is the same as Fields[key].
+            </summary>
+            <param name="key">The key for </param>
+            <returns>String value for the associated key.</returns>
+            <value>The value for field 'key'.</value>
+        </member>
+        <member name="M:P4API.P4Form.LoadFromSpec(System.String,System.String,System.String,System.Text.Encoding)">
+            <summary>
+            Parses a Perforce form without making a server connection.
+            </summary>
+            <param name="formCommand">The command that would otherwise be used to fetch the form.</param>
+            <param name="specDef">The Perforce 'specdef' for the form.</param>
+            <param name="formContents">The raw formated form text.</param>
+            <param name="encoding">Server encoding (either ANSI or UFT-8).</param>
+            <returns>A Perforce form object.</returns>
+            <remarks>
+            LoadFromSpec can be used to parse a form without making a call to the server.  
+            LoadFromSpec can be useful in form triggers.
+            It does require you to know the SpecDef to call, which can change when upgrading or changing
+            the server configuration.
+            </remarks>
+        </member>
+        <member name="M:P4API.P4Form.FormatSpec">
+            <summary>
+            Formats the P4Form as a formated Perforce spec.
+            </summary>
+            <returns>String of the formated form spec.</returns>
+        </member>
+        <member name="M:P4API.P4Form.Clone">
+            <summary>
+            Copies the P4Form object into a new instance.
+            </summary>
+            <returns>A copy of the P4Form object.</returns>
+        </member>
+        <member name="P:P4API.P4Form.FormCommand">
+            <summary>
+            Gets the form command.
+            </summary>
+            <value>The command that was executed when the form was run.</value>
+        </member>
+        <member name="P:P4API.P4Form.PermittedFields">
+            <summary>
+            Gets a StringCollection containing the names of all the allowable fields in the form.
+            </summary>
+            <remarks>
+            The fields returned by PermittedFields are not necessarily included in Fields.Keys or
+            ArrayFields.Keys.  Perforce forms usually do not have keys for empty values.
+            </remarks>
+            <value>StringCollection containing the names of all the allowable fields in the form.</value>
+        </member>
+        <member name="P:P4API.P4Form.SpecDef">
+            <summary>
+            The underlying C++ API 'specdef' defining the form.
+            </summary>
+            <value>The C++ 'specdef' that defines the format of the spec.</value>
+            <remarks>
+            The SpecDef is a formatted string that Perforce uses internally to parse forms.
+            SpecDefs will vary by form, server version, and even with specific server configurations.
+            In general, you should avoid using a SpecDef directly; however, in some cases you 
+            can avoid a server call by using the SpecDef.
+            </remarks>
+        </member>
+        <member name="T:P4API.P4MessageSeverity">
+            <summary>
+            Perforce Message Severity
+            </summary>
+        </member>
+        <member name="F:P4API.P4MessageSeverity.Empty">
+            <summary>
+            No Error
+            </summary>
+        </member>
+        <member name="F:P4API.P4MessageSeverity.Info">
+            <summary>
+            Informational Message
+            </summary>
+        </member>
+        <member name="F:P4API.P4MessageSeverity.Warning">
+            <summary>
+            Warning Message
+            </summary>
+        </member>
+        <member name="F:P4API.P4MessageSeverity.Failed">
+            <summary>
+            Error Message
+            </summary>
+        </member>
+        <member name="F:P4API.P4MessageSeverity.Fatal">
+            <summary>
+            Fatal Message
+            </summary>
+        </member>
+        <member name="T:P4API.P4Message">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:P4API.P4Message.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            </returns>
+        </member>
+        <member name="M:P4API.P4Message.Format">
+            <summary>
+            Formats this instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:P4API.P4Message.Dump">
+            <summary>
+            Dumps this instance.
+            </summary>
+        </member>
+        <member name="M:P4API.P4Message.GetValue(System.String)">
+            <summary>
+            Gets the value.
+            </summary>
+            <param name="var">The var.</param>
+            <returns></returns>
+        </member>
+        <member name="P:P4API.P4Message.Severity">
+            <summary>
+            Gets the severity.
+            </summary>
+            <value>The severity.</value>
+        </member>
+        <member name="P:P4API.P4Message.Variables">
+            <summary>
+            Gets the variables.
+            </summary>
+            <value>The variables.</value>
+        </member>
+        <member name="P:P4API.P4Message.Identity">
+            <summary>
+            Gets the identity.
+            </summary>
+            <value>The identity.</value>
+        </member>
+        <member name="T:P4API.P4PendingChangelist">
+            <summary>
+            Represents a pending changelist from Perforce.
+            </summary>
+            <remarks>
+        The P4PendindingChangelist object is used to submit files with P4.Net.  The first step
+        is to create a new pending changelist, then add the switches "-c", and "1234" 
+        (1234 is the changelist number) to all commands that are opening files.
+
+        In P4.Net, there’s no straight-forward way to submit the default pending changelist.
+        This is by design. If the client workspace has opened files in the default changelist
+        before any P4.Net automation runs, those files will "come along for the ride" when
+        you submit the default changelist. If the user has a JobView set, all jobs in that
+        JobView will automatically be fixed when you submit the default changelist.
+        Both of those behaviors are almost never desired, and I’ve found many scripts that
+        have those bugs.
+      </remarks>
+            <example>
+        The following example demonstrates submiting files with P4PendingChangelist.
+        <code language="C#" escaped="true">
+P4Connection p4 = new P4Connection();
+p4.Connect();
+P4PendingChangelist  cl = p4.CreatePendingChangelist("My New Changelist\nVery, Very bad description!\nShame on me!");
+p4.Run("edit", "-c", cl.Number.ToString(), "//depot/path/foo.cs", "//depot/path/bar.cs");
+// Do something to manipulate the files
+cl.Submit();
+p4.Disconnect();
+      </code>
+</example>
+        </member>
+        <member name="M:P4API.P4PendingChangelist.Submit">
+            <summary>
+            Submits the pending changelist to Perforce.
+            </summary>
+            <returns>P4UnParsedRecordSet with the results of the submit.</returns>
+        </member>
+        <member name="P:P4API.P4PendingChangelist.Number">
+            <summary>
+            Gets the pending changelist's number.
+            </summary>
+            <value>The changelist number.</value>
+        </member>
+        <member name="P:P4API.P4PendingChangelist.Description">
+            <summary>
+            Gets the pending changelist's description.
+            </summary>
+            <value>The description.</value>
+        </member>
+        <member name="T:P4API.OnPrintStreamEventHandler">
+            <summary>
+            Delegate to handle the OnPrintStream event.
+            </summary>
+            <param name="args">Arguments describing the printed file.</param>
+            <param name="outputStream">The stream to write the file.</param>
+            <seealso cref="E:P4API.P4Connection.OnPrintStream"/>
+        </member>
+        <member name="T:P4API.OnPrintEndEventHandler">
+            <summary>
+            Delaget to handle the OnPrintEndFile event.
+            </summary>
+            <param name="args">Arguments describing the printed file.</param>
+            <param name="stream">The stream that was written.</param>
+            <seealso cref="E:P4API.P4Connection.OnPrintEndFile"/>
+        </member>
+        <member name="T:P4API.P4PrintStreamEventArgs">
+            <summary>
+            EventArgs class to supply file details.
+            </summary>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.DepotFile">
+            <summary>
+            The Perforce depot path to the file being printed.
+            </summary>
+            <value>The depot path to the file.</value>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.TextEncoding">
+            <summary>
+            Encoding to be used for files with a Perforce type of 'text'.
+            </summary>
+            <value>The encoding for Text Files being printed.</value>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.UnicodeEncoding">
+            <summary>
+            Encoding to be used for files with a Perforce type of 'unicode'.
+            </summary>
+            <value>The encoding form unicode files being printed.</value>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.Action">
+            <summary>
+            Submit action for the file being printed.
+            </summary>
+            <value>The last submit action for the file being printed.</value>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.FileType">
+            <summary>
+            The Perforce file type of the file being printed.
+            </summary>
+            <value>The Perforce filetype of the file being printed.</value>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.FileTime">
+            <summary>
+            The timestamp of the file being printed.
+            </summary>
+            <value>The timestamp of the file being printed.</value>
+        </member>
+        <member name="P:P4API.P4PrintStreamEventArgs.Change">
+            <summary>
+            The Perforce changelist number for the file being printed.
+            </summary>
+            <value>The Perforce changelist number for the file being printed.</value>
+        </member>
+        <member name="T:P4API.P4PromptEventArgs">
+            <summary>
+            Arguments provided for an OnPrompt event.
+            </summary>
+        </member>
+        <member name="P:P4API.P4PromptEventArgs.Message">
+            <summary>
+            The message from Perforce.
+            </summary>
+            <value>The prompt message from Perforce.</value>
+        </member>
+        <member name="P:P4API.P4PromptEventArgs.Response">
+            <summary>
+            The value to respond to Perforce with.
+            </summary>
+            <value>The response to the Perforce command.</value>
+        </member>
+        <member name="T:P4API.P4RecordSet">
+            <summary>
+            Provides output of a Perforce Command in "tagged" moded.
+            </summary>
+            <remarks>
+            P4Recordset is an enumerable collection of P4Records that supply keyed access to 
+            information returned from Perforce.
+            </remarks>
+        </member>
+        <member name="P:P4API.P4RecordSet.Records">
+            <summary>
+            Gets an array of records returned from the Perforce command.
+            </summary>
+            <value>Array of P4Records.</value>
+        </member>
+        <member name="P:P4API.P4RecordSet.Messages">
+            <summary>
+            Gets an array of string messages returned from the Perforce command.
+            </summary>
+            <value>Array of informational messages returned from a Perforce command.</value>
+        </member>
+        <member name="P:P4API.P4RecordSet.Item(System.Int32)">
+            <summary>
+            Gets the record at the specified index.
+            </summary>
+            <param name="Index">Index of the record to get.</param>
+            <returns>P4Record</returns>
+            <value>Returns the record at 'Index'.</value>
+        </member>
+        <member name="T:P4API.P4UnParsedRecordSet">
+            <summary>
+            This class represents the "unparsed" output from a Perforce command.
+            </summary>
+            <remarks>
+            In general P4UnParsedRecordSet will return an array of strings which is analagous 
+            to a line printed to stdout in p4.exe.  Errors and Warnings are stored in the 
+            Errors and Warnings properties respectively.
+            </remarks>
+        </member>
+        <member name="P:P4API.P4UnParsedRecordSet.Messages">
+            <summary>
+            Gets array of messages returned from the Perforce command.
+            </summary>
+            <value>Array of messages returned from Perforce.</value>
+        </member>
+        <member name="P:P4API.P4UnParsedRecordSet.Item(System.Int32)">
+            <summary>
+            Gets message at the specified index.
+            </summary>
+            <remarks>
+            This is the same as running record.Messages[0];
+            </remarks>
+            <param name="index">Index of the message.</param>
+            <returns>String message</returns>
+            <value>Message at 'index'.</value>
+        </member>
+        <member name="T:P4API.Exceptions.P4APIExceptions">
+            <summary>
+            Base exception for P4API.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.P4APIExceptions.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.ServerNotConnected">
+            <summary>
+            Exception: Attempting to run a command while the Perforce Server is not connected!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.ServerNotConnected.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.ServerAlreadyConnected">
+            <summary>
+            Exception: Changing the port when a server is connected is not allowed!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.ServerAlreadyConnected.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.InvalidLogin">
+            <summary>
+            Exception: Invalid login credentials.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.InvalidLogin.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.ServerNotConnected_SetVar_AfterInit">
+            <summary>
+            Exception:  Attempting to set a property that can not be set after the server is connected!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.ServerNotConnected_SetVar_AfterInit.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.InvalidFormArgument">
+            <summary>
+            Exception: You can not use the '-o' and '-i' flags in Fetch_Form and Save_Form.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.InvalidFormArgument.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.PerforceInitializationError">
+            <summary>
+            Exception:  Unable to connect to the Perforce Server!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.PerforceInitializationError.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.FormParseException">
+            <summary>
+            Error parsing the form spec.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.FormParseException.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.DiffNotImplemented">
+            <summary>
+            Support for diff (without -s* flag) not yet implemented
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.DiffNotImplemented.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.MergeNotImplemented">
+            <summary>
+            Support for merging not yet implemented
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.MergeNotImplemented.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.FormFetchException">
+            <summary>
+            Exception: Error attempting to fetch form.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.FormFetchException.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.FormCommandException">
+            <summary>
+            Exception: Interactive 'Form' commands are unsupported in P4API.
+            Use the 'Fetch_Form' and 'Save_Form' methods of the P4Connection object.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.FormCommandException.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.RunUnParsedException">
+            <summary>
+            Exception: Error running Perforce command!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.RunUnParsedException.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.RunUnParsedException.Result">
+            <summary>
+            Gets the P4UnParsedRecordSet that would have been returned if an exception was not thrown.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.RunException">
+            <summary>
+            Exception: Error running Perforce command!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.RunException.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.ErrorPauseCalled">
+            <summary>
+            ClientUser ErrorPause method was called.  This in unsupported in P4.Net.
+            </summary>
+            <remarks>If you see this, please let the curator know the steps to reproduce.  This should not be reachable code.</remarks>
+        </member>
+        <member name="P:P4API.Exceptions.ErrorPauseCalled.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.FileNotFound">
+            <summary>
+            Exception: File not found!
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.FileNotFound.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.Exceptions.StreamNotWriteable">
+            <summary>
+            Exception: Can not write to stream.
+            </summary>
+        </member>
+        <member name="P:P4API.Exceptions.StreamNotWriteable.Message">
+            <summary>
+            Gets the error message for the exception.
+            </summary>
+        </member>
+        <member name="T:P4API.ArrayFieldDictionary">
+            <summary>
+            Strongly typed dictionary to represent array-valued fields returned from Perforce commands.
+            </summary>
+            <remarks>
+            The FieldDictionary only contains fields that contain a string array values.  Fields that return a single string
+            values are stored in <paramref name="FieldDictionary"/>.<br/>
+            If a value is read from a key that does not exist, an empty array will be returned.
+            If a value is set with a key that does not exist, it will automatically be added.
+            This behavior is to support many Perforce commands that omit a key, rather than supply a default value.
+            </remarks>
+        </member>
+        <member name="M:P4API.ArrayFieldDictionary.Clear">
+            <summary>
+            Clears all elements of the dictionary.
+            </summary>
+        </member>
+        <member name="M:P4API.ArrayFieldDictionary.ContainsKey(System.String)">
+            <summary>
+            Tests if the key exists in the dictionary.
+            </summary>
+            <param name="key">The key to test</param>
+            <returns>True if the key is defined in the dictionary.</returns>
+        </member>
+        <member name="M:P4API.ArrayFieldDictionary.Remove(System.String)">
+            <summary>
+            Removes elements from the dictionary.
+            </summary>
+            <param name="key">The key of the element to remove.</param>
+        </member>
+        <member name="P:P4API.ArrayFieldDictionary.Keys">
+            <summary>
+            Gets all keys contained in the dictionary.
+            </summary>
+            <value>Keys in the ArrayFieldDictionary.</value>
+        </member>
+        <member name="P:P4API.ArrayFieldDictionary.Count">
+            <summary>
+            Gets the number of elements in the dictionary
+            </summary>
+            <value>Number of items.</value>
+        </member>
+        <member name="P:P4API.ArrayFieldDictionary.Item(System.String)">
+            <summary>
+            Returns the value assocatied to the key.
+            </summary>
+            <param name="key">The key to search on.</param>
+            <returns>String array value associated to the key.</returns>
+        </member>
+        <member name="T:P4API.FieldDictionary">
+            <summary>
+            Strongly typed dictionary to represent fields returned from Perforce commands.
+            </summary>
+            <remarks>
+            The FieldDictionary only contains fields that contain a single string value.  Fields that return array
+            values are stored in <paramref name="ArrayFieldDictionary"/>.
+            </remarks>
+        </member>
+        <member name="M:P4API.FieldDictionary.Clear">
+            <summary>
+            Clears all elements of the dictionary.
+            </summary>
+        </member>
+        <member name="M:P4API.FieldDictionary.ContainsKey(System.String)">
+            <summary>
+            Tests if the key exists in the dictionary.
+            </summary>
+            <param name="key">The key to test</param>
+            <returns>True if the key is defined in the dictionary.</returns>
+        </member>
+        <member name="M:P4API.FieldDictionary.Remove(System.String)">
+            <summary>
+            Removes elements from the dictionary.
+            </summary>
+            <param name="key">The key of the element to remove.</param>
+        </member>
+        <member name="P:P4API.FieldDictionary.Keys">
+            <summary>
+            Gets all keys contained in the dictionary.
+            </summary>
+            <value>Keys in the FieldDictionary</value>
+        </member>
+        <member name="P:P4API.FieldDictionary.Count">
+            <summary>
+            Gets the number of elements in the dictionary
+            </summary>
+            <value>Count of items.</value>
+        </member>
+        <member name="P:P4API.FieldDictionary.Item(System.String)">
+            <summary>
+            Returns the value assocatied to the key.
+            </summary>
+            <param name="key">The key to search on.</param>
+            <returns>String value associated to the key.</returns>
+        </member>
+    </members>
+</doc>

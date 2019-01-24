@@ -1,4 +1,5 @@
-WTUnrealDbgSDK.dll /RegServer
-VSIPRegPkg.exe WTUnrealDbgPkg.dll
+
+UCDebuggerSDK.dll /RegServer
+regsvr32 UCDebuggerSDKPS.dll
+regpkg.exe /codebase UnrealDebugger2005.dll
 DockedWatchWin.reg
-rem VSIPRegPkg.exe /regfile:Pkg2005.reg WTUnrealDbgPkg.dll

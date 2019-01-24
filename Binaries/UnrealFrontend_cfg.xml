@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<CookerSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  UserSettingsDirectory="UnrealEngine3">
+  <Platforms>
+    <string>Xenon</string>
+    <string>PS3</string>
+    <string>PS3 Mod</string>
+  </Platforms>
+  <Games>
+    <string>ExampleGame</string>
+    <string>GearGame</string>
+    <string>NanoGame</string>
+    <string>UTGame</string>
+	<string>HessianGame</string>
+  </Games>
+  <PCConfigs>
+    <string>Release</string>
+    <string>Debug</string>    
+    <string>Release-G4WLive</string>
+    <string>Debug-G4WLive</string>
+  </PCConfigs>
+  <ConsoleConfigs>
+    <string>Release</string>
+    <string>ReleaseLTCG</string>
+    <string>ReleaseLTCG-DebugConsole</string>
+    <string>Debug</string>
+  </ConsoleConfigs>
+</CookerSettings>

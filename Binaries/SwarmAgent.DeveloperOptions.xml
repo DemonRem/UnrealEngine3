@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<SettableDeveloperOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LocalJobsDefaultProcessorCount>2</LocalJobsDefaultProcessorCount>
+  <LocalJobsDefaultProcessPriority>AboveNormal</LocalJobsDefaultProcessPriority>
+  <RemoteJobsDefaultProcessorCount>1</RemoteJobsDefaultProcessorCount>
+  <RemoteJobsDefaultProcessPriority>AboveNormal</RemoteJobsDefaultProcessPriority>
+  <JobExecutableTimeout>-1</JobExecutableTimeout>
+  <RemoteAgentTimeout>-1</RemoteAgentTimeout>
+  <AllowedRemoteAgentNames>RENDERPC</AllowedRemoteAgentNames>
+  <AgentGroupName>DefaultDeployed</AgentGroupName>
+  <UpdateAutomatically>false</UpdateAutomatically>
+  <OptionsVersion>9</OptionsVersion>
+</SettableDeveloperOptions>

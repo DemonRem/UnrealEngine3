@@ -11,12 +11,6 @@ utgame make -updateinisauto %1 %2 %3 %4 %5 %6
 	goto builderror
 )
 
-wargame make -updateinisauto %1 %2 %3 %4 %5 %6
-@if errorlevel 1 (
-	set game=WarGame
-	goto builderror
-)
-
 geargame make -updateinisauto %1 %2 %3 %4 %5 %6
 @if errorlevel 1 (
 	set game=GearGame
