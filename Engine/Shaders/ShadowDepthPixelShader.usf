@@ -1,0 +1,57 @@
+/*=============================================================================
+	ShadowDepthPixelShader.usf: Pixel shader for writing shadow depth.
+	Copyright 1998-2009 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+#ifndef PERSPECTIVE_CORRECT_DEPTH
+#define PERSPECTIVE_CORRECT_DEPTH 0
+#endif
+
+/** Used to normalize the outputted depth */
+float InvMaxSubjectDepth;
+
+/** Tweakable depth bias */
+float DepthBias;
+
+void Main( 
+#if !MATERIALBLENDING_SOLID
+	FVertexFactoryInterpolants FactoryInterpolants,
+#endif
+#if PERSPECTIVE_CORRECT_DEPTH || !SUPPORTS_DEPTH_TEXTURES
+	float ShadowDepth : TEXCOORD4, 
+#endif
+	out float4 OutColor : COLOR0
+#if PERSPECTIVE_CORRECT_DEPTH
+	,out float OutDepth : DEPTH
+#endif
+	)
+{
+#if !MATERIALBLENDING_SOLID
+	// Evaluate the mask for masked materials
+	FMaterialParameters MaterialParameters = GetMaterialParameters(FactoryInterpolants);
+	// Note: Using default values for camera vector and screen position to reduce interpolator cost.
+	// If the mask depends on either of these it will be subtly wrong.
+	CalcMaterialParameters(MaterialParameters, 1, float3(0,0,1), float4(0,0,0,1));
+	GetMaterialClippingShadowDepth(MaterialParameters);
+#endif
+
+#if PERSPECTIVE_CORRECT_DEPTH
+	ShadowDepth *= InvMaxSubjectDepth;
+	ShadowDepth += DepthBias;
+
+	OutDepth = saturate(ShadowDepth);
+	// RETURN_COLOR not needed unless writing to SceneColor;	
+	OutColor = saturate(ShadowDepth.xxxx);
+#else
+	#if SUPPORTS_DEPTH_TEXTURES
+		OutColor = 0;
+	#else
+		// Output depth as color
+		OutColor = ShadowDepth.xxxx;
+	#endif
+#endif
+}

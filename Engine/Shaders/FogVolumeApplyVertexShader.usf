@@ -1,0 +1,29 @@
+/*=============================================================================
+	FogVolumeApplyVertexShader.usf
+	Copyright 1998-2009 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+void Main(
+	FVertexFactoryInput Input,
+	out FVertexFactoryInterpolants FactoryInterpolants,
+	out float4	PixelPosition	: TEXCOORD5,
+	out float3	CameraVector	: TEXCOORD6,
+	out float4	Position		: POSITION
+	)
+{
+	FVertexFactoryIntermediates VFIntermediates = GetVertexFactoryIntermediates(Input);
+	float4 WorldPosition = VertexFactoryGetWorldPosition(Input, VFIntermediates);
+	Position = MulMatrix(ViewProjectionMatrix,WorldPosition);
+	FactoryInterpolants = VertexFactoryGetInterpolants(Input, VFIntermediates);
+#if WORLD_POS
+	PixelPosition = WorldPosition;
+#else
+	PixelPosition = Position;
+#endif
+	float3x3 TangentBasis = VertexFactoryGetTangentBasis(Input, VFIntermediates);
+	CameraVector = VertexFactoryWorldToTangentSpace(Input,TangentBasis,CameraPosition.xyz - WorldPosition.xyz * CameraPosition.w);
+}

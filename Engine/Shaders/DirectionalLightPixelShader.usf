@@ -1,0 +1,61 @@
+/*=============================================================================
+	DirectionalLightPixelShader.hlsl: Directional light pixel shader.
+	Copyright 1998-2009 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#define NEEDS_LIGHTMAP_COORDINATE STATICLIGHTING_TEXTUREMASK
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+half3 LightColor;
+/** Bias to transform distance into the penumbra in x, scale in y, exponent in z. */
+float3 DistanceFieldParameters;
+sampler2D ShadowTexture;
+
+void Main(
+	in FVertexFactoryInterpolants FactoryInterpolants,
+	in float3 TangentLightVector : TEXCOORD4,
+	in float4 WorldLightVector : TEXCOORD5,
+	in float3 CameraVector : TEXCOORD6,
+	in float4 PixelPosition : TEXCOORD7,
+	OPTIONAL_FacingSign
+	out float4 OutColor : COLOR0
+	)
+{
+	FMaterialParameters MaterialParameters = GetMaterialParameters(FactoryInterpolants);
+	CalcMaterialParameters(MaterialParameters,FacingSign,CameraVector,PixelPosition,TangentLightVector);
+
+#if STATICLIGHTING_TEXTUREMASK
+	#if STATICLIGHTING_SIGNEDDISTANCEFIELD
+		half TransitionDistance = tex2D(ShadowTexture,GetLightMapCoordinate(FactoryInterpolants)).x;
+		half ShadowFactor = (TransitionDistance + DistanceFieldParameters.x) * DistanceFieldParameters.y;
+		half LightMask = pow(saturate(ShadowFactor), DistanceFieldParameters.z); 
+	#else
+		half LightMask = tex2D(ShadowTexture,GetLightMapCoordinate(FactoryInterpolants)).r; 
+	#endif
+#elif STATICLIGHTING_VERTEXMASK
+	half	LightMask = WorldLightVector.w;
+#else
+	half	LightMask = 1;
+#endif
+
+	GetMaterialClipping(MaterialParameters);
+
+	OutColor.rgb = 
+#if MATERIALBLENDING_SOLID || MATERIALBLENDING_MASKED
+		GetLightAttenuation(MaterialParameters.ScreenPosition) *
+#endif
+		LightMask *
+		GetMaterialPointLightTransfer(MaterialParameters,0,0,false) *
+		LightColor;
+
+#if MATERIALBLENDING_TRANSLUCENT
+		OutColor.a = GetMaterialOpacity(MaterialParameters);
+#else
+		OutColor.a = 0.0f;
+#endif
+		
+	OutColor = RETURN_COLOR(AccumulateSceneColor(OutColor));
+}

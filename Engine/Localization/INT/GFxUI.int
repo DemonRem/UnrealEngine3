@@ -1,0 +1,20 @@
+[FontLib]
+FontLib=GFxIME30.fonts_all
+FontLib=fonts_en.fonts_en
+
+[Fonts]
+TitleFont=Slate Mobile,bold
+NormalFont=Slate Mobile,Normal
+SmallFont=Slate Mobile,Normal
+IMELanguageBar=Arial Unicode MS
+#NormalFont=Arial Unicode MS,Bold
+IMESample=Arial Unicode MS 
+
+[IME]
+MoviePath=GFxIME30.IME
+
+[Translation]
+Enable=1
+
+[Global]
+No Trigger=No Trigger!

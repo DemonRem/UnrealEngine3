@@ -1,0 +1,59 @@
+/*=============================================================================
+	ShadowDepthVertexShader.usf: Vertex shader for writing shadow depth.
+	Copyright 1998-2009 Epic Games, Inc. All Rights Reserved.
+=============================================================================*/
+
+#include "Common.usf"
+#include "Material.usf"
+#include "VertexFactory.usf"
+
+#ifndef OUTPUT_DEPTH_TO_COLOR
+#define OUTPUT_DEPTH_TO_COLOR 0
+#endif
+
+#ifndef PERSPECTIVE_CORRECT_DEPTH
+#define PERSPECTIVE_CORRECT_DEPTH 0
+#endif
+
+float4x4 ProjectionMatrix;
+
+/** Used to normalize the outputted depth */
+float InvMaxSubjectDepth;
+
+/** Tweakable depth bias */
+float DepthBias;
+
+void Main(
+	FVertexFactoryInput Input,
+#if !MATERIALBLENDING_SOLID
+	out FVertexFactoryInterpolants OutFactoryInterpolants,
+#endif
+#if PERSPECTIVE_CORRECT_DEPTH || !SUPPORTS_DEPTH_TEXTURES
+	out float ShadowDepth : TEXCOORD4, 
+#endif
+	out float4 OutPosition : POSITION
+	)
+{
+	FVertexFactoryIntermediates VFIntermediates = GetVertexFactoryIntermediates(Input);
+	float4 WorldPos = VertexFactoryGetWorldPosition(Input, VFIntermediates);
+	OutPosition = MulMatrix(ProjectionMatrix,WorldPos);
+
+#if PERSPECTIVE_CORRECT_DEPTH
+	ShadowDepth = OutPosition.z;
+#else
+		// Output linear, normalized depth
+	#if SUPPORTS_DEPTH_TEXTURES
+		OutPosition.z = saturate(OutPosition.z * InvMaxSubjectDepth + DepthBias) * OutPosition.w;
+	#else
+		#if !OUTPUT_DEPTH_TO_COLOR
+			OutPosition.z = saturate(OutPosition.z * InvMaxSubjectDepth + DepthBias) * OutPosition.w;
+		#endif
+		ShadowDepth = saturate(OutPosition.z * InvMaxSubjectDepth + DepthBias);
+	#endif
+#endif
+
+#if !MATERIALBLENDING_SOLID
+	// Masked materials need texture coords to clip
+	OutFactoryInterpolants = VertexFactoryGetInterpolants(Input, VFIntermediates);
+#endif
+}
