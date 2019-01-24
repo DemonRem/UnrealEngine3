@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXCAPSULESHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -60,9 +60,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setRadius() setHeight()
 	*/
@@ -77,9 +78,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDimensions() NxCapsuleShapeDesc.radius getRadius()
 	*/
@@ -92,9 +94,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see setRadius() setDimensions() NxCapsuleShapeDesc.radius
 	*/
@@ -109,9 +112,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see getHeight() NxCapsuleShapeDesc.height getRadius() setDimensions()
 	*/
@@ -124,9 +128,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see setHeight() setRadius() NxCapsuleShapeDesc.height
 	*/
@@ -139,9 +144,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxCapsule
 	*/
@@ -154,9 +160,10 @@ class NxCapsuleShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxCapsuleShapeDesc
 	*/
@@ -165,9 +172,9 @@ class NxCapsuleShape: public NxShape
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

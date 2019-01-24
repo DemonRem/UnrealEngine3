@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     2005-03-12
-// RCS-ID:      $Id: propdlg.h,v 1.4 2005/06/10 17:53:09 ABX Exp $
+// RCS-ID:      $Id: propdlg.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,15 +12,13 @@
 #ifndef _WX_PROPDLG_H_
 #define _WX_PROPDLG_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "propdlg.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_BOOKCTRL
 
-class WXDLLEXPORT wxBookCtrlBase;
+#include "wx/dialog.h"
+
+class WXDLLIMPEXP_FWD_CORE wxBookCtrlBase;
 
 //-----------------------------------------------------------------------------
 // wxPropertySheetDialog
@@ -51,6 +49,30 @@ class WXDLLEXPORT wxBookCtrlBase;
 // Override CreateBookCtrl and AddBookCtrl to create and add a different
 // kind of book control.
 //-----------------------------------------------------------------------------
+
+// Use the platform default
+#define wxPROPSHEET_DEFAULT         0x0001
+
+// Use a notebook
+#define wxPROPSHEET_NOTEBOOK        0x0002
+
+// Use a toolbook
+#define wxPROPSHEET_TOOLBOOK        0x0004
+
+// Use a choicebook
+#define wxPROPSHEET_CHOICEBOOK      0x0008
+
+// Use a listbook
+#define wxPROPSHEET_LISTBOOK        0x0010
+
+// Use a wxButtonToolBar toolbook
+#define wxPROPSHEET_BUTTONTOOLBOOK  0x0020
+
+// Use a treebook
+#define wxPROPSHEET_TREEBOOK        0x0040
+
+// Shrink dialog to fit current page
+#define wxPROPSHEET_SHRINKTOFIT     0x0100
 
 class WXDLLIMPEXP_ADV wxPropertySheetDialog : public wxDialog
 {
@@ -85,13 +107,25 @@ public:
     void SetInnerSize(wxSizer* sizer) { m_innerSizer = sizer; }
     wxSizer* GetInnerSizer() const { return m_innerSizer ; }
 
+    // Set and get the book style
+    void SetSheetStyle(long sheetStyle) { m_sheetStyle = sheetStyle; }
+    long GetSheetStyle() const { return m_sheetStyle ; }
+
+    // Set and get the border around the whole dialog
+    void SetSheetOuterBorder(int border) { m_sheetOuterBorder = border; }
+    int GetSheetOuterBorder() const { return m_sheetOuterBorder ; }
+
+    // Set and get the border around the book control only
+    void SetSheetInnerBorder(int border) { m_sheetInnerBorder = border; }
+    int GetSheetInnerBorder() const { return m_sheetInnerBorder ; }
+
 /// Operations
 
     // Creates the buttons (none on PocketPC)
     virtual void CreateButtons(int flags = wxOK|wxCANCEL);
 
     // Lay out the dialog, to be called after pages have been created
-    virtual void LayoutDialog();
+    virtual void LayoutDialog(int centreFlags = wxBOTH);
 
 /// Implementation
 
@@ -105,12 +139,19 @@ public:
     // Set the focus
     void OnActivate(wxActivateEvent& event);
 
+    // Resize dialog if necessary
+    void OnIdle(wxIdleEvent& event);
+
 private:
     void Init();
 
 protected:
     wxBookCtrlBase* m_bookCtrl;
     wxSizer*        m_innerSizer; // sizer for extra space
+    long            m_sheetStyle;
+    int             m_sheetOuterBorder;
+    int             m_sheetInnerBorder;
+    int             m_selectedPage;
 
     DECLARE_DYNAMIC_CLASS(wxPropertySheetDialog)
     DECLARE_EVENT_TABLE()

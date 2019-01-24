@@ -6,7 +6,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     8/7/2000
-// RCS-ID:      $Id: splittree.cpp,v 1.34 2005/08/23 16:02:47 ABX Exp $
+// RCS-ID:      $Id: splittree.cpp 55007 2008-08-07 09:29:54Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -18,9 +18,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-#ifdef __GNUG__
-    #pragma implementation "splittree.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -41,6 +38,7 @@
 #endif
 
 #include "wx/gizmos/splittree.h"
+#include "wx/renderer.h"
 #include <math.h>
 
 /*
@@ -101,6 +99,39 @@ void wxRemotelyScrolledTreeCtrl::HideVScrollbar()
 #endif
 }
 
+void wxRemotelyScrolledTreeCtrl::DoCalcScrolledPosition(int x, int y, int *xx, int *yy) const
+{
+#if USE_GENERIC_TREECTRL || !defined(__WXMSW__)
+    if (IsKindOf(CLASSINFO(wxGenericTreeCtrl)))
+    {
+        wxGenericTreeCtrl* win = (wxGenericTreeCtrl*) this;
+        * yy = 0;
+        int yyy;
+        win->wxGenericTreeCtrl::DoCalcScrolledPosition(x, y, xx, & yyy);
+
+        wxScrolledWindow* scrolledWindow = GetScrolledWindow();
+        if (scrolledWindow)
+        {
+            int xxx;
+            scrolledWindow->DoCalcScrolledPosition(x, y, & xxx, yy);
+        }
+    }
+#endif
+}
+
+void wxRemotelyScrolledTreeCtrl::SetScrollbar(int orient,
+                               int pos,
+                               int thumbVisible,
+                               int range,
+                               bool update)
+{
+#ifndef __WXMSW__
+    if (orient == wxVERTICAL)
+        range = 0;
+#endif
+    wxWindow::SetScrollbar(orient, pos, thumbVisible, range, update);
+}
+
 // Number of pixels per user unit (0 or -1 for no scrollbar)
 // Length of virtual canvas in user units
 // Length of page in user units
@@ -122,7 +153,7 @@ void wxRemotelyScrolledTreeCtrl::SetScrollbars(
     if (IsKindOf(CLASSINFO(wxGenericTreeCtrl)))
     {
         wxGenericTreeCtrl* win = (wxGenericTreeCtrl*) this;
-        win->wxGenericTreeCtrl::SetScrollbars(pixelsPerUnitX, pixelsPerUnitY, noUnitsX, 0, xPos, 0, /* noRefresh */ true);
+        win->wxGenericTreeCtrl::SetScrollbars(pixelsPerUnitX, pixelsPerUnitY, noUnitsX, noUnitsY, xPos, yPos, /* noRefresh */ true);
 
         wxScrolledWindow* scrolledWindow = GetScrolledWindow();
         if (scrolledWindow)
@@ -234,6 +265,10 @@ void wxRemotelyScrolledTreeCtrl::ScrollToLine(int WXUNUSED(posHoriz), int posVer
     if (!IsKindOf(CLASSINFO(wxGenericTreeCtrl)))
 #endif // USE_GENERIC_TREECTRL
     {
+        // JLD - 2008-07-31 - call SetScrollInfo() - Vista ignores nPos passed in WM_VSCROLL wParam
+        SCROLLINFO si = {sizeof(SCROLLINFO), SIF_POS, 0, 0, 0, posVert, 0};
+        SetScrollInfo((HWND) GetHWND(), SB_VERT, &si, FALSE);
+
         UINT sbCode = SB_THUMBPOSITION;
         HWND vertScrollBar = 0;
         MSWDefWindowProc((WXUINT) WM_VSCROLL, MAKELONG(sbCode, posVert), (WXLPARAM) vertScrollBar);
@@ -342,7 +377,7 @@ void wxRemotelyScrolledTreeCtrl::AdjustRemoteScrollbars()
         if (scrolledWindow)
         {
             wxRect itemRect;
-            if (GetBoundingRect(GetFirstVisibleItem(), itemRect))
+            if (GetBoundingRect(GetRootItem(), itemRect))
             {
                 // Actually, the real height seems to be 1 less than reported
                 // (e.g. 16 instead of 16)
@@ -450,6 +485,10 @@ void wxRemotelyScrolledTreeCtrl::OnScroll(wxScrollWinEvent& event)
     scrollWin->GetViewStart(& x, & y);
 
     ScrollToLine(-1, y);
+
+#ifndef __WXMSW__
+    m_yScrollPosition = GetScrollPos(wxVERTICAL);
+#endif
 }
 
 /*
@@ -605,6 +644,12 @@ bool wxThinSplitterWindow::SashHitTest(int x, int y, int WXUNUSED(tolerance))
 
 void wxThinSplitterWindow::DrawSash(wxDC& dc)
 {
+    wxRendererNative::Get().DrawSplitterBorder
+                           (
+                               this,
+                               dc,
+                               GetClientRect()
+                           );
     if ( m_sashPosition == 0 || !m_windowTwo)
         return;
     if (GetWindowStyle() & wxSP_NOSASH)

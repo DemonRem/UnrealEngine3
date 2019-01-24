@@ -1,4 +1,4 @@
-wxWidgets 2.6.2
+wxWidgets 2.8.9
 ---------------------------------------------------------
 
 Welcome to wxWidgets, a sophisticated cross-platform C++
@@ -22,7 +22,7 @@ for a list of important documents and samples.
 Changes in this release
 -----------------------
 
-Please see changes.txt and "Changes since 2.4" in the manual
+Please see changes.txt and "Changes since 2.6" in the manual
 for details.
 
 Platforms supported
@@ -30,8 +30,7 @@ Platforms supported
 
 wxWidgets currently supports the following platforms:
 
-- Windows 95/98/ME, Windows NT, Windows 2000, Windows XP,
-  Pocket PC, Smartphone
+- Windows 95/98/ME, NT, 2000, XP, Vista, Pocket PC/Mobile, Smartphone
 - Most Unix variants with GTK+ 1 and GTK+ 2
 - Most Unix variants with X11 (beta)
 - Most Unix variants with Motif/Lesstif
@@ -44,9 +43,10 @@ Most popular C++ compilers are supported; see the install.txt
 file for each platform (available via docs/html/index.htm) for details.
 See also http://www.wxwidgets.org/platform.htm.
 
-The 2.6 series is the last to fully support GTK+ 1.2, and Mac OS
-9/Mac OS 10.2 and below. wxWidgets 2.7 and above will focus on
-GTK+ 2, and Mac OS 10.3 and above.
+Note that 2.6 series were the last to fully support GTK+ 1.2, and Mac OS
+9/Mac OS 10.2 and below. wxWidgets 2.7 and above focuses on GTK+ 2 and Mac OS
+10.3 and above and compatibility with earlier systems is not guaranteed any
+more.
 
 Files
 -----
@@ -126,9 +126,18 @@ See docs/changes.txt for a summary of changes to wxWidgets.
 
 See docs/tech for an archive of technical notes.
 
-The wxWidgets bug database can be browsed at:
+The wxWidgets bug tracker can be browsed at:
 
-  http://sourceforge.net/bugs/?group_id=9863
+    http://trac.wxwidgets.org/report
+
+Please use the search function of our Trac installation to find
+any possibly relevant bugs before reporting new ones. Also please
+notice that often trying to correct the bug yourself is the
+quickest way to fix it. Even if you fail to do it, you may
+discover valuable information allowing us to fix it while doing
+it. We also give much higher priority to bug reports with patches
+fixing the problems so this ensures that your report will be
+addressed sooner.
 
 The Windows HTML Help files are located in docs/htmlhelp.
 The Windows Help files are located in docs/winhelp.
@@ -153,5 +162,5 @@ web site.
 
 Have fun!
 
-The wxWidgets Team, September 2005
+The wxWidgets Team, June 2008
 

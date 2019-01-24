@@ -1,39 +1,63 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        rgncmn.cpp
+// Name:        src/common/rgncmn.cpp
 // Purpose:     Methods of wxRegion that have a generic implementation
 // Author:      Robin Dunn
 // Modified by:
 // Created:     27-Mar-2003
-// RCS-ID:      $Id: rgncmn.cpp,v 1.11 2004/10/17 21:39:05 ABX Exp $
+// RCS-ID:      $Id: rgncmn.cpp 41901 2006-10-10 17:33:49Z PC $
 // Copyright:   (c) Robin Dunn
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "rgncmn.h"
-#endif
-
+// ============================================================================
+// declarations
+// ============================================================================
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #include "wx/region.h"
-#include "wx/bitmap.h"
-#if wxUSE_IMAGE
-#include "wx/image.h"
-#endif
-#include "wx/dcmemory.h"
 
+#ifndef WX_PRECOMP
+    #include "wx/dcmemory.h"
+    #include "wx/bitmap.h"
+    #include "wx/image.h"
+#endif //WX_PRECOMP
 
-//---------------------------------------------------------------------------
+// ============================================================================
+// wxRegionBase implementation
+// ============================================================================
 
+// ----------------------------------------------------------------------------
+// region comparision
+// ----------------------------------------------------------------------------
 
+bool wxRegionBase::IsEqual(const wxRegion& region) const
+{
+    if ( m_refData == region.GetRefData() )
+    {
+        // regions are identical, hence equal
+        return true;
+    }
 
-wxBitmap wxRegion::ConvertToBitmap() const
+    if ( !m_refData || !region.GetRefData() )
+    {
+        // one, but not both, of the regions is invalid
+        return false;
+    }
+
+    return DoIsEqual(region);
+}
+
+// ----------------------------------------------------------------------------
+// region to/from bitmap conversions
+// ----------------------------------------------------------------------------
+
+wxBitmap wxRegionBase::ConvertToBitmap() const
 {
     wxRect box = GetBox();
     wxBitmap bmp(box.GetRight(), box.GetBottom());
@@ -41,17 +65,16 @@ wxBitmap wxRegion::ConvertToBitmap() const
     dc.SelectObject(bmp);
     dc.SetBackground(*wxBLACK_BRUSH);
     dc.Clear();
-    dc.SetClippingRegion(*this);
+    dc.SetClippingRegion(*wx_static_cast(const wxRegion *, this));
     dc.SetBackground(*wxWHITE_BRUSH);
     dc.Clear();
     dc.SelectObject(wxNullBitmap);
     return bmp;
 }
 
-//---------------------------------------------------------------------------
-
 #if wxUSE_IMAGE
-static bool DoRegionUnion(wxRegion& region,
+
+static bool DoRegionUnion(wxRegionBase& region,
                           const wxImage& image,
                           unsigned char loR,
                           unsigned char loG,
@@ -103,7 +126,7 @@ static bool DoRegionUnion(wxRegion& region,
 }
 
 
-bool wxRegion::Union(const wxBitmap& bmp)
+bool wxRegionBase::Union(const wxBitmap& bmp)
 {
     if (bmp.GetMask())
     {
@@ -121,9 +144,9 @@ bool wxRegion::Union(const wxBitmap& bmp)
     }
 }
 
-bool wxRegion::Union(const wxBitmap& bmp,
-                     const wxColour& transColour,
-                     int   tolerance)
+bool wxRegionBase::Union(const wxBitmap& bmp,
+                         const wxColour& transColour,
+                         int   tolerance)
 {
     wxImage image = bmp.ConvertToImage();
     return DoRegionUnion(*this, image,
@@ -133,22 +156,37 @@ bool wxRegion::Union(const wxBitmap& bmp,
                          tolerance);
 }
 
-#else
+#endif // wxUSE_IMAGE
 
-bool wxRegion::Union(const wxBitmap& WXUNUSED(bmp))
+#ifdef wxHAS_REGION_COMBINE
+// ============================================================================
+// wxRegionWithCombine
+// ============================================================================
+
+// implement some wxRegionBase pure virtuals in terms of Combine()
+bool wxRegionWithCombine::DoUnionWithRect(const wxRect& rect)
 {
-    // No wxImage support
-    return false;
+    return Combine(rect, wxRGN_OR);
 }
 
-bool wxRegion::Union(const wxBitmap& WXUNUSED(bmp),
-                     const wxColour& WXUNUSED(transColour),
-                     int   WXUNUSED(tolerance))
+bool wxRegionWithCombine::DoUnionWithRegion(const wxRegion& region)
 {
-    // No wxImage support
-    return false;
+    return DoCombine(region, wxRGN_OR);
 }
 
-#endif
+bool wxRegionWithCombine::DoIntersect(const wxRegion& region)
+{
+    return DoCombine(region, wxRGN_AND);
+}
 
-//---------------------------------------------------------------------------
+bool wxRegionWithCombine::DoSubtract(const wxRegion& region)
+{
+    return DoCombine(region, wxRGN_DIFF);
+}
+
+bool wxRegionWithCombine::DoXor(const wxRegion& region)
+{
+    return DoCombine(region, wxRGN_XOR);
+}
+
+#endif // wxHAS_REGION_COMBINE

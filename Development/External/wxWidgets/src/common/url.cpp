@@ -1,32 +1,31 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        url.cpp
+// Name:        src/common/url.cpp
 // Purpose:     URL parser
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     20/07/1997
-// RCS-ID:      $Id: url.cpp,v 1.54 2005/07/28 21:52:50 VZ Exp $
+// RCS-ID:      $Id: url.cpp 49798 2007-11-09 23:17:49Z VZ $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "url.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_URL
 
-#include "wx/string.h"
-#include "wx/list.h"
-#include "wx/utils.h"
-#include "wx/module.h"
 #include "wx/url.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/list.h"
+    #include "wx/string.h"
+    #include "wx/utils.h"
+    #include "wx/module.h"
+#endif
 
 #include <string.h>
 #include <ctype.h>
@@ -185,7 +184,9 @@ void wxURL::CleanData()
 #if wxUSE_PROTOCOL_HTTP
     if (!m_useProxy)
 #endif // wxUSE_PROTOCOL_HTTP
-        delete m_protocol;
+        if (m_protocol)
+            // Need to safely delete the socket (pending events)
+            m_protocol->Destroy();
 }
 
 wxURL::~wxURL()
@@ -332,7 +333,7 @@ void wxURL::SetDefaultProxy(const wxString& url_proxy)
             return;
 
         wxString hostname = tmp_str(0, pos),
-        port = tmp_str(pos+1, tmp_str.Length()-pos);
+        port = tmp_str(pos+1, tmp_str.length()-pos);
         wxIPV4address addr;
 
         if (!addr.Hostname(hostname))
@@ -375,7 +376,7 @@ void wxURL::SetProxy(const wxString& url_proxy)
             return;
 
         hostname = tmp_str(0, pos);
-        port = tmp_str(pos+1, tmp_str.Length()-pos);
+        port = tmp_str(pos+1, tmp_str.length()-pos);
 
         addr.Hostname(hostname);
         addr.Service(port);
@@ -405,6 +406,8 @@ void wxURL::SetProxy(const wxString& url_proxy)
 class wxURLModule : public wxModule
 {
 public:
+    wxURLModule();
+
     virtual bool OnInit();
     virtual void OnExit();
 
@@ -413,6 +416,13 @@ private:
 };
 
 IMPLEMENT_DYNAMIC_CLASS(wxURLModule, wxModule)
+
+wxURLModule::wxURLModule()
+{
+    // we must be cleaned up before wxSocketModule as otherwise deleting
+    // ms_proxyDefault from our OnExit() won't work (and can actually crash)
+    AddDependency(wxClassInfo::FindClass(_T("wxSocketModule")));
+}
 
 bool wxURLModule::OnInit()
 {

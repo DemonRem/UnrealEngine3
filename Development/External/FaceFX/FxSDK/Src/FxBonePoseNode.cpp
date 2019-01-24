@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxBonePoseNode.h"
@@ -19,13 +19,10 @@ namespace Face
 FX_IMPLEMENT_CLASS(FxBonePoseNode, kCurrentFxBonePoseNodeVersion, FxFaceGraphNode)
 
 FxBonePoseNode::FxBonePoseNode()
-{
-	_isPlaceable = FxFalse;
-}
+{}
 
 FxBonePoseNode::~FxBonePoseNode()
-{
-}
+{}
 
 FxFaceGraphNode* FxBonePoseNode::Clone( void )
 {
@@ -70,9 +67,8 @@ void FxBonePoseNode::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxBonePoseNode);
-	arc << version;
-
+	arc.SerializeClassVersion("FxBonePoseNode");
+	
 	arc << _bones;
 }
 

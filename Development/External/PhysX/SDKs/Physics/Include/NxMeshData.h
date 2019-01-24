@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@ enum NxMeshDataFlags
 	/**
 	\brief Denotes the use of 16-bit vertex indices.
 	*/
-	NX_MDF_16_BIT_INDICES				=	1 << 0, 
+	NX_MDF_16_BIT_INDICES				=	1 << 0
 	};
 
 /**
@@ -42,7 +42,7 @@ enum NxMeshDataDirtyBufferFlags
 	/**
 	\brief Denotes a change in the parent index buffer.
 	*/
-	NX_MDF_PARENT_INDICES_DIRTY			=	1 << 3, 
+	NX_MDF_PARENT_INDICES_DIRTY			=	1 << 3
 	};
 
 /**
@@ -182,7 +182,11 @@ class NxMeshData
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -220,31 +224,31 @@ NX_INLINE void NxMeshData::setToDefault()
 	name							= NULL;
 	}
 
-NX_INLINE bool NxMeshData::isValid() const
+NX_INLINE NxU32 NxMeshData::checkValid() const
 	{
-	if (numVerticesPtr && !(verticesPosBegin || verticesNormalBegin)) return false;
-	if (!numVerticesPtr && (verticesPosBegin || verticesNormalBegin)) return false;
+	if (numVerticesPtr && !(verticesPosBegin || verticesNormalBegin)) return 1;
+	if (!numVerticesPtr && (verticesPosBegin || verticesNormalBegin)) return 2;
 
-	if (!numIndicesPtr && indicesBegin) return false;
-	if (numIndicesPtr && !indicesBegin) return false;
+	if (!numIndicesPtr && indicesBegin) return 3;
+	if (numIndicesPtr && !indicesBegin) return 4;
 
-	if (!numParentIndicesPtr && parentIndicesBegin) return false;
-	if (numParentIndicesPtr && !parentIndicesBegin) return false;
+	if (!numParentIndicesPtr && parentIndicesBegin) return 5;
+	if (numParentIndicesPtr && !parentIndicesBegin) return 6;
 
-	if (verticesPosBegin && !verticesPosByteStride) return false;
-	if (verticesNormalBegin && !verticesNormalByteStride) return false;
-	if (indicesBegin && !indicesByteStride) return false;
-	if (parentIndicesBegin && !parentIndicesByteStride) return false;
+	if (verticesPosBegin && !verticesPosByteStride) return 7;
+	if (verticesNormalBegin && !verticesNormalByteStride) return 8;
+	if (indicesBegin && !indicesByteStride) return 9;
+	if (parentIndicesBegin && !parentIndicesByteStride) return 10;
 				
-	return true;
+	return 0;
 	}
 
 /** @} */
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

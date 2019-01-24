@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: tbar95.h,v 1.37 2005/03/27 18:03:41 VZ Exp $
+// RCS-ID:      $Id: tbar95.h 44317 2007-01-25 23:35:07Z RD $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MSW_TBAR95_H_
 #define _WX_MSW_TBAR95_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "tbar95.h"
-#endif
 
 #if wxUSE_TOOLBAR
 
@@ -58,6 +54,12 @@ public:
 
     virtual void SetRows(int nRows);
 
+#if wxABI_VERSION >= 20802
+    // TODO: In 2.9 these should probably be virtual, and declared in the base class...
+    void SetToolNormalBitmap(int id, const wxBitmap& bitmap);
+    void SetToolDisabledBitmap(int id, const wxBitmap& bitmap);
+#endif
+    
     // implementation only from now on
     // -------------------------------
 
@@ -73,6 +75,11 @@ public:
     void SetFocus() {}
 
     static WXHBITMAP MapBitmap(WXHBITMAP bitmap, int width, int height);
+
+    // override WndProc mainly to process WM_SIZE
+    virtual WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
+
+    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
 
 protected:
     // common part of all ctors
@@ -102,12 +109,8 @@ protected:
                                           const wxString& longHelp);
     virtual wxToolBarToolBase *CreateTool(wxControl *control);
 
-    // override WndProc mainly to process WM_SIZE
-    virtual WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
-
     // return the appropriate size and flags for the toolbar control
     virtual wxSize DoGetBestSize() const;
-    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
 
     // handlers for various events
     bool HandleSize(WXWPARAM wParam, WXLPARAM lParam);
@@ -120,6 +123,9 @@ protected:
     // create m_disabledImgList (but doesn't fill it), set it to NULL if it is
     // unneeded
     void CreateDisabledImageList();
+
+    // get the Windows toolbar style of this control
+    long GetMSWToolbarStyle() const;
 
 
     // the big bitmap containing all bitmaps of the toolbar buttons

@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: linesp.h,v 1.4 2004/06/09 16:42:21 ABX Exp $
+// RCS-ID:      $Id: linesp.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _OGL_LINESP_H_
 #define _OGL_LINESP_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "linesp.h"
-#endif
 
 
 class WXDLLIMPEXP_OGL wxLineShape;

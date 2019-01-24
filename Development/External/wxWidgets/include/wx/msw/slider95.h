@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: slider95.h,v 1.26 2005/05/31 15:33:37 VZ Exp $
+// RCS-ID:      $Id: slider95.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,11 +12,7 @@
 #ifndef _WX_SLIDER95_H_
 #define _WX_SLIDER95_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "slider95.h"
-#endif
-
-class WXDLLEXPORT wxSubwindows;
+class WXDLLIMPEXP_FWD_CORE wxSubwindows;
 
 // Slider
 class WXDLLEXPORT wxSlider : public wxSliderBase
@@ -96,6 +92,8 @@ public:
     virtual bool Enable(bool show = true);
     virtual bool SetFont(const wxFont& font);
 
+    virtual WXDWORD MSWGetStyle(long flags, WXDWORD *exstyle = NULL) const;
+
 protected:
     // common part of all ctors
     void Init();
@@ -117,8 +115,6 @@ protected:
     virtual wxSize DoGetBestSize() const;
 
     virtual wxBorder GetDefaultBorder() const { return wxBORDER_NONE; }
-
-    virtual WXDWORD MSWGetStyle(long flags, WXDWORD *exstyle = NULL) const;
 
 
     // the labels windows, if any

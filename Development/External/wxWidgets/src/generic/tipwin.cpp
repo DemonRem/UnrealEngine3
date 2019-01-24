@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     10.09.00
-// RCS-ID:      $Id: tipwin.cpp,v 1.28 2005/02/16 20:34:22 ABX Exp $
+// RCS-ID:      $Id: tipwin.cpp 43033 2006-11-04 13:31:10Z VZ $
 // Copyright:   (c) 2000 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,29 +17,22 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "tipwin.h"
-#endif
-
-// For compilers that support precompilatixon, includes "wx/wx.h".
+// For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/dcclient.h"
-#endif // WX_PRECOMP
-#ifdef __WXGTK__
-    #include <gtk/gtk.h>
-#endif
-#include "wx/tipwin.h"
-
 #if wxUSE_TIPWINDOW
 
-#include "wx/timer.h"
-#include "wx/settings.h"
+#include "wx/tipwin.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/dcclient.h"
+    #include "wx/timer.h"
+    #include "wx/settings.h"
+#endif // WX_PRECOMP
 
 // ----------------------------------------------------------------------------
 // constants
@@ -160,8 +153,7 @@ wxTipWindow::wxTipWindow(wxWindow *parent,
     Position(wxPoint(x, y), wxSize(0,0));
     Popup(m_view);
     #ifdef __WXGTK__
-        if (!GTK_WIDGET_HAS_GRAB(m_widget))
-            gtk_grab_add( m_widget );
+        m_view->CaptureMouse();
     #endif
 #else
     Move(x, y);
@@ -177,8 +169,8 @@ wxTipWindow::~wxTipWindow()
     }
     #ifdef wxUSE_POPUPWIN
         #ifdef __WXGTK__
-            if (GTK_WIDGET_HAS_GRAB(m_widget))
-                gtk_grab_remove( m_widget );
+            if ( m_view->HasCapture() )
+                m_view->ReleaseMouse();
         #endif
     #endif
 }
@@ -231,8 +223,8 @@ void wxTipWindow::Close()
 #if wxUSE_POPUPWIN
     Show(false);
     #ifdef __WXGTK__
-        if (GTK_WIDGET_HAS_GRAB(m_widget))
-            gtk_grab_remove( m_widget );
+        if ( m_view->HasCapture() )
+            m_view->ReleaseMouse();
     #endif
     Destroy();
 #else
@@ -319,7 +311,7 @@ void wxTipWindowView::Adjust(const wxString& text, wxCoord maxLength)
 
     // take into account the border size and the margins
     width  = 2*(TEXT_MARGIN_X + 1) + widthMax;
-    height = 2*(TEXT_MARGIN_Y + 1) + m_parent->m_textLines.GetCount()*m_parent->m_heightLine;
+    height = 2*(TEXT_MARGIN_Y + 1) + wx_truncate_cast(wxCoord, m_parent->m_textLines.GetCount())*m_parent->m_heightLine;
     m_parent->SetClientSize(width, height);
     SetSize(0, 0, width, height);
 }
@@ -365,7 +357,7 @@ void wxTipWindowView::OnMouseMove(wxMouseEvent& event)
     const wxRect& rectBound = m_parent->m_rectBound;
 
     if ( rectBound.width &&
-            !rectBound.Inside(ClientToScreen(event.GetPosition())) )
+            !rectBound.Contains(ClientToScreen(event.GetPosition())) )
     {
         // mouse left the bounding rect, disappear
         m_parent->Close();

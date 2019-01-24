@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: accel.cpp,v 1.30 2004/12/10 11:23:16 VZ Exp $
+// RCS-ID:      $Id: accel.cpp 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,6 @@
 // ============================================================================
 // declarations
 // ============================================================================
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "accel.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -48,10 +44,10 @@ IMPLEMENT_DYNAMIC_CLASS(wxAcceleratorTable, wxObject)
 
 class WXDLLEXPORT wxAcceleratorRefData: public wxObjectRefData
 {
-    friend class WXDLLEXPORT wxAcceleratorTable;
+    friend class WXDLLIMPEXP_FWD_CORE wxAcceleratorTable;
 public:
     wxAcceleratorRefData();
-    ~wxAcceleratorRefData();
+    virtual ~wxAcceleratorRefData();
 
     inline HACCEL GetHACCEL() const { return m_hAccel; }
 protected:
@@ -134,17 +130,7 @@ wxAcceleratorTable::wxAcceleratorTable(int n, const wxAcceleratorEntry entries[]
     M_ACCELDATA->m_ok = (M_ACCELDATA->m_hAccel != 0);
 }
 
-bool wxAcceleratorTable::operator==(const wxAcceleratorTable& accel) const
-{
-    const wxAcceleratorRefData *
-        accelData = (wxAcceleratorRefData *)accel.m_refData;
-
-    return m_refData ? (accelData &&
-                           M_ACCELDATA->m_hAccel == accelData->m_hAccel)
-                     : !accelData;
-}
-
-bool wxAcceleratorTable::Ok() const
+bool wxAcceleratorTable::IsOk() const
 {
     return (M_ACCELDATA && (M_ACCELDATA->m_ok));
 }
@@ -166,6 +152,13 @@ WXHACCEL wxAcceleratorTable::GetHACCEL() const
 
 bool wxAcceleratorTable::Translate(wxWindow *window, WXMSG *wxmsg) const
 {
+#if 0
+    // calling TranslateAccelerator() with child window doesn't do anything so
+    // it's probably a bug
+    wxASSERT_MSG( window->IsTopLevel(),
+                    _T("TranslateAccelerator() needs a top level window") );
+#endif
+
     MSG *msg = (MSG *)wxmsg;
     return Ok() && ::TranslateAccelerator(GetHwndOf(window), GetHaccel(), msg);
 }

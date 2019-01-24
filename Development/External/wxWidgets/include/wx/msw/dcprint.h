@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dcprint.h,v 1.13 2004/08/24 10:31:34 ABX Exp $
+// RCS-ID:      $Id: dcprint.h 42522 2006-10-27 13:07:40Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WX_DCPRINT_H_
-#define _WX_DCPRINT_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "dcprint.h"
-#endif
+#ifndef _WX_MSW_DCPRINT_H_
+#define _WX_MSW_DCPRINT_H_
 
 #if wxUSE_PRINTING_ARCHITECTURE
 
@@ -38,6 +34,8 @@ public:
     virtual void StartPage();
     virtual void EndPage();
 
+    wxRect GetPaperRect();
+
 protected:
     virtual void DoDrawBitmap(const wxBitmap &bmp, wxCoord x, wxCoord y,
                               bool useMask = false);
@@ -45,6 +43,11 @@ protected:
                         wxCoord width, wxCoord height,
                         wxDC *source, wxCoord xsrc, wxCoord ysrc,
                         int rop = wxCOPY, bool useMask = false, wxCoord xsrcMask = wxDefaultCoord, wxCoord ysrcMask = wxDefaultCoord);
+    virtual void DoGetSize(int *w, int *h) const
+    {
+        GetDeviceSize(w, h);
+    }
+
 
     // init the dc
     void Init();
@@ -63,6 +66,5 @@ WXHDC WXDLLEXPORT wxGetPrinterDC(const wxPrintData& data);
 
 #endif // wxUSE_PRINTING_ARCHITECTURE
 
-#endif
-    // _WX_DCPRINT_H_
+#endif // _WX_MSW_DCPRINT_H_
 

@@ -3,17 +3,13 @@
 // Purpose:     html printing classes
 // Author:      Vaclav Slavik
 // Created:     25/09/99
-// RCS-ID:      $Id: htmprint.h,v 1.28 2005/05/04 18:52:47 JS Exp $
+// RCS-ID:      $Id: htmprint.h 47862 2007-08-03 08:50:49Z JS $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_HTMPRINT_H_
 #define _WX_HTMPRINT_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "htmprint.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -38,7 +34,7 @@ class WXDLLIMPEXP_HTML wxHtmlDCRenderer : public wxObject
 {
 public:
     wxHtmlDCRenderer();
-    ~wxHtmlDCRenderer();
+    virtual ~wxHtmlDCRenderer();
 
     // Following 3 methods *must* be called before any call to Render:
 
@@ -57,7 +53,7 @@ public:
     void SetHtmlText(const wxString& html, const wxString& basepath = wxEmptyString, bool isdir = true);
 
     // Sets fonts to be used when displaying HTML page. (if size null then default sizes used).
-    void SetFonts(wxString normal_face, wxString fixed_face, const int *sizes = NULL);
+    void SetFonts(const wxString& normal_face, const wxString& fixed_face, const int *sizes = NULL);
 
     // Sets font sizes to be relative to the given size or the system
     // default size; use either specified or default font
@@ -81,9 +77,8 @@ public:
     // set the same pagebreak twice.
     //
     // CAUTION! Render() changes DC's user scale and does NOT restore it!
-    int Render(int x, int y, int from = 0, int dont_render = FALSE,
-               int maxHeight = INT_MAX,
-               int *known_pagebreaks = NULL, int number_of_pages = 0);
+    int Render(int x, int y, wxArrayInt& known_pagebreaks, int from = 0,
+               int dont_render = FALSE, int to = INT_MAX);
 
     // returns total height of the html document
     // (compare Render's return value with this)
@@ -122,7 +117,7 @@ class WXDLLIMPEXP_HTML wxHtmlPrintout : public wxPrintout
 {
 public:
     wxHtmlPrintout(const wxString& title = wxT("Printout"));
-    ~wxHtmlPrintout();
+    virtual ~wxHtmlPrintout();
 
     void SetHtmlText(const wxString& html, const wxString &basepath = wxEmptyString, bool isdir = true);
             // prepares the class for printing this html document.
@@ -147,7 +142,7 @@ public:
             // You can set different header/footer for odd and even pages
 
     // Sets fonts to be used when displaying HTML page. (if size null then default sizes used).
-    void SetFonts(wxString normal_face, wxString fixed_face, const int *sizes = NULL);
+    void SetFonts(const wxString& normal_face, const wxString& fixed_face, const int *sizes = NULL);
 
     // Sets font sizes to be relative to the given size or the system
     // default size; use either specified or default font
@@ -185,7 +180,8 @@ private:
 
 private:
     int m_NumPages;
-    int m_PageBreaks[wxHTML_PRINT_MAX_PAGES];
+    //int m_PageBreaks[wxHTML_PRINT_MAX_PAGES];
+    wxArrayInt m_PageBreaks;
 
     wxString m_Document, m_BasePath;
     bool m_BasePathIsDir;
@@ -221,7 +217,7 @@ class WXDLLIMPEXP_HTML wxHtmlEasyPrinting : public wxObject
 {
 public:
     wxHtmlEasyPrinting(const wxString& name = wxT("Printing"), wxWindow *parentWindow = NULL);
-    ~wxHtmlEasyPrinting();
+    virtual ~wxHtmlEasyPrinting();
 
     bool PreviewFile(const wxString &htmlfile);
     bool PreviewText(const wxString &htmltext, const wxString& basepath = wxEmptyString);
@@ -246,7 +242,7 @@ public:
             // pg is one of wxPAGE_ODD, wxPAGE_EVEN and wx_PAGE_ALL constants.
             // You can set different header/footer for odd and even pages
 
-    void SetFonts(wxString normal_face, wxString fixed_face, const int *sizes = 0);
+    void SetFonts(const wxString& normal_face, const wxString& fixed_face, const int *sizes = 0);
     // Sets fonts to be used when displaying HTML page. (if size null then default sizes used)
 
     // Sets font sizes to be relative to the given size or the system
@@ -259,6 +255,13 @@ public:
     wxPageSetupDialogData *GetPageSetupData() {return m_PageSetupData;}
             // return page setting data objects.
             // (You can set their parameters.)
+
+#if wxABI_VERSION >= 20805
+    wxWindow* GetParentWindow() const { return m_ParentWindow; }
+            // get the parent window
+    void SetParentWindow(wxWindow* window) { m_ParentWindow = window; }
+            // set the parent window
+#endif
 
 protected:
     virtual wxHtmlPrintout *CreatePrintout();

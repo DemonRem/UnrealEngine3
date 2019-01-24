@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin, Andrej Putrin
 // Modified by:
 // Created:     2005-01-21
-// RCS-ID:      $Id: dbgrptg.cpp,v 1.12 2005/07/21 16:22:28 ABX Exp $
+// RCS-ID:      $Id: dbgrptg.cpp 49242 2007-10-19 11:40:07Z JS $
 // Copyright:   (c) 2005 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,25 +23,26 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/sizer.h"
-    #include "wx/checklst.h"
-    #include "wx/textctrl.h"
-#endif // WX_PRECOMP
-
 #if wxUSE_DEBUGREPORT && wxUSE_XML
 
 #include "wx/debugrpt.h"
 
-#include "wx/intl.h"
+#ifndef WX_PRECOMP
+    #include "wx/sizer.h"
+    #include "wx/checklst.h"
+    #include "wx/textctrl.h"
+    #include "wx/intl.h"
+    #include "wx/stattext.h"
+    #include "wx/filedlg.h"
+    #include "wx/valtext.h"
+    #include "wx/button.h"
+#endif // WX_PRECOMP
+
 #include "wx/filename.h"
 #include "wx/ffile.h"
 #include "wx/mimetype.h"
 
 #include "wx/statline.h"
-#include "wx/stattext.h"
-#include "wx/filedlg.h"
-#include "wx/valtext.h"
 
 #ifdef __WXMSW__
     #include "wx/evtloop.h"     // for SetCriticalWindow()
@@ -296,14 +297,23 @@ wxDebugReportDialog::wxDebugReportDialog(wxDebugReport& dbgrpt)
                               dbgrpt.GetReportName().c_str()),
                               wxDefaultPosition,
                               wxDefaultSize,
-                              wxDEFAULT_DIALOG_STYLE | wxTHICK_FRAME),
+                              wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
                      m_dbgrpt(dbgrpt)
 {
     // upper part of the dialog: explanatory message
     wxString msg;
+    wxString debugDir = dbgrpt.GetDirectory();
+
+    // The temporary directory can be the short form on Windows;
+    // normalize it for the benefit of users.
+#ifdef __WXMSW__
+    wxFileName debugDirFilename(debugDir, wxEmptyString);
+    debugDirFilename.Normalize(wxPATH_NORM_LONG);
+    debugDir = debugDirFilename.GetPath();
+#endif
     msg << _("A debug report has been generated in the directory\n")
         << _T('\n')
-        << _T("             \"") << dbgrpt.GetDirectory() << _T("\"\n")
+        << _T("             \"") << debugDir << _T("\"\n")
         << _T('\n')
         << _("The report contains the files listed below. If any of these files contain private information,\nplease uncheck them and they will be removed from the report.\n")
         << _T('\n')
@@ -512,4 +522,4 @@ bool wxDebugReportPreviewStd::Show(wxDebugReport& dbgrpt) const
     return dlg.ShowModal() == wxID_OK && dbgrpt.GetFilesCount() != 0;
 }
 
-#endif // wxUSE_DEBUGREPORT
+#endif // wxUSE_DEBUGREPORT && wxUSE_XML

@@ -4,14 +4,10 @@
 // Author:      P. Foggia 1996
 // Modified by: Wlodzimierz Skiba (ABX) since 2003
 // Created:     1996
-// RCS-ID:      $Id: game.cpp,v 1.5 2005/05/16 15:32:04 ABX Exp $
+// RCS-ID:      $Id: game.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1996 P. Foggia
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#   pragma implementation
-#endif
 
 #include "wx/wxprec.h"
 

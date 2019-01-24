@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        palette.cpp
+// Name:        samples/ogl/ogledit/palette.cpp
 // Purpose:     OGLEdit palette
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: palette.cpp,v 1.9 2005/05/17 14:06:04 JS Exp $
+// RCS-ID:      $Id: palette.cpp 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -21,10 +17,10 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
-#include <wx/toolbar.h>
+#include "wx/toolbar.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -105,4 +101,3 @@ EditorToolPalette *MyApp::CreatePalette(wxFrame *parent)
   palette->currentlySelected = PALETTE_ARROW;
   return palette;
 }
-

@@ -2,18 +2,13 @@
 // Name:        winpars.h
 // Purpose:     wxHtmlWinParser class (parser to be used with wxHtmlWindow)
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: winpars.h,v 1.29 2004/10/13 14:04:15 ABX Exp $
+// RCS-ID:      $Id: winpars.h 53457 2008-05-05 10:53:58Z VS $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef _WX_WINPARS_H_
 #define _WX_WINPARS_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "winpars.h"
-#endif
 
 #include "wx/defs.h"
 #if wxUSE_HTML
@@ -24,10 +19,12 @@
 #include "wx/html/htmlcell.h"
 #include "wx/encconv.h"
 
-class WXDLLIMPEXP_HTML wxHtmlWindow;
-class WXDLLIMPEXP_HTML wxHtmlWinParser;
-class WXDLLIMPEXP_HTML wxHtmlWinTagHandler;
-class WXDLLIMPEXP_HTML wxHtmlTagsModule;
+class WXDLLIMPEXP_FWD_HTML wxHtmlWindow;
+class WXDLLIMPEXP_FWD_HTML wxHtmlWindowInterface;
+class WXDLLIMPEXP_FWD_HTML wxHtmlWinParser;
+class WXDLLIMPEXP_FWD_HTML wxHtmlWinTagHandler;
+class WXDLLIMPEXP_FWD_HTML wxHtmlTagsModule;
+
 
 //--------------------------------------------------------------------------------
 // wxHtmlWinParser
@@ -42,8 +39,9 @@ class WXDLLIMPEXP_HTML wxHtmlWinParser : public wxHtmlParser
     friend class wxHtmlWindow;
 
 public:
-    wxHtmlWinParser(wxHtmlWindow *wnd = NULL);
-    ~wxHtmlWinParser();
+    wxHtmlWinParser(wxHtmlWindowInterface *wndIface = NULL);
+
+    virtual ~wxHtmlWinParser();
 
     virtual void InitParser(const wxString& source);
     virtual void DoneParser();
@@ -66,11 +64,15 @@ public:
     // for this DC. If you want actual values, call
     // GetDC()->GetChar...()
 
-    // returns associated wxWindow
-    wxHtmlWindow *GetWindow() {return m_Window;}
+    // returns interface to the rendering window
+    wxHtmlWindowInterface *GetWindowInterface() {return m_windowInterface;}
+#if WXWIN_COMPATIBILITY_2_6
+    // deprecated, use GetWindowInterface()->GetHTMLWindow() instead
+    wxDEPRECATED( wxHtmlWindow *GetWindow() );
+#endif
 
     // Sets fonts to be used when displaying HTML page. (if size null then default sizes used).
-    void SetFonts(wxString normal_face, wxString fixed_face, const int *sizes = NULL);
+    void SetFonts(const wxString& normal_face, const wxString& fixed_face, const int *sizes = NULL);
 
     // Sets font sizes to be relative to the given size or the system
     // default size; use either specified or default font
@@ -117,12 +119,21 @@ public:
 
     int GetAlign() const {return m_Align;}
     void SetAlign(int a) {m_Align = a;}
+
+    wxHtmlScriptMode GetScriptMode() const { return m_ScriptMode; }
+    void SetScriptMode(wxHtmlScriptMode mode) { m_ScriptMode = mode; }
+    long GetScriptBaseline() const { return m_ScriptBaseline; }
+    void SetScriptBaseline(long base) { m_ScriptBaseline = base; }
+
     const wxColour& GetLinkColor() const { return m_LinkColor; }
     void SetLinkColor(const wxColour& clr) { m_LinkColor = clr; }
     const wxColour& GetActualColor() const { return m_ActualColor; }
     void SetActualColor(const wxColour& clr) { m_ActualColor = clr ;}
     const wxHtmlLinkInfo& GetLink() const { return m_Link; }
     void SetLink(const wxHtmlLinkInfo& link);
+
+    // applies current parser state (link, sub/supscript, ...) to given cell
+    void ApplyStateToCell(wxHtmlCell *cell);
 
 #if !wxUSE_UNICODE
     void SetInputEncoding(wxFontEncoding enc);
@@ -134,15 +145,32 @@ public:
     // creates font depending on m_Font* members.
     virtual wxFont* CreateCurrentFont();
 
+#if wxABI_VERSION >= 20808
+    enum WhitespaceMode
+    {
+        Whitespace_Normal,  // normal mode, collapse whitespace
+        Whitespace_Pre      // inside <pre>, keep whitespace as-is
+    };
+
+    // change the current whitespace handling mode
+    void SetWhitespaceMode(WhitespaceMode mode);
+    WhitespaceMode GetWhitespaceMode() const;
+#endif // wxABI_VERSION >= 20808
+
 protected:
     virtual void AddText(const wxChar* txt);
 
 private:
+    void FlushWordBuf(wxChar *temp, int& templen, wxChar nbsp);
+    void AddWord(wxHtmlWordCell *c);
+    void AddWord(const wxString& word);
+    void AddPreBlock(const wxString& text);
+
     bool m_tmpLastWasSpace;
     wxChar *m_tmpStrBuf;
     size_t  m_tmpStrBufSize;
         // temporary variables used by AddText
-    wxHtmlWindow *m_Window;
+    wxHtmlWindowInterface *m_windowInterface;
             // window we're parsing for
     double m_PixelScale;
     wxDC *m_DC;
@@ -167,6 +195,10 @@ private:
             // average height of normal-sized text
     int m_Align;
             // actual alignment
+    wxHtmlScriptMode m_ScriptMode;
+            // current script mode (sub/sup/normal)
+    long m_ScriptBaseline;
+            // current sub/supscript base
 
     wxFont* m_FontsTable[2][2][2][2][7];
     wxString m_FontsFacesTable[2][2][2][2][7];
@@ -189,7 +221,22 @@ private:
     wxEncodingConverter *m_EncConv;
 #endif
 
-    wxHtmlWordCell *m_lastWordCell;
+    struct TextParsingState
+    {
+        // current whitespace handling mode
+        WhitespaceMode m_whitespaceMode;
+
+        wxHtmlWordCell *m_lastWordCell;
+
+        // current position on line, in num. of characters; used to properly
+        // expand TABs; only updated while inside <pre>
+        int m_posColumn;
+    };
+
+    // NB: this pointer replaces m_lastWordCell pointer in wx<=2.8.7; this
+    //     way, wxHtmlWinParser remains ABI compatible with older versions
+    //     despite addition of two fields in TextParsingState
+    TextParsingState *m_textParsingState;
 
     DECLARE_NO_COPY_CLASS(wxHtmlWinParser)
 };
@@ -213,7 +260,7 @@ class WXDLLIMPEXP_HTML wxHtmlWinTagHandler : public wxHtmlTagHandler
 public:
     wxHtmlWinTagHandler() : wxHtmlTagHandler() {}
 
-    virtual void SetParser(wxHtmlParser *parser) {wxHtmlTagHandler::SetParser(parser); m_WParser = (wxHtmlWinParser*) parser;};
+    virtual void SetParser(wxHtmlParser *parser) {wxHtmlTagHandler::SetParser(parser); m_WParser = (wxHtmlWinParser*) parser;}
 
 protected:
     wxHtmlWinParser *m_WParser; // same as m_Parser, but overcasted

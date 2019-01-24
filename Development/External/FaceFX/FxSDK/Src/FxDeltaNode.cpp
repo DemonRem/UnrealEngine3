@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxDeltaNode.h"
@@ -20,7 +20,6 @@ namespace Face
 FX_IMPLEMENT_CLASS(FxDeltaNode, kCurrentFxDeltaNodeVersion, FxFaceGraphNode)
 
 FxDeltaNode::FxDeltaNode()
-	: _previousFirstInputValue(FxInvalidValue)
 {
 }
 
@@ -41,32 +40,6 @@ void FxDeltaNode::CopyData( FxFaceGraphNode* pOther )
 	{
 		Super::CopyData(pOther);
 	}
-}
-
-FxReal FxDeltaNode::GetValue( void )
-{
-	if( FxInvalidValue == _value )
-	{
-		if( _inputs.Length() > 0 )
-		{
-			FxReal currentValue = _inputs[0].GetTransformedValue();
-			if( FxInvalidValue != _previousFirstInputValue )
-			{
-				_value = currentValue - _previousFirstInputValue;
-			}
-			else
-			{
-				_value = 0.0f;
-			}
-			_previousFirstInputValue = currentValue;
-		}
-	}
-	// If the value is still invalid value, clamp it to zero.
-	if( FxInvalidValue == _value )
-	{
-		_value = 0.0f;
-	}
-	return _value;
 }
 
 FxBool FxDeltaNode::AddInputLink( const FxFaceGraphNodeLink& newInputLink )
@@ -90,8 +63,7 @@ void FxDeltaNode::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxDeltaNode);
-	arc << version;
+	arc.SerializeClassVersion("FxDeltaNode");
 }
 	
 } // namespace Face

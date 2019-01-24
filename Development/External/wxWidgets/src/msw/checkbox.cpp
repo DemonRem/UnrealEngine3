@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/checkbox.cpp
+// Name:        src/msw/checkbox.cpp
 // Purpose:     wxCheckBox
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: checkbox.cpp,v 1.68 2005/06/09 19:36:20 VZ Exp $
+// RCS-ID:      $Id: checkbox.cpp 40331 2006-07-25 18:47:39Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "checkbox.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,8 +26,9 @@
 
 #if wxUSE_CHECKBOX
 
+#include "wx/checkbox.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/checkbox.h"
     #include "wx/brush.h"
     #include "wx/dcscreen.h"
     #include "wx/settings.h"
@@ -216,9 +213,9 @@ wxSize wxCheckBox::DoGetBestSize() const
     wxString str = wxGetWindowText(GetHWND());
 
     int wCheckbox, hCheckbox;
-    if ( !str.IsEmpty() )
+    if ( !str.empty() )
     {
-        GetTextExtent(str, &wCheckbox, &hCheckbox);
+        GetTextExtent(GetLabelText(str), &wCheckbox, &hCheckbox);
         wCheckbox += s_checkSize + GetCharWidth();
 
         if ( hCheckbox < s_checkSize )

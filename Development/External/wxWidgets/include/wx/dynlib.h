@@ -4,17 +4,13 @@
 // Author:      Guilhem Lavaux, Vadim Zeitlin, Vaclav Slavik
 // Modified by:
 // Created:     20/07/98
-// RCS-ID:      $Id: dynlib.h,v 1.56 2005/08/05 11:48:43 VZ Exp $
+// RCS-ID:      $Id: dynlib.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DYNLIB_H__
 #define _WX_DYNLIB_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#   pragma interface "dynlib.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -23,7 +19,7 @@
 #include "wx/string.h"
 #include "wx/dynarray.h"
 
-#if defined(__WXPM__) || defined(__EMX__)
+#if defined(__OS2__) || defined(__EMX__)
 #include "wx/os2/private.h"
 #endif
 
@@ -31,28 +27,30 @@
 #include "wx/msw/private.h"
 #endif
 
-#if defined(HAVE_DLERROR) && !defined(__EMX__)
+// note that we have our own dlerror() implementation under Darwin
+#if (defined(HAVE_DLERROR) && !defined(__EMX__)) || defined(__DARWIN__)
     #define wxHAVE_DYNLIB_ERROR
 #endif
 
-class WXDLLIMPEXP_BASE wxDynamicLibraryDetailsCreator;
+class WXDLLIMPEXP_FWD_BASE wxDynamicLibraryDetailsCreator;
 
 // ----------------------------------------------------------------------------
 // conditional compilation
 // ----------------------------------------------------------------------------
 
-// Note: WXPM/EMX has to be tested first, since we want to use
+// Note: __OS2__/EMX has to be tested first, since we want to use
 // native version, even if configure detected presence of DLOPEN.
-#if defined(__WXPM__) || defined(__EMX__) || defined(__WINDOWS__)
+#if defined(__OS2__) || defined(__EMX__) || defined(__WINDOWS__)
     typedef HMODULE             wxDllType;
+#elif defined(__DARWIN__)
+    // Don't include dlfcn.h on Darwin, we may be using our own replacements.
+    typedef void               *wxDllType;
 #elif defined(HAVE_DLOPEN)
     #include <dlfcn.h>
     typedef void               *wxDllType;
 #elif defined(HAVE_SHL_LOAD)
     #include <dl.h>
     typedef shl_t               wxDllType;
-#elif defined(__DARWIN__)
-    typedef void               *wxDllType;
 #elif defined(__WXMAC__)
     #include <CodeFragments.h>
     typedef CFragConnectionID   wxDllType;
@@ -254,7 +252,7 @@ public:
         return RawGetSymbol
                (
                 handle,
-                name + 
+                name +
 #if wxUSE_UNICODE
                 L'W'
 #else
@@ -290,10 +288,6 @@ public:
     static wxString GetPluginsDirectory();
 
 
-#if WXWIN_COMPATIBILITY_2_2
-    operator bool() const { return IsLoaded(); }
-#endif
-
 protected:
     // common part of GetSymbol() and HasSymbol()
     void *DoGetSymbol(const wxString& name, bool *success = 0) const;
@@ -315,122 +309,6 @@ protected:
     DECLARE_NO_COPY_CLASS(wxDynamicLibrary)
 };
 
-
-// ----------------------------------------------------------------------------
-// wxDllLoader: low level DLL functions, use wxDynamicLibrary in your code
-// ----------------------------------------------------------------------------
-
-#if WXWIN_COMPATIBILITY_2_2 && wxUSE_DYNAMIC_LOADER
-
-#include "wx/object.h"
-
-/*
-    wxDllLoader is a class providing an interface similar to unix's dlopen().
-    It is used by wxDynamicLibrary wxLibrary and manages the actual loading of
-    DLLs and the resolving of symbols in them. There are no instances of this
-    class, it simply serves as a namespace for its static member functions.
-*/
-class WXDLLIMPEXP_BASE wxDllLoader
-{
-public:
-    /*
-      This function loads the shared library libname into memory.
-
-      libname may be either the full path to the file or just the filename in
-      which case the library is searched for in all standard locations
-      (use GetDllExt() to construct the filename)
-
-      if success pointer is not NULL, it will be filled with true if everything
-      went ok and false otherwise
-     */
-    static wxDllType LoadLibrary(const wxString& name, bool *success = NULL);
-
-    /*
-      This function unloads the shared library previously loaded with
-      LoadLibrary
-     */
-    static void UnloadLibrary(wxDllType dll);
-
-    /*
-       This function returns a valid handle for the main program
-       itself or NULL if back linking is not supported by the current platform
-       (e.g. Win32).
-     */
-    static wxDllType GetProgramHandle() { return wxDynamicLibrary::GetProgramHandle(); }
-
-    /*
-       This function resolves a symbol in a loaded DLL, such as a
-       variable or function name.
-
-       dllHandle Handle of the DLL, as returned by LoadDll().
-       name Name of the symbol.
-
-       Returns the pointer to the symbol or NULL on error.
-     */
-    static void *GetSymbol(wxDllType dllHandle, const wxString &name, bool *success = 0);
-
-    // return the standard DLL extension (with leading dot) for this platform
-    static wxString GetDllExt() { return wxDynamicLibrary::GetDllExt(); }
-
-private:
-
-    wxDllLoader();                    // forbid construction of objects
-};
-
-
-// ----------------------------------------------------------------------------
-// wxLibrary
-// ----------------------------------------------------------------------------
-
-#include "wx/hash.h"
-
-class WXDLLIMPEXP_BASE wxLibrary : public wxObject
-{
-public:
-    wxLibrary(wxDllType handle);
-    virtual ~wxLibrary();
-
-    // Get a symbol from the dynamic library
-    void *GetSymbol(const wxString& symbname);
-
-    // Create the object whose classname is "name"
-    wxObject *CreateObject(const wxString& name);
-
-protected:
-    void PrepareClasses(wxClassInfo *first);
-
-    wxDllType m_handle;
-
-public:
-    wxHashTable classTable;
-};
-
-// ----------------------------------------------------------------------------
-// wxLibraries
-// ----------------------------------------------------------------------------
-
-class WXDLLIMPEXP_BASE wxLibraries
-{
-public:
-    wxLibraries();
-    ~wxLibraries();
-
-    // caller is responsible for deleting the returned pointer if !NULL
-    wxLibrary *LoadLibrary(const wxString& basename);
-
-    wxObject *CreateObject(const wxString& name);
-
-protected:
-    wxList m_loaded;
-};
-
-// ----------------------------------------------------------------------------
-// Global variables
-// ----------------------------------------------------------------------------
-
-extern WXDLLIMPEXP_DATA_BASE(wxLibraries) wxTheLibraries;
-
-#endif // WXWIN_COMPATIBILITY_2_2 && wxUSE_DYNAMIC_LOADER
 
 // ----------------------------------------------------------------------------
 // Interesting defines

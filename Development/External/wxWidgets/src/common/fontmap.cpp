@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/fontmap.cpp
+// Name:        src/common/fontmap.cpp
 // Purpose:     wxFontMapper class
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.11.99
-// RCS-ID:      $Id: fontmap.cpp,v 1.71 2005/06/07 18:59:28 ABX Exp $
+// RCS-ID:      $Id: fontmap.cpp 39651 2006-06-09 17:50:46Z ABX $
 // Copyright:   (c) 1999-2003 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "fontmap.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,10 +26,14 @@
 
 #if wxUSE_FONTMAP
 
+#include "wx/fontmap.h"
+
 #ifndef WX_PRECOMP
     #include "wx/app.h"
     #include "wx/log.h"
     #include "wx/intl.h"
+    #include "wx/msgdlg.h"
+    #include "wx/choicdlg.h"
 #endif // PCH
 
 #if wxUSE_CONFIG
@@ -45,12 +45,9 @@
   #include  "wx/msw/winundef.h"
 #endif
 
-#include "wx/fontmap.h"
 #include "wx/fmappriv.h"
 #include "wx/fontutil.h"
-#include "wx/msgdlg.h"
 #include "wx/fontdlg.h"
-#include "wx/choicdlg.h"
 #include "wx/encinfo.h"
 
 #include "wx/encconv.h"
@@ -163,17 +160,17 @@ wxFontMapper::~wxFontMapper()
 {
 }
 
-bool wxFontMapper::IsWxFontMapper()
-{   return true; }
-
 /* static */
 wxFontMapper *wxFontMapper::Get()
 {
     wxFontMapperBase *fontmapper = wxFontMapperBase::Get();
-    wxASSERT_MSG(fontmapper->IsWxFontMapper(), wxT("GUI code requested a wxFontMapper but we only have a wxFontMapperBase."));
+    wxASSERT_MSG( !fontmapper->IsDummy(),
+                 wxT("GUI code requested a wxFontMapper but we only have a wxFontMapperBase.") );
+
     // Now return it anyway because there's a chance the GUI code might just
-    // only want to call wxFontMapperBase functions.
-    return (wxFontMapper*)fontmapper;
+    // only want to call wxFontMapperBase functions and it's better than
+    // crashing by returning NULL
+    return (wxFontMapper *)fontmapper;
 }
 
 wxFontEncoding
@@ -449,9 +446,9 @@ bool wxFontMapper::GetAltForEncoding(wxFontEncoding encoding,
 
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
                 // remember this in the config
-                wxFontMapperPathChanger path(this,
-                                             FONTMAPPER_FONT_FROM_ENCODING_PATH);
-                if ( path.IsOk() )
+                wxFontMapperPathChanger path2(this,
+                                              FONTMAPPER_FONT_FROM_ENCODING_PATH);
+                if ( path2.IsOk() )
                 {
                     GetConfig()->Write(configEntry, info->ToString());
                 }
@@ -468,9 +465,9 @@ bool wxFontMapper::GetAltForEncoding(wxFontEncoding encoding,
             //
             // remember it to avoid asking the same question again later
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
-            wxFontMapperPathChanger path(this,
-                                         FONTMAPPER_FONT_FROM_ENCODING_PATH);
-            if ( path.IsOk() )
+            wxFontMapperPathChanger path2(this,
+                                          FONTMAPPER_FONT_FROM_ENCODING_PATH);
+            if ( path2.IsOk() )
             {
                 GetConfig()->Write
                              (
@@ -495,12 +492,12 @@ bool wxFontMapper::GetAltForEncoding(wxFontEncoding encoding,
                                      const wxString& facename,
                                      bool interactive)
 {
+    wxCHECK_MSG( encodingAlt, false,
+                    _T("wxFontEncoding::GetAltForEncoding(): NULL pointer") );
+
     wxNativeEncodingInfo info;
     if ( !GetAltForEncoding(encoding, &info, facename, interactive) )
         return false;
-
-    wxCHECK_MSG( encodingAlt, false,
-                    _T("wxFontEncoding::GetAltForEncoding(): NULL pointer") );
 
     *encodingAlt = info.encoding;
 

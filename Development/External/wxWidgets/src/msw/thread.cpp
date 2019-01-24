@@ -4,15 +4,11 @@
 // Author:      Original from Wolfram Gloger/Guilhem Lavaux
 // Modified by: Vadim Zeitlin to make it work :-)
 // Created:     04/22/98
-// RCS-ID:      $Id: thread.cpp,v 1.95 2005/07/01 13:38:58 ABX Exp $
+// RCS-ID:      $Id: thread.cpp 46381 2007-06-09 10:55:16Z VZ $
 // Copyright:   (c) Wolfram Gloger (1996, 1997), Guilhem Lavaux (1998);
 //                  Vadim Zeitlin (1999-2002)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "thread.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -25,20 +21,24 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/intl.h"
-    #include "wx/app.h"
-#endif
-
 #if wxUSE_THREADS
 
+#include "wx/thread.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/msw/missing.h"
+    #include "wx/intl.h"
+    #include "wx/app.h"
+    #include "wx/module.h"
+#endif
+
 #include "wx/apptrait.h"
+#include "wx/scopeguard.h"
 
 #include "wx/msw/private.h"
-#include "wx/msw/missing.h"
+#include "wx/msw/seh.h"
 
-#include "wx/module.h"
-#include "wx/thread.h"
+#include "wx/except.h"
 
 // must have this symbol defined to get _beginthread/_endthread declarations
 #ifndef _MT
@@ -85,6 +85,16 @@
     typedef DWORD THREAD_RETVAL;
     #define THREAD_CALLCONV WINAPI
 #endif
+
+// this is a hack to allow the code here to know whether wxEventLoop is
+// currently running: as wxBase doesn't have event loop at all, we can't simple
+// use "wxEventLoop::GetActive() != NULL" test, so instead wxEventLoop uses
+// this variable to indicate whether it is active
+//
+// the proper solution is to use wxAppTraits to abstract the base/GUI-dependent
+// operation of waiting for the thread to terminate and is already implemented
+// in cvs HEAD, this is just a backwards compatible hack for 2.8
+WXDLLIMPEXP_DATA_BASE(int) wxRunningEventLoopCount = 0;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -355,14 +365,22 @@ wxSemaError wxSemaphoreInternal::Post()
 {
 #if !defined(_WIN32_WCE) || (_WIN32_WCE >= 300)
     if ( !::ReleaseSemaphore(m_semaphore, 1, NULL /* ptr to previous count */) )
-#endif
     {
-        wxLogLastError(_T("ReleaseSemaphore"));
-
-        return wxSEMA_MISC_ERROR;
+        if ( GetLastError() == ERROR_TOO_MANY_POSTS )
+        {
+            return wxSEMA_OVERFLOW;
+        }
+        else
+        {
+            wxLogLastError(_T("ReleaseSemaphore"));
+            return wxSEMA_MISC_ERROR;
+        }
     }
 
     return wxSEMA_NO_ERROR;
+#else
+    return wxSEMA_MISC_ERROR;
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -431,8 +449,15 @@ public:
     HANDLE GetHandle() const { return m_hThread; }
     DWORD  GetId() const { return m_tid; }
 
-    // thread function
+    // the thread function forwarding to DoThreadStart
     static THREAD_RETVAL THREAD_CALLCONV WinThreadStart(void *thread);
+
+    // really start the thread (if it's not already dead)
+    static THREAD_RETVAL DoThreadStart(wxThread *thread);
+
+    // call OnExit() on the thread
+    static void DoThreadOnExit(wxThread *thread);
+
 
     void KeepAlive()
     {
@@ -475,45 +500,77 @@ private:
     wxThreadInternal& m_thrImpl;
 };
 
-
-THREAD_RETVAL THREAD_CALLCONV wxThreadInternal::WinThreadStart(void *param)
+/* static */
+void wxThreadInternal::DoThreadOnExit(wxThread *thread)
 {
-    THREAD_RETVAL rc;
-
-    wxThread * const thread = (wxThread *)param;
-
-    // first of all, check whether we hadn't been cancelled already and don't
-    // start the user code at all then
-    const bool hasExited = thread->m_internal->GetState() == STATE_EXITED;
-
-    if ( hasExited )
+    wxTRY
     {
-        rc = (THREAD_RETVAL)-1;
+        thread->OnExit();
     }
-    else // do run thread
+    wxCATCH_ALL( wxTheApp->OnUnhandledException(); )
+}
+
+/* static */
+THREAD_RETVAL wxThreadInternal::DoThreadStart(wxThread *thread)
+{
+    wxON_BLOCK_EXIT1(DoThreadOnExit, thread);
+
+    THREAD_RETVAL rc = (THREAD_RETVAL)-1;
+
+    wxTRY
     {
         // store the thread object in the TLS
         if ( !::TlsSetValue(gs_tlsThisThread, thread) )
         {
             wxLogSysError(_("Can not start thread: error writing TLS."));
 
-            return (DWORD)-1;
+            return (THREAD_RETVAL)-1;
         }
 
         rc = (THREAD_RETVAL)thread->Entry();
     }
+    wxCATCH_ALL( wxTheApp->OnUnhandledException(); )
 
-    thread->OnExit();
+    return rc;
+}
+
+/* static */
+THREAD_RETVAL THREAD_CALLCONV wxThreadInternal::WinThreadStart(void *param)
+{
+    THREAD_RETVAL rc = (THREAD_RETVAL)-1;
+
+    wxThread * const thread = (wxThread *)param;
+
+    // each thread has its own SEH translator so install our own a.s.a.p.
+    DisableAutomaticSETranslator();
+
+    // first of all, check whether we hadn't been cancelled already and don't
+    // start the user code at all then
+    const bool hasExited = thread->m_internal->GetState() == STATE_EXITED;
+
+    // run the thread function itself inside a SEH try/except block
+    wxSEH_TRY
+    {
+        if ( hasExited )
+            DoThreadOnExit(thread);
+        else
+            rc = DoThreadStart(thread);
+    }
+    wxSEH_HANDLE((THREAD_RETVAL)-1)
+
 
     // save IsDetached because thread object can be deleted by joinable
     // threads after state is changed to STATE_EXITED.
-    bool isDetached = thread->IsDetached();
-
+    const bool isDetached = thread->IsDetached();
     if ( !hasExited )
     {
         // enter m_critsect before changing the thread state
-        wxCriticalSectionLocker lock(thread->m_critsect);
+        //
+        // NB: can't use wxCriticalSectionLocker here as we use SEH and it's
+        //     incompatible with C++ object dtors
+        thread->m_critsect.Enter();
         thread->m_internal->SetState(STATE_EXITED);
+        thread->m_critsect.Leave();
     }
 
     // the thread may delete itself now if it wants, we don't need it any more
@@ -708,15 +765,26 @@ wxThreadInternal::WaitForTerminate(wxCriticalSection& cs,
 #if !defined(QS_ALLPOSTMESSAGE)
 #define QS_ALLPOSTMESSAGE 0
 #endif
-
-        result = ::MsgWaitForMultipleObjects
-                 (
-                   1,              // number of objects to wait for
-                   &m_hThread,     // the objects
-                   false,          // don't wait for all objects
-                   INFINITE,       // no timeout
-                   QS_ALLINPUT|QS_ALLPOSTMESSAGE   // return as soon as there are any events
-                 );
+        if ( !wxRunningEventLoopCount )
+        {
+            // don't ask for Windows messages if we don't have a running event
+            // loop to process them as otherwise we'd enter an infinite loop
+            // with MsgWaitForMultipleObjects() always returning WAIT_OBJECT_0
+            // + 1 because the message would remain forever in the queue
+            result = ::WaitForSingleObject(m_hThread, INFINITE);
+        }
+        else // wait for thread termination without blocking the GUI
+        {
+            result = ::MsgWaitForMultipleObjects
+                     (
+                       1,              // number of objects to wait for
+                       &m_hThread,     // the objects
+                       false,          // don't wait for all objects
+                       INFINITE,       // no timeout
+                       QS_ALLINPUT |   // return as soon as there are any events
+                       QS_ALLPOSTMESSAGE
+                     );
+        }
 
         switch ( result )
         {
@@ -741,12 +809,6 @@ wxThreadInternal::WaitForTerminate(wxCriticalSection& cs,
                 //     the system might dead lock then
                 if ( wxThread::IsMain() )
                 {
-                    // it looks that sometimes WAIT_OBJECT_0 + 1 is
-                    // returned but there are no messages in the thread
-                    // queue -- prevent DoMessageFromThreadWait() from
-                    // blocking inside ::GetMessage() forever in this case
-                    ::PostMessage(NULL, WM_NULL, 0, 0);
-
                     wxAppTraits *traits = wxTheApp ? wxTheApp->GetTraits()
                                                    : NULL;
 
@@ -929,7 +991,7 @@ bool wxThread::SetConcurrency(size_t WXUNUSED_IN_WINCE(level))
             dwProcMask |= bit;
 
             // another process added
-            if ( !--level )
+            if ( --level == 0 )
             {
                 // and that's enough
                 break;
@@ -951,7 +1013,7 @@ bool wxThread::SetConcurrency(size_t WXUNUSED_IN_WINCE(level))
     // set it: we can't link to SetProcessAffinityMask() because it doesn't
     // exist in Win9x, use RT binding instead
 
-    typedef BOOL (*SETPROCESSAFFINITYMASK)(HANDLE, DWORD);
+    typedef BOOL (WINAPI *SETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
 
     // can use static var because we're always in the main thread here
     static SETPROCESSAFFINITYMASK pfnSetProcessAffinityMask = NULL;
@@ -1349,4 +1411,3 @@ bool WXDLLIMPEXP_BASE wxIsWaitingForThread()
 #include "wx/thrimpl.cpp"
 
 #endif // wxUSE_THREADS
-

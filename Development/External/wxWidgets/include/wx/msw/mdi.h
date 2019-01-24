@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: mdi.h,v 1.34 2005/08/11 13:24:53 VZ Exp $
+// RCS-ID:      $Id: mdi.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,17 +12,12 @@
 #ifndef _WX_MDI_H_
 #define _WX_MDI_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "mdi.h"
-#endif
-
 #include "wx/frame.h"
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxFrameNameStr;
-extern WXDLLEXPORT_DATA(const wxChar*) wxStatusLineNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxStatusLineNameStr[];
 
-class WXDLLEXPORT wxMDIClientWindow;
-class WXDLLEXPORT wxMDIChildFrame;
+class WXDLLIMPEXP_FWD_CORE wxMDIClientWindow;
+class WXDLLIMPEXP_FWD_CORE wxMDIChildFrame;
 
 // ---------------------------------------------------------------------------
 // wxMDIParentFrame
@@ -43,7 +38,7 @@ public:
         Create(parent, id, title, pos, size, style, name);
     }
 
-    ~wxMDIParentFrame();
+    virtual ~wxMDIParentFrame();
 
     bool Create(wxWindow *parent,
                 wxWindowID id,
@@ -67,7 +62,7 @@ public:
     virtual wxMDIClientWindow *OnCreateClient(void);
 
     // MDI windows menu
-    wxMenu* GetWindowMenu() const { return m_windowMenu; };
+    wxMenu* GetWindowMenu() const { return m_windowMenu; }
     void SetWindowMenu(wxMenu* menu) ;
     virtual void DoMenuUpdates(wxMenu* menu = NULL);
 
@@ -116,7 +111,7 @@ protected:
     bool m_parentFrameActive;
 
 private:
-    friend class WXDLLEXPORT wxMDIChildFrame;
+    friend class WXDLLIMPEXP_FWD_CORE wxMDIChildFrame;
 
     DECLARE_EVENT_TABLE()
     DECLARE_DYNAMIC_CLASS(wxMDIParentFrame)
@@ -144,7 +139,7 @@ public:
         Create(parent, id, title, pos, size, style, name);
     }
 
-    ~wxMDIChildFrame();
+    virtual ~wxMDIChildFrame();
 
     bool Create(wxMDIParentFrame *parent,
                 wxWindowID id,
@@ -183,10 +178,12 @@ public:
     virtual bool Show(bool show = true);
 
 protected:
+    virtual void DoGetScreenPosition(int *x, int *y) const;
     virtual void DoGetPosition(int *x, int *y) const;
     virtual void DoSetClientSize(int width, int height);
     virtual void InternalSetMenuBar();
     virtual bool IsMDIChild() const { return true; }
+    virtual void DetachMenuBar();
 
     virtual WXHICON GetDefaultIcon() const;
 
@@ -196,7 +193,6 @@ protected:
 private:
     bool m_needsInitialShow; // Show must be called in idle time after Creation
     bool m_needsResize; // flag which tells us to artificially resize the frame
-    virtual void DetachMenuBar() ;
 
     DECLARE_EVENT_TABLE()
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxMDIChildFrame)
@@ -224,10 +220,11 @@ public:
     // Explicitly call default scroll behaviour
     void OnScroll(wxScrollEvent& event);
 
+protected:
     virtual void DoSetSize(int x, int y,
                            int width, int height,
                            int sizeFlags = wxSIZE_AUTO);
-protected:
+
     void Init() { m_scrollX = m_scrollY = 0; }
 
     int m_scrollX, m_scrollY;

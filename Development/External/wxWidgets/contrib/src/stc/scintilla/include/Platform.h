@@ -236,12 +236,15 @@ class Window;	// Forward declaration for Palette
  */
 class Palette {
 	int used;
-	enum {numEntries = 100};
-	ColourPair entries[numEntries];
+	int size;
+	ColourPair *entries;
 #if PLAT_GTK
 	void *allocatedPalette; // GdkColor *
 	int allocatedLen;
 #endif
+	// Private so Palette objects can not be copied
+	Palette(const Palette &) {}
+	Palette &operator=(const Palette &) { return *this; }
 public:
 #if PLAT_WIN
 	void *hpal;
@@ -319,6 +322,8 @@ public:
 	virtual void FillRectangle(PRectangle rc, ColourAllocated back)=0;
 	virtual void FillRectangle(PRectangle rc, Surface &surfacePattern)=0;
 	virtual void RoundedRectangle(PRectangle rc, ColourAllocated fore, ColourAllocated back)=0;
+	virtual void AlphaRectangle(PRectangle rc, int cornerSize, ColourAllocated fill, int alphaFill,
+		ColourAllocated outline, int alphaOutline, int flags)=0;
 	virtual void Ellipse(PRectangle rc, ColourAllocated fore, ColourAllocated back)=0;
 	virtual void Copy(PRectangle rc, Point from, Surface &surfaceSource)=0;
 
@@ -393,9 +398,10 @@ public:
 	static ListBox *Allocate();
 
 	virtual void SetFont(Font &font)=0;
-	virtual void Create(Window &parent, int ctrlID, int lineHeight_, bool unicodeMode_)=0;
+	virtual void Create(Window &parent, int ctrlID, Point location, int lineHeight_, bool unicodeMode_)=0;
 	virtual void SetAverageCharWidth(int width)=0;
 	virtual void SetVisibleRows(int rows)=0;
+	virtual int GetVisibleRows() const=0;
 	virtual PRectangle GetDesiredRect()=0;
 	virtual int CaretFromEdge()=0;
 	virtual void Clear()=0;
@@ -408,6 +414,7 @@ public:
 	virtual void RegisterImage(int type, const char *xpm_data)=0;
 	virtual void ClearRegisteredImages()=0;
 	virtual void SetDoubleClickAction(CallBackAction, void *)=0;
+	virtual void SetList(const char* list, char separator, char typesep)=0;
 };
 
 /**

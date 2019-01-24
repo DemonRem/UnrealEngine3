@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxDeltaNode_H__
@@ -45,11 +45,6 @@ public:
 	/// Copies the data from this object into the other object.
 	virtual void CopyData( FxFaceGraphNode* pOther );
 
-	/// Returns the delta between the current value of the first input link
-	/// and the value of the first input link the last time the delta node
-	/// was evaluated.
-	virtual FxReal GetValue( void );
-
 	/// Adds an input link to the delta node and returns FxTrue.
 	/// Adds an input link to the delta node.  This is overridden so that the
 	/// min and max of the delta node can be computed as -+(_inputs[0]._max -
@@ -60,11 +55,6 @@ public:
 
 	/// Serializes an FxDeltaNode to an archive.
 	virtual void Serialize( FxArchive& arc );
-
-private:
-	/// The value of the first input link to the delta node the last time
-	/// the node was evaluated.
-	FxReal _previousFirstInputValue;
 };
 
 } // namespace Face

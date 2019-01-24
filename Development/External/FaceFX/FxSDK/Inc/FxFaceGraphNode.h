@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxFaceGraphNode_H__
@@ -14,115 +14,13 @@
 #include "FxNamedObject.h"
 #include "FxArray.h"
 #include "FxFaceGraphNodeLink.h"
+#include "FxFaceGraphShared.h"
 
 namespace OC3Ent
 {
 
 namespace Face
 {
-
-/// The available %Face Graph node user property types.
-/// \ingroup faceGraph
-enum FxFaceGraphNodeUserPropertyType
-{
-	UPT_Integer = 0, ///< An integer property.
-	UPT_Bool    = 1, ///< A boolean property.
-	UPT_Real    = 2, ///< A floating-point property.
-	UPT_String  = 3, ///< A string property.
-	UPT_Choice  = 4  ///< A choice property.
-};
-
-/// A named %Face Graph node property.
-/// \ingroup faceGraph
-class FxFaceGraphNodeUserProperty : public FxNamedObject
-{
-	/// Declare the class.
-	FX_DECLARE_CLASS(FxFaceGraphNodeUserProperty, FxNamedObject)
-public:
-	/// Constructor.
-	FxFaceGraphNodeUserProperty( FxFaceGraphNodeUserPropertyType propertyType = UPT_Integer );
-	/// Copy constructor.
-	FxFaceGraphNodeUserProperty( const FxFaceGraphNodeUserProperty& other );
-	/// Assignment.
-	FxFaceGraphNodeUserProperty& operator=( const FxFaceGraphNodeUserProperty& other );
-	/// Destructor.
-	virtual ~FxFaceGraphNodeUserProperty();
-
-	/// Returns the user property type.
-	FxFaceGraphNodeUserPropertyType GetPropertyType( void ) const;
-
-	/// Returns the integer property.  The return value is only valid if the 
-	/// type of user property is Face::UPT_Integer.
-	FxInt32 GetIntegerProperty( void ) const;
-	/// Sets the integer property if the type of user property is Face::UPT_Integer.
-	void SetIntegerProperty( FxInt32 integerProperty );
-
-	/// Returns the bool property.  The return value is only valid if the
-	/// type of user property is Face::UPT_Bool.
-	FxBool GetBoolProperty( void ) const;
-	/// Sets the bool property if the type of user property is Face::UPT_Bool.
-	void SetBoolProperty( FxBool boolProperty );
-
-	/// Returns the real property.  The return value is only valid if the type 
-	/// of user property is Face::UPT_Real.
-	FxReal GetRealProperty( void ) const;
-	/// Sets the real property if the type of user property is Face::UPT_Real.
-	void SetRealProperty( FxReal realProperty );
-
-	/// Returns the string property.  The return value is only valid if the 
-	/// type of user property is Face::UPT_String.
-	const FxString& GetStringProperty( void ) const;
-	/// Sets the string property if the type of user property is Face::UPT_String.
-	void SetStringProperty( const FxString& stringProperty );
-
-	/// Returns the choice property (current choice).  The return value is only
-	/// valid if the type of user property is Face::UPT_Choice.
-	FxString GetChoiceProperty( void ) const;
-	/// Sets the choice property (current choice) if the type of user property
-	/// is Face::UPT_Choice.
-	void SetChoiceProperty( const FxString& choiceProperty );
-
-	/// Returns the number of choices if the type of user property is 
-	/// Face::UPT_Choice.
-	FxSize GetNumChoices( void ) const;
-	/// Returns the choice at index if the type of user property is Face::UPT_Choice.
-	const FxString& GetChoice( FxSize index ) const;
-	/// Adds a choice if the type of user property is Face::UPT_Choice.
-	void AddChoice( const FxString& choice );
-
-	/// Serializes an FxFaceGraphNodeUserProperty to an archive.
-	virtual void Serialize( FxArchive& arc );
-
-protected:
-	/// The type of user property.
-	FxFaceGraphNodeUserPropertyType _propertyType;
-	/// The integer property.  If the type is Face::UPT_Choice, this is used as an
-	/// index into the \a _choices array.  If the type is Face::UPT_Bool, this is used
-	/// as a boolean value where zero is false and non-zero is true.
-	FxInt32 _integerProperty;
-	/// The real property.
-	FxReal _realProperty;
-	/// The choices.  If the type is Face::UPT_String, the first element of \a _choices
-	/// is used as the string property.
-	FxArray<FxString> _choices;
-};
-
-/// The available operations for use with the node inputs.
-/// \ingroup faceGraph
-enum FxInputOp
-{
-	IO_Sum      = 0, ///< Sum the inputs.
-	IO_Multiply = 1	 ///< Multiply the inputs together.
-};
-
-/// The available operations for use with the SetUserValue() call.
-/// \ingroup faceGraph
-enum FxValueOp
-{
-	VO_Add      = IO_Sum,      ///< Add the user value into the node value.
-	VO_Multiply = IO_Multiply, ///< Multiply the user value with the node value.
-	VO_Replace  = 2            ///< Replace the node value with the user value.
-};
 
 /// The base class for a node in an FxFaceGraph.
 /// \ingroup faceGraph
@@ -147,13 +45,6 @@ public:
 	/// Copies the data from this object into the other object.
 	virtual void CopyData( FxFaceGraphNode* pOther );
 
-	/// Resets the node's values.
-	void ClearValues( void );
-	/// Returns the value of the node.  This will cause the portion of the %Face Graph
-	/// logically "above" the node to be evaluated to ensure the value is 
-	/// correct.
-	virtual FxReal GetValue( void );
-	
 	/// Returns the minimum value this node is allowed to assume.
 	FX_INLINE FxReal GetMin( void ) const { return _min; }
 	/// Sets the minimum value this node is allowed to assume.
@@ -168,25 +59,6 @@ public:
 	FX_INLINE FxInputOp GetNodeOperation( void ) const { return _inputOperation; }
 	/// Sets the operation performed on inputs.
 	void SetNodeOperation( FxInputOp iNodeOperation );
-
-	/// Returns the value of the corresponding animation track.  This is mostly
-	/// for internal use, but advanced users might find this useful.  If you
-	/// just want the current value of the node, call GetValue().  This could
-	/// return \p FxInvalidValue.
-	FX_INLINE FxReal GetTrackValue( void ) const { return _trackValue; }
-	/// Returns the user value of the node.  This is mostly for internal use, 
-	/// but advanced users might find this useful.  If you just want the 
-	/// current value of the node, call GetValue().  This could 
-	/// return \p FxInvalidValue.
-	FX_INLINE FxReal GetUserValue( void ) const { return _userValue; }
-	/// This resets all values except the user value.  This is for internal
-	/// use only and should not be used as a substitute for ClearValues().
-	void ClearAllButUserValue( void );
-
-	/// Sets the value of the corresponding animation track.
-	void SetTrackValue( FxReal trackValue );
-	/// Sets the user value of the node.
-	void SetUserValue( FxReal userValue, FxValueOp userValueOp );
 
 	/// Adds an input link to this %Face Graph node.
 	/// \param newInputLink The link to add to the node.
@@ -214,11 +86,7 @@ public:
 	/// \param pOutput A pointer to the output node.
 	/// \note For internal use only.
 	void AddOutput( FxFaceGraphNode* pOutput );
-	/// Checks if this node type is "placeable" in the tools.
-	/// \return FxTrue if the node is "placeable", FxFalse otherwise.
-	/// \note For internal use only.
-	FxBool IsPlaceable( void ) const;
-
+	
 	/// Adds a user property to the node.  If a user property with the same
 	/// name already exists, the user property is not added.  This should only 
 	/// be called in the constructor of the new node type to add the same 
@@ -237,30 +105,22 @@ public:
 	const FxFaceGraphNodeUserProperty& GetUserProperty( FxSize index ) const;
 	/// Replaces any user property with the same name as the supplied user 
 	/// property with the values in the supplied user property.  If the
-	/// user property does not exist, nothing happens.  Overload this function
-	/// to receive indications that a user property has changed from within
-	/// FaceFX Studio and then perform any required proxy re-linking steps.
+	/// user property does not exist, nothing happens.
 	/// \param userProperty The property with new data.
-	virtual void ReplaceUserProperty( const FxFaceGraphNodeUserProperty& userProperty );
+	void ReplaceUserProperty( const FxFaceGraphNodeUserProperty& userProperty );
 	
 	/// Serializes an FxFaceGraphNode to an archive.
 	virtual void Serialize( FxArchive& arc );
 
 protected:
-	/// The current value of this node.
-	/// \note This is mutable so we can change it in _hasCycles().
-	mutable FxReal _value;
-	/// The value of the track 'driving' this node.
-	FxReal _trackValue;
+	/// A flag for whether or not this node has been visited during the current
+	/// _hasCycles() operation.
+	/// \note This is mutable so it can be changed in _hasCycles().
+	mutable FxBool _hasBeenVisited;
 	/// The minimum value this node is allowed to assume.
 	FxReal _min;
 	/// The maximum value this node is allowed to assume.
 	FxReal _max;
-
-	/// The value of the node as set by the user.
-	FxReal _userValue;
-	/// The operation used to move the value into the node.
-	FxValueOp _userValueOperation;
 
 	/// Defines what to do with the inputs.
 	FxInputOp _inputOperation;
@@ -271,10 +131,6 @@ protected:
 	/// \note Outputs are strictly for internal bookkeeping usage.
 	FxArray<FxFaceGraphNode*> _outputs;
 
-	/// FxTrue if this node type is "placeable" by the user in editing tools.
-	/// \note This is for internal usage only.
-	FxBool _isPlaceable;
-
 	/// The user properties associated with this node.
 	FxArray<FxFaceGraphNodeUserProperty> _userProperties;
 	
@@ -282,21 +138,8 @@ protected:
 	FxBool _hasCycles( void ) const;
 };
 
-FX_INLINE void FxFaceGraphNode::ClearValues( void )
-{
-	_value      = FxInvalidValue;
-	_trackValue = FxInvalidValue;
-	_userValue  = FxInvalidValue;
-}
-
-FX_INLINE void FxFaceGraphNode::ClearAllButUserValue( void )
-{
-	_value      = FxInvalidValue;
-	_trackValue = FxInvalidValue;
-}
-
 } // namespace Face
 
 } // namespace OC3Ent
 
-#endif
+#endif // FxFaceGraphNode_H__

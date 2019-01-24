@@ -1,25 +1,21 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dialogs.h
+// Name:        contrib/samples/ogl/studio/dialogs.h
 // Purpose:     Miscellaneous dialogs
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: dialogs.h,v 1.3 2005/03/31 19:18:23 ABX Exp $
+// RCS-ID:      $Id: dialogs.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
-// Licence:
+// Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _STUDIO_DIALOGS_H_
 #define _STUDIO_DIALOGS_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface
-#endif
+#include "wx/wx.h"
+#include "wx/notebook.h"
 
-#include <wx/wx.h>
-#include <wx/notebook.h>
-
-#include <wx/ogl/ogl.h> // base header of OGL, includes and adjusts wx/deprecated/setup.h
+#include "wx/ogl/ogl.h" // base header of OGL, includes and adjusts wx/deprecated/setup.h
 
 #if wxUSE_WX_RESOURCES
 

@@ -1,9 +1,9 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        generic/statline.cpp
+// Name:        src/generic/statline.cpp
 // Purpose:     a generic wxStaticLine class
 // Author:      Vadim Zeitlin
 // Created:     28.06.99
-// Version:     $Id: statline.cpp,v 1.14 2004/06/17 16:22:36 ABX Exp $
+// Version:     $Id: statline.cpp 39487 2006-05-31 18:27:51Z ABX $
 // Copyright:   (c) 1998 Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,20 +16,21 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "statline.h"
-#endif
-
 #include "wx/wxprec.h"
-#if wxUSE_STATLINE
+
 // For compilers that support precompilation, includes "wx.h".
 
 #ifdef __BORLANDC__
     #pragma hdrstop
 #endif
 
+#if wxUSE_STATLINE
+
 #include "wx/statline.h"
-#include "wx/statbox.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/statbox.h"
+#endif
 
 // ============================================================================
 // implementation

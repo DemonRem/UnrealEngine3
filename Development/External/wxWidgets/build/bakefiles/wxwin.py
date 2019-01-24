@@ -1,7 +1,7 @@
 #
 # Helper functions for wxWidgets bakefiles
 #
-# $Id: wxwin.py,v 1.29 2005/08/08 13:08:16 MW Exp $
+# $Id: wxwin.py 50120 2007-11-20 22:52:40Z VS $
 #
 
 
@@ -40,10 +40,10 @@ def mk_wxid(id):
 
 # All libs that are part of the main library (i.e. non-contrib):
 MAIN_LIBS = ['mono', 'base', 'core', 'adv', 'html', 'xml', 'net',
-             'media', 'odbc', 'qa', 'dbgrid', 'xrc']
+             'media', 'odbc', 'qa', 'dbgrid', 'xrc', 'aui', 'richtext']
 # List of library names/ids for categories with different names:
 LIBS_NOGUI = ['xml', 'net', 'odbc']
-LIBS_GUI   = ['core', 'adv', 'html', 'gl', 'qa', 'dbgrid', 'xrc', 'media']
+LIBS_GUI   = ['core', 'adv', 'html', 'gl', 'qa', 'dbgrid', 'xrc', 'media', 'aui', 'richtext']
 # Additional libraries that must be linked in:
 EXTRALIBS = {
     'gl' : '$(EXTRALIBS_OPENGL)',
@@ -51,6 +51,7 @@ EXTRALIBS = {
     'html' : '$(EXTRALIBS_HTML)',
     'odbc' : '$(EXTRALIBS_ODBC)',
     'adv' : '$(PLUGIN_ADV_EXTRALIBS)',
+    'media' : '$(EXTRALIBS_MEDIA)',
 }
 
 def mkLibName(wxid):

@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXPHYSICS
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -39,6 +39,8 @@ Alternatively, one can instead directly #include a subset of the below files.
 #include "NxUserContactReport.h"
 #include "NxUserNotify.h"
 #include "NxFluidUserNotify.h"
+#include "NxClothUserNotify.h"
+#include "NxSoftBodyUserNotify.h"
 #include "NxUserRaycastReport.h"
 #include "NxUserEntityReport.h"
 
@@ -52,6 +54,11 @@ Alternatively, one can instead directly #include a subset of the below files.
 
 #include "NxForceField.h"
 #include "NxForceFieldDesc.h"
+#include "NxForceFieldShapeGroup.h"
+#include "NxForceFieldShapeGroupDesc.h"
+#include "NxForceFieldKernel.h"
+#include "NxForceFieldLinearKernel.h"
+#include "NxForceFieldLinearKernelDesc.h"
 
 #include "NxForceFieldShape.h"
 #include "NxForceFieldShapeDesc.h"
@@ -73,11 +80,6 @@ Alternatively, one can instead directly #include a subset of the below files.
 #include "fluids/NxFluidEmitter.h"
 #include "fluids/NxFluidEmitterDesc.h"
 #endif
-
-#if NX_USE_IMPLICIT_SCREEN_SURFACE_API
-#include "fluids/NxImplicitScreenMeshDesc.h"
-#endif
-
 
 #if NX_USE_CLOTH_API
 #include "cloth/NxCloth.h"
@@ -184,17 +186,15 @@ Alternatively, one can instead directly #include a subset of the below files.
 #include "NxIntersectionSweptSpheres.h"
 #include "NxPMap.h"
 #include "NxSmoothNormals.h"
-#include "NxConvexHull.h"
-#include "NxAllocateable.h"
 #include "NxExportedUtils.h"
 
 #include "PhysXLoader.h"
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

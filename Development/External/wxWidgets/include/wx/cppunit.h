@@ -3,7 +3,7 @@
 // Purpose:     wrapper header for CppUnit headers
 // Author:      Vadim Zeitlin
 // Created:     15.02.04
-// RCS-ID:      $Id: cppunit.h,v 1.6 2005/05/04 18:51:56 JS Exp $
+// RCS-ID:      $Id: cppunit.h 53917 2008-06-01 20:32:26Z VZ $
 // Copyright:   (c) 2004 Vadim Zeitlin
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
@@ -28,13 +28,17 @@
 #ifdef __BORLANDC__
     #pragma warn -8022
 #endif
- 
+
+#ifndef CPPUNIT_STD_NEED_ALLOCATOR
+    #define CPPUNIT_STD_NEED_ALLOCATOR 0
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Set the default format for the errors, which can be used by an IDE to jump
 // to the error location. This default gets overridden by the cppunit headers
 // for some compilers (e.g. VC++).
 
-#ifndef CPPUNIT_COMPILER_LOCATION_FORMAT 
+#ifndef CPPUNIT_COMPILER_LOCATION_FORMAT
     #define CPPUNIT_COMPILER_LOCATION_FORMAT "%p:%l:"
 #endif
 
@@ -76,6 +80,28 @@
 // Conditional CPPUNIT_TEST_FAIL macro.
 #define WXTEST_FAIL_WITH_CONDITION(suiteName, Condition, testMethod) \
     WXTEST_ANY_WITH_CONDITION(suiteName, Condition, testMethod, CPPUNIT_TEST_FAIL(testMethod))
+
+// Use this macro to compare a wxString with a literal string.
+#define WX_ASSERT_STR_EQUAL(p, s) CPPUNIT_ASSERT_EQUAL(wxString(p), s)
+
+// Use this macro to compare a size_t with a literal integer
+#define WX_ASSERT_SIZET_EQUAL(n, m) CPPUNIT_ASSERT_EQUAL(((size_t)n), m)
+
+// Use this macro to compare the expected time_t value with the result of not
+// necessarily time_t type
+#define WX_ASSERT_TIME_T_EQUAL(t, n) CPPUNIT_ASSERT_EQUAL((t), (time_t)(n))
+
+
+///////////////////////////////////////////////////////////////////////////////
+// stream inserter for wxString
+//
+
+#include "wx/string.h"
+
+inline std::ostream& operator<<(std::ostream& o, const wxString& s)
+{
+    return o << s.mb_str();
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

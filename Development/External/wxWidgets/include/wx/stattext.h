@@ -5,7 +5,7 @@
 // Modified by:
 // Created:
 // Copyright:   (c) Julian Smart
-// RCS-ID:      $Id: stattext.h,v 1.23 2005/08/18 22:15:40 VZ Exp $
+// RCS-ID:      $Id: stattext.h 37066 2006-01-23 03:27:34Z MR $
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@
 
 #include "wx/control.h"
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxStaticTextNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxStaticTextNameStr[];
 
 class WXDLLEXPORT wxStaticTextBase : public wxControl
 {
@@ -49,8 +49,10 @@ private:
     #include "wx/msw/stattext.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/stattext.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/stattext.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/stattext.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/stattext.h"
 #elif defined(__WXCOCOA__)

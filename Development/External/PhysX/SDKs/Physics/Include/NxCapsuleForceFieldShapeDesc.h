@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXCAPSULEFORCEFIELDSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -20,9 +20,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxForceFieldShapeDesc NxCapsuleForceFieldShape NxForceField
 */
@@ -37,9 +38,10 @@ class NxCapsuleForceFieldShapeDesc : public NxForceFieldShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleForceFieldShape.setRadius() NxCapsuleForceFieldShape.setDimensions()
 	*/
@@ -55,9 +57,10 @@ class NxCapsuleForceFieldShapeDesc : public NxForceFieldShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleForceFieldShape.setHeight() NxCapsuleForceFieldShape.setDimensions()
 	*/
@@ -79,7 +82,11 @@ class NxCapsuleForceFieldShapeDesc : public NxForceFieldShapeDesc
 
 	\return True if the current settings are valid
 	*/
-	virtual NX_INLINE bool isValid() const;
+	virtual NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxCapsuleForceFieldShapeDesc::NxCapsuleForceFieldShapeDesc() : NxForceFieldShapeDesc(NX_SHAPE_CAPSULE)
@@ -92,23 +99,22 @@ NX_INLINE void NxCapsuleForceFieldShapeDesc::setToDefault()
 	NxForceFieldShapeDesc::setToDefault();
 	radius = 1.0f;
 	height = 1.0f;
-	flags  = 0;
 	}
 
-NX_INLINE bool NxCapsuleForceFieldShapeDesc::isValid() const
+NX_INLINE NxU32 NxCapsuleForceFieldShapeDesc::checkValid() const
 	{
-	if(!NxMath::isFinite(radius))	return false;
-	if(radius<=0.0f)				return false;
-	if(!NxMath::isFinite(height))	return false;
-	if(height<=0.0f)				return false;
-	return NxForceFieldShapeDesc::isValid();
+	if(!NxMath::isFinite(radius))	return 1;
+	if(radius<=0.0f)				return 2;
+	if(!NxMath::isFinite(height))	return 3;
+	if(height<=0.0f)				return 4;
+	return 5*NxForceFieldShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

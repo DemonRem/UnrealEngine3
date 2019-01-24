@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXUSERCONTACTREPORT
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -18,30 +18,31 @@
 class NxActor;
 class NxShape;
 
-#if NX_USE_FLUID_API
-class NxFluid;
-#endif
 
 /**
 \brief Contact pair flags.
 
-@see NxUserContactReport.onContactNotify()
+@see NxUserContactReport.onContactNotify() NxActor::setContactReportThreshold
 */
 enum NxContactPairFlag
 	{
-	NX_IGNORE_PAIR					= (1<<0),	//!< Disable contact generation for this pair
+	NX_IGNORE_PAIR								= (1<<0),	//!< Disable contact generation for this pair
 
-	NX_NOTIFY_ON_START_TOUCH		= (1<<1),	//!< Pair callback will be called when the pair starts to be in contact
-	NX_NOTIFY_ON_END_TOUCH			= (1<<2),	//!< Pair callback will be called when the pair stops to be in contact
-	NX_NOTIFY_ON_TOUCH				= (1<<3),	//!< Pair callback will keep getting called while the pair is in contact
-	NX_NOTIFY_ON_IMPACT				= (1<<4),	//!< [Not yet implemented] pair callback will be called when it may be appropriate for the pair to play an impact sound
-	NX_NOTIFY_ON_ROLL				= (1<<5),	//!< [Not yet implemented] pair callback will be called when the pair is in contact and rolling.
-	NX_NOTIFY_ON_SLIDE				= (1<<6),	//!< [Not yet implemented] pair callback will be called when the pair is in contact and sliding (and not rolling).
-	NX_NOTIFY_FORCES				= (1<<7),	//!< The (summed total) friction force and normal force will be given in the NxContactPair variable in the contact report.
+	NX_NOTIFY_ON_START_TOUCH					= (1<<1),	//!< Pair callback will be called when the pair starts to be in contact
+	NX_NOTIFY_ON_END_TOUCH						= (1<<2),	//!< Pair callback will be called when the pair stops to be in contact
+	NX_NOTIFY_ON_TOUCH							= (1<<3),	//!< Pair callback will keep getting called while the pair is in contact
+	NX_NOTIFY_ON_IMPACT							= (1<<4),	//!< [Not yet implemented] pair callback will be called when it may be appropriate for the pair to play an impact sound
+	NX_NOTIFY_ON_ROLL							= (1<<5),	//!< [Not yet implemented] pair callback will be called when the pair is in contact and rolling.
+	NX_NOTIFY_ON_SLIDE							= (1<<6),	//!< [Not yet implemented] pair callback will be called when the pair is in contact and sliding (and not rolling).
+	NX_NOTIFY_FORCES							= (1<<7),	//!< The (summed total) friction force and normal force will be given in the NxContactPair variable in the contact report.
+	NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD	= (1<<8),	//!< Pair callback will be called when the contact force between two actors exceeds one of the actor-defined force thresholds
+	NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD		= (1<<9),	//!< Pair callback will be called when the contact force between two actors falls below the actor-defined force thresholds
+	NX_NOTIFY_ON_TOUCH_FORCE_THRESHOLD			= (1<<10),	//!< Pair callback will keep getting called while the contact force between two actors exceeds one of the actor-defined force thresholds
 
-	NX_NOTIFY_CONTACT_MODIFICATION	= (1<<16),	//!< Generate a callback for all associated contact constraints, making it possible to edit the constraint. This flag is not included in NX_NOTIFY_ALL for performance reasons. \see NxUserContactModify
+	NX_NOTIFY_CONTACT_MODIFICATION				= (1<<16),	//!< Generate a callback for all associated contact constraints, making it possible to edit the constraint. This flag is not included in NX_NOTIFY_ALL for performance reasons. \see NxUserContactModify
 
-	NX_NOTIFY_ALL					= (NX_NOTIFY_ON_START_TOUCH|NX_NOTIFY_ON_END_TOUCH|NX_NOTIFY_ON_TOUCH|NX_NOTIFY_ON_IMPACT|NX_NOTIFY_ON_ROLL|NX_NOTIFY_ON_SLIDE|NX_NOTIFY_FORCES)
+	NX_NOTIFY_ALL								= (NX_NOTIFY_ON_START_TOUCH|NX_NOTIFY_ON_END_TOUCH|NX_NOTIFY_ON_TOUCH|NX_NOTIFY_ON_IMPACT|NX_NOTIFY_ON_ROLL|NX_NOTIFY_ON_SLIDE|NX_NOTIFY_FORCES|
+												   NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD|NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD|NX_NOTIFY_ON_TOUCH_FORCE_THRESHOLD)
 	};
 
 /**
@@ -53,31 +54,47 @@ It contains a contact stream which may be parsed using the class NxContactStream
 class NxContactPair
 	{
 	public:
-	NX_INLINE	NxContactPair() : stream(NULL)	{}
+		NX_INLINE	NxContactPair() : stream(NULL)	{}
 
 	/**
-	\brief the two actors that make up the pair.
+	\brief The two actors that make up the pair.
+
+	\note The actor pointers might reference deleted actors. Check the #isDeletedActor member to see
+	      whether that is the case. Do not dereference a pointer to a deleted actor. The pointer to a
+		  deleted actor is only provided such that user data structures which might depend on the pointer
+		  value can be updated.
 
 	@see NxActor
 	*/
 	NxActor*				actors[2];
 
 	/**
-	\brief use this to create stream iter. See #NxContactStreamIterator.
+	\brief Use this to create stream iter. See #NxContactStreamIterator.
 
 	@see NxConstContactStream
 	*/
 	NxConstContactStream	stream;
 
 	/**
-	\brief the total contact normal force that was applied for this pair, to maintain nonpenetration constraints. You should set NX_NOTIFY_FORCES in order to receive this value.
+	\brief The total contact normal force that was applied for this pair, to maintain nonpenetration constraints. You should set NX_NOTIFY_FORCES in order to receive this value.
 	*/
 	NxVec3					sumNormalForce;
 
 	/**
-	\brief the total tangential force that was applied for this pair. You should set NX_NOTIFY_FORCES in order to receive this value.
+	\brief The total tangential force that was applied for this pair. You should set NX_NOTIFY_FORCES in order to receive this value.
 	*/
 	NxVec3					sumFrictionForce;
+
+	/**
+	\brief Specifies for each actor of the pair if the actor has been deleted.
+
+	Before dereferencing the actor pointers of the contact pair you might want to use this member
+	to check if the pointers reference deleted actors. This will be the case if an actor for which
+	NX_NOTIFY_ON_END_TOUCH or NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD events were requested gets deleted.
+
+	@see actors
+	*/
+	bool					isDeletedActor[2];
 	};
 
 /**
@@ -89,7 +106,7 @@ its  #onContactNotify() method will be called for each pair of actors which come
 for which this behavior was enabled.
 
 You request which events are reported using NxScene::setActorPairFlags(), 
-#NxScene::setShapePairFlags(), or #NxScene::getActorGroupPairFlags()
+#NxScene::setShapePairFlags(), #NxScene::setActorGroupPairFlags() or #NxActor::setContactReportFlags()
 
 Please note: Kinematic actors will not generate contact reports when in contact with other kinematic actors.
 
@@ -118,15 +135,18 @@ class NxUserContactReport
 	<li>NX_NOTIFY_ON_START_TOUCH,</li>
 	<li>NX_NOTIFY_ON_END_TOUCH,</li>
 	<li>NX_NOTIFY_ON_TOUCH,</li>
+	<li>NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD,</li>
+	<li>NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD,</li>
+	<li>NX_NOTIFY_ON_TOUCH_FORCE_THRESHOLD,</li>
 	<li>NX_NOTIFY_ON_IMPACT,	//unimplemented!</li>
 	<li>NX_NOTIFY_ON_ROLL,		//unimplemented!</li>
 	<li>NX_NOTIFY_ON_SLIDE,		//unimplemented!</li>
 	</ul>
 
 	See the documentation of #NxContactPairFlag for an explanation of each. You request which events 
-	are reported using #NxScene::setActorPairFlags() or 
-	#NxScene::setActorGroupPairFlags(). Do not keep a reference to the passed object, as it will
-	be invalid after this function returns.
+	are reported using #NxScene::setActorPairFlags(), #NxScene::setActorGroupPairFlags(),
+	#NxScene::setShapePairFlags() or #NxActor::setContactReportFlags(). Do not keep a reference to 
+	the passed object, as it will be invalid after this function returns.
 
 	\note SDK state should not be modified from within onContactNotify(). In particular objects should not
 	be created or destroyed. If state modification is needed then the changes should be stored to a buffer
@@ -137,13 +157,14 @@ class NxUserContactReport
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxContactPair NxContactPairFlag
 	*/
-	virtual void  onContactNotify(NxContactPair& pair, NxU32 events) = 0;
+	virtual void	onContactNotify(NxContactPair& pair, NxU32 events) = 0;
 
 	protected:
 	virtual ~NxUserContactReport(){};
@@ -185,9 +206,10 @@ class NxUserTriggerReport
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriggerFlag
 	*/
@@ -335,9 +357,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool onContactConstraint(
 		NxU32& changeFlags, 
@@ -402,18 +425,18 @@ protected:
 \brief An actor pair used by filtering.
 */
 class NxActorPairFilter       
-{
-public:
+	{
+	public:
 	NxActor*    actor[2];  //!< Pair of actors that are candidates for contact generation
 	bool        filtered;  //!< Set to true in order to filter out this pair from contact generation
-};
+	};
 
 /**
 \brief An interface class that the user can implement in order to apply custom contact filtering.
 */
 class NxUserActorPairFiltering 
-{
-public:
+	{
+	public:
 	/**
 	\brief Callback to allow the user to decide whether to filter a certain actor pair.
 
@@ -427,15 +450,15 @@ public:
 	*/
 	virtual void onActorPairs(NxActorPairFilter* filterArray, NxU32 arraySize) = 0;
 
-protected:
+	protected:
 	virtual ~NxUserActorPairFiltering() {}      
-};
+	};
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

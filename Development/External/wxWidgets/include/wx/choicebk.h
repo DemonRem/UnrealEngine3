@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by: Wlodzimierz ABX Skiba from wx/listbook.h
 // Created:     15.09.04
-// RCS-ID:      $Id: choicebk.h,v 1.6 2005/04/06 21:13:28 JS Exp $
+// RCS-ID:      $Id: choicebk.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Vadim Zeitlin, Wlodzimierz Skiba
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,17 +12,25 @@
 #ifndef _WX_CHOICEBOOK_H_
 #define _WX_CHOICEBOOK_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "choicebook.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_CHOICEBOOK
 
 #include "wx/bookctrl.h"
+#include "wx/choice.h"
 
-class WXDLLEXPORT wxChoice;
+class WXDLLIMPEXP_FWD_CORE wxChoice;
+
+extern WXDLLIMPEXP_CORE const wxEventType wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED;
+extern WXDLLIMPEXP_CORE const wxEventType wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGING;
+
+// wxChoicebook flags
+#define wxCHB_DEFAULT          wxBK_DEFAULT
+#define wxCHB_TOP              wxBK_TOP
+#define wxCHB_BOTTOM           wxBK_BOTTOM
+#define wxCHB_LEFT             wxBK_LEFT
+#define wxCHB_RIGHT            wxBK_RIGHT
+#define wxCHB_ALIGN_MASK       wxBK_ALIGN_MASK
 
 // ----------------------------------------------------------------------------
 // wxChoicebook
@@ -68,32 +76,32 @@ public:
                             const wxString& text,
                             bool bSelect = false,
                             int imageId = -1);
-    virtual int SetSelection(size_t n);
+    virtual int SetSelection(size_t n) { return DoSetSelection(n, SetSelection_SendEvent); }
+    virtual int ChangeSelection(size_t n) { return DoSetSelection(n); }
     virtual void SetImageList(wxImageList *imageList);
-
-    // returns true if we have wxCHB_TOP or wxCHB_BOTTOM style
-    bool IsVertical() const { return HasFlag(wxCHB_BOTTOM | wxCHB_TOP); }
 
     virtual bool DeleteAllPages();
 
     // returns the choice control
-    wxChoice* GetChoiceCtrl() const { return m_choice; }
+    wxChoice* GetChoiceCtrl() const { return (wxChoice*)m_bookctrl; }
 
 protected:
     virtual wxWindow *DoRemovePage(size_t page);
 
     // get the size which the choice control should have
-    wxSize GetChoiceSize() const;
+    virtual wxSize GetControllerSize() const;
 
-    // get the page area
-    wxRect GetPageRect() const;
+    void UpdateSelectedPage(size_t newsel)
+    {
+        m_selection = newsel;
+        GetChoiceCtrl()->Select(newsel);
+    }
+
+    wxBookCtrlBaseEvent* CreatePageChangingEvent() const;
+    void MakeChangedEvent(wxBookCtrlBaseEvent &event);
 
     // event handlers
-    void OnSize(wxSizeEvent& event);
     void OnChoiceSelected(wxCommandEvent& event);
-
-    // the choice control we use for showing the pages index
-    wxChoice *m_choice;
 
     // the currently selected page or wxNOT_FOUND if none
     int m_selection;
@@ -119,12 +127,16 @@ public:
     {
     }
 
-private:
-    DECLARE_DYNAMIC_CLASS_NO_COPY(wxChoicebookEvent)
-};
+    wxChoicebookEvent(const wxChoicebookEvent& event)
+        : wxBookCtrlBaseEvent(event)
+    {
+    }
 
-extern WXDLLIMPEXP_CORE const wxEventType wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED;
-extern WXDLLIMPEXP_CORE const wxEventType wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGING;
+    virtual wxEvent *Clone() const { return new wxChoicebookEvent(*this); }
+
+private:
+    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxChoicebookEvent)
+};
 
 typedef void (wxEvtHandler::*wxChoicebookEventFunction)(wxChoicebookEvent&);
 

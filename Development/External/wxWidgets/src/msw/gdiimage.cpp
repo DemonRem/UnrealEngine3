@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/gdiimage.cpp
+// Name:        src/msw/gdiimage.cpp
 // Purpose:     wxGDIImage implementation
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.11.99
-// RCS-ID:      $Id: gdiimage.cpp,v 1.50 2005/07/01 13:38:58 ABX Exp $
+// RCS-ID:      $Id: gdiimage.cpp 41689 2006-10-08 08:04:49Z PC $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "gdiimage.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -31,13 +27,12 @@
 #ifndef WX_PRECOMP
     #include "wx/string.h"
     #include "wx/log.h"
+    #include "wx/app.h"
+    #include "wx/bitmap.h"
 #endif // WX_PRECOMP
 
 #include "wx/msw/private.h"
 
-#include "wx/app.h"
-
-#include "wx/bitmap.h"
 #include "wx/msw/gdiimage.h"
 
 #if wxUSE_WXDIB
@@ -52,7 +47,7 @@
 #include "wx/file.h"
 
 #include "wx/listimpl.cpp"
-WX_DEFINE_LIST(wxGDIImageHandlerList);
+WX_DEFINE_LIST(wxGDIImageHandlerList)
 
 // ----------------------------------------------------------------------------
 // private classes
@@ -109,7 +104,7 @@ public:
 
     // creating and saving icons is not supported
     virtual bool Create(wxGDIImage *WXUNUSED(image),
-                        void *WXUNUSED(data),
+                        const void* WXUNUSED(data),
                         long WXUNUSED(flags),
                         int WXUNUSED(width),
                         int WXUNUSED(height),
@@ -572,12 +567,10 @@ bool wxICOResourceHandler::LoadIcon(wxIcon *icon,
 
 wxSize wxGetHiconSize(HICON WXUNUSED_IN_WINCE(hicon))
 {
-    // default icon size on this hardware
-    // usually 32x32 but can be other (smaller) on pocket devices
-    wxSize size(::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON));
+    wxSize size;
 
 #ifndef __WXWINCE__
-    if ( hicon && wxGetOsVersion() != wxWIN32S )
+    if ( hicon )
     {
         ICONINFO info;
         if ( !::GetIconInfo(hicon, &info) )
@@ -601,10 +594,16 @@ wxSize wxGetHiconSize(HICON WXUNUSED_IN_WINCE(hicon))
                 ::DeleteObject(info.hbmColor);
         }
     }
-#endif
+
+    if ( !size.x )
+#endif // !__WXWINCE__
+    {
+        // use default icon size on this hardware
+        size.x = ::GetSystemMetrics(SM_CXICON);
+        size.y = ::GetSystemMetrics(SM_CYICON);
+    }
 
     return size;
 }
 
 #endif // __WXMICROWIN__
-

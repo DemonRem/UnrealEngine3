@@ -5,7 +5,7 @@
 *  Author:      Vadim Zeitlin
 *  Modified by: Ryan Norton (Converted to C)
 *  Created:     18.03.02
-*  RCS-ID:      $Id: features.h,v 1.28 2005/05/21 16:59:23 JS Exp $
+*  RCS-ID:      $Id: features.h 40865 2006-08-27 09:42:42Z VS $
 *  Copyright:   (c) 2002 Vadim Zeitlin <vadim@wxwidgets.org>
 *  Licence:     wxWindows licence
 */
@@ -15,15 +15,18 @@
 #ifndef _WX_FEATURES_H_
 #define _WX_FEATURES_H_
 
-/*  radio menu items are currently only implemented in wxGTK and wxMSW */
-#if defined(__WXGTK__) || defined(__WXMSW__)
+/*  radio menu items are currently not implemented in wxMotif, use this
+    symbol (kept for compatibility from the time when they were not implemented
+    under other platforms as well) to test for this */
+#if !defined(__WXMOTIF__)
     #define wxHAS_RADIO_MENU_ITEMS
 #else
     #undef wxHAS_RADIO_MENU_ITEMS
 #endif
 
 /*  the raw keyboard codes are generated under wxGTK and wxMSW only */
-#if defined(__WXGTK__) || defined(__WXMSW__) || defined(__WXMAC__)
+#if defined(__WXGTK__) || defined(__WXMSW__) || defined(__WXMAC__) \
+    || defined(__WXDFB__)
     #define wxHAS_RAW_KEY_CODES
 #else
     #undef wxHAS_RAW_KEY_CODES

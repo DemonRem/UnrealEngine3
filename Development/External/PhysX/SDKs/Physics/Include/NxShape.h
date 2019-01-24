@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -65,9 +65,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor
 	*/
@@ -86,9 +87,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroup() NxCollisionGroup
 	*/
@@ -103,9 +105,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroup() NxCollisionGroup
 	*/
@@ -118,9 +121,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3
 	*/
@@ -144,9 +148,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeFlag getFlag()
 	*/
@@ -160,9 +165,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeFlag setFlag()
 	*/
@@ -186,9 +192,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLocalPose() NxShapeDesc.localPose()
 	*/
@@ -206,9 +213,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPose() NxShapeDesc.localPose getLocalPosition()
 	*/
@@ -226,9 +234,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPose() NxShapeDesc.localPose getLocalOrientation()
 	*/
@@ -242,9 +251,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPose() NxShapeDesc.localPose
 	*/
@@ -259,9 +269,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPosition() getLocalPose() NxShapeDesc.localPose
 	*/
@@ -275,9 +286,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalOrientation() getLocalPose() NxShapeDesc.localPose
 	*/
@@ -294,9 +306,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPose() getGlobalPose() setGlobalPosition() setGlobalOrientation()
 	*/
@@ -313,9 +326,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPose() getGlobalPosition() setGlobalPosition() setGlobalOrientation()
 	*/
@@ -332,9 +346,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLocalPose() getGlobalOrientation() setGlobalPosition() setGlobalOrientation()
 	*/
@@ -348,9 +363,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalPose() getGlobalPosition() getGlobalOrientation()
 	*/
@@ -364,9 +380,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalPosition() getGlobalPose() getGlobalOrientation()
 	*/
@@ -380,9 +397,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalOrientation() getGlobalPose() getGlobalPosition()
 	*/
@@ -403,9 +421,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.createMaterial() getMaterial() NxMaterialIndex NxMaterial.getMaterialIndex()
 	*/
@@ -418,9 +437,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see setMaterial() NxMaterialIndex
 	*/
@@ -435,9 +455,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSkinWidth
 	@see NxParameter
@@ -450,9 +471,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSkinWidth() NxParameter
 	*/
@@ -465,9 +487,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType
 	*/
@@ -486,9 +509,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeDesc.ccdSkeleton NxPhysicsSDK.createCCDSkeleton() getCCDSkeleton()
 	*/
@@ -501,9 +525,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeDesc.ccdSkeleton NxPhysicsSDK.createCCDSkeleton() setCCDSkeleton()
 	*/
@@ -522,9 +547,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType
 	*/
@@ -540,9 +566,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxPlaneShape
 	*/
@@ -558,9 +585,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxSphereShape
 	*/
@@ -576,9 +604,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxBoxShape
 	*/
@@ -594,9 +623,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxCapsuleShape
 	*/
@@ -612,9 +642,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxWheelShape
 	*/
@@ -630,9 +661,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxConvexShape
 	*/
@@ -648,9 +680,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxTriangleMeshShape
 	*/
@@ -666,9 +699,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType NxHeightFieldShape
 	*/
@@ -687,9 +721,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
@@ -701,9 +736,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
@@ -733,9 +769,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.raycastAnyShape() NxScene.raycastAnyBounds()
 	*/
@@ -749,9 +786,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.overlapSphereShapes()
 	*/
@@ -765,9 +803,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.overlapOBBShapes()
 	*/
@@ -781,9 +820,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.overlapAABBShapes()
 	*/
@@ -797,9 +837,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.overlapCapsuleShapes()
 	*/
@@ -816,9 +857,10 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroupsMask()
 	*/
@@ -831,13 +873,51 @@ class NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroupsMask()
 	*/
 	virtual		const NxGroupsMask		getGroupsMask()	const = 0;
+
+		/**
+	\brief Returns which compartment types the shape should not interact with.
+
+	\return A combination of ::NxShapeCompartmentType values.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : No
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setNonInteractingCompartmentTypes() NxShapeCompartmentType
+	*/
+	virtual		NxU32				getNonInteractingCompartmentTypes() const = 0;
+
+	/**
+	\brief Sets which compartment types the shape should not interact with.
+
+	The shape will not interact with objects that belong to a compartment of the specified types.
+
+	\note See #NxShapeDesc::nonInteractingCompartmentTypes for limitations.
+
+	\param[in] compartmentTypes A combination of ::NxShapeCompartmentType values.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : No
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getNonInteractingCompartmentTypes() NxShapeCompartmentType
+	*/
+	virtual		void				setNonInteractingCompartmentTypes(NxU32 compartmentTypes) = 0;
+
 
 				void*					userData;	//!< user can assign this to whatever, usually to create a 1:1 relationship with a user object.
 				void*					appData;	//!< used internally, do not change.
@@ -845,9 +925,9 @@ class NxShape
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

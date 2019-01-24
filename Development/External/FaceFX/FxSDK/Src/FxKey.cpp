@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxKey.h"
@@ -91,12 +91,14 @@ void FxAnimKey::SetUserData( void* userData )
 	_userData = userData;
 }
 
+//@todo This is all legacy code meant only to load up old content, so it has not
+//      been updated with new version serialization.
 #define kCurrentFxAnimKeyVersion 0
 FxArchive& operator<<( FxArchive& arc, FxAnimKey& key )
 {
 	FxUInt16 version = kCurrentFxAnimKeyVersion;
 	arc << version;
-	arc << key._time << key._value
+    arc << key._time << key._value
 		<< key._slopeIn << key._slopeOut;
 	return arc;
 }

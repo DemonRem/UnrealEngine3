@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/stockitem.cpp
+// Name:        src/common/stockitem.cpp
 // Purpose:     Stock buttons, menu and toolbar items labels
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     2004-08-15
-// RCS-ID:      $Id: stockitem.cpp,v 1.12 2005/06/13 12:19:20 ABX Exp $
+// RCS-ID:      $Id: stockitem.cpp 42936 2006-11-02 10:42:42Z JS $
 // Copyright:   (c) Vaclav Slavik, 2004
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "stockitem.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,13 +25,17 @@
 #endif
 
 #include "wx/stockitem.h"
-#include "wx/intl.h"
-#include "wx/utils.h" // for wxStripMenuCodes()
+
+#ifndef WX_PRECOMP
+    #include "wx/intl.h"
+    #include "wx/utils.h" // for wxStripMenuCodes()
+#endif
 
 bool wxIsStockID(wxWindowID id)
 {
     switch (id)
     {
+        case wxID_ABOUT:
         case wxID_ADD:
         case wxID_APPLY:
         case wxID_BOLD:
@@ -45,7 +45,9 @@ bool wxIsStockID(wxWindowID id)
         case wxID_COPY:
         case wxID_CUT:
         case wxID_DELETE:
+        case wxID_EDIT:
         case wxID_FIND:
+        case wxID_FILE:
         case wxID_REPLACE:
         case wxID_BACKWARD:
         case wxID_DOWN:
@@ -76,6 +78,7 @@ bool wxIsStockID(wxWindowID id)
         case wxID_REVERT_TO_SAVED:
         case wxID_SAVE:
         case wxID_SAVEAS:
+        case wxID_SELECTALL:
         case wxID_STOP:
         case wxID_UNDELETE:
         case wxID_UNDERLINE:
@@ -93,7 +96,7 @@ bool wxIsStockID(wxWindowID id)
     }
 }
 
-wxString wxGetStockLabel(wxWindowID id, bool withCodes, wxString accelerator)
+wxString wxGetStockLabel(wxWindowID id, long flags)
 {
     wxString stockLabel;
 
@@ -104,6 +107,7 @@ wxString wxGetStockLabel(wxWindowID id, bool withCodes, wxString accelerator)
 
     switch (id)
     {
+        STOCKITEM(wxID_ABOUT,               _("&About"))
         STOCKITEM(wxID_ADD,                 _("Add"))
         STOCKITEM(wxID_APPLY,               _("&Apply"))
         STOCKITEM(wxID_BOLD,                _("&Bold"))
@@ -113,7 +117,9 @@ wxString wxGetStockLabel(wxWindowID id, bool withCodes, wxString accelerator)
         STOCKITEM(wxID_COPY,                _("&Copy"))
         STOCKITEM(wxID_CUT,                 _("Cu&t"))
         STOCKITEM(wxID_DELETE,              _("&Delete"))
+        STOCKITEM(wxID_EDIT,                _("&Edit"))
         STOCKITEM(wxID_FIND,                _("&Find"))
+        STOCKITEM(wxID_FILE,                _("&File"))
         STOCKITEM(wxID_REPLACE,             _("Rep&lace"))
         STOCKITEM(wxID_BACKWARD,            _("&Back"))
         STOCKITEM(wxID_DOWN,                _("&Down"))
@@ -144,6 +150,7 @@ wxString wxGetStockLabel(wxWindowID id, bool withCodes, wxString accelerator)
         STOCKITEM(wxID_REVERT_TO_SAVED,     _("Revert to Saved"))
         STOCKITEM(wxID_SAVE,                _("&Save"))
         STOCKITEM(wxID_SAVEAS,              _("Save &As..."))
+        STOCKITEM(wxID_SELECTALL,           _("Select all"))
         STOCKITEM(wxID_STOP,                _("&Stop"))
         STOCKITEM(wxID_UNDELETE,            _("Undelete"))
         STOCKITEM(wxID_UNDERLINE,           _("&Underline"))
@@ -162,18 +169,96 @@ wxString wxGetStockLabel(wxWindowID id, bool withCodes, wxString accelerator)
 
     #undef STOCKITEM
 
-    if(!withCodes)
+    if ( !(flags & wxSTOCK_WITH_MNEMONIC) )
     {
-        stockLabel = wxStripMenuCodes( stockLabel );
+        stockLabel = wxStripMenuCodes(stockLabel);
     }
-    else if (!stockLabel.empty() && !accelerator.empty())
+
+#if wxUSE_ACCEL
+    if ( !stockLabel.empty() && (flags & wxSTOCK_WITH_ACCELERATOR) )
     {
-        stockLabel += _T("\t");
-        stockLabel += accelerator;
+        wxAcceleratorEntry accel = wxGetStockAccelerator(id);
+        if (accel.IsOk())
+            stockLabel << _T('\t') << accel.ToString();
     }
+#endif // wxUSE_ACCEL
 
     return stockLabel;
 }
+
+wxString wxGetStockHelpString(wxWindowID id, wxStockHelpStringClient client)
+{
+    wxString stockHelp;
+
+    #define STOCKITEM(stockid, ctx, helpstr)             \
+        case stockid:                                    \
+            if (client==ctx) stockHelp = helpstr;        \
+            break;
+
+    switch (id)
+    {
+        // NB: these help string should be not too specific as they could be used
+        //     in completely different programs!
+        STOCKITEM(wxID_ABOUT,    wxSTOCK_MENU, _("Show about dialog"))
+        STOCKITEM(wxID_COPY,     wxSTOCK_MENU, _("Copy selection"))
+        STOCKITEM(wxID_CUT,      wxSTOCK_MENU, _("Cut selection"))
+        STOCKITEM(wxID_DELETE,   wxSTOCK_MENU, _("Delete selection"))
+        STOCKITEM(wxID_REPLACE,  wxSTOCK_MENU, _("Replace selection"))
+        STOCKITEM(wxID_PASTE,    wxSTOCK_MENU, _("Paste selection"))
+        STOCKITEM(wxID_EXIT,     wxSTOCK_MENU, _("Quit this program"))
+        STOCKITEM(wxID_REDO,     wxSTOCK_MENU, _("Redo last action"))
+        STOCKITEM(wxID_UNDO,     wxSTOCK_MENU, _("Undo last action"))
+        STOCKITEM(wxID_CLOSE,    wxSTOCK_MENU, _("Close current document"))
+        STOCKITEM(wxID_SAVE,     wxSTOCK_MENU, _("Save current document"))
+        STOCKITEM(wxID_SAVEAS,   wxSTOCK_MENU, _("Save current document with a different filename"))
+
+        default:
+            // there's no stock help string for this ID / client
+            return wxEmptyString;
+    }
+
+    #undef STOCKITEM
+
+    return stockHelp;
+}
+
+#if wxUSE_ACCEL
+
+wxAcceleratorEntry wxGetStockAccelerator(wxWindowID id)
+{
+    wxAcceleratorEntry ret;
+
+    #define STOCKITEM(stockid, flags, keycode)      \
+        case stockid:                               \
+            ret.Set(flags, keycode, stockid);       \
+            break;
+
+    switch (id)
+    {
+        STOCKITEM(wxID_COPY,                wxACCEL_CTRL,'C')
+        STOCKITEM(wxID_CUT,                 wxACCEL_CTRL,'X')
+        STOCKITEM(wxID_FIND,                wxACCEL_CTRL,'F')
+        STOCKITEM(wxID_REPLACE,             wxACCEL_CTRL,'R')
+        STOCKITEM(wxID_HELP,                wxACCEL_CTRL,'H')
+        STOCKITEM(wxID_NEW,                 wxACCEL_CTRL,'N')
+        STOCKITEM(wxID_OPEN,                wxACCEL_CTRL,'O')
+        STOCKITEM(wxID_PASTE,               wxACCEL_CTRL,'V')
+        STOCKITEM(wxID_SAVE,                wxACCEL_CTRL,'S')
+
+        default:
+            // set the wxAcceleratorEntry to return into an invalid state:
+            // there's no stock accelerator for that.
+            ret.Set(0, 0, id);
+            break;
+    };
+
+    #undef STOCKITEM
+
+    // always use wxAcceleratorEntry::IsOk on returned value !
+    return ret;
+}
+
+#endif // wxUSE_ACCEL
 
 bool wxIsStockLabel(wxWindowID id, const wxString& label)
 {
@@ -191,89 +276,3 @@ bool wxIsStockLabel(wxWindowID id, const wxString& label)
 
     return false;
 }
-
-
-#ifdef __WXGTK20__
-
-#include <gtk/gtk.h>
-
-const char *wxGetStockGtkID(wxWindowID id)
-{
-    #define STOCKITEM(wx,gtk)      \
-        case wx:                   \
-            return gtk;
-
-    #define STOCKITEM_MISSING(wx)  \
-        case wx:                 \
-            return NULL;
-
-    #if GTK_CHECK_VERSION(2,4,0)
-        #define STOCKITEM_24(wx,gtk) STOCKITEM(wx,gtk)
-    #else
-        #define STOCKITEM_24(wx,gtk) STOCKITEM_MISSING(wx)
-    #endif
-
-    switch (id)
-    {
-        STOCKITEM(wxID_ADD,              GTK_STOCK_ADD)
-        STOCKITEM(wxID_APPLY,            GTK_STOCK_APPLY)
-        STOCKITEM(wxID_BOLD,             GTK_STOCK_BOLD)
-        STOCKITEM(wxID_CANCEL,           GTK_STOCK_CANCEL)
-        STOCKITEM(wxID_CLEAR,            GTK_STOCK_CLEAR)
-        STOCKITEM(wxID_CLOSE,            GTK_STOCK_CLOSE)
-        STOCKITEM(wxID_COPY,             GTK_STOCK_COPY)
-        STOCKITEM(wxID_CUT,              GTK_STOCK_CUT)
-        STOCKITEM(wxID_DELETE,           GTK_STOCK_DELETE)
-        STOCKITEM(wxID_FIND,             GTK_STOCK_FIND)
-        STOCKITEM(wxID_REPLACE,          GTK_STOCK_FIND_AND_REPLACE)
-        STOCKITEM(wxID_BACKWARD,         GTK_STOCK_GO_BACK)
-        STOCKITEM(wxID_DOWN,             GTK_STOCK_GO_DOWN)
-        STOCKITEM(wxID_FORWARD,          GTK_STOCK_GO_FORWARD)
-        STOCKITEM(wxID_UP,               GTK_STOCK_GO_UP)
-        STOCKITEM(wxID_HELP,             GTK_STOCK_HELP)
-        STOCKITEM(wxID_HOME,             GTK_STOCK_HOME)
-        STOCKITEM_24(wxID_INDENT,        GTK_STOCK_INDENT)
-        STOCKITEM(wxID_INDEX,            GTK_STOCK_INDEX)
-        STOCKITEM(wxID_ITALIC,           GTK_STOCK_ITALIC)
-        STOCKITEM(wxID_JUSTIFY_CENTER,   GTK_STOCK_JUSTIFY_CENTER)
-        STOCKITEM(wxID_JUSTIFY_FILL,     GTK_STOCK_JUSTIFY_FILL)
-        STOCKITEM(wxID_JUSTIFY_LEFT,     GTK_STOCK_JUSTIFY_LEFT)
-        STOCKITEM(wxID_JUSTIFY_RIGHT,    GTK_STOCK_JUSTIFY_RIGHT)
-        STOCKITEM(wxID_NEW,              GTK_STOCK_NEW)
-        STOCKITEM(wxID_NO,               GTK_STOCK_NO)
-        STOCKITEM(wxID_OK,               GTK_STOCK_OK)
-        STOCKITEM(wxID_OPEN,             GTK_STOCK_OPEN)
-        STOCKITEM(wxID_PASTE,            GTK_STOCK_PASTE)
-        STOCKITEM(wxID_PREFERENCES,      GTK_STOCK_PREFERENCES)
-        STOCKITEM(wxID_PRINT,            GTK_STOCK_PRINT)
-        STOCKITEM(wxID_PREVIEW,          GTK_STOCK_PRINT_PREVIEW)
-        STOCKITEM(wxID_PROPERTIES,       GTK_STOCK_PROPERTIES)
-        STOCKITEM(wxID_EXIT,             GTK_STOCK_QUIT)
-        STOCKITEM(wxID_REDO,             GTK_STOCK_REDO)
-        STOCKITEM(wxID_REFRESH,          GTK_STOCK_REFRESH)
-        STOCKITEM(wxID_REMOVE,           GTK_STOCK_REMOVE)
-        STOCKITEM(wxID_REVERT_TO_SAVED,  GTK_STOCK_REVERT_TO_SAVED)
-        STOCKITEM(wxID_SAVE,             GTK_STOCK_SAVE)
-        STOCKITEM(wxID_SAVEAS,           GTK_STOCK_SAVE_AS)
-        STOCKITEM(wxID_STOP,             GTK_STOCK_STOP)
-        STOCKITEM(wxID_UNDELETE,         GTK_STOCK_UNDELETE)
-        STOCKITEM(wxID_UNDERLINE,        GTK_STOCK_UNDERLINE)
-        STOCKITEM(wxID_UNDO,             GTK_STOCK_UNDO)
-        STOCKITEM_24(wxID_UNINDENT,      GTK_STOCK_UNINDENT)
-        STOCKITEM(wxID_YES,              GTK_STOCK_YES)
-        STOCKITEM(wxID_ZOOM_100,         GTK_STOCK_ZOOM_100)
-        STOCKITEM(wxID_ZOOM_FIT,         GTK_STOCK_ZOOM_FIT)
-        STOCKITEM(wxID_ZOOM_IN,          GTK_STOCK_ZOOM_IN)
-        STOCKITEM(wxID_ZOOM_OUT,         GTK_STOCK_ZOOM_OUT)
-
-        default:
-            wxFAIL_MSG( _T("invalid stock item ID") );
-            break;
-    };
-
-    #undef STOCKITEM
-
-    return NULL;
-}
-
-#endif // __WXGTK20__

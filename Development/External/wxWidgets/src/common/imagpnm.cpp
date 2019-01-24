@@ -1,32 +1,28 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        imagpnm.cpp
+// Name:        src/common/imagpnm.cpp
 // Purpose:     wxImage PNM handler
 // Author:      Sylvain Bougnoux
-// RCS-ID:      $Id: imagpnm.cpp,v 1.27 2005/09/11 11:18:36 VZ Exp $
+// RCS-ID:      $Id: imagpnm.cpp 46311 2007-06-03 22:14:32Z VZ $
 // Copyright:   (c) Sylvain Bougnoux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "imagpnm.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#  include "wx/setup.h"
+    #pragma hdrstop
 #endif
 
 #if wxUSE_IMAGE && wxUSE_PNM
 
 #include "wx/imagpnm.h"
-#include "wx/log.h"
-#include "wx/intl.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/intl.h"
+    #include "wx/log.h"
+#endif
+
 #include "wx/txtstrm.h"
 
 //-----------------------------------------------------------------------------
@@ -100,6 +96,8 @@ bool wxPNMHandler::LoadFile( wxImage *image, wxInputStream& stream, bool verbose
         for (wxUint32 i=0; i<size; ++i)
         {
             value=text_stream.Read32();
+            if ( maxval != 255 )
+                value = (255 * value)/maxval;
             *ptr++=(unsigned char)value; // R
             *ptr++=(unsigned char)value; // G
             *ptr++=(unsigned char)value; // B
@@ -118,6 +116,8 @@ bool wxPNMHandler::LoadFile( wxImage *image, wxInputStream& stream, bool verbose
             //this is very slow !!!
             //I wonder how we can make any better ?
             value=text_stream.Read32();
+            if ( maxval != 255 )
+                value = (255 * value)/maxval;
             *ptr++=(unsigned char)value;
 
             if ( !buf_stream )
@@ -134,6 +134,8 @@ bool wxPNMHandler::LoadFile( wxImage *image, wxInputStream& stream, bool verbose
         for (wxUint32 i=0; i<size; ++i)
         {
             buf_stream.Read(&value,1);
+            if ( maxval != 255 )
+                value = (255 * value)/maxval;
             *ptr++=value; // R
             *ptr++=value; // G
             *ptr++=value; // B
@@ -144,8 +146,16 @@ bool wxPNMHandler::LoadFile( wxImage *image, wxInputStream& stream, bool verbose
             }
         }
     }
-    if (c=='6') // Raw RGB
-      buf_stream.Read( ptr, 3*width*height );
+
+    if ( c=='6' ) // Raw RGB
+    {
+        buf_stream.Read(ptr, 3*width*height);
+        if ( maxval != 255 )
+        {
+            for ( unsigned i = 0; i < 3*width*height; i++ )
+                ptr[i] = (255 * ptr[i])/maxval;
+        }
+    }
 
     image->SetMask( false );
 
@@ -188,4 +198,4 @@ bool wxPNMHandler::DoCanRead( wxInputStream& stream )
 
 #endif // wxUSE_STREAMS
 
-#endif // wxUSE_PNM
+#endif // wxUSE_IMAGE && wxUSE_PNM

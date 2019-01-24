@@ -2,19 +2,19 @@
 #define PHYSX_LOADER_H
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to AGEIA PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
 #include "NxPhysicsSDK.h"
 #include "NxUtilLib.h"
 
-#ifdef _USRDLL
+#ifdef NX_PHYSX_LOADER_EXPORTS
     #if defined(WIN32)
 	#define NXPHYSXLOADERDLL_API extern "C" __declspec(dllexport)
-    #elif defined(LINUX) 
+    #elif defined(__linux__) 
       #if defined(NX_LINUX_USE_VISIBILITY)
         #define NXPHYSXLOADERDLL_API extern "C" __attribute__ ((visibility ("default")))
       #else
@@ -28,7 +28,7 @@
 #else
     #if defined(WIN32)
 	#define NXPHYSXLOADERDLL_API extern "C" __declspec(dllimport)
-    #elif defined(LINUX)
+    #elif defined(__linux__)
 	#define NXPHYSXLOADERDLL_API extern "C" 
     #else
 	#define NXPHYSXLOADERDLL_API 
@@ -59,6 +59,21 @@ NOTE: Calls after the first will not change the allocator used in the SDK, but t
 NXPHYSXLOADERDLL_API NxPhysicsSDK*	NX_CALL_CONV NxCreatePhysicsSDK(NxU32 sdkVersion, NxUserAllocator* allocator = NULL, NxUserOutputStream* outputStream = NULL, const NxPhysicsSDKDesc& desc = NxPhysicsSDKDesc(), NxSDKCreateError* errorCode=NULL);
 
 /**
+\brief Load different modules.
+
+Load different modules. May not be a class member to avoid name mangling.
+Pass in the name of the module.
+Pass in the GUID of the module (DLL).
+Pass the constant NX_PHYSICS_SDK_VERSION as the argument.
+
+\param moduleName the module's name that's being loaded. Could be "PhysXCore", "PhysXCooking", other APEX modules.
+\param appGUID GUID of the application, which is an array of 4 NxU32
+\param sdkVersion Version number we are expecting(should be NX_PHYSICS_SDK_VERSION)
+*/
+
+NXPHYSXLOADERDLL_API void* NX_CALL_CONV NxCreateModule(const char* moduleName, const char* appGUID, NxU32 sdkVersion);
+
+/**
 \brief Creates an instance of the physics SDK with an ID string for application identification.
 
 Creates an instance of this class. May not be a class member to avoid name mangling.
@@ -79,7 +94,7 @@ NOTE: Calls after the first will not change the allocator used in the SDK, but t
 \param errorCode Optional error code output parameter
 */
 NXPHYSXLOADERDLL_API NxPhysicsSDK* NX_CALL_CONV NxCreatePhysicsSDKWithID(NxU32 sdkVersion, 
-                                                             char *companyNameStr, 
+															 char *companyNameStr, 
                                                              char *appNameStr,
                                                              char *appVersionStr,
                                                              char *appUserDefinedStr,
@@ -159,10 +174,10 @@ NXPHYSXLOADERDLL_API NxCookingInterface * NX_CALL_CONV NxGetCookingLibWithID(NxU
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2006 AGEIA Technologies, Inc.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

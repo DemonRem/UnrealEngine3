@@ -4,14 +4,10 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     06/09/98
-// RCS-ID:      $Id: controlbar.cpp,v 1.26 2005/08/23 16:02:44 ABX Exp $
+// RCS-ID:      $Id: controlbar.cpp 50934 2007-12-28 07:16:38Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-    #pragma implementation "controlbar.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -370,26 +366,7 @@ bool wxFrameLayout::CanReparent()
 
 void wxFrameLayout::ReparentWindow( wxWindow* pChild, wxWindow* pNewParent )
 {
-#ifdef __WXMSW__
-#if 0
-
-    if ( pChild->GetParent() )
-    {
-        bool success = pChild->GetParent()->GetChildren().DeleteObject( pChild );
-
-        wxASSERT( success ); // DBG::
-    }
-
-    ::SetParent( (HWND)pChild->m_hWnd, (HWND)pNewParent->m_hWnd  );
-
-    pNewParent->GetChildren().Append( pChild );
-
-    pChild->SetParent( pNewParent );
-#endif
-    pChild->Reparent(pNewParent);
-
-    return;
-#elif defined(__WXGTK20__)
+#if defined(__WXMSW__) || defined(__WXGTK20__) || defined(__WXMAC__)
     pChild->Reparent(pNewParent);
 
     return;
@@ -404,7 +381,7 @@ void wxFrameLayout::ReparentWindow( wxWindow* pChild, wxWindow* pNewParent )
 #else
     wxUnusedVar(pChild);
     wxUnusedVar(pNewParent);
-    wxMessageBox( "Sorry, docking is not supported for ports other than MSW and wxGTK" );
+    wxMessageBox( _("Sorry, docking is not supported for ports other than wxMSW, wxMac and wxGTK") );
 #endif
 }
 
@@ -749,6 +726,10 @@ void wxFrameLayout::SetBarState( cbBarInfo* pBar, int newState, bool updateNow )
                     mFloatedFrames.Erase( pNode );
 
                     pFFrm->Show( false );
+
+                    // Workaround assert that causes a crash on the next time something tries to CaptureMouse
+                    if (pFFrm->HasCapture()) pFFrm->ReleaseMouse();
+
                     pFFrm->Destroy(); break;
                 }
 
@@ -910,9 +891,7 @@ void wxFrameLayout::DoSetBarState( cbBarInfo* pBar )
         pMiniFrm->Create( &GetParentFrame(), wxID_ANY, pBar->mName,
                           wxPoint( 50,50 ),
                           wxSize ( 0, 0  ),
-                          wxFRAME_FLOAT_ON_PARENT |
-                          wxNO_BORDER |
-                          wxFRAME_NO_TASKBAR
+                          wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT
                         );
 
         pMiniFrm->SetClient( pBar->mpBarWnd );

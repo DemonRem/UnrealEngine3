@@ -4,17 +4,13 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     9/11/98
-// RCS-ID:      $Id: hintanimpl.h,v 1.6 2004/06/07 16:02:14 ABX Exp $
+// RCS-ID:      $Id: hintanimpl.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __HINTANIMPL_G__
 #define __HINTANIMPL_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "hintanimpl.h"
-#endif
 
 #include "wx/fl/controlbar.h"
 

@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxFaceGraphNodeLink.h"
@@ -26,18 +26,18 @@ FxFaceGraphNodeLink::FxFaceGraphNodeLink()
 	, _inputName(FxName::NullName)
 	, _input(NULL)
 	, _linkFnName(FxName::NullName)
-	, _linkFn(NULL)
+	, _linkFnType(LFT_Invalid)
 {
 }
 
 FxFaceGraphNodeLink::FxFaceGraphNodeLink( const FxName& inputName, 
 	FxFaceGraphNode* inputNode, const FxName& linkFunctionName, 
-	const FxLinkFn* linkFunction, const FxLinkFnParameters& linkFunctionParams )
+	FxLinkFnType linkFunctionType, const FxLinkFnParameters& linkFunctionParams )
 	: FxDataContainer()
 	, _inputName(inputName)
 	, _input(inputNode)
 	, _linkFnName(linkFunctionName)
-	, _linkFn(linkFunction)
+	, _linkFnType(linkFunctionType)
 	, _linkFnParams(linkFunctionParams)
 {
 }
@@ -48,7 +48,7 @@ FxFaceGraphNodeLink::FxFaceGraphNodeLink( const FxFaceGraphNodeLink& other )
 	, _inputName(other._inputName)
 	, _input(other._input)
 	, _linkFnName(other._linkFnName)
-	, _linkFn(other._linkFn)
+	, _linkFnType(other._linkFnType)
 	, _linkFnParams(other._linkFnParams)
 {
 }
@@ -61,43 +61,13 @@ FxFaceGraphNodeLink& FxFaceGraphNodeLink::operator=( const FxFaceGraphNodeLink& 
 	_inputName    = other._inputName;
 	_input        = other._input;
 	_linkFnName   = other._linkFnName;
-	_linkFn       = other._linkFn;
+	_linkFnType   = other._linkFnType;
 	_linkFnParams = other._linkFnParams;
 	return *this;
 }
 
 FxFaceGraphNodeLink::~FxFaceGraphNodeLink()
 {
-}
-
-FxReal FxFaceGraphNodeLink::GetTransformedValue( void ) const
-{
-	FxAssert(_input);
-	FxAssert(_linkFn);
-	return _linkFn->Evaluate(_input->GetValue(), _linkFnParams);
-}
-
-FxReal FxFaceGraphNodeLink::GetCorrectiveValue( FxReal previousValue ) const
-{
-	FxAssert(_input);
-	if( previousValue == FX_REAL_MAX )
-	{
-		previousValue = 0.0f;
-	}
-	FxReal correction = _input->GetValue();
-	if( correction > 0.0f )
-	{
-		correction = correction / _input->GetMax();
-	}
-	else if( correction < 0.0f )
-	{
-		correction = (-correction) / _input->GetMin();
-	}
-	else
-	{
-		correction = 0.0f;
-	}
-	return FxMin(1.0f, previousValue + (correction * GetCorrectionFactor()));
 }
 
 void FxFaceGraphNodeLink::SetNode( FxFaceGraphNode* inputNode )
@@ -114,15 +84,10 @@ void FxFaceGraphNodeLink::SetNode( FxFaceGraphNode* inputNode )
 	}
 }
 
-FxName FxFaceGraphNodeLink::GetLinkFnName( void ) const 
-{ 
-	return _linkFnName; 
-}
-
 void FxFaceGraphNodeLink::SetLinkFnName( const FxName& linkFn )
 {
 	_linkFnName = linkFn;
-	_linkFn     = FxLinkFn::FindLinkFunction(_linkFnName);
+	_linkFnType = FxLinkFn::FindLinkFunctionType(_linkFnName);
 }
 
 void FxFaceGraphNodeLink::SetLinkFn( const FxLinkFn* linkFn )
@@ -130,18 +95,14 @@ void FxFaceGraphNodeLink::SetLinkFn( const FxLinkFn* linkFn )
 	FxAssert(linkFn);
 	if( linkFn )
 	{
-		_linkFn     = linkFn;
-		_linkFnName = _linkFn->GetName();
+		_linkFnType = linkFn->GetType();
+		_linkFnName = linkFn->GetName();
 	}
 	else
 	{
+		_linkFnType = LFT_Invalid;
 		_linkFnName = FxName::NullName;
 	}
-}
-
-FxLinkFnParameters FxFaceGraphNodeLink::GetLinkFnParams( void ) const 
-{ 
-	return _linkFnParams; 
 }
 
 void FxFaceGraphNodeLink::SetLinkFnParams( const FxLinkFnParameters& linkFnParams )
@@ -149,9 +110,18 @@ void FxFaceGraphNodeLink::SetLinkFnParams( const FxLinkFnParameters& linkFnParam
 	_linkFnParams = linkFnParams;
 }
 
+FxReal FxFaceGraphNodeLink::GetCorrectionFactor( void ) const
+{
+	if( _linkFnParams.parameters.Length() )
+	{
+		return _linkFnParams.parameters[0];
+	}
+	// This is FxCorrectiveLinkFn's default parameter 0 value.
+	return 1.0f;
+}
+
 void FxFaceGraphNodeLink::SetCorrectionFactor( FxReal newValue )
 {
-	FxAssert(_linkFn);
 	if( _linkFnParams.parameters.Length() < 1 )
 	{
 		_linkFnParams.parameters.PushBack(newValue);
@@ -166,15 +136,14 @@ void FxFaceGraphNodeLink::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxFaceGraphNodeLink);
-	arc << version;
+	arc.SerializeClassVersion("FxFaceGraphNodeLink");
 
 	arc << _inputName << _linkFnName << _linkFnParams;
-	
-	if( arc.IsLoading() )
+	_linkFnType = FxLinkFn::FindLinkFunctionType(_linkFnName);
+	FxAssert(LFT_Invalid != _linkFnType);
+	if( LFT_Null == _linkFnType )
 	{
-		_linkFn = FxLinkFn::FindLinkFunction(_linkFnName);
-		FxAssert(_linkFn);
+		_linkFnParams.parameters.Clear();
 	}
 }
 

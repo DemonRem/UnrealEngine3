@@ -4,7 +4,7 @@
 // Author:      Tommy Tian (tommy.tian@webex.com)
 // Modified by: David Elliott
 // Created:     10/22/2004
-// RCS-ID:      $Id: wx_cwcocoa.h,v 1.1 2004/11/02 06:22:10 DE Exp $
+// RCS-ID:      $Id: wx_cwcocoa.h 30235 2004-11-02 06:22:11Z DE $
 // Copyright:   (c) Tommy Tian
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

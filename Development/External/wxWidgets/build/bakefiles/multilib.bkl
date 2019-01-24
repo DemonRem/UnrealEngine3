@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- $Id: multilib.bkl,v 1.34 2005/03/27 01:51:20 DE Exp $ -->
+<!-- $Id: multilib.bkl 50120 2007-11-20 22:52:40Z VS $ -->
 
 <makefile>
 
@@ -100,17 +100,18 @@
     <!-- ================================================================= -->
 
     <dll id="mediadll" template="wx_dll"
-         cond="SHARED=='1' and USE_GUI=='1' and MONOLITHIC=='0'">
+         cond="SHARED=='1' and USE_MEDIA=='1' and USE_GUI=='1' and MONOLITHIC=='0'">
         <define>WXUSINGDLL</define>
         <define>WXMAKINGDLL_MEDIA</define>
         <sources>$(MEDIA_SRC)</sources>
         <msvc-headers>$(MEDIA_HDR)</msvc-headers>
         <library>coredll</library>
         <library>basedll</library>
+        <ldlibs>$(EXTRALIBS_MEDIA)</ldlibs>
     </dll>
 
     <lib id="medialib" template="wx_lib"
-         cond="SHARED=='0' and USE_GUI=='1' and MONOLITHIC=='0'">
+         cond="SHARED=='0' and USE_MEDIA=='1' and USE_GUI=='1' and MONOLITHIC=='0'">
         <sources>$(MEDIA_SRC)</sources>
         <msvc-headers>$(MEDIA_HDR)</msvc-headers>
     </lib>
@@ -262,5 +263,53 @@
     </lib>
 
     <set var="MSVC6PRJ_MERGED_TARGETS_MULTILIB" append="1">xrc=xrclib+xrcdll</set>
+
+    <!-- ================================================================ -->
+    <!--                            AUI                                   -->
+    <!-- ================================================================ -->
+
+    <dll id="auidll" template="wx_dll"
+         cond="SHARED=='1' and USE_AUI=='1' and MONOLITHIC=='0'">
+        <define>WXUSINGDLL</define>
+        <define>WXMAKINGDLL_AUI</define>
+        <sources>$(AUI_SRC)</sources>
+        <library>advdll</library>
+        <library>coredll</library>
+        <library>basedll</library>
+        <msvc-headers>$(AUI_HDR)</msvc-headers>
+    </dll>
+
+    <lib id="auilib" template="wx_lib"
+         cond="SHARED=='0' and USE_AUI=='1' and MONOLITHIC=='0'">
+        <sources>$(AUI_SRC)</sources>
+        <msvc-headers>$(AUI_HDR)</msvc-headers>
+    </lib>
+
+    <set var="MSVC6PRJ_MERGED_TARGETS_MULTILIB" append="1">aui=auilib+auidll</set>
+
+    <!-- ================================================================ -->
+    <!--                            RICHTEXT                              -->
+    <!-- ================================================================ -->
+
+    <dll id="richtextdll" template="wx_dll"
+         cond="SHARED=='1' and USE_RICHTEXT=='1' and MONOLITHIC=='0'">
+        <define>WXUSINGDLL</define>
+        <define>WXMAKINGDLL_RICHTEXT</define>
+        <sources>$(RICHTEXT_SRC)</sources>
+        <library>advdll</library>
+        <library>htmldll</library>
+        <library>xmldll</library>
+        <library>coredll</library>
+        <library>basedll</library>
+        <msvc-headers>$(RICHTEXT_HDR)</msvc-headers>
+    </dll>
+
+    <lib id="richtextlib" template="wx_lib"
+         cond="SHARED=='0' and USE_RICHTEXT=='1' and MONOLITHIC=='0'">
+        <sources>$(RICHTEXT_SRC)</sources>
+        <msvc-headers>$(RICHTEXT_HDR)</msvc-headers>
+    </lib>
+
+    <set var="MSVC6PRJ_MERGED_TARGETS_MULTILIB" append="1">richtext=richtextlib+richtextdll</set>
 
 </makefile>

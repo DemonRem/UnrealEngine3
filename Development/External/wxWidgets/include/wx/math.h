@@ -1,10 +1,10 @@
 /**
-* Name:        math.h
+* Name:        wx/math.h
 * Purpose:     Declarations/definitions of common math functions
 * Author:      John Labenski and others
 * Modified by:
 * Created:     02/02/03
-* RCS-ID:
+* RCS-ID:      $Id: math.h 44690 2007-03-08 04:31:24Z PC $
 * Copyright:   (c) John Labenski
 * Licence:     wxWindows licence
 */
@@ -13,10 +13,6 @@
 
 #ifndef _WX_MATH_H_
 #define _WX_MATH_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "math.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -79,6 +75,66 @@
 #else
     #define wxIsNaN(x) ((x) != (x))
 #endif
+
+#ifdef __cplusplus
+
+    #ifdef __INTELC__
+
+        inline bool wxIsSameDouble(double x, double y)
+        {
+            // VZ: this warning, given for operators==() and !=() is not wrong, as ==
+            //     shouldn't be used with doubles, but we get too many of them and
+            //     removing these operators is probably not a good idea
+            //
+            //     Maybe we should alway compare doubles up to some "epsilon" precision
+            #pragma warning(push)
+
+            // floating-point equality and inequality comparisons are unreliable
+            #pragma warning(disable: 1572)
+
+            return x == y;
+
+            #pragma warning(pop)
+        }
+
+    #else /* !__INTELC__ */
+
+        inline bool wxIsSameDouble(double x, double y) { return x == y; }
+
+    #endif /* __INTELC__/!__INTELC__ */
+
+    inline bool wxIsNullDouble(double x) { return wxIsSameDouble(x, 0.); }
+
+    inline int wxRound(double x)
+    {
+        #if defined(HAVE_ROUND)
+            return int(round(x));
+        #else
+            return (int)(x < 0 ? x - 0.5 : x + 0.5);
+        #endif
+    }
+#endif /* __cplusplus */
+
+
+#if defined(__WXMSW__) && !defined(__WXWINCE__)
+    #define wxMulDivInt32( a , b , c ) ::MulDiv( a , b , c )
+#elif defined( __WXMAC__ )
+    #define wxMulDivInt32( a , b , c ) ( (wxInt32) ( ( (wxInt64)(a) * (wxInt64)(b) ) / (wxInt64)(c) ) )
+#else
+    #define wxMulDivInt32( a , b , c ) ((wxInt32)((a)*(((wxDouble)b)/((wxDouble)c))))
+#endif
+
+#if wxUSE_APPLE_IEEE
+#ifdef __cplusplus
+    extern "C" {
+#endif
+    /* functions from common/extended.c */
+    extern wxFloat64 ConvertFromIeeeExtended(const wxInt8 *bytes);
+    extern void ConvertToIeeeExtended(wxFloat64 num, wxInt8 *bytes);
+#ifdef __cplusplus
+    }
+#endif
+#endif /* wxUSE_APPLE_IEEE */
 
 
 #endif /* _WX_MATH_H_ */

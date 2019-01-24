@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2004-09-19
-// RCS-ID:      $Id: sstream.h,v 1.7 2005/04/22 15:12:44 MW Exp $
+// RCS-ID:      $Id: sstream.h 45732 2007-05-01 13:52:19Z VZ $
 // Copyright:   (c) 2004 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,6 +65,10 @@ public:
         m_str = pString ? pString : &m_strInternal;
         m_pos = m_str->length() / sizeof(wxChar);
     }
+
+#if wxABI_VERSION >= 20804 && wxUSE_UNICODE
+    virtual ~wxStringOutputStream();
+#endif // wx 2.8.4+
 
     // get the string containing current output
     const wxString& GetString() const { return *m_str; }

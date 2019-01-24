@@ -4,15 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: drawn.cpp,v 1.18 2005/03/29 17:49:19 ABX Exp $
+// RCS-ID:      $Id: drawn.cpp 38810 2006-04-18 22:26:26Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation "drawn.h"
-#pragma implementation "drawnp.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -22,11 +17,11 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
 #if wxUSE_PROLOGIO
-#include <wx/deprecated/wxexpr.h>
+#include "wx/deprecated/wxexpr.h"
 #endif
 
 #include "wx/ogl/ogl.h"
@@ -366,12 +361,12 @@ void wxDrawnShape::DestroyClippingRect()
     m_metafiles[m_currentAngle].DestroyClippingRect();
 }
 
-void wxDrawnShape::SetDrawnPen(wxPen* pen, bool isOutline)
+void wxDrawnShape::SetDrawnPen(const wxPen* pen, bool isOutline)
 {
     m_metafiles[m_currentAngle].SetPen(pen, isOutline);
 }
 
-void wxDrawnShape::SetDrawnBrush(wxBrush* brush, bool isFill)
+void wxDrawnShape::SetDrawnBrush(const wxBrush* brush, bool isFill)
 {
     m_metafiles[m_currentAngle].SetBrush(brush, isFill);
 }
@@ -2422,9 +2417,9 @@ void wxPseudoMetaFile::DestroyClippingRect()
     m_ops.Append(theOp);
 }
 
-void wxPseudoMetaFile::SetPen(wxPen* pen, bool isOutline)
+void wxPseudoMetaFile::SetPen(const wxPen* pen, bool isOutline)
 {
-    m_gdiObjects.Append(pen);
+    m_gdiObjects.Append(wx_const_cast(wxPen*, pen));
     int n = m_gdiObjects.GetCount();
 
     wxOpSetGDI* theOp = new wxOpSetGDI(DRAWOP_SET_PEN, this, n - 1);
@@ -2437,9 +2432,9 @@ void wxPseudoMetaFile::SetPen(wxPen* pen, bool isOutline)
     }
 }
 
-void wxPseudoMetaFile::SetBrush(wxBrush* brush, bool isFill)
+void wxPseudoMetaFile::SetBrush(const wxBrush* brush, bool isFill)
 {
-    m_gdiObjects.Append(brush);
+    m_gdiObjects.Append(wx_const_cast(wxBrush*, brush));
     int n = m_gdiObjects.GetCount();
 
     wxOpSetGDI* theOp = new wxOpSetGDI(DRAWOP_SET_BRUSH, this, n - 1);

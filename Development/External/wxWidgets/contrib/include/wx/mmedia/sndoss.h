@@ -3,15 +3,11 @@
 // Purpose:
 // Date: 08/11/1999
 // Author: Guilhem Lavaux <lavaux@easynet.fr> (C) 1999
-// CVSID: $Id: sndoss.h,v 1.4 2004/11/22 20:05:25 JS Exp $
+// CVSID: $Id: sndoss.h 35650 2005-09-23 12:56:45Z MR $
 // License:    wxWindows license
 // --------------------------------------------------------------------------
 #ifndef _WX_SNDOSS_H
 #define _WX_SNDOSS_H
-
-#ifdef __GNUG__
-#pragma interface "sndoss.h"
-#endif
 
 #include "wx/defs.h"
 #include "wx/string.h"

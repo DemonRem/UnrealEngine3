@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXHEIGHTFIELDSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -31,9 +31,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField
 	*/
@@ -47,9 +48,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField NxHeightFieldDesc NxHeightFieldFormat
 	*/
@@ -63,9 +65,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField NxHeightFieldDesc
 	*/
@@ -79,9 +82,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField NxHeightFieldDesc
 	*/
@@ -96,9 +100,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField NxHeightFieldDesc
 	*/
@@ -114,9 +119,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField NxHeightFieldDesc
 	*/
@@ -130,9 +136,10 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshShapeFlag
 	*/
@@ -153,7 +160,11 @@ class NxHeightFieldShapeDesc : public NxShapeDesc
 	\return true if the current settings are valid
 	*/
 
-	NX_INLINE virtual	bool		isValid() const;
+	NX_INLINE virtual	bool		isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxHeightFieldShapeDesc::NxHeightFieldShapeDesc() : NxShapeDesc(NX_SHAPE_HEIGHTFIELD)	//constructor sets to default
@@ -173,35 +184,35 @@ NX_INLINE void NxHeightFieldShapeDesc::setToDefault()
 	meshFlags = 0;
 	}
 
-NX_INLINE bool NxHeightFieldShapeDesc::isValid() const
+NX_INLINE NxU32 NxHeightFieldShapeDesc::checkValid() const
 	{
-	if (!heightField) return false;
+	if (!heightField) return 1;
 
-	if (heightScale				 <= NX_EPS_REAL) return false;
-	if (NxMath::abs(rowScale)	 <= NX_EPS_REAL) return false;
-	if (NxMath::abs(columnScale) <= NX_EPS_REAL) return false;
+	if (heightScale				 <= NX_EPS_REAL) return 2;
+	if (NxMath::abs(rowScale)	 <= NX_EPS_REAL) return 3;
+	if (NxMath::abs(columnScale) <= NX_EPS_REAL) return 4;
 	
 	switch (heightField->getFormat())
 		{
 		case NX_HF_S16_TM:
-			if (0x7f & materialIndexHighBits) return false;
-			if ((0x7f & holeMaterial) != holeMaterial) return false;
+			if (0x7f & materialIndexHighBits) return 5;
+			if ((0x7f & holeMaterial) != holeMaterial) return 6;
 			break;
 		default:
-			return false;
+			return 7;
 		}	
 
 
-	if (meshFlags & (~NX_MESH_SMOOTH_SPHERE_COLLISIONS)) return false;
+	if (meshFlags & (~NX_MESH_SMOOTH_SPHERE_COLLISIONS)) return 8;
 
-	return NxShapeDesc::isValid();
+	return 9*NxShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

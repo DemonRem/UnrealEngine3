@@ -1,15 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        mgl/timer.cpp
+// Name:        src/generic/timer.cpp
 // Purpose:     wxTimer implementation
 // Author:      Vaclav Slavik
-// Id:          $Id: timer.cpp,v 1.18 2005/06/25 01:24:52 MW Exp $
+// Id:          $Id: timer.cpp 40943 2006-08-31 19:31:43Z ABX $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "timer.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -24,12 +20,14 @@
 //     is in wxEventLoop::Dispatch().
 // ----------------------------------------------------------------------------
 
-#include "wx/timer.h"
-
 #if wxUSE_TIMER
 
-#include "wx/log.h"
-#include "wx/module.h"
+#include "wx/timer.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/log.h"
+    #include "wx/module.h"
+#endif
 
 // ----------------------------------------------------------------------------
 // Time input function
@@ -194,7 +192,11 @@ void wxTimerScheduler::NotifyTimers()
                         QueueTimer(desc, now + desc->timer->GetInterval());
                 }
                 else
+                {
                     desc = m_timers;
+                    if (!desc)
+                        break;
+                }
             }
         }
     }

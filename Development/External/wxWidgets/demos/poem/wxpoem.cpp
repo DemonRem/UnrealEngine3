@@ -9,14 +9,10 @@
 //              beware, inelegant code!
 // Author:      Julian Smart
 // Created:     12/12/98
-// RCS-ID:      $Id: wxpoem.cpp,v 1.20 2005/03/24 20:01:37 ABX Exp $
+// RCS-ID:      $Id: wxpoem.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation "wxpoem.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"

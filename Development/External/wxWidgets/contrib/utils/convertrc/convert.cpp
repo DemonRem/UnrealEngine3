@@ -5,10 +5,6 @@
 3.  Converts portions of an .RC file into a wxr file
 */
 
-#ifdef __GNUG__
-#pragma implementation "convert.h"
-#endif
-
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -128,17 +124,16 @@ void wxMainFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
 void wxMainFrame::OnRc2Wxr(wxCommandEvent& WXUNUSED(event))
 {
 #if wxUSE_FILEDLG
-    wxFileDialog filed(this);
-    filed.SetWildcard(_T("*.rc"));
-    filed.SetStyle(wxOPEN);
+    wxFileDialog filed(this, wxEmptyString,
+                       wxEmptyString, wxEmptyString,
+                       _T("*.rc"), wxFD_OPEN);
 
     if (filed.ShowModal()!=wxID_OK)
         return;
 
-    wxFileDialog wxrfile(this,_T("Enter Desired WXR file name"));
-    wxrfile.SetWildcard(_T("*.wxr"));
-    wxrfile.SetStyle(wxOPEN);
-    wxrfile.SetFilename(_T("resource.wxr"));
+    wxFileDialog wxrfile(this, _T("Enter Desired WXR file name"),
+                         wxEmptyString, _T("resource.wxr"),
+                         _T("*.wxr"), wxFD_OPEN);
 
     if (wxrfile.ShowModal()!=wxID_OK)
         return;
@@ -157,10 +152,9 @@ void wxMainFrame::OnWXR2XML(wxCommandEvent& WXUNUSED(event))
         return;
 
 
-    wxFileDialog xmlfile(this,_T("Enter Desired XML file name"));
-    xmlfile.SetWildcard(_T("*.xml"));
-    xmlfile.SetStyle(wxOPEN);
-    xmlfile.SetFilename(_T("resource.xml"));
+    wxFileDialog xmlfile(this,_T("Enter Desired XML file name"),
+                         wxEmptyString, _T("resource.xml"),
+                         _T("*.xml"), wxFD_OPEN);
 
     if (xmlfile.ShowModal()!=wxID_OK)
         return;
@@ -178,10 +172,9 @@ void wxMainFrame::OnRC2XML(wxCommandEvent& WXUNUSED(event))
     if (f.ShowModal()!=wxID_OK)
         return;
 
-    wxFileDialog xmlfile(this,_T("Enter Desired XML file name"));
-    xmlfile.SetWildcard(_T("*.xml"));
-    xmlfile.SetStyle(wxOPEN);
-    xmlfile.SetFilename(_T("resource.xml"));
+    wxFileDialog xmlfile(this,_T("Enter Desired XML file name"),
+                         wxEmptyString, _T("resource.xml"),
+                         _T("*.xml"), wxFD_OPEN);
 
     if (xmlfile.ShowModal()!=wxID_OK)
         return;

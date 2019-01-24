@@ -6,7 +6,7 @@
 // Modified by:
 // Created:
 // Copyright:   (c) Julian Smart
-// RCS-ID:      $Id: wx.rc,v 1.43 2005/05/15 16:43:12 JS Exp $
+// RCS-ID:      $Id: wx.rc 43491 2006-11-18 16:46:59Z VZ $
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
 
@@ -19,6 +19,8 @@
 #if defined(_WIN32_WCE)
     #include "wx/msw/wince/wince.rc"
 #endif
+
+#include "wx/msw/rcdefs.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -61,6 +63,10 @@ WXCURSOR_CROSS          CURSOR  DISCARDABLE     "wx/msw/cross.cur"
 // Default Icons
 //
 
+// First wx icon in alphabetical order, so it will be used by Explorer if the
+// application doesn't have any icons of its own
+wxICON_AAA                      ICON "wx/msw/std.ico"
+
 //wxDEFAULT_FRAME               ICON "wx/msw/std.ico"
 //wxDEFAULT_MDIPARENTFRAME      ICON "wx/msw/mdi.ico"
 //wxDEFAULT_MDICHILDFRAME       ICON "wx/msw/child.ico"
@@ -91,9 +97,23 @@ wxBITMAP_STD_COLOURS    BITMAP "wx/msw/colours.bmp"
 // Manifest file for Windows XP
 //
 
-#if !defined(__WIN64__)
 #if !defined(wxUSE_NO_MANIFEST) || (wxUSE_NO_MANIFEST == 0)
-1 24 "wx/msw/wx.manifest"
-#endif
+#if !defined(WX_MSC_FULL_VER) || WX_MSC_FULL_VER < 140040130
+
+// see "about isolated applications" topic in MSDN
+#ifdef ISOLATION_AWARE_ENABLED
+#define wxMANIFEST_ID 2
+#else
+#define wxMANIFEST_ID 1
 #endif
 
+#if defined(WX_CPU_AMD64)
+wxMANIFEST_ID 24 "wx/msw/amd64.manifest"
+#elif defined(WX_CPU_IA64)
+wxMANIFEST_ID 24 "wx/msw/ia64.manifest"
+#elif defined(WX_CPU_X86)
+wxMANIFEST_ID 24 "wx/msw/wx.manifest"
+#endif
+
+#endif // !defined(WX_MSC_FULL_VER) || WX_MSC_FULL_VER < 140040130
+#endif // !defined(wxUSE_NO_MANIFEST) || (wxUSE_NO_MANIFEST == 0)

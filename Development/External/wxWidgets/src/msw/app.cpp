@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        app.cpp
+// Name:        src/msw/app.cpp
 // Purpose:     wxApp
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: app.cpp,v 1.238 2005/08/04 21:01:29 VZ Exp $
+// RCS-ID:      $Id: app.cpp 53607 2008-05-16 15:21:40Z SN $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "app.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,6 +25,8 @@
 #endif
 
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcctl.h"
+    #include "wx/dynarray.h"
     #include "wx/frame.h"
     #include "wx/app.h"
     #include "wx/utils.h"
@@ -42,16 +40,15 @@
     #include "wx/dialog.h"
     #include "wx/msgdlg.h"
     #include "wx/intl.h"
-    #include "wx/dynarray.h"
     #include "wx/wxchar.h"
-    #include "wx/icon.h"
     #include "wx/log.h"
+    #include "wx/module.h"
 #endif
 
 #include "wx/apptrait.h"
 #include "wx/filename.h"
-#include "wx/module.h"
 #include "wx/dynlib.h"
+#include "wx/evtloop.h"
 
 #include "wx/msw/private.h"
 #include "wx/msw/ole/oleutils.h"
@@ -79,8 +76,6 @@
 
 #include <string.h>
 #include <ctype.h>
-
-#include "wx/msw/wrapcctl.h"
 
 // For MB_TASKMODAL
 #ifdef __WXWINCE__
@@ -112,8 +107,6 @@
 // ---------------------------------------------------------------------------
 // global variables
 // ---------------------------------------------------------------------------
-
-extern wxList WXDLLEXPORT wxPendingDelete;
 
 #if !defined(__WXMICROWIN__) && !defined(__WXWINCE__)
 extern void wxSetKeyboardHook(bool doIt);
@@ -222,23 +215,37 @@ bool wxGUIAppTraits::DoMessageFromThreadWait()
 {
     // we should return false only if the app should exit, i.e. only if
     // Dispatch() determines that the main event loop should terminate
-    return !wxTheApp || wxTheApp->Dispatch();
+    wxEventLoop *evtLoop = wxEventLoop::GetActive();
+    if ( !evtLoop || !evtLoop->Pending() )
+    {
+        // no events means no quit event
+        return true;
+    }
+
+    return evtLoop->Dispatch();
 }
 
-wxToolkitInfo& wxGUIAppTraits::GetToolkitInfo()
+wxPortId wxGUIAppTraits::GetToolkitVersion(int *majVer, int *minVer) const
 {
-    static wxToolkitInfo info;
-    wxToolkitInfo& baseInfo = wxAppTraits::GetToolkitInfo();
-    info.versionMajor = baseInfo.versionMajor;
-    info.versionMinor = baseInfo.versionMinor;
-    info.os = baseInfo.os;
-    info.shortName = _T("msw");
-    info.name = _T("wxMSW");
-#ifdef __WXUNIVERSAL__
-    info.shortName << _T("univ");
-    info.name << _T("/wxUniversal");
+    OSVERSIONINFO info;
+    wxZeroMemory(info);
+
+    // on Windows, the toolkit version is the same of the OS version
+    // as Windows integrates the OS kernel with the GUI toolkit.
+    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if ( ::GetVersionEx(&info) )
+    {
+        if ( majVer )
+            *majVer = info.dwMajorVersion;
+        if ( minVer )
+            *minVer = info.dwMinorVersion;
+    }
+
+#if defined(__WXHANDHELD__) || defined(__WXWINCE__)
+    return wxPORT_WINCE;
+#else
+    return wxPORT_MSW;
 #endif
-    return info;
 }
 
 // ===========================================================================
@@ -296,12 +303,18 @@ bool wxApp::Initialize(int& argc, wxChar **argv)
     }
 #endif
 
-#if defined(__WIN95__) && !defined(__WXMICROWIN__)
+#if !defined(__WXMICROWIN__)
     InitCommonControls();
-#endif // __WIN95__
+#endif // !defined(__WXMICROWIN__)
 
 #if defined(__SMARTPHONE__) || defined(__POCKETPC__)
     SHInitExtraControls();
+#endif
+
+#ifndef __WXWINCE__
+    // Don't show a message box if a function such as SHGetFileInfo
+    // fails to find a device.
+    SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
 #endif
 
     wxOleInitialize();
@@ -483,7 +496,7 @@ void wxApp::CleanUp()
 
     delete wxWinHandleHash;
     wxWinHandleHash = NULL;
-    
+
 #ifdef __WXWINCE__
     free( wxCanvasClassName );
     free( wxCanvasClassNameNR );
@@ -501,17 +514,6 @@ wxApp::wxApp()
 
 wxApp::~wxApp()
 {
-    // our cmd line arguments are allocated inside wxEntry(HINSTANCE), they
-    // don't come from main(), so we have to free them
-
-    while ( argc )
-    {
-        // m_argv elements were allocated by wxStrdup()
-        free(argv[--argc]);
-    }
-
-    // but m_argv itself -- using new[]
-    delete [] argv;
 }
 
 // ----------------------------------------------------------------------------
@@ -537,13 +539,28 @@ void wxApp::WakeUpIdle()
     // start up again.  Doing it this way ensures that the idle handler
     // wakes up in the right thread (see also wxWakeUpMainThread() which does
     // the same for the main app thread only)
-    wxWindow *topWindow = wxTheApp->GetTopWindow();
+    wxWindow * const topWindow = wxTheApp->GetTopWindow();
     if ( topWindow )
     {
-        if ( !::PostMessage(GetHwndOf(topWindow), WM_NULL, 0, 0) )
+        HWND hwndTop = GetHwndOf(topWindow);
+
+        // Do not post WM_NULL if there's already a pending WM_NULL to avoid
+        // overflowing the message queue.
+        //
+        // Notice that due to a limitation of PeekMessage() API (which handles
+        // 0,0 range specially), we have to check the range from 0-1 instead.
+        // This still makes it possible to overflow the queue with WM_NULLs by
+        // interspersing the calles to WakeUpIdle() with windows creation but
+        // it should be rather hard to do it accidentally.
+        MSG msg;
+        if ( !::PeekMessage(&msg, hwndTop, 0, 1, PM_NOREMOVE) ||
+              ::PeekMessage(&msg, hwndTop, 1, 1, PM_NOREMOVE) )
         {
-            // should never happen
-            wxLogLastError(wxT("PostMessage(WM_NULL)"));
+            if ( !::PostMessage(hwndTop, WM_NULL, 0, 0) )
+            {
+                // should never happen
+                wxLogLastError(wxT("PostMessage(WM_NULL)"));
+            }
         }
     }
 }
@@ -593,6 +610,7 @@ int wxApp::GetComCtl32Version()
         // we're prepared to handle the errors
         wxLogNull noLog;
 
+#if wxUSE_DYNLIB_CLASS
         // do we have it?
         wxDynamicLibrary dllComCtl32(_T("comctl32.dll"), wxDL_VERBATIM);
 
@@ -650,6 +668,7 @@ int wxApp::GetComCtl32Version()
                 }
             }
         }
+#endif
     }
 
     return s_verComCtl32;
@@ -683,6 +702,7 @@ bool wxApp::Yield(bool onlyIfNeeded)
 
     // we don't want to process WM_QUIT from here - it should be processed in
     // the main event loop in order to stop it
+    wxEventLoopGuarantor dummyLoopIfNeeded;
     MSG msg;
     while ( PeekMessage(&msg, (HWND)0, 0, 0, PM_NOREMOVE) &&
             msg.message != WM_QUIT )
@@ -727,7 +747,7 @@ terminate the program,\r\n\
 \"Retry\" to exit the program normally and \"Ignore\" to try to continue."),
                 _T("Unhandled exception"),
                 MB_ABORTRETRYIGNORE |
-                MB_ICONERROR| 
+                MB_ICONERROR|
                 MB_TASKMODAL
               )
            )
@@ -755,8 +775,6 @@ terminate the program,\r\n\
 
 #if WXWIN_COMPATIBILITY_2_4
 
-#include "wx/evtloop.h"
-
 void wxApp::DoMessage(WXMSG *pMsg)
 {
     wxEventLoop *evtLoop = wxEventLoop::GetActive();
@@ -777,4 +795,3 @@ bool wxApp::ProcessMessage(WXMSG* pMsg)
 }
 
 #endif // WXWIN_COMPATIBILITY_2_4
-

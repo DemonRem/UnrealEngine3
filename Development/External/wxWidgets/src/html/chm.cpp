@@ -1,16 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        chm.cpp
+// Name:        src/html/chm.cpp
 // Purpose:     CHM (Help) support for wxHTML
 // Author:      Markus Sinner
 // Copyright:   (c) 2003 Herd Software Development
-// CVS-ID:      $Id: chm.cpp,v 1.9 2005/05/31 09:20:12 JS Exp $
+// CVS-ID:      $Id: chm.cpp 42643 2006-10-29 18:44:41Z VS $
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_LIBMSPACK
@@ -18,11 +18,11 @@
 #include <mspack.h>
 
 #ifndef WXPRECOMP
-#include "wx/intl.h"
-#include "wx/log.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/module.h"
 #endif
 
-#include "wx/module.h"
 #include "wx/filesys.h"
 #include "wx/mstream.h"
 #include "wx/wfstream.h"
@@ -364,7 +364,7 @@ public:
     wxChmInputStream(const wxString& archive,
                      const wxString& file, bool simulate = false);
     /// Destructor
-    ~wxChmInputStream();
+    virtual ~wxChmInputStream();
 
     /// Return the size of the accessed file in archive
     virtual size_t GetSize() const { return m_size; }
@@ -637,7 +637,7 @@ wxChmInputStream::CreateHHPStream()
                         wxUint32 lcid = wxUINT32_SWAP_ON_BE( dummy ) ;
                         wxString msg ;
                         msg.Printf(_T("Language=0x%X\r\n"),lcid) ;
-                        out->Write(msg.c_str() , msg.Length() ) ;
+                        out->Write(msg.c_str() , msg.length() ) ;
                     }
                     break ;
                 default:
@@ -673,7 +673,7 @@ wxChmInputStream::CreateHHPStream()
             tmp = "Index File=*.hhk\r\n";
             out->Write((const void *) tmp, strlen(tmp));
         }
-        
+
         // Now copy the Data from the memory
         out->SeekO(0, wxFromEnd);
         m_size = out->TellO();
@@ -696,7 +696,7 @@ wxChmInputStream::CreateHHPStream()
 bool wxChmInputStream::CreateFileStream(const wxString& pattern)
 {
     wxFileInputStream * fin;
-    wxString tmpfile = wxFileName::CreateTempFileName(_T("chmstrm"), NULL);
+    wxString tmpfile = wxFileName::CreateTempFileName(_T("chmstrm"));
 
     if ( tmpfile.empty() )
     {
@@ -743,7 +743,7 @@ class wxChmFSHandler : public wxFileSystemHandler
 public:
     /// Constructor and Destructor
     wxChmFSHandler();
-    ~wxChmFSHandler();
+    virtual ~wxChmFSHandler();
 
     /// Is able to open location?
     virtual bool CanOpen(const wxString& location);

@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 // Adding new link function types is easy:
@@ -12,6 +12,7 @@
 // [2] Increment FX_NUM_LINK_FUNCTIONS in FxLinkFn.cpp.
 // [3] Initialize the new link function in FxLinkFn::Startup() in FxLinkFn.cpp
 //     using the built-in functions as guides.
+// [4] Add a new enum to FxLinkFnType and update FxLinkFnEval().
 
 #ifndef FxLinkFn_H__
 #define FxLinkFn_H__
@@ -21,7 +22,8 @@
 #include "FxArchive.h"
 #include "FxArray.h"
 #include "FxString.h"
-#include "FxAnimCurve.h"
+#include "FxMath.h"
+#include "FxUtil.h"
 
 namespace OC3Ent
 {
@@ -31,13 +33,10 @@ namespace Face
 
 /// A name and default value for a FxLinkFnParameter.
 /// \ingroup faceGraph
-class FxLinkFnParameterDesc
+struct FxLinkFnParameterDesc
 {
-public:
 	FxLinkFnParameterDesc();
 	FxLinkFnParameterDesc( const FxChar* name, FxReal defaultValue );
-	FxLinkFnParameterDesc( const FxLinkFnParameterDesc& other );
-	~FxLinkFnParameterDesc();
 
 	FxName parameterName;
 	FxReal parameterDefaultValue;
@@ -72,21 +71,34 @@ private:
 
 /// The parameters to a FxLinkFn.
 /// \ingroup faceGraph
-class FxLinkFnParameters
+struct FxLinkFnParameters
 {
-public:
-	FxLinkFnParameters();
-	FxLinkFnParameters( const FxLinkFnParameters& other );
-	FxLinkFnParameters& operator=( const FxLinkFnParameters& other );
-	~FxLinkFnParameters();
-
 	/// The parameter array.
 	FxArray<FxReal> parameters;
-	/// The custom curve.
-	FxAnimCurve* pCustomCurve;
-
+	
 	/// Serializes the parameters to an archive.
 	friend FxArchive& operator<<( FxArchive& arc, FxLinkFnParameters& key );
+};
+
+/// The link function types.
+enum FxLinkFnType
+{
+	LFT_Invalid = -1,		///< No link function.
+	LFT_Null,				///< Null or deprecated.
+	LFT_Linear,				///< Linear.
+	LFT_Quadratic,			///< Quadratic.
+	LFT_Cubic,				///< Cubic.
+	LFT_Sqrt,				///< Square root.
+	LFT_Negate,				///< Negate.
+	LFT_Inverse,			///< Inverse.
+	LFT_OneClamp,			///< One clamp.
+	LFT_Constant,			///< Constant.
+	LFT_Corrective,			///< Corrective.
+	LFT_ClampedLinear,		///< Clamped linear.
+
+	LFT_First = LFT_Null,
+	LFT_Last  = LFT_ClampedLinear,
+	LFT_NumLinkFnTypes = LFT_Last - LFT_First + 1
 };
 
 /// The function to modify a value as it flows through a FxFaceGraphNodeLink.
@@ -112,10 +124,9 @@ public:
 	/// \note For internal use only.  Never call this directly.
 	static void FX_CALL Shutdown( void );
 
-	/// Evaluates the link function at x using the parameters and returns the
-	/// result.
-	virtual FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const = 0;
-	
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const = 0;
+
 	/// Returns the total number of link functions.
 	static FxSize FX_CALL GetNumLinkFunctions( void );
 	/// Returns the link function at index.
@@ -124,12 +135,20 @@ public:
 	/// \param name The name of the link function to find.
 	/// \return A pointer to the link function, or \p NULL if it was not found.
 	static const FxLinkFn* FX_CALL FindLinkFunction( const FxName& name );
+	/// Find a specified link function by type.
+	/// \param lfType The type of the link function to find.
+	/// \return A pointer to the link function, or \p NULL if it was not found.
+	static const FxLinkFn* FX_CALL FindLinkFunctionByType( FxLinkFnType lfType );
+	/// Finds the specified link function's type enum.
+	/// \param name The name of the link function to find the enum for.
+	/// \return An FxLinkFnType value, or LFT_Invalid if it was not found.
+	static FxLinkFnType FX_CALL FindLinkFunctionType( const FxName& name );
 	/// Adds the specified link function.
 	/// \param pLinkFn A pointer to the link function to add.
 	static void FX_CALL AddLinkFunction( FxLinkFn* pLinkFn );
 
 	/// Checks if the link function is the corrective link function.
-	FX_INLINE const FxBool IsCorrective() const { return _isCorrective; }
+	FX_INLINE FxBool IsCorrective() const { return _isCorrective; }
 
 protected:
 	/// Whether or not the link function is the corrective link function.
@@ -162,11 +181,8 @@ public:
 	/// Destructor.
 	virtual ~FxNullLinkFn();
 
-	/// Always returns 0.0f.
-	FX_INLINE FxReal Evaluate( FxReal FxUnused(x), const FxLinkFnParameters& FxUnused(params) ) const
-	{
-		return 0.0f;
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Null; }
 };
 
 //------------------------------------------------------------------------------
@@ -188,24 +204,8 @@ public:
 	/// Destructor.
 	virtual ~FxLinearLinkFn();
 
-	/// Evaluates the linear function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const
-	{
-		if( params.parameters.Length() == 2 )
-		{
-			return x * params.parameters[0] + params.parameters[1];
-		}
-		else if( params.parameters.Length() == 1 )
-		{
-			return x * params.parameters[0];
-		}
-		else if( params.parameters.IsEmpty() )
-		{
-			return x;
-		}
-		return x;
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Linear; }
 };
 
 //------------------------------------------------------------------------------
@@ -227,16 +227,8 @@ public:
 	/// Destructor.
 	virtual ~FxQuadraticLinkFn();
 
-	/// Evaluates the quadratic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const
-	{
-		if( params.parameters.Length() == 1 )
-		{
-			return (x<0.0f ? -1.0f : 1.0f)*(x*x) * params.parameters[0];
-		}
-		return (x<0.0f ? -1.0f : 1.0f)*(x*x);
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Quadratic; }
 };
 
 //------------------------------------------------------------------------------
@@ -258,16 +250,8 @@ public:
 	/// Destructor.
 	virtual ~FxCubicLinkFn();
 
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const
-	{
-		if( params.parameters.Length() == 1 )
-		{
-			return (x * x * x) * params.parameters[0];
-		}
-		return (x * x * x);
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Cubic; }
 };
 
 //------------------------------------------------------------------------------
@@ -289,17 +273,8 @@ public:
 	/// Destructor.
 	virtual ~FxSqrtLinkFn();
 
-	/// Evaluates the sqrt function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const
-	{
-		if( x == 0.0f ) return 0.0f;
-		if( params.parameters.Length() == 1 )
-		{
-			return (x<0.0f ? -1.0f : 1.0f)*FxSqrt(FxAbs(x)) * params.parameters[0];
-		}
-		return (x<0.0f ? -1.0f : 1.0f)*FxSqrt(FxAbs(x));
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Sqrt; }
 };
 
 //------------------------------------------------------------------------------
@@ -321,12 +296,8 @@ public:
 	/// Destructor.
 	virtual ~FxNegateLinkFn();
 
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& FxUnused(params) ) const
-	{
-		return -x;
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Negate; }
 };
 
 //------------------------------------------------------------------------------
@@ -348,16 +319,8 @@ public:
 	/// Destructor.
 	virtual ~FxInverseLinkFn();
 
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& FxUnused(params) ) const
-	{
-		if( x != 0.0f )
-		{
-			return 1.0f / x;
-		}
-		return 0.0f;
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Inverse; }
 };
 
 //------------------------------------------------------------------------------
@@ -382,12 +345,8 @@ public:
 	/// Destructor.
 	virtual ~FxOneClampLinkFn();
 
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& FxUnused(params) ) const
-	{
-		return (x <= 1.0f) ? (1.0f) : (1.0f / x);
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_OneClamp; }
 };
 
 //------------------------------------------------------------------------------
@@ -409,16 +368,8 @@ public:
 	/// Destructor.
 	virtual ~FxConstantLinkFn();
 
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal FxUnused(x), const FxLinkFnParameters& params ) const
-	{
-		if( params.parameters.Length() > 0 )
-		{
-			return params.parameters[0];
-		}
-		return 1.0f;
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Constant; }
 };
 
 //------------------------------------------------------------------------------
@@ -440,49 +391,8 @@ public:
 	/// Destructor.
 	virtual ~FxCorrectiveLinkFn();
 
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal FxUnused(x), const FxLinkFnParameters& params ) const
-	{
-		// This does nothing on purpose.  We need more information than we have at
-		// this level to compute the corrective effect.
-		if( params.parameters.Length() > 0 )
-		{
-			return params.parameters[0];
-		}
-		return 0.0f;
-	}
-};
-
-//------------------------------------------------------------------------------
-// Custom.
-//------------------------------------------------------------------------------
-/// The custom link function.
-/// \ingroup faceGraph
-class FxCustomLinkFn : public FxLinkFn
-{
-public:
-	/// Declare the class.
-	FX_DECLARE_CLASS_NO_DYNCREATE_NO_SERIALIZE(FxCustomLinkFn, FxLinkFn)
-	/// Disable copy construction and assignment.
-	FX_NO_COPY_OR_ASSIGNMENT(FxCustomLinkFn)
-	/// Declare it as a link function.
-	FX_DECLARE_LINKFN()
-	/// Constructor.
-	FxCustomLinkFn();
-	/// Destructor.
-	virtual ~FxCustomLinkFn();
-
-	/// Evaluates the cubic function at x using the parameters and returns the
-	/// result.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const
-	{
-		if( params.pCustomCurve )
-		{
-			return params.pCustomCurve->EvaluateAt(x);
-		}
-		return 0.0f;
-	}
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_Corrective; }
 };
 
 //------------------------------------------------------------------------------
@@ -504,44 +414,153 @@ public:
 	/// Destructor.
 	virtual ~FxClampedLinearLinkFn();
 
-	#define FX_SLOPE params.parameters[0]
-	#define FX_CLAMP_X params.parameters[1]
-	#define FX_CLAMP_Y params.parameters[2]
-	#define FX_CLAMP_DIR params.parameters[3]
-	/// Evaluates the clamped linear function for x.
-	FX_INLINE FxReal Evaluate( FxReal x, const FxLinkFnParameters& params ) const
-	{
-		if( params.parameters.Length() == 4 )
-		{
-			if( FX_CLAMP_DIR > 0.0f && x > FX_CLAMP_X ||
-				FX_CLAMP_DIR <= 0.0f && x < FX_CLAMP_X )
-			{
-				return x * FX_SLOPE + (-1.0f * FX_SLOPE * FX_CLAMP_X + FX_CLAMP_Y);
-			}
-			return FX_CLAMP_Y;
-		}
-		else if( params.parameters.Length() == 1 )
-		{
-			if( x > 0.0f )
-			{
-				return x * FX_SLOPE;
-			}
-			return 0.0f;
-		}
-		return x;
-	}
-	#undef FX_SLOPE
-	#undef FX_CLAMP_X
-	#undef FX_CLAMP_Y
-	#undef FX_CLAMP_DIR
+	/// Returns the FxLinkFnType associated with the link function.
+	virtual FxLinkFnType GetType( void ) const { return LFT_ClampedLinear; }
 };
 
 //------------------------------------------------------------------------------
 // Add new link function types here.
 //------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+// End licensee defined link function types.
+//------------------------------------------------------------------------------
+
+#define FX_SLOPE     params.parameters[0]
+#define FX_CLAMP_X   params.parameters[1]
+#define FX_CLAMP_Y   params.parameters[2]
+#define FX_CLAMP_DIR params.parameters[3]
+FX_INLINE FxReal FxLinkFnEval( FxLinkFnType lfType, FxReal x, const FxLinkFnParameters& params )
+{
+	switch( lfType )
+	{
+	case LFT_Linear:
+		{
+			if( 2 == params.parameters.Length() )
+			{
+				return (x * params.parameters[0] + params.parameters[1]);
+			}
+			else if( 1 == params.parameters.Length() )
+			{
+				return (x * params.parameters[0]);
+			}
+			else if( params.parameters.IsEmpty() )
+			{
+				return x;
+			}
+			return x;
+		}
+		break;
+	case LFT_Corrective:
+		{
+			// This does nothing on purpose.  We need more information than we have at
+			// this level to compute the corrective effect.
+			if( params.parameters.Length() > 0 )
+			{
+				return params.parameters[0];
+			}
+			return 0.0f;
+		}
+		break;
+	case LFT_Negate:
+		{
+			return -x;
+		}
+		break;
+	case LFT_Inverse:
+		{
+			if( !FxRealEquality(x, 0.0f) )
+			{
+				return (1.0f / x);
+			}
+			return 0.0f;
+		}
+		break;
+	case LFT_ClampedLinear:
+		{
+			if( 4 == params.parameters.Length() )
+			{
+				if( FX_CLAMP_DIR > 0.0f && x > FX_CLAMP_X ||
+					FX_CLAMP_DIR <= 0.0f && x < FX_CLAMP_X )
+				{
+					return x * FX_SLOPE + (-1.0f * FX_SLOPE * FX_CLAMP_X + FX_CLAMP_Y);
+				}
+				return FX_CLAMP_Y;
+			}
+			else if( 1 == params.parameters.Length() )
+			{
+				if( x > 0.0f )
+				{
+					return x * FX_SLOPE;
+				}
+				return 0.0f;
+			}
+			return x;
+		}
+		break;
+	case LFT_OneClamp:
+		{
+			return ((x <= 1.0f) ? 1.0f : (1.0f / x));
+		}
+		break;
+	case LFT_Constant:
+		{
+			if( params.parameters.Length() > 0 )
+			{
+				return params.parameters[0];
+			}
+			return 1.0f;
+		}
+		break;
+	case LFT_Cubic:
+		{
+			if( 1 == params.parameters.Length() )
+			{
+				return ((x * x * x) * params.parameters[0]);
+			}
+			return (x * x * x);
+		}
+		break;
+	case LFT_Quadratic:
+		{
+			if( 1 == params.parameters.Length() )
+			{
+				return (((x < 0.0f) ? -1.0f : 1.0f) * (x * x) * params.parameters[0]);
+			}
+			return (((x < 0.0f) ? -1.0f : 1.0f) * (x * x));
+		}
+		break;
+	case LFT_Sqrt:
+		{
+			if( 0.0f == x ) return 0.0f;
+			if( 1 == params.parameters.Length() )
+			{
+				return (((x < 0.0f) ? -1.0f : 1.0f) * FxSqrt(FxAbs(x)) * params.parameters[0]);
+			}
+			return (((x < 0.0f) ? -1.0f : 1.0f) * FxSqrt(FxAbs(x)));
+		}
+		break;
+	case LFT_Null:
+		{
+			return 0.0f;
+		}
+		break;
+	case LFT_Invalid:
+	default:
+		{
+			FxAssert(!"Unknown FxLinkFn type in FxLinkFnEval()!");
+			return 0.0f;
+		}
+		break;
+	}
+}
+#undef FX_SLOPE
+#undef FX_CLAMP_X
+#undef FX_CLAMP_Y
+#undef FX_CLAMP_DIR
+
 } // namespace Face
 
 } // namespace OC3Ent
 
-#endif
+#endif // FxLinkFn_H__

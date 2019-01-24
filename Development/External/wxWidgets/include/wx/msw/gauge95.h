@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: gauge95.h,v 1.18 2005/01/21 18:11:12 ABX Exp $
+// RCS-ID:      $Id: gauge95.h 43881 2006-12-09 19:48:21Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,13 +12,9 @@
 #ifndef _GAUGE95_H_
 #define _GAUGE95_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "gauge95.h"
-#endif
-
 #if wxUSE_GAUGE
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxGaugeNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxGaugeNameStr[];
 
 // Group box
 class WXDLLEXPORT wxGauge95 : public wxGaugeBase
@@ -55,10 +51,15 @@ public:
     virtual bool SetForegroundColour(const wxColour& col);
     virtual bool SetBackgroundColour(const wxColour& col);
 
-protected:
-    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
-    virtual wxSize DoGetBestSize() const;
 
+    void SetIndeterminateMode();
+    void SetDeterminateMode();
+    void Pulse();
+
+    WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
+
+protected:
+    virtual wxSize DoGetBestSize() const;
 
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxGauge95)
 };

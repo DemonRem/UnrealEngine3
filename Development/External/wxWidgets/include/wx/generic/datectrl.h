@@ -4,7 +4,7 @@
 // Author:      Andreas Pflug
 // Modified by:
 // Created:     2005-01-19
-// RCS-ID:      $Id: datectrl.h,v 1.11 2005/04/16 11:07:28 JS Exp $
+// RCS-ID:      $Id: datectrl.h 42539 2006-10-27 18:02:21Z RR $
 // Copyright:   (c) 2005 Andreas Pflug <pgadmin@pse-consulting.de>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,21 +12,18 @@
 #ifndef _WX_GENERIC_DATECTRL_H_
 #define _WX_GENERIC_DATECTRL_H_
 
-class WXDLLIMPEXP_ADV wxButton;
 class WXDLLIMPEXP_ADV wxCalendarDateAttr;
 class WXDLLIMPEXP_ADV wxCalendarCtrl;
 class WXDLLIMPEXP_ADV wxCalendarEvent;
-class WXDLLIMPEXP_ADV wxDatePopup;
-class WXDLLIMPEXP_ADV wxTextCtrl;
-
-class WXDLLIMPEXP_ADV wxDatePopupInternal;
+class WXDLLIMPEXP_ADV wxComboCtrl;
+class WXDLLIMPEXP_ADV wxCalendarComboPopup;
 
 class WXDLLIMPEXP_ADV wxDatePickerCtrlGeneric : public wxDatePickerCtrlBase
 {
 public:
     // creating the control
     wxDatePickerCtrlGeneric() { Init(); }
-    ~wxDatePickerCtrlGeneric() ;
+    virtual ~wxDatePickerCtrlGeneric();
     wxDatePickerCtrlGeneric(wxWindow *parent,
                             wxWindowID id,
                             const wxDateTime& date = wxDefaultDateTime,
@@ -71,37 +68,19 @@ public:
     // overridden base class methods
     virtual bool Destroy();
 
-    virtual bool Enable(bool enable = true);
-    virtual bool Show(bool show = true);
-
 protected:
     virtual wxSize DoGetBestSize() const;
-    virtual void DoMoveWindow(int x, int y, int width, int height);
 
 private:
     void Init();
-    void DropDown(bool down = true);
 
     void OnText(wxCommandEvent &event);
-    void OnEditKey(wxKeyEvent & event);
-    void OnCalKey(wxKeyEvent & event);
-    void OnClick(wxCommandEvent &event);
-    void OnSelChange(wxCalendarEvent &event);
-    void OnSetFocus(wxFocusEvent &event);
-    void OnKillFocus(wxFocusEvent &event);
-    void OnChildSetFocus(wxChildFocusEvent &event);
     void OnSize(wxSizeEvent& event);
+    void OnFocus(wxFocusEvent& event);
 
-
-    wxDatePopupInternal *m_popup;
-    wxTextCtrl *m_txt;
     wxCalendarCtrl *m_cal;
-    wxButton *m_btn;
-    wxString m_format;
-    wxDateTime m_currentDate;
-
-    bool m_dropped,
-         m_ignoreDrop;
+    wxComboCtrl* m_combo;
+    wxCalendarComboPopup* m_popup;
 
 
     DECLARE_EVENT_TABLE()

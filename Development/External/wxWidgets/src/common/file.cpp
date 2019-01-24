@@ -5,7 +5,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: file.cpp,v 1.97 2005/09/19 23:34:07 VZ Exp $
+// RCS-ID:      $Id: file.cpp 42876 2006-10-31 23:29:02Z SN $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -13,10 +13,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "file.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -103,18 +99,8 @@
     };
 #endif // W_OK
 
-// there is no distinction between text and binary files under Unix, so define
-// O_BINARY as 0 if the system headers don't do it already
-#if defined(__UNIX__) && !defined(O_BINARY)
-    #define   O_BINARY    (0)
-#endif  //__UNIX__
-
 #ifdef __SALFORDC__
     #include <unix.h>
-#endif
-
-#ifndef MAX_PATH
-    #define MAX_PATH 512
 #endif
 
 // some broken compilers don't have 3rd argument in open() and creat()
@@ -136,6 +122,12 @@
 #include  "wx/file.h"
 #include  "wx/filefn.h"
 
+// there is no distinction between text and binary files under Unix, so define
+// O_BINARY as 0 if the system headers don't do it already
+#if defined(__UNIX__) && !defined(O_BINARY)
+    #define   O_BINARY    (0)
+#endif  //__UNIX__
+
 #ifdef __WXMSW__
     #include "wx/msw/mslu.h"
 #endif
@@ -144,6 +136,9 @@
     #include "wx/msw/private.h"
 #endif
 
+#ifndef MAX_PATH
+    #define MAX_PATH 512
+#endif
 
 // ============================================================================
 // implementation of wxFile
@@ -217,11 +212,9 @@ bool wxFile::Create(const wxChar *szFileName, bool bOverwrite, int accessMode)
         wxLogSysError(_("can't create file '%s'"), szFileName);
         return false;
     }
-    else
-    {
-        Attach(fd);
-        return true;
-    }
+
+    Attach(fd);
+    return true;
 }
 
 // open the file
@@ -271,10 +264,9 @@ bool wxFile::Open(const wxChar *szFileName, OpenMode mode, int accessMode)
         wxLogSysError(_("can't open file '%s'"), szFileName);
         return false;
     }
-    else {
-        Attach(fd);
-        return true;
-    }
+
+    Attach(fd);
+    return true;
 }
 
 // close
@@ -334,7 +326,7 @@ size_t wxFile::Write(const void *pBuf, size_t nCount)
 // flush
 bool wxFile::Flush()
 {
-#if defined(__VISUALC__) || defined(HAVE_FSYNC)
+#ifdef HAVE_FSYNC
     // fsync() only works on disk files and returns errors for pipes, don't
     // call it then
     if ( IsOpened() && GetKind() == wxFILE_KIND_DISK )
@@ -345,7 +337,7 @@ bool wxFile::Flush()
             return false;
         }
     }
-#endif // fsync
+#endif // HAVE_FSYNC
 
     return true;
 }

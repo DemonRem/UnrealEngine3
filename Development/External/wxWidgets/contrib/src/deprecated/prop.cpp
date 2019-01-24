@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: prop.cpp,v 1.6 2004/09/27 19:24:44 ABX Exp $
+// RCS-ID:      $Id: prop.cpp 38724 2006-04-14 19:56:03Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation "prop.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -1028,15 +1024,14 @@ bool wxPropertySheet::HasProperty(const wxString& name) const
 // Clear all properties
 void wxPropertySheet::Clear(void)
 {
-  wxObjectList::compatibility_iterator node = m_properties.GetFirst();
-  while (node)
-  {
-    wxProperty *prop = (wxProperty *)node->GetData();
-    wxObjectList::compatibility_iterator next = node->GetNext();
-    delete prop;
-    delete node;
-    node = next;
-  }
+    wxObjectList::compatibility_iterator node = m_properties.GetFirst();
+    while (node)
+    {
+        wxProperty *prop = (wxProperty *)node->GetData();
+        delete prop;
+        node = node->GetNext();
+    }
+    m_properties.Clear();
 }
 
 // Sets/clears the modified flag for each property value

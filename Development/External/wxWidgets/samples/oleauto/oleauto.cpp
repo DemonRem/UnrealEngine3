@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     08/12/98
-// RCS-ID:      $Id: oleauto.cpp,v 1.10 2005/03/01 17:11:09 MW Exp $
+// RCS-ID:      $Id: oleauto.cpp 40587 2006-08-13 01:17:53Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@
     #include "wx/wx.h"
 #endif
 
-#include <wx/msw/ole/automtn.h>
+#include "wx/msw/ole/automtn.h"
 
 #ifndef __WXMSW__
 #error "Sorry, this sample works under Windows only."
@@ -91,7 +91,7 @@ enum
     OleAuto_Test,
 
     // controls start here (the numbers are, of course, arbitrary)
-    OleAuto_Text = 1000,
+    OleAuto_Text = 1000
 };
 
 // ----------------------------------------------------------------------------
@@ -215,4 +215,3 @@ void MyFrame::OnTest(wxCommandEvent& WXUNUSED(event))
         return;
     }
 }
-

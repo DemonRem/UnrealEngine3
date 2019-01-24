@@ -6,7 +6,7 @@
 // Created:     19991129
 // Copyright:   (c) Mark Johnson
 // Licence:     wxWindows license
-// RCS-ID:      $Id: dbtree.h,v 1.7 2001/02/01 20:24:44 georgetasker Exp $
+// RCS-ID:      $Id: dbtree.h 9256 2001-02-01 20:24:44Z georgetasker $
 
 //----------------------------------------------------------------------------------------
 class MainDoc;             // Declared in doc.h file

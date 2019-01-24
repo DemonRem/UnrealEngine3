@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxPlatform_H__
@@ -17,19 +17,13 @@
 // and memory corruption detection.
 //#define FX_TRACK_MEMORY_STATS
 
-// The the core to track basic name table statistics.
-// Uncomment the following line to enable name table statistics gathering.
-// Name table statistics gathering is light weight enough to leave enabled if
-// you like.
-//#define FX_TRACK_NAME_STATS
-
 // Tell the name table system not to allow spaces in FxNames.  When creating
 // or loading an FxName, all spaces will be converted to underscores.
 #ifdef __UNREAL__
 	// Explicitly disallow spaces in names for Unreal.
 	#define FX_DISALLOW_SPACES_IN_NAMES
 #else
-	// Uncommnet the following line to disable spaces in FxNames.
+	// Uncomment the following line to disable spaces in FxNames.
 	//#define FX_DISALLOW_SPACES_IN_NAMES
 #endif
 
@@ -47,16 +41,20 @@
 #elif _XBOX
 	// _XBOX is the define for both the original XBox and XBox360.  FaceFX
 	// assumes that _XBOX means XBox360.  Define FX_XBOX1 in your project 
-	// settings to use the oringinal XBox build settings, or simply modify 
+	// settings to use the original XBox build settings, or simply modify 
 	// this code locally such that _XBOX always indicates an original XBox 
 	// build.
 	#ifdef FX_XBOX1
 		// Original XBox build.
+		#undef FX_XBOX_360
+		#define FX_ORIGINAL_XBOX
 		#undef FX_BIG_ENDIAN
 		#define FX_LITTLE_ENDIAN
-		#include "FxPlatformXBox.h"		
+		#include "FxPlatformXBox.h"
 	#else
 		// XBox360 build.
+		#undef FX_ORIGINAL_XBOX
+		#define FX_XBOX_360
 		#undef FX_LITTLE_ENDIAN
 		#define FX_BIG_ENDIAN
 		#include "FxPlatformXBox.h"
@@ -104,6 +102,10 @@ static const FxChar FxPathSeparator = '/';
 
 #ifndef FX_INLINE
 	#define FX_INLINE inline
+#endif
+
+#ifndef FX_RESTRICT
+	#define FX_RESTRICT
 #endif
 
 #ifndef NULL

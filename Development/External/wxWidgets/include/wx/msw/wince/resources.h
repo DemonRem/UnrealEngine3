@@ -4,7 +4,7 @@
 // Author:      Wlodzimierz ABX Skiba
 // Modified by:
 // Created:     01.05.2004
-// RCS-ID:      $Id: resources.h,v 1.1 2004/06/16 06:17:27 ABX Exp $
+// RCS-ID:      $Id: resources.h 27829 2004-06-16 06:17:27Z ABX $
 // Copyright:   (c) Wlodzimierz Skiba
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////

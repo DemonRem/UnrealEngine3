@@ -1,46 +1,45 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:       socket.cpp
+// Name:       src/common/socket.cpp
 // Purpose:    Socket handler classes
 // Authors:    Guilhem Lavaux, Guillermo Rodriguez Garcia
 // Created:    April 1997
 // Copyright:  (C) 1999-1997, Guilhem Lavaux
 //             (C) 2000-1999, Guillermo Rodriguez Garcia
-// RCS_ID:     $Id: socket.cpp,v 1.133 2005/05/22 15:06:36 JS Exp $
-// License:    see wxWindows licence
+// RCS_ID:     $Id: socket.cpp 44662 2007-03-07 23:21:48Z VZ $
+// License:    wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 // ==========================================================================
 // Declarations
 // ==========================================================================
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "socket.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_SOCKETS
 
-#include "wx/app.h"
+#include "wx/socket.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/object.h"
+    #include "wx/string.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/event.h"
+    #include "wx/app.h"
+    #include "wx/utils.h"
+    #include "wx/timer.h"
+    #include "wx/module.h"
+#endif
+
 #include "wx/apptrait.h"
-#include "wx/defs.h"
-#include "wx/object.h"
-#include "wx/string.h"
-#include "wx/timer.h"
-#include "wx/utils.h"
-#include "wx/module.h"
-#include "wx/log.h"
-#include "wx/intl.h"
-#include "wx/event.h"
 
 #include "wx/sckaddr.h"
-#include "wx/socket.h"
-#include "wx/stopwatch.h"
+#include "wx/datetime.h"
 
 // DLL options compatibility check:
 #include "wx/build.h"
@@ -99,7 +98,7 @@ public:
 public:
   wxSocketState() : wxObject() {}
 
-    DECLARE_NO_COPY_CLASS(wxSocketState)
+  DECLARE_NO_COPY_CLASS(wxSocketState)
 };
 
 // ==========================================================================
@@ -163,7 +162,7 @@ void wxSocketBase::Shutdown()
 {
     // we should be initialized
     wxASSERT_MSG( m_countInit, _T("extra call to Shutdown()") );
-    if ( !--m_countInit )
+    if ( --m_countInit == 0 )
     {
         GSocket_Cleanup();
     }
@@ -331,11 +330,9 @@ wxUint32 wxSocketBase::_Read(void* buffer, wxUint32 nbytes)
 
   // Return now in one of the following cases:
   // - the socket is invalid,
-  // - we got all the data,
-  // - we got *some* data and we are not using wxSOCKET_WAITALL.
+  // - we got all the data
   if ( !m_socket ||
-       !nbytes ||
-       ((total != 0) && !(m_flags & wxSOCKET_WAITALL)) )
+       !nbytes )
     return total;
 
   // Possible combinations (they are checked in this order)
@@ -698,9 +695,7 @@ bool wxSocketBase::_Wait(long seconds,
   else
     timeout = m_timeout * 1000;
 
-#if !defined(wxUSE_GUI) || !wxUSE_GUI
-  m_socket->SetTimeout(timeout);
-#endif
+  bool has_event_loop = wxTheApp->GetTraits() ? (wxTheApp->GetTraits()->GetSocketGUIFunctionsTable() ? true : false) : false;
 
   // Wait in an active polling loop.
   //
@@ -712,8 +707,20 @@ bool wxSocketBase::_Wait(long seconds,
   // Do this at least once (important if timeout == 0, when
   // we are just polling). Also, if just polling, do not yield.
 
-  wxStopWatch chrono;
+  wxDateTime current_time = wxDateTime::UNow();
+  unsigned int time_limit = (current_time.GetTicks() * 1000) + current_time.GetMillisecond() + timeout;
   bool done = false;
+  bool valid_result = false;
+
+  if (!has_event_loop)
+  {
+    // This is used to avoid a busy loop on wxBase - having a select
+    // timeout of 50 ms per iteration should be enough.
+    if (timeout > 50)
+      m_socket->SetTimeout(50);
+    else
+      m_socket->SetTimeout(timeout);
+  }
 
   while (!done)
   {
@@ -724,13 +731,15 @@ bool wxSocketBase::_Wait(long seconds,
     {
       m_connected = true;
       m_establishing = false;
-      return true;
+      valid_result = true;
+      break;
     }
 
     // Data available or output buffer ready
     if ((result & GSOCK_INPUT_FLAG) || (result & GSOCK_OUTPUT_FLAG))
     {
-      return true;
+      valid_result = true;
+      break;
     }
 
     // Connection lost
@@ -738,25 +747,43 @@ bool wxSocketBase::_Wait(long seconds,
     {
       m_connected = false;
       m_establishing = false;
-      return (flags & GSOCK_LOST_FLAG) != 0;
+      valid_result = ((flags & GSOCK_LOST_FLAG) != 0);
+      break;
     }
 
     // Wait more?
-    if ((!timeout) || (chrono.Time() > timeout) || (m_interrupt))
+    current_time = wxDateTime::UNow();
+    int time_left = time_limit - ((current_time.GetTicks() * 1000) + current_time.GetMillisecond());
+    if ((!timeout) || (time_left <= 0) || (m_interrupt))
       done = true;
     else
-      PROCESS_EVENTS();
+    {
+      if (has_event_loop)
+      {
+          PROCESS_EVENTS();
+      }
+      else
+      {
+        // If there's less than 50 ms left, just call select with that timeout.
+        if (time_left < 50)
+          m_socket->SetTimeout(time_left);
+      }
+    }
   }
 
-  return false;
+  // Set timeout back to original value (we overwrote it for polling)
+  if (!has_event_loop)
+    m_socket->SetTimeout(m_timeout*1000);
+
+  return valid_result;
 }
 
 bool wxSocketBase::Wait(long seconds, long milliseconds)
 {
-  return _Wait(seconds, milliseconds, GSOCK_INPUT_FLAG |
-                                      GSOCK_OUTPUT_FLAG |
-                                      GSOCK_CONNECTION_FLAG |
-                                      GSOCK_LOST_FLAG);
+    return _Wait(seconds, milliseconds, GSOCK_INPUT_FLAG |
+                                        GSOCK_OUTPUT_FLAG |
+                                        GSOCK_CONNECTION_FLAG |
+                                        GSOCK_LOST_FLAG);
 }
 
 bool wxSocketBase::WaitForRead(long seconds, long milliseconds)
@@ -766,7 +793,7 @@ bool wxSocketBase::WaitForRead(long seconds, long milliseconds)
     return true;
 
   // Note that GSOCK_INPUT_LOST has to be explicitly passed to
-  // _Wait becuase of the semantics of WaitForRead: a return
+  // _Wait because of the semantics of WaitForRead: a return
   // value of true means that a GSocket_Read call will return
   // immediately, not that there is actually data to read.
 
@@ -777,12 +804,12 @@ bool wxSocketBase::WaitForRead(long seconds, long milliseconds)
 
 bool wxSocketBase::WaitForWrite(long seconds, long milliseconds)
 {
-  return _Wait(seconds, milliseconds, GSOCK_OUTPUT_FLAG);
+    return _Wait(seconds, milliseconds, GSOCK_OUTPUT_FLAG);
 }
 
 bool wxSocketBase::WaitForLost(long seconds, long milliseconds)
 {
-  return _Wait(seconds, milliseconds, GSOCK_LOST_FLAG);
+    return _Wait(seconds, milliseconds, GSOCK_LOST_FLAG);
 }
 
 // --------------------------------------------------------------------------
@@ -815,16 +842,16 @@ bool wxSocketBase::GetPeer(wxSockAddress& addr_man) const
 
 bool wxSocketBase::GetLocal(wxSockAddress& addr_man) const
 {
-  GAddress *local;
+    GAddress *local;
 
-  if (!m_socket)
-    return false;
+    if (!m_socket)
+        return false;
 
-  local = m_socket->GetLocal();
-  addr_man.SetAddress(local);
-  GAddress_destroy(local);
+    local = m_socket->GetLocal();
+    addr_man.SetAddress(local);
+    GAddress_destroy(local);
 
-  return true;
+    return true;
 }
 
 //
@@ -833,36 +860,36 @@ bool wxSocketBase::GetLocal(wxSockAddress& addr_man) const
 
 void wxSocketBase::SaveState()
 {
-  wxSocketState *state;
+    wxSocketState *state;
 
-  state = new wxSocketState();
+    state = new wxSocketState();
 
-  state->m_flags      = m_flags;
-  state->m_notify     = m_notify;
-  state->m_eventmask  = m_eventmask;
-  state->m_clientData = m_clientData;
+    state->m_flags      = m_flags;
+    state->m_notify     = m_notify;
+    state->m_eventmask  = m_eventmask;
+    state->m_clientData = m_clientData;
 
-  m_states.Append(state);
+    m_states.Append(state);
 }
 
 void wxSocketBase::RestoreState()
 {
-  wxList::compatibility_iterator node;
-  wxSocketState *state;
+    wxList::compatibility_iterator node;
+    wxSocketState *state;
 
-  node = m_states.GetLast();
-  if (!node)
-    return;
+    node = m_states.GetLast();
+    if (!node)
+        return;
 
-  state = (wxSocketState *)node->GetData();
+    state = (wxSocketState *)node->GetData();
 
-  m_flags      = state->m_flags;
-  m_notify     = state->m_notify;
-  m_eventmask  = state->m_eventmask;
-  m_clientData = state->m_clientData;
+    m_flags      = state->m_flags;
+    m_notify     = state->m_notify;
+    m_eventmask  = state->m_eventmask;
+    m_clientData = state->m_clientData;
 
-  m_states.Erase(node);
-  delete state;
+    m_states.Erase(node);
+    delete state;
 }
 
 //
@@ -871,15 +898,15 @@ void wxSocketBase::RestoreState()
 
 void wxSocketBase::SetTimeout(long seconds)
 {
-  m_timeout = seconds;
+    m_timeout = seconds;
 
-  if (m_socket)
-    m_socket->SetTimeout(m_timeout * 1000);
+    if (m_socket)
+        m_socket->SetTimeout(m_timeout * 1000);
 }
 
 void wxSocketBase::SetFlags(wxSocketFlags flags)
 {
-  m_flags = flags;
+    m_flags = flags;
 }
 
 
@@ -910,9 +937,9 @@ void LINKAGEMODE wx_socket_callback(GSocket * WXUNUSED(socket),
                                     GSocketEvent notification,
                                     char *cdata)
 {
-  wxSocketBase *sckobj = (wxSocketBase *)cdata;
+    wxSocketBase *sckobj = (wxSocketBase *)cdata;
 
-  sckobj->OnRequest((wxSocketNotify) notification);
+    sckobj->OnRequest((wxSocketNotify) notification);
 }
 
 void wxSocketBase::OnRequest(wxSocketNotify notification)
@@ -983,18 +1010,18 @@ void wxSocketBase::OnRequest(wxSocketNotify notification)
 
 void wxSocketBase::Notify(bool notify)
 {
-  m_notify = notify;
+    m_notify = notify;
 }
 
 void wxSocketBase::SetNotify(wxSocketEventFlags flags)
 {
-  m_eventmask = flags;
+    m_eventmask = flags;
 }
 
 void wxSocketBase::SetEventHandler(wxEvtHandler& handler, int id)
 {
-  m_handler = &handler;
-  m_id      = id;
+    m_handler = &handler;
+    m_id      = id;
 }
 
 // --------------------------------------------------------------------------
@@ -1057,7 +1084,7 @@ wxUint32 wxSocketBase::GetPushback(void *buffer, wxUint32 size, bool peek)
 // Ctor
 // --------------------------------------------------------------------------
 
-wxSocketServer::wxSocketServer(wxSockAddress& addr_man,
+wxSocketServer::wxSocketServer(const wxSockAddress& addr_man,
                                wxSocketFlags flags)
               : wxSocketBase(flags, wxSOCKET_SERVER)
 {
@@ -1149,7 +1176,7 @@ wxSocketBase *wxSocketServer::Accept(bool wait)
 
 bool wxSocketServer::WaitForAccept(long seconds, long milliseconds)
 {
-  return _Wait(seconds, milliseconds, GSOCK_CONNECTION_FLAG);
+    return _Wait(seconds, milliseconds, GSOCK_CONNECTION_FLAG);
 }
 
 bool wxSocketBase::GetOption(int level, int optname, void *optval, int *optlen)
@@ -1168,13 +1195,28 @@ bool wxSocketBase::SetOption(int level, int optname, const void *optval,
                               int optlen)
 {
     wxASSERT_MSG( m_socket, _T("Socket not initialised") );
-    
+
     if (m_socket->SetSockOpt(level, optname, optval, optlen)
         != GSOCK_NOERROR)
     {
         return false;
     }
     return true;
+}
+
+bool wxSocketBase::SetLocal(wxIPV4address& local)
+{
+  GAddress* la = local.GetAddress();
+
+  // If the address is valid, save it for use when we call Connect
+  if (la && la->m_addr)
+  {
+    m_localAddress = local;
+
+    return true;
+  }
+
+  return false;
 }
 
 // ==========================================================================
@@ -1198,7 +1240,7 @@ wxSocketClient::~wxSocketClient()
 // Connect
 // --------------------------------------------------------------------------
 
-bool wxSocketClient::Connect(wxSockAddress& addr_man, bool wait)
+bool wxSocketClient::DoConnect(wxSockAddress& addr_man, wxSockAddress* local, bool wait)
 {
   GSocketError err;
 
@@ -1228,6 +1270,27 @@ bool wxSocketClient::Connect(wxSockAddress& addr_man, bool wait)
   if (!wait)
     m_socket->SetNonBlocking(1);
 
+  // Reuse makes sense for clients too, if we are trying to rebind to the same port
+  if (GetFlags() & wxSOCKET_REUSEADDR)
+  {
+    m_socket->SetReusable();
+  }
+
+  // If no local address was passed and one has been set, use the one that was Set
+  if (!local && m_localAddress.GetAddress())
+  {
+    local = &m_localAddress;
+  }
+
+  // Bind to the local IP address and port, when provided
+  if (local)
+  {
+    GAddress* la = local->GetAddress();
+
+    if (la && la->m_addr)
+      m_socket->SetLocal(la);
+  }
+
   m_socket->SetPeer(addr_man.GetAddress());
   err = m_socket->Connect(GSOCK_STREAMED);
 
@@ -1246,16 +1309,26 @@ bool wxSocketClient::Connect(wxSockAddress& addr_man, bool wait)
   return true;
 }
 
+bool wxSocketClient::Connect(wxSockAddress& addr_man, bool wait)
+{
+    return (DoConnect(addr_man, NULL, wait));
+}
+
+bool wxSocketClient::Connect(wxSockAddress& addr_man, wxSockAddress& local, bool wait)
+{
+    return (DoConnect(addr_man, &local, wait));
+}
+
 bool wxSocketClient::WaitOnConnect(long seconds, long milliseconds)
 {
-  if (m_connected)                      // Already connected
-    return true;
+    if (m_connected)                      // Already connected
+        return true;
 
-  if (!m_establishing || !m_socket)     // No connection in progress
-    return false;
+    if (!m_establishing || !m_socket)     // No connection in progress
+        return false;
 
-  return _Wait(seconds, milliseconds, GSOCK_CONNECTION_FLAG |
-                                      GSOCK_LOST_FLAG);
+    return _Wait(seconds, milliseconds, GSOCK_CONNECTION_FLAG |
+                                        GSOCK_LOST_FLAG);
 }
 
 // ==========================================================================
@@ -1264,35 +1337,38 @@ bool wxSocketClient::WaitOnConnect(long seconds, long milliseconds)
 
 /* NOTE: experimental stuff - might change */
 
-wxDatagramSocket::wxDatagramSocket( wxSockAddress& addr,
+wxDatagramSocket::wxDatagramSocket( const wxSockAddress& addr,
                                     wxSocketFlags flags )
                 : wxSocketBase( flags, wxSOCKET_DATAGRAM )
 {
-  // Create the socket
-  m_socket = GSocket_new();
+    // Create the socket
+    m_socket = GSocket_new();
 
-  if(!m_socket)
-  {
-    wxASSERT_MSG( 0, _T("datagram socket not new'd") );
-    return;
-  }
-  // Setup the socket as non connection oriented
-  m_socket->SetLocal(addr.GetAddress());
-  if( m_socket->SetNonOriented() != GSOCK_NOERROR )
-  {
-    delete m_socket;
-    m_socket = NULL;
-    return;
-  }
+    if (!m_socket)
+    {
+        wxFAIL_MSG( _T("datagram socket not new'd") );
+        return;
+    }
+    // Setup the socket as non connection oriented
+    m_socket->SetLocal(addr.GetAddress());
+    if (flags & wxSOCKET_REUSEADDR)
+    {
+        m_socket->SetReusable();
+    }
+    if ( m_socket->SetNonOriented() != GSOCK_NOERROR )
+    {
+        delete m_socket;
+        m_socket = NULL;
+        return;
+    }
 
-  // Initialize all stuff
-  m_connected = false;
-  m_establishing = false;
-  m_socket->SetTimeout( m_timeout );
-  m_socket->SetCallback( GSOCK_INPUT_FLAG | GSOCK_OUTPUT_FLAG |
-                                 GSOCK_LOST_FLAG | GSOCK_CONNECTION_FLAG,
-                                 wx_socket_callback, (char*)this );
-
+    // Initialize all stuff
+    m_connected = false;
+    m_establishing = false;
+    m_socket->SetTimeout( m_timeout );
+    m_socket->SetCallback( GSOCK_INPUT_FLAG | GSOCK_OUTPUT_FLAG |
+                           GSOCK_LOST_FLAG | GSOCK_CONNECTION_FLAG,
+                           wx_socket_callback, (char*)this );
 }
 
 wxDatagramSocket& wxDatagramSocket::RecvFrom( wxSockAddress& addr,
@@ -1304,12 +1380,12 @@ wxDatagramSocket& wxDatagramSocket::RecvFrom( wxSockAddress& addr,
     return (*this);
 }
 
-wxDatagramSocket& wxDatagramSocket::SendTo( wxSockAddress& addr,
+wxDatagramSocket& wxDatagramSocket::SendTo( const wxSockAddress& addr,
                                             const void* buf,
                                             wxUint32 nBytes )
 {
     wxASSERT_MSG( m_socket, _T("Socket not initialised") );
-    
+
     m_socket->SetPeer(addr.GetAddress());
     Write(buf, nBytes);
     return (*this);
@@ -1342,5 +1418,3 @@ IMPLEMENT_DYNAMIC_CLASS(wxSocketModule, wxModule)
 
 #endif
   // wxUSE_SOCKETS
-
-// vi:sts=4:sw=4:et

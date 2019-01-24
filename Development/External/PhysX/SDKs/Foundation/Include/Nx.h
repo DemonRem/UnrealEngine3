@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NX
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -22,14 +22,18 @@ DLL export macros
 #ifndef NX_CALL_CONV
 	#if defined WIN32
 		#define NX_CALL_CONV __cdecl
-	#elif defined LINUX
+	#elif defined __linux__
 		#define NX_CALL_CONV
-    #elif defined __APPLE__
-        #define NX_CALL_CONV
+        #elif defined ANDROID
+              #define NX_CALL_CONV
+        #elif defined __APPLE__
+              #define NX_CALL_CONV
 	#elif defined __CELLOS_LV2__
-		#define NX_CALL_CONV
+	       #define NX_CALL_CONV
 	#elif defined _XBOX
-        #define NX_CALL_CONV
+              #define NX_CALL_CONV
+	#elif defined(__PPCGEKKO__)
+              #define NX_CALL_CONV
 	#else
 		#error custom definition of NX_CALL_CONV for your OS needed!
 	#endif
@@ -37,16 +41,16 @@ DLL export macros
 
 #if	  defined NX32
 #elif defined NX64
+#elif defined _WIN64
+	#ifdef NX32
+		#error PhysX SDK: Platforms pointer size ambiguous!  The defines WIN64 and NX32 are in conflict.  
+	#endif
+	#define NX64
 #elif defined WIN32
 	#ifdef NX64
 		#error PhysX SDK: Platforms pointer size ambiguous!  The defines WIN32 and NX64 are in conflict.  
 	#endif
 	#define NX32
-#elif defined WIN64
-	#ifdef NX32
-		#error PhysX SDK: Platforms pointer size ambiguous!  The defines WIN64 and NX32 are in conflict.  
-	#endif
-	#define NX64
 #elif defined __CELLOS_LV2__
 	#ifdef __LP32__
             #define NX32
@@ -55,8 +59,14 @@ DLL export macros
     #endif
 #elif defined _XBOX
 	#define NX32
-#elif defined LINUX
+#elif defined __linux__
         #define NX32
+#elif defined(__PPCGEKKO__)
+	#define NX32
+#elif defined(__APPLE__) && defined( __LP64__ )
+	#define NX64
+#elif defined(__APPLE__)
+	#define NX32
 #else
 	#error PhysX SDK: Platforms pointer size ambiguous.  Please define NX32 or Nx64 in the compiler settings!
 #endif
@@ -64,6 +74,8 @@ DLL export macros
 
 #if !defined __CELLOS_LV2__
 	#define NX_COMPILE_TIME_ASSERT(exp)	extern char NX_CompileTimeAssert[ size_t((exp) ? 1 : -1) ]
+#elif defined(__PPCGEKKO__)
+	#define NX_COMPILE_TIME_ASSERT(exp)	typedef char NX_CompileTimeAssert[ (exp) ? 1 : -1 ]
 #else
     // GCC4 don't like the line above
 	#define _CELL_NX_COMPILE_TIME_NAME_(x) NX_CompileTimeAssert ## x
@@ -84,17 +96,26 @@ DLL export macros
 	#endif
 #endif
 
+#if (defined(WIN32) || ((defined(__APPLE__) || defined(__linux__)) && defined(__SSE__))) && !defined(_XBOX)
+	#define NX_SUPPORT_SSE
+#endif
+
+
+
 /**
  Nx SDK misc defines.
 */
 
-//NX_INLINE
-#if (_MSC_VER>=1000)
-	#define NX_INLINE __forceinline	//alternative is simple inline
-	#pragma inline_depth( 255 )
+#define	NX_UNREFERENCED_PARAMETER(P) (void)(P)
 
-	#include <string.h>
-	#include <stdlib.h>
+#include <string.h>
+#include <stdlib.h>
+
+#if _MSC_VER
+	#define NX_INLINE inline
+	#define NX_FORCE_INLINE __forceinline
+	#pragma inline_depth(255)
+
 	#pragma intrinsic(memcmp)
 	#pragma intrinsic(memcpy)
 	#pragma intrinsic(memset)
@@ -104,9 +125,6 @@ DLL export macros
 	#pragma intrinsic(strlen)
 	#pragma intrinsic(abs)
 	#pragma intrinsic(labs)
-#elif defined(__MWERKS__) 
-	//optional: #pragma always_inline on
-	#define NX_INLINE inline
 #else
 	#define NX_INLINE inline
 #endif
@@ -233,39 +251,19 @@ enum NxSDKCreateError
 #pragma warning( disable : 4251 )  //class needs to have dll-interface to be used by clients of class
 #endif
 
-//files to always include:
-#ifdef LINUX
-#include <time.h>
-#include <string.h>
-#include <stdlib.h>
-#elif __APPLE__
-#include <time.h>
-#elif __CELLOS_LV2__
-	#include <string.h>
-#endif
 #include "NxSimpleTypes.h"
 #include "NxAssert.h"
 
+#define	NX_SIGN_BITMASK		0x80000000
+
 #define NX_DEBUG_MALLOC 0
 
-// Don't use inline for alloca !!!
-#ifdef WIN32
+#if _MSC_VER
 	#include <malloc.h>
 	#define NxAlloca(x)	_alloca(x)
-#elif LINUX
-	#include <malloc.h>
-	#define NxAlloca(x)	alloca(x)
-#elif __APPLE__
+#else
 	#include <alloca.h>
-	#include <stdlib.h>
 	#define NxAlloca(x)	alloca(x)
-#elif __CELLOS_LV2__
-	#include <alloca.h>
-	#include <stdlib.h>
-	#define NxAlloca(x)	alloca(x)
-#elif _XBOX
-	#include <malloc.h>
-	#define NxAlloca(x)	_alloca(x)
 #endif
 
 /**
@@ -303,9 +301,10 @@ enum NxThreadPriority
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
+

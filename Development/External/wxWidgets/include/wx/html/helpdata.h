@@ -4,17 +4,13 @@
 // Notes:       Based on htmlhelp.cpp, implementing a monolithic
 //              HTML Help controller class,  by Vaclav Slavik
 // Author:      Harm van der Heijden and Vaclav Slavik
-// RCS-ID:      $Id: helpdata.h,v 1.35 2005/05/31 09:18:24 JS Exp $
+// RCS-ID:      $Id: helpdata.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Harm van der Heijden and Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_HELPDATA_H_
 #define _WX_HELPDATA_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "helpdata.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -26,7 +22,7 @@
 #include "wx/dynarray.h"
 #include "wx/font.h"
 
-class WXDLLIMPEXP_HTML wxHtmlHelpData;
+class WXDLLIMPEXP_FWD_HTML wxHtmlHelpData;
 
 //--------------------------------------------------------------------------------
 // helper classes & structs
@@ -135,7 +131,7 @@ class WXDLLIMPEXP_HTML wxHtmlSearchEngine : public wxObject
 {
 public:
     wxHtmlSearchEngine() : wxObject() {}
-    ~wxHtmlSearchEngine() {}
+    virtual ~wxHtmlSearchEngine() {}
 
     // Sets the keyword we will be searching for
     virtual void LookFor(const wxString& keyword, bool case_sensitive, bool whole_words_only);
@@ -197,7 +193,7 @@ class WXDLLIMPEXP_HTML wxHtmlHelpData : public wxObject
 
 public:
     wxHtmlHelpData();
-    ~wxHtmlHelpData();
+    virtual ~wxHtmlHelpData();
 
     // Sets directory where temporary files are stored.
     // These temp files are index & contents file in binary (much faster to read)

@@ -1,27 +1,22 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        ipcbase.cpp
+// Name:        src/common/ipcbase.cpp
 // Purpose:     IPC base classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: ipcbase.cpp,v 1.13 2005/09/11 18:31:28 JS Exp $
+// RCS-ID:      $Id: ipcbase.cpp 54615 2008-07-14 02:34:29Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "ipcbase.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
-#include "wx/defs.h"
 #endif
 
 #include "wx/ipcbase.h"
@@ -51,7 +46,7 @@ wxConnectionBase::wxConnectionBase()
 {
 }
 
-wxConnectionBase::wxConnectionBase(wxConnectionBase& copy)
+wxConnectionBase::wxConnectionBase(const wxConnectionBase& copy)
     : wxObject(),
       m_connected(copy.m_connected),
       m_buffer(copy.m_buffer),
@@ -66,8 +61,8 @@ wxConnectionBase::wxConnectionBase(wxConnectionBase& copy)
 
 wxConnectionBase::~wxConnectionBase(void)
 {
-  if ( m_deletebufferwhendone && m_buffer )
-   delete m_buffer;
+  if ( m_deletebufferwhendone )
+   delete [] m_buffer;
 }
 
 wxChar *wxConnectionBase::GetBufferAtLeast( size_t bytes )
@@ -78,8 +73,7 @@ wxChar *wxConnectionBase::GetBufferAtLeast( size_t bytes )
   {  // need to resize buffer
     if ( m_deletebufferwhendone )
     { // we're in charge of buffer, increase it
-      if ( m_buffer )
-        delete m_buffer;
+      delete [] m_buffer;
       // the argument specifies **byte size**, but m_buffer is of type
       // wxChar. Under unicode: sizeof(wxChar) > 1, so the buffer size is
       // bytes / sizeof(wxChar) rounded upwards.
@@ -91,4 +85,3 @@ wxChar *wxConnectionBase::GetBufferAtLeast( size_t bytes )
       return NULL;
   }
 }
-

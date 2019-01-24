@@ -3,7 +3,7 @@
 // Purpose:     STC test Preferences initialization
 // Maintainer:  Wyo
 // Created:     2003-09-01
-// RCS-ID:      $Id: prefs.h,v 1.3 2005/09/16 18:25:44 ABX Exp $
+// RCS-ID:      $Id: prefs.h 35523 2005-09-16 18:25:44Z ABX $
 // Copyright:   (c) wxGuide
 // Licence:     wxWindows licence
 //////////////////////////////////////////////////////////////////////////////

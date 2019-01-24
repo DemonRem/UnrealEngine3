@@ -2,17 +2,17 @@
 // Name:        src/msw/tglbtn.cpp
 // Purpose:     Definition of the wxToggleButton class, which implements a
 //              toggle button under wxMSW.
-// Author: John Norris, minor changes by Axel Schlueter
-// and William Gallafent.
+// Author:      John Norris, minor changes by Axel Schlueter
+//              and William Gallafent.
 // Modified by:
 // Created:     08.02.01
-// RCS-ID:      $Id: tglbtn.cpp,v 1.13 2005/05/18 02:22:58 RD Exp $
+// RCS-ID:      $Id: tglbtn.cpp 41632 2006-10-04 23:02:13Z VZ $
 // Copyright:   (c) 2000 Johnny C. Norris II
 // License:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 // ============================================================================
-// declatations
+// declarations
 // ============================================================================
 
 // ----------------------------------------------------------------------------
@@ -25,9 +25,9 @@
     #pragma hdrstop
 #endif
 
-#include "wx/tglbtn.h"
-
 #if wxUSE_TOGGLEBTN
+
+#include "wx/tglbtn.h"
 
 #ifndef WX_PRECOMP
     #include "wx/button.h"
@@ -114,7 +114,7 @@ wxSize wxToggleButton::DoGetBestSize() const
 {
    wxString label = wxGetWindowText(GetHWND());
    int wBtn;
-   GetTextExtent(label, &wBtn, NULL);
+   GetTextExtent(GetLabelText(label), &wBtn, NULL);
 
    int wChar, hChar;
    wxGetCharSize(GetHWND(), &wChar, &hChar, GetFont());
@@ -126,14 +126,18 @@ wxSize wxToggleButton::DoGetBestSize() const
    int hBtn = BUTTON_HEIGHT_FROM_CHAR_HEIGHT(hChar);
 
 #if wxUSE_BUTTON
-   wxSize sz = wxButton::GetDefaultSize();
-   if (wBtn > sz.x)
-       sz.x = wBtn;
-   if (hBtn > sz.y)
-       sz.y = hBtn;
-#else
+   // make all buttons of at least standard size unless wxBU_EXACTFIT is given
+   if ( !HasFlag(wxBU_EXACTFIT) )
+   {
+       const wxSize szMin = wxButton::GetDefaultSize();
+       if ( wBtn < szMin.x )
+           wBtn = szMin.x;
+       if ( hBtn < szMin.y )
+           hBtn = szMin.y;
+   }
+#endif // wxUSE_BUTTON
+
    wxSize sz(wBtn, hBtn);
-#endif
 
    CacheBestSize(sz);
    return sz;
@@ -164,4 +168,3 @@ void wxToggleButton::Command(wxCommandEvent & event)
 }
 
 #endif // wxUSE_TOGGLEBTN
-

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        list.h
+// Name:        wx/list.h
 // Purpose:     wxList, wxStringList classes
 // Author:      Julian Smart
 // Modified by: VZ at 16/11/98: WX_DECLARE_LIST() and typesafe lists added
 // Created:     29/01/98
-// RCS-ID:      $Id: list.h,v 1.93 2005/06/07 18:54:49 ABX Exp $
+// RCS-ID:      $Id: list.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -24,11 +24,6 @@
 
 #ifndef _WX_LISTH__
 #define _WX_LISTH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA) && \
-    !(defined(__MINGW32__) && __GNUC__ == 3 && __GNUC_MINOR__ == 2)
-#pragma interface "list.h"
-#endif
 
 // -----------------------------------------------------------------------------
 // headers
@@ -59,7 +54,7 @@ extern "C"
 typedef int (* LINKAGEMODE wxSortCompareFunction)(const void *elem1, const void *elem2);
 }
 
-class WXDLLIMPEXP_BASE wxObjectListNode;
+class WXDLLIMPEXP_FWD_BASE wxObjectListNode;
 typedef wxObjectListNode wxNode;
 
 //
@@ -140,28 +135,67 @@ private:
 
 #endif // defined( __VISUALC__ )
 
+/*
+    Note 1: the outer helper class _WX_LIST_HELPER_##liT below is a workaround
+    for mingw 3.2.3 compiler bug that prevents a static function of liT class
+    from being exported into dll. A minimal code snippet reproducing the bug:
+
+         struct WXDLLEXPORT Foo
+         {
+            static void Bar();
+            struct SomeInnerClass
+            {
+              friend class Foo; // comment this out to make it link
+            };
+            ~Foo()
+            {
+                Bar();
+            }
+         };
+
+    The program does not link under mingw_gcc 3.2.3 producing undefined
+    reference to Foo::Bar() function
+
+
+    Note 2: the EmptyList is needed to allow having a NULL pointer-like
+    invalid iterator. We used to use just an uninitialized iterator object
+    instead but this fails with some debug/checked versions of STL, notably the
+    glibc version activated with _GLIBCXX_DEBUG, so we need to have a separate
+    invalid iterator.
+ */
+
+// the real wxList-class declaration
 #define WX_DECLARE_LIST_XO(elT, liT, decl)                                    \
+    decl _WX_LIST_HELPER_##liT                                                \
+    {                                                                         \
+        typedef elT _WX_LIST_ITEM_TYPE_##liT;                                 \
+    public:                                                                   \
+        static void DeleteFunction( _WX_LIST_ITEM_TYPE_##liT X );             \
+    };                                                                        \
+                                                                              \
     VC6_WORKAROUND(elT, liT, decl)                                            \
     decl liT : public std::list<elT>                                          \
     {                                                                         \
     private:                                                                  \
+        typedef std::list<elT> BaseListType;                                  \
+        static BaseListType EmptyList;                                        \
+                                                                              \
         bool m_destroy;                                                       \
-    private:                                                                  \
-        typedef elT _WX_LIST_ITEM_TYPE_##liT;                                 \
-        static void DeleteFunction( const _WX_LIST_ITEM_TYPE_##liT X );       \
+                                                                              \
     public:                                                                   \
-        class compatibility_iterator                                          \
+        decl compatibility_iterator                                           \
         {                                                                     \
         private:                                                              \
-          /* Workaround for broken VC6 nested class name resolution */        \
-          typedef std::list<elT>::iterator iterator;                          \
-          friend class liT;                                                   \
-        private:                                                              \
+            /* Workaround for broken VC6 nested class name resolution */      \
+            typedef std::list<elT>::iterator iterator;                        \
+            friend class liT;                                                 \
+                                                                              \
             iterator m_iter;                                                  \
             liT * m_list;                                                     \
+                                                                              \
         public:                                                               \
             compatibility_iterator()                                          \
-                : m_iter(), m_list( NULL ) {}                                 \
+                : m_iter(EmptyList.end()), m_list( NULL ) {}                  \
             compatibility_iterator( liT* li, iterator i )                     \
                 : m_iter( i ), m_list( li ) {}                                \
             compatibility_iterator( const liT* li, iterator i )               \
@@ -171,7 +205,11 @@ private:
             const compatibility_iterator* operator->() const { return this; } \
                                                                               \
             bool operator==(const compatibility_iterator& i) const            \
-                { return (m_list == i.m_list) && (m_iter == i.m_iter); }      \
+            {                                                                 \
+                wxASSERT_MSG( m_list && i.m_list,                             \
+                              _T("comparing invalid iterators is illegal") ); \
+                return (m_list == i.m_list) && (m_iter == i.m_iter);          \
+            }                                                                 \
             bool operator!=(const compatibility_iterator& i) const            \
                 { return !( operator==( i ) ); }                              \
             operator bool() const                                             \
@@ -191,16 +229,16 @@ private:
             }                                                                 \
             compatibility_iterator GetPrevious() const                        \
             {                                                                 \
+                if ( m_iter == m_list->begin() )                              \
+                    return compatibility_iterator();                          \
+                                                                              \
                 iterator i = m_iter;                                          \
                 return compatibility_iterator( m_list, --i );                 \
             }                                                                 \
             int IndexOf() const                                               \
             {                                                                 \
-                return m_list ?                                               \
-                    m_iter != m_list->end() ?                                 \
-                        std::distance( m_list->begin(), m_iter ) :            \
-                            wxNOT_FOUND :                                     \
-                        wxNOT_FOUND;                                          \
+                return *this ? std::distance( m_list->begin(), m_iter )       \
+                             : wxNOT_FOUND;                                   \
             }                                                                 \
         };                                                                    \
     public:                                                                   \
@@ -226,6 +264,11 @@ private:
             std::advance( i, idx );                                           \
             return compatibility_iterator( this, i );                         \
         }                                                                     \
+        elT operator[](size_t idx) const                                      \
+        {                                                                     \
+            return Item(idx).GetData();                                       \
+        }                                                                     \
+                                                                              \
         compatibility_iterator GetFirst() const                               \
         {                                                                     \
             return compatibility_iterator( this,                              \
@@ -270,7 +313,7 @@ private:
         void Erase( const compatibility_iterator& i )                         \
         {                                                                     \
             if ( m_destroy )                                                  \
-                DeleteFunction( i->GetData() );                               \
+                _WX_LIST_HELPER_##liT::DeleteFunction( i->GetData() );        \
             erase( i.m_iter );                                                \
         }                                                                     \
         bool DeleteNode( const compatibility_iterator& i )                    \
@@ -289,13 +332,17 @@ private:
         void Clear()                                                          \
         {                                                                     \
             if ( m_destroy )                                                  \
-                std::for_each( begin(), end(), DeleteFunction );              \
+                std::for_each( begin(), end(),                                \
+                               _WX_LIST_HELPER_##liT::DeleteFunction );       \
             clear();                                                          \
         }                                                                     \
         /* Workaround for broken VC6 std::list::sort() see above */           \
         void Sort( wxSortCompareFunction compfunc )                           \
             { sort( WX_LIST_SORTFUNCTION( elT, compfunc ) ); }                \
         ~liT() { Clear(); }                                                   \
+                                                                              \
+        /* It needs access to our EmptyList */                                \
+        friend decl compatibility_iterator;                                   \
     }
 
 #define WX_DECLARE_LIST(elementtype, listname)                              \
@@ -314,7 +361,7 @@ private:
     WX_DECLARE_USER_EXPORTED_LIST(elementtype, listname, usergoo)
 
 // this macro must be inserted in your program after
-//      #include <wx/listimpl.cpp>
+//      #include "wx/listimpl.cpp"
 #define WX_DEFINE_LIST(name)    "don't forget to include listimpl.cpp!"
 
 #define WX_DEFINE_EXPORTED_LIST(name)      WX_DEFINE_LIST(name)
@@ -390,7 +437,7 @@ private:
 
 extern WXDLLIMPEXP_DATA_BASE(wxListKey) wxDefaultListKey;
 
-class WXDLLIMPEXP_BASE wxListBase;
+class WXDLLIMPEXP_FWD_BASE wxListBase;
 
 class WXDLLIMPEXP_BASE wxNodeBase
 {
@@ -452,11 +499,11 @@ private:
 // a double-linked list class
 // -----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_BASE wxList;
+class WXDLLIMPEXP_FWD_BASE wxList;
 
 class WXDLLIMPEXP_BASE wxListBase : public wxObject
 {
-friend class WXDLLIMPEXP_BASE wxNodeBase; // should be able to call DetachNode()
+friend class WXDLLIMPEXP_FWD_BASE wxNodeBase; // should be able to call DetachNode()
 friend class wxHashTableBase;   // should be able to call untyped Find()
 
 public:
@@ -681,7 +728,17 @@ private:
     {                                                                       \
     public:                                                                 \
         typedef nodetype Node;                                              \
-        typedef Node* compatibility_iterator;                               \
+        classexp compatibility_iterator                                     \
+        {                                                                   \
+        public:                                                             \
+            compatibility_iterator(Node *ptr = NULL) : m_ptr(ptr) { }       \
+                                                                            \
+            Node *operator->() const { return m_ptr; }                      \
+            operator Node *() const { return m_ptr; }                       \
+                                                                            \
+        private:                                                            \
+            Node *m_ptr;                                                    \
+        };                                                                  \
                                                                             \
         name(wxKeyType keyType = wxKEY_NONE) : wxListBase(keyType)          \
             { }                                                             \
@@ -727,7 +784,7 @@ private:
             { return wxListBase::DeleteNode(node); }                        \
         bool DeleteObject(Tbase *object)                                    \
             { return wxListBase::DeleteObject(object); }                    \
-        void Erase(compatibility_iterator it)                               \
+        void Erase(nodetype *it)                                            \
             { DeleteNode(it); }                                             \
                                                                             \
         nodetype *Find(const Tbase *object) const                           \
@@ -764,7 +821,7 @@ private:
         typedef base_value_type& base_reference;                            \
         typedef const base_value_type& const_base_reference;                \
                                                                             \
-        class iterator                                                      \
+        classexp iterator                                                   \
         {                                                                   \
             typedef name list;                                              \
         public:                                                             \
@@ -804,7 +861,7 @@ private:
             bool operator==(const itor& it) const                           \
                 { return it.m_node == m_node; }                             \
         };                                                                  \
-        class const_iterator                                                \
+        classexp const_iterator                                             \
         {                                                                   \
             typedef name list;                                              \
         public:                                                             \
@@ -847,7 +904,7 @@ private:
             bool operator==(const itor& it) const                           \
                 { return it.m_node == m_node; }                             \
         };                                                                  \
-        class reverse_iterator                                              \
+        classexp reverse_iterator                                           \
         {                                                                   \
             typedef name list;                                              \
         public:                                                             \
@@ -886,7 +943,7 @@ private:
             bool operator==(const itor& it) const                           \
                 { return it.m_node == m_node; }                             \
         };                                                                  \
-        class const_reverse_iterator                                        \
+        classexp const_reverse_iterator                                     \
         {                                                                   \
             typedef name list;                                              \
         public:                                                             \
@@ -1069,7 +1126,7 @@ private:
     WX_DECLARE_LIST_PTR_2(elementtype, listname, wx##listname##Node, class usergoo)
 
 // this macro must be inserted in your program after
-//      #include <wx/listimpl.cpp>
+//      #include "wx/listimpl.cpp"
 #define WX_DEFINE_LIST(name)    "don't forget to include listimpl.cpp!"
 
 #define WX_DEFINE_EXPORTED_LIST(name)      WX_DEFINE_LIST(name)
@@ -1241,5 +1298,4 @@ public:
         (list).clear();                                                      \
     }
 
-#endif
-    // _WX_LISTH__
+#endif // _WX_LISTH__

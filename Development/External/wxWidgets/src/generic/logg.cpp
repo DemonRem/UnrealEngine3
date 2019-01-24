@@ -5,7 +5,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.09.99 (extracted from src/common/log.cpp)
-// RCS-ID:      $Id: logg.cpp,v 1.94 2005/06/20 00:24:21 VZ Exp $
+// RCS-ID:      $Id: logg.cpp 43078 2006-11-04 23:46:02Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -18,15 +18,11 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "logg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
@@ -41,7 +37,6 @@
     #include "wx/textctrl.h"
     #include "wx/sizer.h"
     #include "wx/statbmp.h"
-    #include "wx/button.h"
     #include "wx/settings.h"
 #endif // WX_PRECOMP
 
@@ -53,20 +48,18 @@
 #include "wx/artprov.h"
 
 #ifdef  __WXMSW__
-  // for OutputDebugString()
-  #include  "wx/msw/private.h"
+    // for OutputDebugString()
+    #include  "wx/msw/private.h"
 #endif // Windows
 
 #ifdef  __WXPM__
-  #include <time.h>
+    #include <time.h>
 #endif
 
 #if wxUSE_LOG_DIALOG
     #include "wx/listctrl.h"
     #include "wx/imaglist.h"
     #include "wx/image.h"
-#else // !wxUSE_LOG_DIALOG
-    #include "wx/msgdlg.h"
 #endif // wxUSE_LOG_DIALOG/!wxUSE_LOG_DIALOG
 
 #if defined(__MWERKS__) && wxUSE_UNICODE
@@ -88,13 +81,18 @@
 // allows to exclude the usage of wxDateTime
 static wxString TimeStamp(const wxChar *format, time_t t)
 {
+#if wxUSE_DATETIME
     wxChar buf[4096];
-    if ( !wxStrftime(buf, WXSIZEOF(buf), format, localtime(&t)) )
+    struct tm tm;
+    if ( !wxStrftime(buf, WXSIZEOF(buf), format, wxLocaltime_r(&t, &tm)) )
     {
         // buffer is too small?
         wxFAIL_MSG(_T("strftime() failed"));
     }
     return wxString(buf);
+#else // !wxUSE_DATETIME
+    return wxEmptyString;
+#endif // wxUSE_DATETIME/!wxUSE_DATETIME
 }
 
 
@@ -251,6 +249,12 @@ void wxLogGui::Flush()
     // do it right now to block any new calls to Flush() while we're here
     m_bHasMessages = false;
 
+    unsigned repeatCount = 0;
+    if ( wxLog::GetRepetitionCounting() )
+    {
+        repeatCount = wxLog::DoLogNumberOfRepeats();
+    }
+
     wxString appName = wxTheApp->GetAppName();
     if ( !appName.empty() )
         appName[0u] = (wxChar)wxToupper(appName[0u]);
@@ -288,6 +292,8 @@ void wxLogGui::Flush()
     {
 #if wxUSE_LOG_DIALOG
 
+        if ( repeatCount > 0 )
+            m_aMessages[nMsgCount-1] += wxString::Format(wxT(" (%s)"), m_aMessages[nMsgCount-2].c_str());
         wxLogDialog dlg(NULL,
                         m_aMessages, m_aSeverity, m_aTimes,
                         title, style);
@@ -1221,4 +1227,3 @@ void wxLogTextCtrl::DoLogString(const wxChar *szString, time_t WXUNUSED(t))
 }
 
 #endif // wxUSE_LOG && wxUSE_TEXTCTRL
-

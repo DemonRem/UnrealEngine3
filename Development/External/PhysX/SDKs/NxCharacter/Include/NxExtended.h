@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXBIG
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -36,7 +36,7 @@
 		return NX_TRUE;
 		}
 
-	NX_INLINE Extended	dot(const NxVec3 &v) const
+	NX_INLINE Extended	dot(const NxVec3& v) const
 		{
 		return x * v.x + y * v.y + z * v.z;
 		}
@@ -49,7 +49,7 @@
 		return NxMath::sqrt(dx * dx + dy * dy + dz * dz);
 		}
 
-	NX_INLINE	Extended distanceSquared(const NxExtendedVec3 &v) const
+	NX_INLINE	Extended distanceSquared(const NxExtendedVec3& v) const
 		{
 		Extended dx = x - v.x;
 		Extended dy = y - v.y;
@@ -85,7 +85,7 @@
 		return NxMath::isFinite(x) && NxMath::isFinite(y) && NxMath::isFinite(z);
 		}
 
-	NX_INLINE	void max(const NxExtendedVec3 & v)
+	NX_INLINE	void max(const NxExtendedVec3& v)
 		{
 		if (x < v.x) x = v.x;
 		if (y < v.y) y = v.y;
@@ -93,7 +93,7 @@
 		}
 
 	 
-	NX_INLINE	void min(const NxExtendedVec3 & v)
+	NX_INLINE	void min(const NxExtendedVec3& v)
 		{
 		if (x > v.x) x = v.x;
 		if (y > v.y) y = v.y;
@@ -122,7 +122,7 @@
 		x = y = z = NX_MIN_EXTENDED;
 		}
 
-	NX_INLINE void	cross(const NxExtendedVec3 &left, const NxVec3 & right)
+	NX_INLINE void	cross(const NxExtendedVec3& left, const NxVec3& right)
 		{
 		// temps needed in case left or right is this.
 		Extended a = (left.y * right.z) - (left.z * right.y);
@@ -134,7 +134,7 @@
 		z = c;
 		}
 
-	NX_INLINE void	cross(const NxExtendedVec3 &left, const NxExtendedVec3 & right)
+	NX_INLINE void	cross(const NxExtendedVec3& left, const NxExtendedVec3& right)
 		{
 		// temps needed in case left or right is this.
 		Extended a = (left.y * right.z) - (left.z * right.y);
@@ -153,7 +153,7 @@
 		return temp;
 		}
 
-	NX_INLINE void	cross(const NxVec3 &left, const NxExtendedVec3 & right)
+	NX_INLINE void	cross(const NxVec3& left, const NxExtendedVec3& right)
 		{
 		// temps needed in case left or right is this.
 		Extended a = (left.y * right.z) - (left.z * right.y);
@@ -302,7 +302,7 @@
 		{
 		public:
 
-		NX_INLINE void setColumn(int col, const NxExtendedVec3 & v)
+		NX_INLINE void setColumn(int col, const NxExtendedVec3& v)
 			{
 		#ifndef TRANSPOSED_MAT33
 			data.m[0][col] = v.x;
@@ -315,7 +315,7 @@
 		#endif
 			}
 
-		NX_INLINE const NxExtendedMat33& operator +=(const NxExtendedMat33 &d)
+		NX_INLINE const NxExtendedMat33& operator +=(const NxExtendedMat33& d)
 			{
 			data.s._11 += d.data.s._11;
 			data.s._12 += d.data.s._12;
@@ -331,7 +331,7 @@
 			return *this;
 			}
 
-		NX_INLINE void	multiply(const NxVec3 &src, NxVec3 &dst) const
+		NX_INLINE void	multiply(const NxVec3& src, NxVec3& dst) const
 			{
 			Extended x,y,z;	//so it works if src == dst
 			x = data.s._11 * src.x + data.s._12 * src.y + data.s._13 * src.z;
@@ -421,8 +421,6 @@
 		};
 #endif
 
-//	typedef	NxMat34	NxExtendedMat34;
-
 	struct NxExtendedMat34
 	{
 		NX_INLINE	NxExtendedMat34()														{}
@@ -443,13 +441,13 @@
 			return true;
 			}
 
-		NX_INLINE	void multiply(const NxVec3 &src, NxExtendedVec3 &dst) const
+		NX_INLINE	void multiply(const NxVec3& src, NxExtendedVec3& dst) const
 			{
 			dst = t;
 			dst += M * src;
 			}
 
-		NX_INLINE	void multiply(const NxExtendedVec3 &src, NxExtendedVec3 &dst) const
+		NX_INLINE	void multiply(const NxExtendedVec3& src, NxExtendedVec3& dst) const
 			{
 //			dst = t;
 //			dst += M * src;
@@ -474,13 +472,13 @@
 			M.multiply(left.M, right.M);
 			}
 
-		NX_INLINE	void multiplyByInverseRT(const NxExtendedVec3& src, NxVec3 &dst) const
+		NX_INLINE	void multiplyByInverseRT(const NxExtendedVec3& src, NxVec3& dst) const
 			{
 			//dst = M' * src - M' * t = M' * (src - t)
 			M.multiplyByTranspose(src - t, dst);
 			}
 
-		NX_INLINE	void multiplyByInverseRT(const NxExtendedVec3& src, NxExtendedVec3 &dst) const
+		NX_INLINE	void multiplyByInverseRT(const NxExtendedVec3& src, NxExtendedVec3& dst) const
 			{
 			//dst = M' * src - M' * t = M' * (src - t)
 //			M.multiplyByTranspose(src - t, dst);
@@ -516,35 +514,35 @@
 			t.zero();
 			}
 
-		NX_INLINE NxExtendedMat34 operator*  (const NxExtendedMat34 & right) const
+		NX_INLINE NxExtendedMat34 operator*  (const NxExtendedMat34& right) const
 			{
 			NxExtendedMat34 dest;
 			dest.multiply(*this, right);
 			return dest;
 			}
 
-		NX_INLINE NxExtendedMat34 operator*  (const NxMat34 & right) const
+		NX_INLINE NxExtendedMat34 operator*  (const NxMat34& right) const
 			{
 			NxExtendedMat34 dest;
 			dest.multiply(*this, right);
 			return dest;
 			}
 
-		NX_INLINE NxExtendedVec3 operator*  (const NxExtendedVec3 & src) const
+		NX_INLINE NxExtendedVec3 operator*  (const NxExtendedVec3& src) const
 			{
 			NxExtendedVec3 dest;
 			multiply(src, dest);
 			return dest;
 			}
 
-		NX_INLINE NxVec3 operator%  (const NxExtendedVec3 & src) const
+		NX_INLINE NxVec3 operator%  (const NxExtendedVec3& src) const
 			{
 			NxVec3 dest;
 			multiplyByInverseRT(src, dest);
 			return dest;
 			}
 
-		NX_INLINE NxExtendedVec3 operator_percent(const NxExtendedVec3 & src) const
+		NX_INLINE NxExtendedVec3 operator_percent(const NxExtendedVec3& src) const
 			{
 			NxExtendedVec3 dest;
 			multiplyByInverseRT(src, dest);
@@ -555,7 +553,7 @@
 		NxExtendedVec3	t;
 	};
 
-	NX_INLINE NxExtendedVec3 NxMat34_multiplyByInverseRT(const NxMat34& m, const NxExtendedVec3 & src)
+	NX_INLINE NxExtendedVec3 NxMat34_multiplyByInverseRT(const NxMat34& m, const NxExtendedVec3& src)
 		{
 		NxExtendedVec3 dest;
 //		multiplyByInverseRT(src, dest);
@@ -564,16 +562,6 @@
 		NxMat33_multiplyByTranspose(m.M, tmp, dest);
 		return dest;
 		}
-
-
-/*
-	#define	NxExtendedBox		NxBox
-	#define	NxExtendedSphere		NxSphere
-	#define	NxExtendedSegment	NxSegment
-	#define	NxExtendedCapsule	NxCapsule
-	#define	NxExtendedBounds3	NxBounds3
-	#define	NxExtendedRay		NxRay
-*/
 
 	class NxExtendedBox
 	{
@@ -631,8 +619,6 @@
 	{
 		NX_INLINE NxExtendedBounds3()
 			{
-			// Default to empty boxes for compatibility TODO: PT: remove this if useless
-			setEmpty();
 			}
 
 		NX_INLINE void setEmpty()
@@ -666,13 +652,23 @@
 			center *= 0.5;
 			}
 
+		NX_INLINE Extended	getCenter(NxU32 axis)	const
+			{
+			return (max[axis] + min[axis])*0.5;
+			}
+
 		NX_INLINE void	getExtents(NxVec3& extents) const
 			{
 			extents = max - min;
 			extents *= NxReal(0.5);
 			}
 
-		NX_INLINE bool	intersects(const NxExtendedBounds3 &b) const
+		NX_INLINE Extended	getExtents(NxU32 axis)	const
+			{
+			return (max[axis] - min[axis])*0.5;
+			}
+
+		NX_INLINE bool	intersect(const NxExtendedBounds3& b) const
 			{
 			if ((b.min.x > max.x) || (min.x > b.max.x)) return false;
 			if ((b.min.y > max.y) || (min.y > b.max.y)) return false;
@@ -680,7 +676,7 @@
 			return true;
 			}
 
-		NX_INLINE void	boundsOfOBB(const NxMat33 & orientation, const NxExtendedVec3& translation, const NxVec3 & halfDims)
+		NX_INLINE void	boundsOfOBB(const NxMat33& orientation, const NxExtendedVec3& translation, const NxVec3& halfDims)
 			{
 			NxReal dimx = halfDims[0];
 			NxReal dimy = halfDims[1];
@@ -708,13 +704,31 @@
 			boundsOfOBB(orientation, center, extents);
 			}
 
-		NX_INLINE void	combine(const NxExtendedBounds3 &b2)
+		NX_INLINE void	add(const NxExtendedBounds3& b2)
 			{
 			// - if we're empty, min = MAX,MAX,MAX => min will be b2 in all cases => it will copy b2, ok
 			// - if b2 is empty, the opposite happens => keep us unchanged => ok
 			// => same behaviour as before, automatically
 			min.min(b2.min);
 			max.max(b2.max);
+			}
+
+		NX_INLINE bool	isInside(const NxExtendedBounds3& box) const
+			{
+			if(box.min.x > min.x)	return false;
+			if(box.min.y > min.y)	return false;
+			if(box.min.z > min.z)	return false;
+			if(box.max.x < max.x)	return false;
+			if(box.max.y < max.y)	return false;
+			if(box.max.z < max.z)	return false;
+			return true;
+			}
+
+		NX_INLINE void	scale(NxF32 scale)
+			{
+			NxExtendedVec3 center;	getCenter(center);
+			NxVec3 extents;	getExtents(extents);
+			setCenterExtents(center, extents * scale);
 			}
 
 		NxExtendedVec3 min, max;
@@ -777,9 +791,9 @@
 #endif
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

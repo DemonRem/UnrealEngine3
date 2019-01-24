@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     03.08.98
-// RCS-ID:      $Id: conftest.cpp,v 1.20 2004/10/02 12:35:47 VS Exp $
+// RCS-ID:      $Id: conftest.cpp 29599 2004-10-02 12:36:02Z VS $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////

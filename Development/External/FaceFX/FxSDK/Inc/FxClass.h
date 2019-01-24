@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxClass_H__
@@ -34,10 +34,13 @@ class FxObject;
 class FxClass : public FxUseAllocator
 {
 public:
+	/// The function signature for object construction.
+	typedef FxObject* (FX_CALL *FxConstructObjectFunc)(void);
+
 	/// Constructor.
 	FxClass( const FxChar* className, FxUInt16 currentVersion, 
 			 const FxClass* pBaseClassDesc, FxSize classSize, 
-			 FxObject* (FX_CALL *constructObjectFn)() );
+			 FxConstructObjectFunc constructObjectFn );
 	/// Destructor.
 	~FxClass();
 
@@ -51,13 +54,13 @@ public:
 	/// Returns the name of the class.
 	const FxName& GetName( void ) const;
 	/// Returns the current version of the class.
-	const FxUInt16 GetCurrentVersion( void ) const;
+	FxUInt16 GetCurrentVersion( void ) const;
 	/// Returns a pointer to this class' base class (\p NULL if none).
 	const FxClass* GetBaseClassDesc( void ) const;
 	/// Returns the size of the class in memory.
-	const FxSize GetSize( void ) const;
+	FxSize GetSize( void ) const;
 	/// Returns the number of classes that directly derive from the class.
-	const FxSize GetNumChildren( void ) const;
+	FxSize GetNumChildren( void ) const;
 	/// Constructs an object of this class and returns a pointer to it (or \p NULL).
 	FxObject* ConstructObject( void ) const;
 	/// Returns a pointer to an FxClass given a class name (\p NULL if not found).
@@ -75,18 +78,19 @@ public:
 	FxBool IsA( const FxClass* classDesc ) const;
 	
 private:
-	/// The name of the class.
-	FxName _name;
-	/// The current version of the class.
-	FxUInt16 _currentVersion;
+	
 	/// A pointer to this class' base class.
 	const FxClass* _pBaseClassDesc;
+	/// A pointer to a function that can construct an object of this class.
+	FxConstructObjectFunc _constructObjectFn;
+	/// The name of the class.
+	FxName _name;
 	/// The number of classes directly deriving from this class.
 	FxSize _numChildren;
 	/// The size of this class.
 	FxSize _size;
-	/// A pointer to a function that can construct an object of this class.
-	FxObject* (FX_CALL *_constructObjectFn)();
+	/// The current version of the class.
+	FxUInt16 _currentVersion;
 	/// An array of all known FaceFX classes.
 	static FxArray<FxClass*>* _classTable;
 
@@ -253,7 +257,7 @@ private:
 			return _pClassDesc; \
 		} \
 		/* Returns the current version of the class. */ \
-		virtual const ::OC3Ent::Face::FxUInt16 GetCurrentVersion( void ) const \
+		virtual ::OC3Ent::Face::FxUInt16 GetCurrentVersion( void ) const \
 		{ \
 			/* Make sure _pClassDesc is valid. */ \
 			if( !_pClassDesc ) \
@@ -418,12 +422,8 @@ private:
 			sizeof(classname),&classname::ConstructObject); \
 	}
 
-/// A define to get the correct class version for backwards compatibility in serialization.
-/// \ingroup object
-#define FX_GET_CLASS_VERSION(classname) classname::StaticClass()->GetCurrentVersion()
-
 } // namespace Face
 
 } // namespace OC3Ent
 
-#endif
+#endif // FxClass_H__

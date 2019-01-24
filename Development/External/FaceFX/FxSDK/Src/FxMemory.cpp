@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
-// Encapsulation of memory aquisition and release.
+// Encapsulation of memory acquisition and release.
 //
 // Owner: Jamie Redmond
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxMemory.h"
@@ -19,56 +19,54 @@ namespace Face
 {
 
 FxMemoryAllocationPolicy::FxMemoryAllocationPolicy()
-#ifdef FX_DEFAULT_TO_OPERATOR_NEW
-	: allocationType(MAT_FreeStore)
-#else
-	: allocationType(MAT_Heap)
-#endif // FX_DEFAULT_TO_OPERATOR_NEW
-	, bUseMemoryPools(FxFalse)
-	, userAllocate(NULL)
+	: userAllocate(NULL)
 	, userAllocateDebug(NULL)
 	, userFree(NULL) 
-{
-}
+#ifdef FX_DEFAULT_TO_OPERATOR_NEW
+	, allocationType(MAT_FreeStore)
+#else
+	, allocationType(MAT_Heap)
+#endif // FX_DEFAULT_TO_OPERATOR_NEW
+	, bUseMemoryPools(FxFalse)
+
+{}
 
 FxMemoryAllocationPolicy::
 FxMemoryAllocationPolicy(FxMemoryAllocationType inAllocationType,
-	FxBool inbUseMemoryPools, void* (*inAllocate)(FxSize numBytes),
-	void* (*inAllocateDebug)(FxSize numBytes, const FxChar* system),
-	void  (*inFree)(void* ptr, FxSize n))
-	: allocationType(inAllocationType)
-	, bUseMemoryPools(inbUseMemoryPools)
-	, userAllocate(inAllocate)
+						 FxBool inbUseMemoryPools, 
+						 FxUserAllocateFunc inAllocate,
+						 FxUserAllocateDebugFunc inAllocateDebug, 
+						 FxUserFreeFunc inFree)
+	: userAllocate(inAllocate)
 	, userAllocateDebug(inAllocateDebug)
 	, userFree(inFree)
-{
-}
+	, allocationType(inAllocationType)
+	, bUseMemoryPools(inbUseMemoryPools)
+{}
 
 FxMemoryAllocationPolicy::
 FxMemoryAllocationPolicy(const FxMemoryAllocationPolicy& other)
-	: allocationType(other.allocationType)
-	, bUseMemoryPools(other.bUseMemoryPools)
-	, userAllocate(other.userAllocate)
+	: userAllocate(other.userAllocate)
 	, userAllocateDebug(other.userAllocateDebug)
 	, userFree(other.userFree)
-{
-}
+	, allocationType(other.allocationType)
+	, bUseMemoryPools(other.bUseMemoryPools)
+{}
 
 FxMemoryAllocationPolicy& FxMemoryAllocationPolicy::
 operator=(const FxMemoryAllocationPolicy& other)
 {
 	if( this == &other ) return *this;
-	allocationType = other.allocationType;
-	bUseMemoryPools = other.bUseMemoryPools;
 	userAllocate = other.userAllocate;
 	userAllocateDebug = other.userAllocateDebug;
 	userFree = other.userFree;
+	allocationType = other.allocationType;
+	bUseMemoryPools = other.bUseMemoryPools;
 	return *this;
 }
 
 FxMemoryAllocationPolicy::~FxMemoryAllocationPolicy() 
-{
-}
+{}
 
 // Built-in free store and heap memory allocation / free functions.
 void* FxHeapAllocate(FxSize numBytes)
@@ -177,20 +175,19 @@ private:
 	// Finds the chunk that owns ptr. Returns NULL if no chunk owns ptr.
 	FxMemoryChunk* FindOwnerChunk(void* ptr);
 
+	// Singly linked list of memory chunks.
+	FxMemoryChunkEntry* _pChunks;
 	// The size of each memory block in each memory chunk.
 	FxSize _blockSize;
 	// The number of memory blocks in each memory chunk.
 	FxByte _numBlocks;
-	// Singly linked list of memory chunks.
-	FxMemoryChunkEntry* _pChunks;
 };
 
 FxFixedSizeMemoryAllocator::FxFixedSizeMemoryAllocator()
-	: _blockSize(0)
+	: _pChunks(NULL)
+	, _blockSize(0)
 	, _numBlocks(0)
-	, _pChunks(NULL)
-{
-}
+{}
 
 FxFixedSizeMemoryAllocator::~FxFixedSizeMemoryAllocator()
 {
@@ -213,8 +210,10 @@ void FxFixedSizeMemoryAllocator::Initialize(FxSize blockSize)
 
 	FxAssert(_pChunks == NULL);
 #ifdef FX_TRACK_MEMORY_STATS
+	FxAssert(gAllocationPolicy.userAllocateDebug);
 	_pChunks = static_cast<FxMemoryChunkEntry*>(gAllocationPolicy.userAllocateDebug(sizeof(FxMemoryChunkEntry), "FxMemoryChunkEntry"));
 #else
+	FxAssert(gAllocationPolicy.userAllocate);
 	_pChunks = static_cast<FxMemoryChunkEntry*>(gAllocationPolicy.userAllocate(sizeof(FxMemoryChunkEntry)));
 #endif // FX_TRACK_MEMORY_STATS
 	_pChunks->pNext = NULL;
@@ -229,6 +228,7 @@ void FxFixedSizeMemoryAllocator::Destroy()
 		pChunkEntry->chunk.Destroy();
 		FxMemoryChunkEntry* pTemp = pChunkEntry;
 		pChunkEntry = pChunkEntry->pNext;
+		FxAssert(gAllocationPolicy.userFree);
 		gAllocationPolicy.userFree(pTemp, sizeof(FxMemoryChunkEntry));
 	}
 	_pChunks = NULL;
@@ -250,6 +250,7 @@ void FxFixedSizeMemoryAllocator::Trim()
 				memoryChunk.Destroy();
 				FxMemoryChunkEntry* pTemp = pChunkEntry;
 				pChunkEntry = pChunkEntry->pNext;
+				FxAssert(gAllocationPolicy.userFree);
 				gAllocationPolicy.userFree(pTemp, sizeof(FxMemoryChunkEntry));
 			}
 			else
@@ -284,8 +285,10 @@ FX_INLINE void* FxFixedSizeMemoryAllocator::Allocate()
 	FxAssert(pPreviousChunkEntry->pNext == NULL);
 	FxAssert(pChunkEntry == NULL);
 #ifdef FX_TRACK_MEMORY_STATS
+	FxAssert(gAllocationPolicy.userAllocateDebug);
 	pChunkEntry = static_cast<FxMemoryChunkEntry*>(gAllocationPolicy.userAllocateDebug(sizeof(FxMemoryChunkEntry), "FxMemoryChunkEntry"));
 #else
+	FxAssert(gAllocationPolicy.userAllocate);
 	pChunkEntry = static_cast<FxMemoryChunkEntry*>(gAllocationPolicy.userAllocate(sizeof(FxMemoryChunkEntry)));
 #endif // FX_TRACK_MEMORY_STATS
 	pChunkEntry->pNext = NULL;
@@ -364,8 +367,10 @@ void FxFixedSizeMemoryAllocator::FxMemoryChunk::Initialize(FxSize blockSize, FxB
 	FxAssert(numBlocks == ((blockSize * numBlocks) / blockSize));
 	memorySize = static_cast<FxSize>(blockSize * numBlocks);
 #ifdef FX_TRACK_MEMORY_STATS
+	FxAssert(gAllocationPolicy.userAllocateDebug);
 	pMemory = static_cast<FxByte*>(gAllocationPolicy.userAllocateDebug(memorySize, "FxMemoryChunk"));
 #else
+	FxAssert(gAllocationPolicy.userAllocate);
 	pMemory = static_cast<FxByte*>(gAllocationPolicy.userAllocate(memorySize));
 #endif // FX_TRACK_MEMORY_STATS
 	Reset(blockSize, numBlocks);
@@ -374,6 +379,7 @@ void FxFixedSizeMemoryAllocator::FxMemoryChunk::Initialize(FxSize blockSize, FxB
 void FxFixedSizeMemoryAllocator::FxMemoryChunk::Destroy()
 {
 	FxAssert(pMemory != NULL);
+	FxAssert(gAllocationPolicy.userFree);
 	gAllocationPolicy.userFree(pMemory, memorySize);
 	pMemory = NULL;
 	memorySize = 0;
@@ -517,7 +523,8 @@ struct FxMemoryAllocation
 		, next(NULL)
 		, prev(NULL)
 	{
-		FxStrncpy(system, sys, 24);
+		FxMemset(system, 0, 24*sizeof(FxChar));
+		FxStrncpy(system, 24, sys, 24);
 		system[23] = '\0'; // Ensure null-terminated.
 	}
 
@@ -584,6 +591,7 @@ void* FxPoolAllocateDebug(FxSize numBytes, const FxChar* system)
 			}
 		}
 	}
+	FxAssert(gAllocationPolicy.userAllocateDebug);
 	return gAllocationPolicy.userAllocateDebug(numBytes, system);
 }
 
@@ -629,6 +637,7 @@ FX_INLINE void* FxPoolAllocate(FxSize numBytes)
 			}
 		}
 	}
+	FxAssert(gAllocationPolicy.userAllocate);
 	return gAllocationPolicy.userAllocate(numBytes);
 }
 
@@ -651,6 +660,7 @@ FX_INLINE void FxPoolFree(void* ptr, FxSize n)
 				}
 			}
 		}
+		FxAssert(gAllocationPolicy.userFree);
 		gAllocationPolicy.userFree(ptr, n);
 	}
 }
@@ -708,6 +718,7 @@ void FxMemoryTracker::AddAllocation(void* ptr, FxSize size, const FxChar* system
 void FxMemoryTracker::RemoveAllocation(void* ptr)
 {
 	FxMemoryAllocation* currAlloc = reinterpret_cast<FxMemoryAllocation*>(ptr);
+	FxByte* dataStartPtr = static_cast<FxByte*>(ptr) + sizeof(FxStartFlag) + sizeof(FxMemoryAllocation);
 
 	// First, a sanity check: the allocation information structure stores a
 	// pointer to the location in memory that was actually returned to the 
@@ -715,12 +726,22 @@ void FxMemoryTracker::RemoveAllocation(void* ptr)
 	// either massive damage preceding the block (i.e., the client wrote off 
 	// the beginning of the array by at least 36 bytes) or the memory chunk 
 	// was not originally allocated with our system.
-	if( static_cast<FxByte*>(currAlloc->ptr) != 
-		static_cast<FxByte*>(ptr) + sizeof(FxMemoryAllocation) + sizeof(FxStartFlag) )
+	if( static_cast<FxByte*>(currAlloc->ptr) != dataStartPtr )
 	{
 		FxAssert(!"FxMemoryTracker Error: Block not allocated by this system, or damage detected before block");
 		//@todo: abort? continue?
 		return;
+	}
+
+	// Check that we're not doing a duplicate free.
+	FxBool freed = FxTrue;
+	for( FxSize i = 0; i < currAlloc->size; ++i )
+	{
+		freed &= dataStartPtr[i] == FxFreeFill;
+	}
+	if( freed )
+	{
+		FxAssert(!"FxMemoryTracker Error: Block has already been freed.");
 	}
 
 	// Remove the allocation from the system.

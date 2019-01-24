@@ -1,12 +1,12 @@
 /* -------------------------------------------------------------------------
  * Project:     GSocket (Generic Socket)
- * Name:        gsocket.cpp
+ * Name:        src/msw/gsocket.cpp
  * Copyright:   (c) Guilhem Lavaux
  * Licence:     wxWindows Licence
  * Author:      Guillermo Rodriguez Garcia <guille@iies.es>
  * Purpose:     GSocket main MSW file
  * Licence:     The wxWindows licence
- * CVSID:       $Id: gsocket.cpp,v 1.18 2005/08/31 15:48:38 SN Exp $
+ * CVSID:       $Id: gsocket.cpp 52492 2008-03-14 14:17:14Z JS $
  * -------------------------------------------------------------------------
  */
 
@@ -55,7 +55,6 @@
 
 #ifndef __GSOCKET_STANDALONE__
 #   include "wx/platform.h"
-#   include "wx/setup.h"
 #endif
 
 #if wxUSE_SOCKETS || defined(__GSOCKET_STANDALONE__)
@@ -223,7 +222,7 @@ void GSocket::Shutdown()
   /* If socket has been created, shutdown it */
   if (m_fd != INVALID_SOCKET)
   {
-    shutdown(m_fd, 2);
+    shutdown(m_fd, 1 /* SD_SEND */);
     Close();
   }
 
@@ -400,8 +399,9 @@ GSocketError GSocket::SetServer()
   /* allow a socket to re-bind if the socket is in the TIME_WAIT
      state after being previously closed.
    */
-  if (m_reusable) {
-    setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&arg, sizeof(u_long));
+  if (m_reusable)
+  {
+    setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&arg, sizeof(arg));
   }
 
   /* Bind to the local address,
@@ -594,6 +594,18 @@ GSocketError GSocket::Connect(GSocketStream stream)
   ioctlsocket(m_fd, FIONBIO, (u_long FAR *) &arg);
   gs_gui_functions->Enable_Events(this);
 
+  // If the reuse flag is set, use the applicable socket reuse flag
+  if (m_reusable)
+  {
+     setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&arg, sizeof(arg));
+  }
+
+  // If a local address has been set, then we need to bind to it before calling connect
+  if (m_local && m_local->m_addr)
+  {
+    bind(m_fd, m_local->m_addr, m_local->m_len);
+  }
+
   /* Connect it to the peer address, with a timeout (see below) */
   ret = connect(m_fd, m_peer->m_addr, m_peer->m_len);
 
@@ -690,6 +702,11 @@ GSocketError GSocket::SetNonOriented()
   ioctlsocket(m_fd, FIONBIO, (u_long FAR *) &arg);
   gs_gui_functions->Enable_Events(this);
 
+  if (m_reusable)
+  {
+    setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&arg, sizeof(arg));
+  }
+
   /* Bind to the local address,
    * and retrieve the actual address bound.
    */
@@ -726,7 +743,10 @@ int GSocket::Read(char *buffer, int size)
 
   /* If the socket is blocking, wait for data (with a timeout) */
   if (Input_Timeout() == GSOCK_TIMEDOUT)
+  {
+    m_error = GSOCK_TIMEDOUT;
     return -1;
+  }
 
   /* Read the data */
   if (m_stream)
@@ -834,30 +854,28 @@ GSocketEventFlags GSocket::Select(GSocketEventFlags flags)
       return (result & flags);
     }
 
+    /* Check for exceptions and errors */
+    if (FD_ISSET(m_fd, &exceptfds))
+    {
+      m_establishing = false;
+      m_detected = GSOCK_LOST_FLAG;
+
+      /* LOST event: Abort any further processing */
+      return (GSOCK_LOST_FLAG & flags);
+    }
+
     /* Check for readability */
     if (FD_ISSET(m_fd, &readfds))
     {
-      char c;
+      result |= GSOCK_INPUT_FLAG;
 
-      if (!m_stream || recv(m_fd, &c, 1, MSG_PEEK) > 0)
+      if (m_server && m_stream)
       {
-        result |= GSOCK_INPUT_FLAG;
-      }
-      else
-      {
-        if (m_server && m_stream)
-        {
-          result |= GSOCK_CONNECTION_FLAG;
-          m_detected |= GSOCK_CONNECTION_FLAG;
-        }
-        else
-        {
-          m_detected = GSOCK_LOST_FLAG;
-          m_establishing = false;
-
-          /* LOST event: Abort any further processing */
-          return (GSOCK_LOST_FLAG & flags);
-        }
+        /* This is a TCP server socket that detected a connection.
+           While the INPUT_FLAG is also set, it doesn't matter on
+           this kind of  sockets, as we can only Accept() from them. */
+        result |= GSOCK_CONNECTION_FLAG;
+        m_detected |= GSOCK_CONNECTION_FLAG;
       }
     }
 
@@ -890,16 +908,6 @@ GSocketEventFlags GSocket::Select(GSocketEventFlags flags)
       {
         result |= GSOCK_OUTPUT_FLAG;
       }
-    }
-
-    /* Check for exceptions and errors (is this useful in Unices?) */
-    if (FD_ISSET(m_fd, &exceptfds))
-    {
-      m_establishing = false;
-      m_detected = GSOCK_LOST_FLAG;
-
-      /* LOST event: Abort any further processing */
-      return (GSOCK_LOST_FLAG & flags);
     }
 
     return (result & flags);
@@ -1443,7 +1451,7 @@ GSocketError GAddress_INET_SetPortName(GAddress *address, const char *port,
   se = getservbyname(port, protocol);
   if (!se)
   {
-    if (isdigit(port[0]))
+    if (isdigit((unsigned char) port[0]))
     {
       int port_int;
 
@@ -1559,4 +1567,3 @@ GSocketError GAddress_UNIX_GetPath(GAddress *address, char *WXUNUSED(path), size
 typedef void (*wxDummy)();
 
 #endif  /* wxUSE_SOCKETS || defined(__GSOCKET_STANDALONE__) */
-

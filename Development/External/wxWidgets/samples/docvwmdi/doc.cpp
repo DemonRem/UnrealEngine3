@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: doc.cpp,v 1.15 2005/03/01 16:53:19 ABX Exp $
+// RCS-ID:      $Id: doc.cpp 43015 2006-11-04 10:42:53Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -23,10 +19,15 @@
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
-#include "wx/txtstrm.h"
 
 #if !wxUSE_DOC_VIEW_ARCHITECTURE
 #error You must set wxUSE_DOC_VIEW_ARCHITECTURE to 1 in setup.h!
+#endif
+
+#if wxUSE_STD_IOSTREAM
+    #include "wx/ioswrap.h"
+#else
+    #include "wx/txtstrm.h"
 #endif
 
 #include "doc.h"
@@ -121,7 +122,7 @@ wxInputStream& DrawingDocument::LoadObject(wxInputStream& stream)
 }
 #endif
 
-DoodleSegment::DoodleSegment(DoodleSegment& seg)
+DoodleSegment::DoodleSegment(const DoodleSegment& seg)
               :wxObject()
 {
   wxList::compatibility_iterator node = seg.lines.GetFirst();

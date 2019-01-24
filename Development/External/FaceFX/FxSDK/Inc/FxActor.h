@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxActor_H__
@@ -14,6 +14,7 @@
 #include "FxList.h"
 #include "FxArray.h"
 #include "FxFaceGraph.h"
+#include "FxCompiledFaceGraph.h"
 #include "FxMasterBoneList.h"
 #include "FxAnim.h"
 #include "FxAnimSet.h"
@@ -34,7 +35,9 @@ enum FxMountUnmountExtendedInfo
 {
 	MUE_Duplicate = 0,			   ///< The animation group already exists.
 	MUE_InvalidMountedAnimSet,	   ///< The group is not a mounted animation set.
-	MUE_CurrentlyPlayingTryLater,  ///< An instance of the actor is currently playing an animation.  Try the operation again later.
+	MUE_CurrentlyPlayingTryLater,  ///< An instance of the actor is currently 
+								   ///< playing an animation.  Try the operation 
+								   ///< again later.
 	MUE_None					   ///< No error occurred.
 };
 
@@ -53,8 +56,6 @@ class FxActor : public FxNamedObject
 	FX_NO_COPY_OR_ASSIGNMENT(FxActor)
 
 public:
-	friend class FxActorInstance;
-
 	/// Constructor.
 	FxActor();
 	/// Destructor.
@@ -69,12 +70,6 @@ public:
 	/// Shuts down the actor management system.
 	/// \note For internal use only.  Never call this directly.
 	static void FX_CALL Shutdown( void );
-
-	/// Links the master bone list and the animations to the %Face Graph.  This
-	/// should be called any time nodes are added to or deleted from the %Face
-	/// Graph.  This functionality is not wrapped by FxActor because the
-	/// %Face Graph supports iterators with direct access to the graph.
-	virtual void Link( void );
 
 	/// Returns FxTrue if the client application should perform its own FaceFX
 	/// actor relinking steps.  This is provided for convenience and will only 
@@ -93,10 +88,28 @@ public:
 
 	/// Returns a non-const reference to the actor's master bone list.
 	FX_INLINE FxMasterBoneList& GetMasterBoneList( void ) { return _masterBoneList; }
+	/// Returns a const reference to the actor's master bone list.
+	FX_INLINE const FxMasterBoneList& GetMasterBoneList( void ) const { return _masterBoneList; }
 
-	/// Returns a non-const reference to the actor's %Face Graph.
-	FX_INLINE FxFaceGraph& GetFaceGraph( void ) { return _faceGraph; }
+	/// Returns a non-const reference to the actor's decompiled %Face Graph.
+	/// \note GetDecompiledFaceGraph() returns the decompiled representation of 
+	/// the %Face Graph.  You should not be using this representation in-game as
+	/// it is not in an optimized format and is only useful in the FaceFX tools.
+	/// If you do need to use it and the face graph returned is empty, it could 
+	/// mean that the face graph is in fact empty or you have not yet called 
+	/// FxActor::DecompileFaceGraph().
+	FX_INLINE FxFaceGraph& GetDecompiledFaceGraph( void ) { return _decompiledFaceGraph; }
 
+	//@todo finish compiled graph docs
+	/// Returns a non-const reference to the actor's compiled %Face Graph.
+	FX_INLINE FxCompiledFaceGraph& GetCompiledFaceGraph( void ) { return _compiledFaceGraph; }
+	/// Compiles the actor's face graph from the decompiled face graph.
+	/// \note This is generally only useful in the FaceFX tools.
+	void CompileFaceGraph( void );
+	/// Decompiles the actor's face graph from the compiled face graph.
+	/// \note This is generally only useful in the FaceFX tools.
+	void DecompileFaceGraph( void );
+	
 	/// Adds an animation to the specified group.  
 	/// \param group The name of the animation group.  If the group isn't found, it is created.  
 	/// \param anim The animation to be added.
@@ -187,6 +200,12 @@ public:
 	/// \param name The name of the actor to find.
 	/// \return \p NULL if the actor is not found, otherwise a valid pointer to the actor.
 	static FxActor* FX_CALL FindActor( const FxName& name );
+	/// Returns FxTrue if the FxActor pointer \a actor is contained in the 
+	/// global actor list.
+	/// \param actor A pointer to the actor.
+	/// \return FxTrue if \a actor is in the global actor list, FxFalse 
+	/// otherwise.
+	static FxBool FX_CALL FindActorPtr( FxActor* actor );
 	/// Sets the flag that determines if the built-in FaceFX actor management system should
 	/// assume control of the memory used by actors added to the actor management system.
 	/// The default value is FxTrue.
@@ -211,15 +230,17 @@ public:
 	/// Frees the memory associated with all the actors in the global actor list.
 	static void FX_CALL FlushActors( void );
 
-	/// Adds a register for the %Face Graph node named 'name' to all instances of this actor.
-	/// \return \p FxTrue if the register was added, otherwise \p FxFalse.
-	FxBool AddRegister( const FxName& name );
-	/// Removes the register for the %Face Graph node named 'name' from all instances of this actor.
-	/// \return \p FxTrue if the register was removed, otherwise \p FxFalse.
-	FxBool RemoveRegister( const FxName& name );
-
 	/// Returns the phoneme map for the actor.
 	FX_INLINE FxPhonemeMap& GetPhonemeMap( void ) { return _phonemeMap; }
+	/// Sets the phoneme map for the actor.
+	FX_INLINE void SetPhonemeMap( const FxPhonemeMap& phonemeMap ) { _phonemeMap = phonemeMap; }
+
+	/// Adds an instance of this actor to the tracked instance list.
+	/// \note Internal use only.
+	void AddInstance( FxActorInstance* pActorInstance );
+	/// Removes an instance of this actor from the tracked instance list.
+	/// \note Internal use only.
+	void RemoveInstance( FxActorInstance* pActorInstance );
 	
 	/// Serializes an FxActor to an archive.
 	virtual void Serialize( FxArchive& arc );
@@ -242,7 +263,11 @@ protected:
 	FxMasterBoneList _masterBoneList;
 
 	/// The \ref OC3Ent::Face::FxFaceGraph "Face Graph" for this actor.
-	FxFaceGraph _faceGraph;
+	FxFaceGraph _decompiledFaceGraph;
+
+	/// The \ref OC3Ent::Face::FxCompiledFaceGraph "Compiled Face Graph" for 
+	/// this actor.
+	FxCompiledFaceGraph _compiledFaceGraph;
 
 	/// The default animation group for this actor.
 	FxAnimGroup _defaultAnimGroup;
@@ -254,17 +279,12 @@ protected:
 	/// A list of all actor instances referring to this actor.
 	FxList<FxActorInstance*> _instanceList;
 
-	/// The register definitions that each actor instance should contain.
-	FxArray<FxFaceGraphNode*> _registerDefs;
-
 	/// The phoneme map for the actor.
 	FxPhonemeMap _phonemeMap;
 
-	/// Links up the bones from the master bone list to the %Face Graph.
-	void _linkBones( void );
-	
-	/// Links up the animation tracks to their %Face Graph nodes.
-	void _linkAnims( void );
+	/// Finds an instance in the instance list.
+	FxBool _findInstance( FxActorInstance* pActorInstance, 
+		                  FxList<FxActorInstance*>::Iterator& instanceIter );
 };
 
 /// Utility function to load an actor from a file on disc.
@@ -315,8 +335,8 @@ FX_INLINE FxSize FxActor::GetNumAnimGroups( void ) const
 FX_INLINE FxSize FxActor::FindAnimGroup( const FxName& name ) const
 {	
 	FxSize numAnimGroups = _animGroups.Length();
-	FxList<FxAnimGroup>::Iterator magIter    = _mountedAnimGroups.Begin();
-	FxList<FxAnimGroup>::Iterator magEndIter = _mountedAnimGroups.End();
+	FxList<FxAnimGroup>::ConstIterator magIter    = _mountedAnimGroups.Begin();
+	FxList<FxAnimGroup>::ConstIterator magEndIter = _mountedAnimGroups.End();
 	for( FxSize magIndex = 0; magIter != magEndIter; ++magIter, ++magIndex )
 	{
 		if( magIter->GetName() == name )
@@ -360,8 +380,8 @@ FX_INLINE FxAnimGroup& FxActor::GetAnimGroup( FxSize index )
 
 FX_INLINE FxBool FxActor::IsAnimGroupMounted( const FxName& group ) const
 {
-	FxList<FxAnimGroup>::Iterator magIter    = _mountedAnimGroups.Begin();
-	FxList<FxAnimGroup>::Iterator magEndIter = _mountedAnimGroups.End();
+	FxList<FxAnimGroup>::ConstIterator magIter    = _mountedAnimGroups.Begin();
+	FxList<FxAnimGroup>::ConstIterator magEndIter = _mountedAnimGroups.End();
 	for( ; magIter != magEndIter; ++magIter )
 	{
 		if( magIter->GetName() == group )

@@ -4,7 +4,7 @@
 // Author:      Hans Van Leemputten
 // Modified by:
 // Created:     29/07/2002
-// RCS-ID:      $Id: mdig.cpp,v 1.21 2005/08/16 20:22:54 ABX Exp $
+// RCS-ID:      $Id: mdig.cpp 41069 2006-09-08 14:38:49Z VS $
 // Copyright:   (c) Hans Van Leemputten
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "mdig.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,13 +24,17 @@
     #pragma hdrstop
 #endif
 
+#if wxUSE_MDI
+
+#include "wx/generic/mdig.h"
+
 #ifndef WX_PRECOMP
     #include "wx/panel.h"
     #include "wx/menu.h"
     #include "wx/intl.h"
+    #include "wx/log.h"
 #endif //WX_PRECOMP
 
-#include "wx/generic/mdig.h"
 #include "wx/stockitem.h"
 
 enum MDI_MENU_ID
@@ -403,7 +403,6 @@ wxGenericMDIChildFrame::wxGenericMDIChildFrame( wxGenericMDIParentFrame *parent,
     Create( parent, id, title, wxDefaultPosition, size, style, name );
 }
 
-#include "wx/log.h"
 wxGenericMDIChildFrame::~wxGenericMDIChildFrame()
 {
     wxGenericMDIParentFrame *pParentFrame = GetMDIParentFrame();
@@ -815,5 +814,7 @@ IMPLEMENT_DYNAMIC_CLASS(wxMDIParentFrame, wxGenericMDIParentFrame)
 IMPLEMENT_DYNAMIC_CLASS(wxMDIChildFrame, wxGenericMDIChildFrame)
 IMPLEMENT_DYNAMIC_CLASS(wxMDIClientWindow, wxGenericMDIClientWindow)
 
-#endif
+#endif // wxUSE_GENERIC_MDI_AS_NATIVE
+
+#endif // wxUSE_MDI
 

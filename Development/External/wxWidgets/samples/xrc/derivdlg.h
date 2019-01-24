@@ -2,7 +2,7 @@
 // Name:        xmldemo.cpp
 // Purpose:     XML resources sample: A derived dialog
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: derivdlg.h,v 1.6 2004/12/06 10:28:47 VS Exp $
+// RCS-ID:      $Id: derivdlg.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
@@ -13,14 +13,6 @@
 
 #ifndef _DERIVDLG_H_
 #define _DERIVDLG_H_
-
-//-----------------------------------------------------------------------------
-// GCC interface
-//-----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "derivdlg.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Headers

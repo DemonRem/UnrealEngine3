@@ -10,10 +10,6 @@ not be used much longer.
 This code was used as a starting point for my rc2xml converter
 */
 
-#ifdef __GNUG__
-#pragma implementation "rc2wxr.h"
-#endif
-
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -157,7 +153,7 @@ wxFprintf(m_wxr,_T("static char *dialog%i = \"dialog(name = '%s',\\\n"),dlgid,dl
 
 //be lazy about style for now. add it later
 
-wxFprintf(m_wxr,_T("style = 'wxRAISED_BORDER | wxCAPTION | wxTHICK_FRAME | wxSYSTEM_MENU',\\\n"));
+wxFprintf(m_wxr,_T("style = 'wxRAISED_BORDER | wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU',\\\n"));
 wxFprintf(m_wxr,_T("id = %i,\\\n"),dlgid);
 
 //Record x,y,width,height
@@ -799,4 +795,3 @@ void rc2wxr::ParseCtrlButton(wxString label, wxString varname)
         wxFprintf(m_wxr,_T("[8, 'wxSWISS', 'wxNORMAL', 'wxNORMAL', 0, 'MS Sans Serif']],\\\n"));
     }
 }
-

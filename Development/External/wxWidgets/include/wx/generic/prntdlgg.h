@@ -5,17 +5,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: prntdlgg.h,v 1.28 2005/05/04 18:52:32 JS Exp $
+// RCS-ID:      $Id: prntdlgg.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __PRINTDLGH_G_
 #define __PRINTDLGH_G_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "prntdlgg.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -31,13 +27,13 @@
     #include "wx/dcps.h"
 #endif
 
-class WXDLLEXPORT wxTextCtrl;
-class WXDLLEXPORT wxButton;
-class WXDLLEXPORT wxCheckBox;
-class WXDLLEXPORT wxComboBox;
-class WXDLLEXPORT wxStaticText;
-class WXDLLEXPORT wxRadioBox;
-class WXDLLEXPORT wxPageSetupData;
+class WXDLLIMPEXP_FWD_CORE wxTextCtrl;
+class WXDLLIMPEXP_FWD_CORE wxButton;
+class WXDLLIMPEXP_FWD_CORE wxCheckBox;
+class WXDLLIMPEXP_FWD_CORE wxComboBox;
+class WXDLLIMPEXP_FWD_CORE wxStaticText;
+class WXDLLIMPEXP_FWD_CORE wxRadioBox;
+class WXDLLIMPEXP_FWD_CORE wxPageSetupData;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -90,7 +86,8 @@ public:
     virtual bool TransferTo( wxPrintData &data );
     virtual bool TransferFrom( const wxPrintData &data );
 
-    virtual bool Ok() const { return true; }
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const { return true; }
 
     const wxString& GetPrinterCommand() const { return m_printerCommand; }
     const wxString& GetPrinterOptions() const { return m_printerOptions; }

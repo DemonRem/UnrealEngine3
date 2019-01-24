@@ -1,40 +1,32 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        validate.cpp
+// Name:        src/common/validate.cpp
 // Purpose:     wxValidator
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: validate.cpp,v 1.14 2004/09/24 14:32:33 ABX Exp $
+// RCS-ID:      $Id: validate.cpp 39656 2006-06-09 21:21:53Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "validate.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-  #include "wx/defs.h"
+    #pragma hdrstop
 #endif
 
 #if wxUSE_VALIDATORS
 
-#ifndef WX_PRECOMP
-  #include "wx/window.h"
-#endif
-
 #include "wx/validate.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/window.h"
+#endif
 
 const wxValidator wxDefaultValidator;
 
-    IMPLEMENT_DYNAMIC_CLASS(wxValidator, wxEvtHandler)
+IMPLEMENT_DYNAMIC_CLASS(wxValidator, wxEvtHandler)
 
 // VZ: personally, I think true would be more appropriate - these bells are
 //     _annoying_

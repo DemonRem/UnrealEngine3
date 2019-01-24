@@ -1157,6 +1157,13 @@ GENERATE_LEGEND        = YES
 
 DOT_CLEANUP            = YES
 
+# going to managed C++
+
+CPP_CLI_SUPPORT        = YES
+
+
+
+
 #---------------------------------------------------------------------------
 # Configuration::additions related to the search engine   
 #---------------------------------------------------------------------------

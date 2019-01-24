@@ -2,14 +2,22 @@
 #define NX_PHYSICS_NXCAPSULECONTROLLER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
 #include "NxCharacter.h"
 #include "NxController.h"
+
+enum NxCapsuleClimbingMode
+	{
+	CLIMB_EASY,			//!< Standard mode, let the capsule climb over surfaces according to impact normal
+	CLIMB_CONSTRAINED,	//!< Constrained mode, try to limit climbing according to the step offset
+
+	CLIMB_LAST
+	};
 
 /**
 \brief A descriptor for a capsule character controller.
@@ -34,7 +42,12 @@ class NxCapsuleControllerDesc : public NxControllerDesc
 
 	\return True if the descriptor is valid.
 	*/
-	NX_INLINE virtual	bool				isValid()		const;
+	NX_INLINE virtual	bool				isValid()		const { return !checkValid(); }
+		/**
+		\brief returns 0 if the current settings are valid
+		*/
+		NX_INLINE NxU32 checkValid() const;
+
 
 						/**
 						\brief The radius of the capsule
@@ -53,6 +66,15 @@ class NxCapsuleControllerDesc : public NxControllerDesc
 						@see NxCapsuleController
 						*/
 						NxF32				height;
+
+						/**
+						\brief The climbing mode
+
+						<b>Default:</b> CLIMB_CONSTRAINED
+
+						@see NxCapsuleController
+						*/
+						NxCapsuleClimbingMode	climbingMode;
 	};
 
 NX_INLINE NxCapsuleControllerDesc::NxCapsuleControllerDesc () : NxControllerDesc(NX_CONTROLLER_CAPSULE)
@@ -68,14 +90,14 @@ NX_INLINE void NxCapsuleControllerDesc::setToDefault()
 	{
 	NxControllerDesc::setToDefault();
 	radius = height = 0.0f;
+	climbingMode = CLIMB_CONSTRAINED;
 	}
 
-NX_INLINE bool NxCapsuleControllerDesc::isValid() const
+NX_INLINE NxU32 NxCapsuleControllerDesc::checkValid() const
 	{
-	if(!NxControllerDesc::isValid())	return false;
-	if(radius<=0.0f)					return false;
-	if(height<=0.0f)					return false;
-	return true;
+	if(radius<=0.0f)					return 1;
+	if(height<=0.0f)					return 2;
+	return 3*NxControllerDesc::checkValid();
 	}
 /**
 \brief A capsule character controller.
@@ -133,6 +155,15 @@ class NxCapsuleController : public NxController
 	virtual		NxF32			getHeight() const = 0;
 
 	/**
+	\brief Gets controller's climbing mode.
+
+	\return The capsule controller's climbing mode.
+
+	@see NxCapsuleControllerDesc.climbingMode setClimbingMode()
+	*/
+	virtual		NxCapsuleClimbingMode	getClimbingMode()	const	= 0;
+
+	/**
 	\brief Resets controller's height.
 
 	\warning this doesn't check for collisions.
@@ -154,15 +185,24 @@ class NxCapsuleController : public NxController
 	virtual	    void			setStepOffset(const float offset) =0;
 
 	/**
+	\brief Sets controller's climbing mode.
+
+	\param[in] mode The capsule controller's climbing mode.
+
+	@see NxCapsuleControllerDesc.climbingMode getClimbingMode()
+	*/
+	virtual		bool			setClimbingMode(NxCapsuleClimbingMode mode)	= 0;
+
+	/**
 	\brief The character controller uses caching in order to speed up collision testing, this caching can not detect when static objects have changed in the scene. You need to call this method when such changes have been made.
 	*/
 	virtual		void			reportSceneChanged() = 0;
 	};
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

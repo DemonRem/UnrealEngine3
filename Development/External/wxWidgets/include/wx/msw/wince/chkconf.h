@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        wx/wince/chkconf.h
+// Name:        wx/msw/wince/chkconf.h
 // Purpose:     WinCE-specific configuration options checks
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2005-03-07
-// RCS-ID:      $Id: chkconf.h,v 1.7 2005/07/30 12:46:11 VZ Exp $
+// RCS-ID:      $Id: chkconf.h 40023 2006-07-06 07:07:52Z ABX $
 // Copyright:   (c) 2005 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,6 +18,12 @@
     #undef wxUSE_STDPATHS
     #define wxUSE_STDPATHS 0
 #endif // WCE_PLATFORM_STANDARDSDK
+
+#if _WIN32_WCE < 400
+    // not enough API and lack of ddraw.h
+    #undef wxUSE_DISPLAY
+    #define wxUSE_DISPLAY 0
+#endif
 
 // DDE doesn't exist under WinCE and wxIPC is DDE-based under MSW
 #undef wxUSE_IPC
@@ -33,10 +39,6 @@
 // eVC doesn't support SEH
 #undef wxUSE_ON_FATAL_EXCEPTION
 #define wxUSE_ON_FATAL_EXCEPTION 0
-
-// media stuff not supported under CE
-#undef wxUSE_MEDIACTRL
-#define wxUSE_MEDIACTRL 0
 
 #undef wxUSE_WXHTML_HELP
 #define wxUSE_WXHTML_HELP 0
@@ -69,7 +71,7 @@
 
 
 // Disable features which don't make sense for MS Smartphones
-// (due to pointer device usage, limited controls, file system)
+// (due to pointer device usage, limited controls or dialogs, file system)
 #if defined(__SMARTPHONE__)
     #undef wxUSE_LISTBOOK
     #define wxUSE_LISTBOOK 0
@@ -79,6 +81,9 @@
 
     #undef wxUSE_STATUSBAR
     #define wxUSE_STATUSBAR 0
+
+    #undef wxUSE_COLOURPICKERCTRL
+    #define wxUSE_COLOURPICKERCTRL 0
 #endif // __SMARTPHONE__
 
 #endif // _WX_MSW_WINCE_CHKCONF_H_

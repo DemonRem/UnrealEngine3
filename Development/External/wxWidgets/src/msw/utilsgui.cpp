@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     21.06.2003 (extracted from msw/utils.cpp)
-// RCS-ID:      $Id: utilsgui.cpp,v 1.11 2005/05/31 09:20:34 JS Exp $
+// RCS-ID:      $Id: utilsgui.cpp 40369 2006-07-29 20:33:10Z VZ $
 // Copyright:   (c) Julian Smart
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,6 +29,8 @@
     #include "wx/window.h"
     #include "wx/utils.h"
 #endif //WX_PRECOMP
+
+#include "wx/dynlib.h"
 
 #include "wx/msw/private.h"     // includes <windows.h>
 
@@ -157,7 +159,7 @@ extern HCURSOR wxGetCurrentBusyCursor()
 }
 
 // Set the cursor to the busy cursor for all windows
-void wxBeginBusyCursor(wxCursor *cursor)
+void wxBeginBusyCursor(const wxCursor *cursor)
 {
     if ( gs_wxBusyCursorCount++ == 0 )
     {
@@ -257,7 +259,7 @@ void wxGetMousePosition( int* x, int* y )
     GetCursorPos( & pt );
     if ( x ) *x = pt.x;
     if ( y ) *y = pt.y;
-};
+}
 
 // Return true if we have a colour display
 bool wxColourDisplay()
@@ -451,4 +453,51 @@ void wxDrawLine(HDC hdc, int x1, int y1, int x2, int y2)
 #endif
 }
 
+
+// ----------------------------------------------------------------------------
+// Shell API wrappers
+// ----------------------------------------------------------------------------
+
+extern bool wxEnableFileNameAutoComplete(HWND hwnd)
+{
+#if wxUSE_DYNLIB_CLASS
+    typedef HRESULT (WINAPI *SHAutoComplete_t)(HWND, DWORD);
+
+    static SHAutoComplete_t s_pfnSHAutoComplete = NULL;
+    static bool s_initialized = false;
+
+    if ( !s_initialized )
+    {
+        s_initialized = true;
+
+        wxLogNull nolog;
+        wxDynamicLibrary dll(_T("shlwapi.dll"));
+        if ( dll.IsLoaded() )
+        {
+            s_pfnSHAutoComplete =
+                (SHAutoComplete_t)dll.GetSymbol(_T("SHAutoComplete"));
+            if ( s_pfnSHAutoComplete )
+            {
+                // won't be unloaded until the process termination, no big deal
+                dll.Detach();
+            }
+        }
+    }
+
+    if ( !s_pfnSHAutoComplete )
+        return false;
+
+    HRESULT hr = s_pfnSHAutoComplete(hwnd, 0x10 /* SHACF_FILESYS_ONLY */);
+    if ( FAILED(hr) )
+    {
+        wxLogApiError(_T("SHAutoComplete"), hr);
+        return false;
+    }
+
+    return true;
+#else
+    wxUnusedVar(hwnd);
+    return false;
+#endif // wxUSE_DYNLIB_CLASS/!wxUSE_DYNLIB_CLASS
+}
 

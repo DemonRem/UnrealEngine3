@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: msgdlgg.h,v 1.19 2005/03/11 15:33:17 ABX Exp $
+// RCS-ID:      $Id: msgdlgg.h 49765 2007-11-09 18:32:38Z DE $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,17 +12,13 @@
 #ifndef __MSGDLGH_G__
 #define __MSGDLGH_G__
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "msgdlgg.h"
-#endif
-
-#include "wx/setup.h"
+#include "wx/defs.h"
 #include "wx/dialog.h"
 
 // type is an 'or' (|) of wxOK, wxCANCEL, wxYES_NO
 // Returns wxYES/NO/OK/CANCEL
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxMessageBoxCaptionStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxMessageBoxCaptionStr[];
 
 class WXDLLEXPORT wxGenericMessageDialog: public wxDialog, public wxMessageDialogBase
 {
@@ -41,7 +37,7 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
-#if (!defined( __WXMSW__ ) && !defined( __WXMAC__) && !defined(__WXPM__)) || defined(__WXUNIVERSAL__)
+#if (!defined( __WXMSW__ ) && !defined( __WXMAC__) && !defined(__WXPM__) && !defined(__WXCOCOA__)) || defined(__WXUNIVERSAL__)
 #define wxMessageDialog wxGenericMessageDialog
 #endif
 

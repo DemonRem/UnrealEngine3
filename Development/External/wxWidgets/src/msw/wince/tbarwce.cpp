@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/wince/tbarwce.cpp
+// Name:        src/msw/wince/tbarwce.cpp
 // Purpose:     wxToolBar for Windows CE
 // Author:      Julian Smart
 // Modified by:
 // Created:     2003-07-12
-// RCS-ID:      $Id: tbarwce.cpp,v 1.27 2005/06/20 00:22:56 VZ Exp $
+// RCS-ID:      $Id: tbarwce.cpp 44268 2007-01-20 14:13:52Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "tbarwce.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,22 +24,23 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/frame.h"
-    #include "wx/log.h"
-    #include "wx/intl.h"
-    #include "wx/dynarray.h"
-    #include "wx/settings.h"
-    #include "wx/bitmap.h"
-    #include "wx/dcmemory.h"
-    #include "wx/control.h"
-#endif
-
 // Use the WinCE-specific toolbar only if we're either compiling
 // with a WinCE earlier than 4, or we wish to emulate a PocketPC-style UI
 #if wxUSE_TOOLBAR && wxUSE_TOOLBAR_NATIVE && (_WIN32_WCE < 400 || defined(__POCKETPC__) || defined(__SMARTPHONE__))
 
 #include "wx/toolbar.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
+    #include "wx/dynarray.h"
+    #include "wx/frame.h"
+    #include "wx/log.h"
+    #include "wx/intl.h"
+    #include "wx/settings.h"
+    #include "wx/bitmap.h"
+    #include "wx/dcmemory.h"
+    #include "wx/control.h"
+#endif
 
 #if !defined(__GNUWIN32__) && !defined(__SALFORDC__)
     #include "malloc.h"
@@ -55,7 +52,6 @@
 #include <tchar.h>
 #include <ole2.h>
 #include <shellapi.h>
-#include <commctrl.h>
 #if defined(WINCE_WITHOUT_COMMANDBAR)
   #include <aygshell.h>
 #endif
@@ -124,7 +120,7 @@ public:
     // a control in the toolbar
     void SetSeparatorsCount(size_t count) { m_nSepCount = count; }
     size_t GetSeparatorsCount() const { return m_nSepCount; }
-    
+
     void SetBitmapIndex(int idx) { m_bitmapIndex = idx; }
     int GetBitmapIndex() const { return m_bitmapIndex; }
 
@@ -167,8 +163,8 @@ wxToolBarToolBase *wxToolMenuBar::CreateTool(wxControl *control)
 void wxToolMenuBar::Init()
 {
     wxToolBar::Init();
-    
-    m_nButtons = 0;    
+
+    m_nButtons = 0;
     m_menuBar = NULL;
 }
 
@@ -401,7 +397,7 @@ bool wxToolMenuBar::Realize()
                 break;
 
             case wxTOOL_STYLE_BUTTON:
-            
+
                 if ( HasFlag(wxTB_TEXT) )
                 {
                     const wxString& label = tool->GetLabel();
@@ -495,10 +491,21 @@ bool wxToolMenuBar::MSWCommand(WXUINT WXUNUSED(cmd), WXWORD id)
     wxToolBarToolBase *tool = FindById((int)id);
     if ( !tool )
     {
+        bool checked = false;
+        if ( m_menuBar )
+        {
+            wxMenuItem *item = m_menuBar->FindItem(id);
+            if ( item && item->IsCheckable() )
+            {
+                item->Toggle();
+                checked = item->IsChecked();
+            }
+        }
+
         wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED);
         event.SetEventObject(this);
         event.SetId(id);
-        event.SetInt(id);
+        event.SetInt(checked);
 
         return GetEventHandler()->ProcessEvent(event);
     }
@@ -547,7 +554,7 @@ WXLRESULT wxToolMenuBar::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lP
             break;
     }
 
-    return wxControl::MSWWindowProc(nMsg, wParam, lParam);
+    return MSWDefWindowProc(nMsg, wParam, lParam);
 }
 
 
@@ -593,10 +600,10 @@ bool wxToolBar::Create(wxWindow *parent,
     // satisfy other parts of wxWidgets.
 
     parent->AddChild(this);
-    
+
     SetWindowStyle(style);
     SetName(name);
-    
+
     return true;
 }
 
@@ -641,7 +648,4 @@ void wxToolBar::DoSetToggle(wxToolBarToolBase *WXUNUSED(tool), bool WXUNUSED(tog
 #endif
     // !__SMARTPHONE__
 
-
-
-#endif // wxUSE_TOOLBAR && Win95
-
+#endif // wxUSE_TOOLBAR

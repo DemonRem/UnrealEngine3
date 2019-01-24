@@ -3,7 +3,7 @@
 // Purpose:     wxStopWatch and global time-related functions
 // Author:      Julian Smart (wxTimer), Sylvain Bougnoux (wxStopWatch)
 // Created:     26.06.03 (extracted from wx/timer.h)
-// RCS-ID:      $Id: stopwatch.h,v 1.9 2005/05/04 18:52:03 JS Exp $
+// RCS-ID:      $Id: stopwatch.h 40624 2006-08-16 12:17:05Z MW $
 // Copyright:   (c) 1998-2003 Julian Smart, Sylvain Bougnoux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ public:
     // pause the stop watch
     void Pause()
     {
-        if ( !m_pauseCount++ )
+        if ( m_pauseCount++ == 0 )
             m_pause = GetElapsedTime();
     }
 
@@ -42,7 +42,7 @@ public:
         wxASSERT_MSG( m_pauseCount > 0,
                       _T("Resuming stop watch which is not paused") );
 
-        if ( !--m_pauseCount )
+        if ( --m_pauseCount == 0 )
             Start(m_pause);
     }
 
@@ -66,17 +66,17 @@ private:
 
 #endif // wxUSE_STOPWATCH
 
-#if wxUSE_LONGLONG
+#if wxUSE_LONGLONG && WXWIN_COMPATIBILITY_2_6
 
-// Starts a global timer
-// -- DEPRECATED: use wxStopWatch instead
-void WXDLLIMPEXP_BASE wxStartTimer();
+    // Starts a global timer
+    // -- DEPRECATED: use wxStopWatch instead
+    wxDEPRECATED( void WXDLLIMPEXP_BASE wxStartTimer() );
 
-// Gets elapsed milliseconds since last wxStartTimer or wxGetElapsedTime
-// -- DEPRECATED: use wxStopWatch instead
-long WXDLLIMPEXP_BASE wxGetElapsedTime(bool resetTimer = true);
+    // Gets elapsed milliseconds since last wxStartTimer or wxGetElapsedTime
+    // -- DEPRECATED: use wxStopWatch instead
+    wxDEPRECATED( long WXDLLIMPEXP_BASE wxGetElapsedTime(bool resetTimer = true) );
 
-#endif // wxUSE_LONGLONG
+#endif // wxUSE_LONGLONG && WXWIN_COMPATIBILITY_2_6
 
 // ----------------------------------------------------------------------------
 // global time functions
@@ -89,11 +89,14 @@ extern long WXDLLIMPEXP_BASE wxGetLocalTime();
 extern long WXDLLIMPEXP_BASE wxGetUTCTime();
 
 #if wxUSE_LONGLONG
-// Get number of milliseconds since local time 00:00:00 Jan 1st 1970
-extern wxLongLong WXDLLIMPEXP_BASE wxGetLocalTimeMillis();
+    typedef wxLongLong wxMilliClock_t;
+#else
+    typedef double wxMilliClock_t;
 #endif // wxUSE_LONGLONG
+
+// Get number of milliseconds since local time 00:00:00 Jan 1st 1970
+extern wxMilliClock_t WXDLLIMPEXP_BASE wxGetLocalTimeMillis();
 
 #define wxGetCurrentTime() wxGetLocalTime()
 
 #endif // _WX_STOPWATCH_H_
-

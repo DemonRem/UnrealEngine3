@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxMasterBoneList.h"
@@ -15,21 +15,21 @@ namespace OC3Ent
 namespace Face
 {
 
-#define kCurrentFxMasterBoneListVersion 1
+#define kCurrentFxMasterBoneListVersion 2
 
 FxMasterBoneList::FxMasterBoneListEntry::
 FxBoneLink::FxBoneLink()
-	: valueIndex(FxInvalidIndex)
+	: nodeIndex(FxInvalidIndex)
 {
 }
 
 FxMasterBoneList::FxMasterBoneListEntry::
-FxBoneLink::FxBoneLink( FxSize iValueIndex, 
+FxBoneLink::FxBoneLink( FxSize iNodeIndex, 
 					    const FxName& optimizedBoneName,
 					    const FxVec3& optimizedBonePos, 
 					    const FxQuat& optimizedBoneRot, 
 					    const FxVec3& optimizedBoneScale )
-	: valueIndex(iValueIndex)
+	: nodeIndex(iNodeIndex)
 	, optimizedBone(optimizedBoneName, optimizedBonePos, optimizedBoneRot, optimizedBoneScale)
 {
 }
@@ -37,6 +37,11 @@ FxBoneLink::FxBoneLink( FxSize iValueIndex,
 FxMasterBoneList::FxMasterBoneListEntry::
 FxBoneLink::~FxBoneLink()
 {
+}
+
+FxArchive& operator<<( FxArchive& arc, FxMasterBoneList::FxMasterBoneListEntry::FxBoneLink& link )
+{
+	return arc << link.nodeIndex << link.optimizedBone;
 }
 
 FxMasterBoneList::
@@ -63,40 +68,66 @@ FxMasterBoneListEntry::~FxMasterBoneListEntry()
 }
 
 void FxMasterBoneList::
-FxMasterBoneListEntry::Link( FxFaceGraph& faceGraph )
+FxMasterBoneListEntry::PullBone( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg )
 {
-	// Clear out the links and reserve some space.  This used to be a two phase
-	// algorithm which counted the number of links required and allocated
-	// only the exact number of links but that proved to be too costly in terms
-	// of execution time.
+	// Clear out any previous links.
 	links.Clear();
-	//@todo Set this as a constant somewhere?  This will probably go away with
-	//      a future face graph revision to reduce run-time cost of face graph
-	//      iteration and evaluation.  For most content this should be a good
-	//      estimate.
-	links.Reserve(32);
 	// Find the reference bone in any of the bone pose nodes and create the 
-	// links.  
-	FxFaceGraph::Iterator bonePoseNodeIter    = faceGraph.Begin(FxBonePoseNode::StaticClass());
+	// links.  This is two passes to prevent memory fragmentation.
+	// First pass: count the number of bone pose nodes that contain the 
+	// reference bone.
+	FxSize numLinks = 0;
+	FxFaceGraph::Iterator bonePoseNodeIter = faceGraph.Begin(FxBonePoseNode::StaticClass());
 	FxFaceGraph::Iterator bonePoseNodeEndIter = faceGraph.End(FxBonePoseNode::StaticClass());
-	FxSize bonePoseNodeIndex = 0;
-	for( ; bonePoseNodeIter != bonePoseNodeEndIter; ++bonePoseNodeIter, ++bonePoseNodeIndex )
+	for( ; bonePoseNodeIter != bonePoseNodeEndIter; ++bonePoseNodeIter )
 	{
-		FxBonePoseNode* pBonePoseNode = static_cast<FxBonePoseNode*>(bonePoseNodeIter.GetNode());
-		if( pBonePoseNode )
+		FxBonePoseNode* pBonePoseNode = FxCast<FxBonePoseNode>(bonePoseNodeIter.GetNode());
+		FxAssert(pBonePoseNode);
+		FxSize numBones = pBonePoseNode->GetNumBones();
+		for( FxSize i = 0; i < numBones; ++i )
 		{
-			FxSize numBones = pBonePoseNode->GetNumBones();
-			for( FxSize i = 0; i < numBones; ++i )
+			const FxBone& poseBone = pBonePoseNode->GetBone(i);
+			if( poseBone.GetName() == refBone.GetName() )
 			{
-				const FxBone& poseBone = pBonePoseNode->GetBone(i);
-				if( poseBone.GetName() == refBone.GetName() )
-				{
-					links.PushBack(FxBoneLink(bonePoseNodeIndex, poseBone.GetName(), 
-						           (poseBone.GetPos() - refBone.GetPos()), poseBone.GetRot(), 
-						           (poseBone.GetScale() - refBone.GetScale())));
-				}
+				numLinks++;
 			}
 		}
+	}
+	// Second pass: reserve the exact amount of space and create the links.
+	links.Reserve(numLinks);
+	bonePoseNodeIter = faceGraph.Begin(FxBonePoseNode::StaticClass());
+	for( ; bonePoseNodeIter != bonePoseNodeEndIter; ++bonePoseNodeIter )
+	{
+		FxBonePoseNode* pBonePoseNode = static_cast<FxBonePoseNode*>(bonePoseNodeIter.GetNode());
+		FxAssert(pBonePoseNode);
+		FxSize numBones = pBonePoseNode->GetNumBones();
+		for( FxSize i = 0; i < numBones; ++i )
+		{
+			const FxBone& poseBone = pBonePoseNode->GetBone(i);
+			if( poseBone.GetName() == refBone.GetName() )
+			{
+				links.PushBack(FxBoneLink(cg.FindNodeIndex(pBonePoseNode->GetName()), 
+					                      poseBone.GetName(), 
+									      (poseBone.GetPos() - refBone.GetPos()), 
+										  poseBone.GetRot(), 
+										  (poseBone.GetScale() - refBone.GetScale())));
+			}
+		}
+	}
+}
+
+void FxMasterBoneList::
+FxMasterBoneListEntry::PushBone( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg )
+{
+	FxSize numLinks = links.Length();
+	for( FxSize i = 0; i < numLinks; ++i )
+	{
+		FxBonePoseNode* pBonePoseNode = static_cast<FxBonePoseNode*>(faceGraph.FindNode(cg.nodes[links[i].nodeIndex].name));
+		FxAssert(pBonePoseNode);
+		FxBone poseBone = links[i].optimizedBone;
+		poseBone.SetPos(refBone.GetPos() + poseBone.GetPos());
+		poseBone.SetScale(refBone.GetScale() + poseBone.GetScale());
+		pBonePoseNode->AddBone(poseBone);
 	}
 }
 
@@ -125,6 +156,20 @@ FxMasterBoneListEntry::Prune( FxFaceGraph& faceGraph )
 			}
 		}
 	}
+}
+
+FxArchive& operator<<( FxArchive& arc, FxMasterBoneList::FxMasterBoneListEntry& entry )
+{
+	if( arc.GetSDKVersion() < 1700 && arc.IsLoading() )
+	{
+		// Since this is the same version as the master bone list itself, as of
+		// version 1.7 these are no longer have individual versions.
+		FxUInt16 version = kCurrentFxMasterBoneListVersion;
+		arc << version;
+	}
+
+	return arc << entry.refBone << entry.refBoneInverseRot << entry.index 
+		       << entry.refWeight << entry.links;
 }
 
 FxMasterBoneList::FxMasterBoneList()
@@ -171,21 +216,21 @@ SetRefBoneClientIndex( FxSize refBoneIndex, FxInt32 clientIndex )
 	_refBones[refBoneIndex].index = clientIndex;
 }
 
-void FxMasterBoneList::Link( FxFaceGraph& faceGraph )
+void FxMasterBoneList::PullBones( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg )
 {
-	// Reserve enough room in _bonePoseNodeValues for all FxBonePoseNodes in
-	// faceGraph.
-	_bonePoseNodeValues.Clear();
-	FxSize numBonePoseNodes = faceGraph.CountNodes(FxBonePoseNode::StaticClass());
-	_bonePoseNodeValues.Reserve(numBonePoseNodes);
-	for( FxSize i = 0; i < numBonePoseNodes; ++i )
-	{
-		_bonePoseNodeValues.PushBack(FxInvalidValue);
-	}
 	FxSize numRefBones = _refBones.Length();
 	for( FxSize i = 0; i < numRefBones; ++i )
 	{
-		_refBones[i].Link(faceGraph);
+		_refBones[i].PullBone(faceGraph, cg);
+	}
+}
+
+void FxMasterBoneList::PushBones( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg )
+{
+	FxSize numRefBones = _refBones.Length();
+	for( FxSize i = 0; i < numRefBones; ++i )
+	{
+		_refBones[i].PushBone(faceGraph, cg);
 	}
 }
 
@@ -228,45 +273,37 @@ void FxMasterBoneList::Prune( FxFaceGraph& faceGraph )
 
 FxArchive& operator<<( FxArchive& arc, FxMasterBoneList& mbl )
 {
-	if( arc.IsLoading() )
+	FxUInt16 version = arc.SerializeClassVersion("FxMasterBoneList", FxTrue, kCurrentFxMasterBoneListVersion);
+
+	if( version < 2 )
 	{
-		mbl._refBones.Clear();
-	}
-
-	FxUInt16 version = kCurrentFxMasterBoneListVersion;
-	arc << version;
-
-	FxSize length = mbl._refBones.Length();
-	arc << length;
-
-	if( arc.IsSaving() )
-	{
-		for( FxSize i = 0; i < length; ++i )
+		if( arc.IsLoading() )
 		{
-			arc << mbl._refBones[i].refBone;
-			arc << mbl._refBones[i].index;
-			arc << mbl._refBones[i].refWeight;
+			mbl._refBones.Clear();
+			FxSize length = 0;
+			arc << length;
+			mbl._refBones.Reserve(length);
+			for( FxSize i = 0; i < length; ++i )
+			{
+				FxBone bone;
+				arc << bone;
+				FxMasterBoneList::FxMasterBoneListEntry newEntry(bone);
+				FxInt32 index;
+				arc << index;
+				newEntry.index = index;
+				if( version >= 1 )
+				{
+					FxReal refWeight;
+					arc << refWeight;
+					newEntry.refWeight = refWeight;
+				}
+				mbl._refBones.PushBack(newEntry);
+			}
 		}
 	}
 	else
 	{
-		mbl._refBones.Reserve(length);
-		for( FxSize i = 0; i < length; ++i )
-		{
-			FxBone bone;
-			arc << bone;
-			FxMasterBoneList::FxMasterBoneListEntry newEntry(bone);
-			FxInt32 index;
-			arc << index;
-			newEntry.index = index;
-			if( version >= 1 )
-			{
-				FxReal refWeight;
-				arc << refWeight;
-				newEntry.refWeight = refWeight;
-			}
-			mbl._refBones.PushBack(newEntry);
-		}
+		arc << mbl._refBones;
 	}
 
 	return arc;

@@ -5,32 +5,47 @@
 // Modified by:
 // Created:
 // Copyright:   (c) Julian Smart
-// RCS-ID:      $Id: gdiobj.h,v 1.13 2005/05/04 18:51:58 JS Exp $
+// RCS-ID:      $Id: gdiobj.h 42211 2006-10-21 17:19:11Z SN $
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_GDIOBJ_H_BASE_
 #define _WX_GDIOBJ_H_BASE_
 
-#if defined(__WXPALMOS__)
-#include "wx/palmos/gdiobj.h"
-#elif defined(__WXMSW__)
-#include "wx/msw/gdiobj.h"
-#elif defined(__WXMOTIF__)
-#include "wx/motif/gdiobj.h"
-#elif defined(__WXGTK__)
-#include "wx/gtk/gdiobj.h"
-#elif defined(__WXX11__)
-#include "wx/x11/gdiobj.h"
-#elif defined(__WXMGL__)
-#include "wx/mgl/gdiobj.h"
-#elif defined(__WXMAC__)
-#include "wx/mac/gdiobj.h"
-#elif defined(__WXCOCOA__)
-#include "wx/cocoa/gdiobj.h"
-#elif defined(__WXPM__)
-#include "wx/os2/gdiobj.h"
-#endif
+#include "wx/object.h"
+
+// ----------------------------------------------------------------------------
+// wxGDIRefData is the base class for wxXXXData structures which contain the
+// real data for the GDI object and are shared among all wxWin objects sharing
+// the same native GDI object
+// ----------------------------------------------------------------------------
+
+class WXDLLIMPEXP_CORE wxGDIRefData: public wxObjectRefData { };
+
+// ----------------------------------------------------------------------------
+// wxGDIObject
+// ----------------------------------------------------------------------------
+
+class WXDLLIMPEXP_CORE wxGDIObject: public wxObject
+{
+public:
+    bool IsNull() const { return m_refData == NULL; }
+
+#if defined(__WXMSW__) || defined(__WXPM__) || defined(__WXPALMOS__)
+    // Creates the resource
+    virtual bool RealizeResource() { return false; }
+
+    // Frees the resource
+    virtual bool FreeResource(bool WXUNUSED(force) = false) { return false; }
+
+    virtual bool IsFree() const { return false; }
+
+    // Returns handle.
+    virtual WXHANDLE GetResourceHandle() const { return 0; }
+#endif // defined(__WXMSW__) || defined(__WXPM__)
+
+    DECLARE_DYNAMIC_CLASS(wxGDIObject)
+};
 
 #endif
     // _WX_GDIOBJ_H_BASE_

@@ -5,17 +5,13 @@
 // Author:      Aleksandras Gluchovas <mailto:alex@soften.ktu.lt>
 // Modified by:
 // Created:     06/09/98
-// RCS-ID:      $Id: controlbar.h,v 1.23 2005/06/15 02:08:12 MR Exp $
+// RCS-ID:      $Id: controlbar.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __CONTROLBAR_G__
 #define __CONTROLBAR_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "controlbar.h"
-#endif
 
 #include "wx/defs.h"
 #include "wx/string.h"

@@ -5,22 +5,23 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
 #include "NxMeshData.h"
-#include "fluids/NxParticleData.h"
-#include "fluids/NxParticleIdData.h"
-#include "fluids/NxParticleUpdateData.h"
-#include "fluids/NxFluidPacketData.h"
-#include "fluids/NxFluidEmitterDesc.h"
+#include "NxParticleData.h"
+#include "NxParticleIdData.h"
+#include "NxParticleUpdateData.h"
+#include "NxFluidPacketData.h"
+#include "NxFluidEmitterDesc.h"
 
 #include "NxSceneDesc.h"
 
 #include "NxArray.h"
+#include "NxPlane.h"
 
 class NxCompartment;
 
@@ -54,7 +55,7 @@ enum NxFluidSimulationMethod
 	/**
 	\brief Alternate between SPH and simple particles
 	*/
-	NX_F_MIXED_MODE					= (1<<2),
+	NX_F_MIXED_MODE					= (1<<2)
 	};
 
 /**
@@ -62,11 +63,16 @@ enum NxFluidSimulationMethod
 
 The NxFluid instance can be selected for collision with both static and dynamic shapes.
 
+<b>Platform:</b>
+\li PC SW: Yes
+\li GPU  : Yes
+\li PS3  : No
+\li XB360: No
 */
 enum NxFluidCollisionMethod
 	{
 	NX_F_STATIC					= (1<<0),	
-	NX_F_DYNAMIC 				= (1<<1),
+	NX_F_DYNAMIC 				= (1<<1)
 	};
 
 /**
@@ -92,10 +98,11 @@ enum NxFluidFlag
 	control the strength of the feedback force on rigid bodies.
 
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxFluieDesc.collisionResponseCoefficient
 	*/
@@ -106,26 +113,52 @@ enum NxFluidFlag
 	\brief Enable/disable execution of fluid simulation.
 
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_FF_ENABLED								= (1<<3),
 
 	/**
-	\brief Defines whether this fluid is simulated on the PPU.
+	\brief Defines whether this fluid is simulated on the GPU.
 	*/
 	NX_FF_HARDWARE								= (1<<4),
 
 	/**
 	\brief Enable/disable particle priority mode. 
 	If enabled, the oldest particles are deleted to keep a certain budget for 
-	new particles. 
+	new particles. Note that particles which have equal lifetime can get deleted 
+	at the same time. In order to avoid this, the particle lifetimes 
+	can be varied randomly.
 
 	@see NxFluidDesc.numReserveParticles
 	*/
 	NX_FF_PRIORITY_MODE							= (1<<5),
+
+	/**
+	\brief Defines whether the particles of this fluid should be projected to a plane.
+	This can be used to build 2D fluid applications, for instance. The projection
+	plane is defined by the parameter NxFluidDesc.projectionPlane.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxFluidDesc.projectionPlane
+	*/
+	NX_FF_PROJECT_TO_PLANE						= (1<<6),
+
+	/**
+	\brief Forces fluid static mesh cooking format to parameters given by the fluid descriptor.
+
+	Currently not implemented!
+	*/
+	NX_FF_FORCE_STRICT_COOKING_FORMAT			= (1<<7)
 
 	};
 
@@ -161,7 +194,9 @@ class NxFluidDescBase
 	there are no more than (maxParticles - numReserveParticles) particles left. This removal
 	is carried out for each simulation step, on particles which have a finite life time 
 	(i.e. > 0.0). The deletion guarantees a reserve of numReserveParticles particles which 
-	can be added for each simulaiton step.
+	can be added for each simulaiton step. Note that particles which have equal lifetime can 
+	get deleted at the same time. In order to avoid this, the particle lifetimes 
+	can be varied randomly.
 
 	This parameter must be smaller than NxFluidDesc.maxParticles.
 	*/
@@ -213,6 +248,8 @@ class NxFluidDescBase
 
 	Default value is 3.6 (i.e., 3.0 * kernelRadiusMultiplier).
 
+	The value must not be higher than the product of packetSizeMultiplier and kernelRadiusMultiplier.
+
 	@see restParticlesPerMeter
 	*/
 	NxReal						motionLimitMultiplier;
@@ -225,7 +262,7 @@ class NxFluidDescBase
 
 	( distance = collisionDistanceMultiplier/restParticlesPerMeter ).
 
-	It has to be positive.
+	It has to be positive and not higher than packetSizeMultiplier*kernelRadiusMultiplier.
 	Default value is 0.12 (i.e., 0.1 * kernelRadiusMultiplier).
 
 	@see restParticlesPerMeter, kernelRadiusMultiplier
@@ -240,7 +277,7 @@ class NxFluidDescBase
 	The parameter given defines the edge length of such a packet. This parameter is relative to the interaction 
 	radius of the particles, given as kernelRadiusMultiplier/restParticlesPerMeter.
 
-	It has to be a power of two.
+	It has to be a power of two, no less than 4.
 
 	*/
 	NxU32						packetSizeMultiplier;
@@ -271,6 +308,15 @@ class NxFluidDescBase
 
 	*/
 	NxReal						viscosity;
+
+	/**
+	\brief 	The surfaceTension of the fluid defines an attractive force between particles
+	
+	Higher values will result in smoother surfaces.
+	Must be nonnegative.
+
+	*/
+	NxReal						surfaceTension;
 
 	/**
 	\brief Velocity damping constant, which is globally applied to each particle.
@@ -307,6 +353,16 @@ class NxFluidDescBase
 	NxVec3						externalAcceleration;
 
 	/**
+	\brief Defines the plane the fluid particles are projected to. This parameter is only used if
+	NX_FF_PROJECT_TO_PLANE is set.
+
+	<b>Default:</b> XY plane
+
+	@see NX_FF_PROJECT_TO_PLANE NxFluid.getProjectionPlane() NxFluid.setProjectionPlane()
+	*/
+	NxPlane						projectionPlane;
+
+	/**
 	\brief Defines the restitution coefficient used for collisions of the fluid particles with static shapes.
 
 	Must be between 0 and 1.
@@ -320,10 +376,10 @@ class NxFluidDescBase
 	(Caution: values near 1 may have a negative impact on stability)
 
 	*/
-	NxReal						staticCollisionRestitution;
+	NxReal						restitutionForStaticShapes;
 	
 	/**
-	\brief Defines the "friction" of the fluid regarding the surface of a static shape.
+	\brief Defines the dynamic friction of the fluid regarding the surface of a static shape.
 
 	Must be between 0 and 1.
 	
@@ -335,18 +391,30 @@ class NxFluidDescBase
 	direction; i.e. it will slide without resistance on the surface.
 
 	*/
-	NxReal						staticCollisionAdhesion;
+	NxReal						dynamicFrictionForStaticShapes;
 	
+	/**
+	\brief Defines the static friction of the fluid regarding the surface of a static shape.
+
+	<b>Range:</b> [0,inf)
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NxReal						staticFrictionForStaticShapes;
+
 	/**
 	\brief Defines the strength of attraction between the particles and static rigid bodies on collision. 
 
-	This feature is experimental. 
-
-	<b>Default:</b> 0.0 <br>
-	<b>Range:</b> [0,inf)
+	This feature is currently unimplemented! 
 
 	*/
-	NxReal						staticCollisionAttraction;
+	NxReal						attractionForStaticShapes;
 
 	/**
 	\brief Defines the restitution coefficient used for collisions of the fluid particles with dynamic shapes.
@@ -355,30 +423,41 @@ class NxFluidDescBase
 
 	(Caution: values near 1 may have a negative impact on stability)
 
-	@see staticCollisionRestitution
+	@see restitutionForStaticShapes
 	*/
-	NxReal						dynamicCollisionRestitution;
+	NxReal						restitutionForDynamicShapes;
 	
 	/**
-	\brief Defines the "friction" of the fluid regarding the surface of a dynamic shape.
+	\brief Defines the dynamic friction of the fluid regarding the surface of a dynamic shape.
 
 	Must be between 0 and 1.
 
-	@see staticCollisionAdhesion
+	@see dynamicFrictionForStaticShapes
 	*/
-	NxReal						dynamicCollisionAdhesion;
+	NxReal						dynamicFrictionForDynamicShapes;
+
+	/**
+	\brief Defines the static friction of the fluid regarding the surface of a dynamic shape.
+
+	<b>Range:</b> [0,inf)
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NxReal						staticFrictionForDynamicShapes;
 
 	/**
 	\brief Defines the strength of attraction between the particles and the dynamic rigid bodies on collision. 
 
-	This feature is experimental. 
+	This feature is currently unimplemented! 
 
-	<b>Default:</b> 0.0 <br>
-	<b>Range:</b> [0,inf)
-
-	@see staticCollisionAttraction
 	*/
-	NxReal						dynamicCollisionAttraction;
+	NxReal						attractionForDynamicShapes;
 
 	/**
 	\brief Defines a factor for the impulse transfer from fluid to colliding rigid bodies.
@@ -427,6 +506,12 @@ class NxFluidDescBase
 	*/
 	NxGroupsMask groupsMask;
 
+	/**
+	\brief Force Field Material Index, index != 0 has to be created.
+
+	<b>Default:</b> 0
+	*/
+	NxForceFieldMaterial		forceFieldMaterial;
 
 	/**
 	\brief Defines the user data buffers which are used to store particle data, which can be used for rendering.
@@ -472,9 +557,10 @@ class NxFluidDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	<b>Default:</b> NULL
 	*/
@@ -494,7 +580,11 @@ class NxFluidDescBase
 	\brief Returns true if the current settings are valid
 
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 
 	/**
@@ -544,7 +634,11 @@ class NxFluidDesc : public NxFluidDescBase
 	\brief Returns true if the current settings are valid
 
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 /**
@@ -575,17 +669,18 @@ template<class AllocType = NxAllocatorDefault> class NxFluidDesc_Template : publ
 		emitters.clear();
 		}
 
-	NX_INLINE bool isValid() const
+	NX_INLINE NxU32 checkValid() const
 		{
-		if (!NxFluidDescBase::isValid())
-			return false;
+		NxU32 checkBase = NxFluidDescBase::checkValid();
+		if(checkBase)
+			return 3*checkBase;
 
-		if (emitters.size() > 0xffff) return false;
+		if (emitters.size() > 0xffff) return 1;
 
 		for (unsigned i = 0; i < emitters.size(); i++)
-			if (!emitters[i].isValid()) return false;
+			if (!emitters[i].isValid()) return 2;
 
-		return true;
+		return 0;
 		}
 
 	};
@@ -608,20 +703,25 @@ NX_INLINE void NxFluidDescBase::setToDefault()
 	packetSizeMultiplier		= 16;
 	stiffness					= 20.0f;
 	viscosity					= 6.0f;
+	surfaceTension				= 0.0f;
 	damping						= 0.0f;
 	fadeInTime					= 0.0f;
 	externalAcceleration.zero();
-	staticCollisionRestitution	= 0.5f;
-	staticCollisionAdhesion		= 0.05f;
-	staticCollisionAttraction	= 0.0f;
-	dynamicCollisionRestitution	= 0.5f;
-	dynamicCollisionAdhesion	= 0.5f;
-	dynamicCollisionAttraction	= 0.0f;
+	projectionPlane.set(NxVec3(0.0f, 0.0f, 1.0f), 0.0f);
+	restitutionForStaticShapes	= 0.5f;
+	dynamicFrictionForStaticShapes = 0.05f;
+	staticFrictionForStaticShapes = 0.0f;
+	attractionForStaticShapes	= 0.0f;
+	restitutionForDynamicShapes	= 0.5f;
+	dynamicFrictionForDynamicShapes = 0.5f;
+	staticFrictionForDynamicShapes = 0.0f;
+	attractionForDynamicShapes	= 0.0f;
 	collisionResponseCoefficient = 0.2f;
 
 	simulationMethod			= NX_F_SPH;
 	collisionMethod				= NX_F_STATIC|NX_F_DYNAMIC;
 	collisionGroup				= 0;	
+	forceFieldMaterial			= 0;
 	groupsMask.bits0 = 0;
 	groupsMask.bits1 = 0;
 	groupsMask.bits2 = 0;
@@ -639,57 +739,62 @@ NX_INLINE void NxFluidDescBase::setToDefault()
 	compartment					= NULL;
 	}
 
-NX_INLINE bool NxFluidDescBase::isValid() const
+NX_INLINE NxU32 NxFluidDescBase::checkValid() const
 	{
-	if (kernelRadiusMultiplier < 1.0f) return false;
-	if (restDensity <= 0.0f) return false;
-	if (restParticlesPerMeter <= 0.0f) return false;
+	if (kernelRadiusMultiplier < 1.0f) return 1;
+	if (restDensity <= 0.0f) return 2;
+	if (restParticlesPerMeter <= 0.0f) return 3;
 
-	if (packetSizeMultiplier < 4) return false;
-	if (packetSizeMultiplier & ( packetSizeMultiplier - 1 ) ) return false; 
+	if (packetSizeMultiplier < 4) return 4;
+	if (packetSizeMultiplier & ( packetSizeMultiplier - 1 ) ) return 5; 
 
-	if (motionLimitMultiplier <= 0.0f) return false;
-	if (motionLimitMultiplier > packetSizeMultiplier*kernelRadiusMultiplier) return false;
+	if (motionLimitMultiplier <= 0.0f) return 6;
+	if (motionLimitMultiplier > packetSizeMultiplier*kernelRadiusMultiplier) return 7;
 
-	if (collisionDistanceMultiplier <= 0.0f) return false;
-	if (collisionDistanceMultiplier > packetSizeMultiplier*kernelRadiusMultiplier) return false;
+	if (collisionDistanceMultiplier <= 0.0f) return 8;
+	if (collisionDistanceMultiplier > packetSizeMultiplier*kernelRadiusMultiplier) return 9;
 
-	if (stiffness <= 0.0f) return false;
-	if (viscosity <= 0.0f) return false;
+	if (stiffness <= 0.0f) return 10;
+	if (viscosity <= 0.0f) return 11;
+	if (surfaceTension < 0.0f) return 12;
 
 	bool isNoInteraction = (simulationMethod & NX_F_NO_PARTICLE_INTERACTION) > 0;
 	bool isSPH = (simulationMethod & NX_F_SPH) > 0;
 	bool isMixed = (simulationMethod & NX_F_MIXED_MODE) > 0;
-	if (!(isNoInteraction || isSPH || isMixed)) return false;
-	if (isNoInteraction && (isSPH || isMixed)) return false;
-	if (isSPH && (isNoInteraction || isMixed)) return false;
-	if (isMixed && (isNoInteraction || isSPH)) return false;
+	if (!(isNoInteraction || isSPH || isMixed)) return 13;
+	if (isNoInteraction && (isSPH || isMixed)) return 14;
+	if (isSPH && (isNoInteraction || isMixed)) return 15;
+	if (isMixed && (isNoInteraction || isSPH)) return 16;
 	
-	if (damping < 0.0f) return false;
-	if (fadeInTime < 0.0f) return false;
+	if (damping < 0.0f) return 17;
+	if (fadeInTime < 0.0f) return 18;
 
-	if (dynamicCollisionAdhesion < 0.0f || dynamicCollisionAdhesion > 1.0f) return false;
-	if (dynamicCollisionRestitution < 0.0f || dynamicCollisionRestitution > 1.0f) return false;
-	if (dynamicCollisionAttraction < 0.0f) return false;
-	if (staticCollisionAdhesion < 0.0f || staticCollisionAdhesion > 1.0f) return false;
-	if (staticCollisionRestitution < 0.0f || staticCollisionRestitution > 1.0f) return false;
-	if (staticCollisionAttraction < 0.0f) return false;
-	if (collisionResponseCoefficient < 0.0f) return false;
-	
-	if (!initialParticleData.isValid()) return false;
-	if (!particlesWriteData.isValid()) return false;
-	if (!particleDeletionIdWriteData.isValid()) return false;
-	if (!particleCreationIdWriteData.isValid()) return false;
-	if (!fluidPacketData.isValid()) return false;
-	
-	if (maxParticles > 32767) return false;
-	if (maxParticles < 1) return false;
-	
-	if (numReserveParticles >= maxParticles) return false;
+	if (projectionPlane.normal.isZero()) return 19;
 
-	if(collisionGroup >= 32) return false; // We only support 32 different collision groups
+	if (dynamicFrictionForDynamicShapes < 0.0f || dynamicFrictionForDynamicShapes > 1.0f) return 20;
+	if (staticFrictionForDynamicShapes < 0.0f) return 21;
+	if (restitutionForDynamicShapes < 0.0f || restitutionForDynamicShapes > 1.0f) return 22;
+	if (attractionForDynamicShapes < 0.0f) return 23;
+	if (dynamicFrictionForStaticShapes < 0.0f || dynamicFrictionForStaticShapes > 1.0f) return 24;
+	if (staticFrictionForStaticShapes < 0.0f) return 25;
+	if (restitutionForStaticShapes < 0.0f || restitutionForStaticShapes > 1.0f) return 26;
+	if (attractionForStaticShapes < 0.0f) return 27;
+	if (collisionResponseCoefficient < 0.0f) return 28;
+	
+	if (!initialParticleData.isValid()) return 29;
+	if (!particlesWriteData.isValid()) return 30;
+	if (!particleDeletionIdWriteData.isValid()) return 31;
+	if (!particleCreationIdWriteData.isValid()) return 32;
+	if (!fluidPacketData.isValid()) return 33;
+	
+	if (maxParticles >= (1<<16)) return 34;
+	if (maxParticles < 1) return 35;
+	
+	if (numReserveParticles >= maxParticles) return 36;
 
-	return true;
+	if(collisionGroup >= 32) return 37; // We only support 32 different collision groups
+
+	return 0;
 	}
 
 NX_INLINE NxFluidDescType NxFluidDescBase::getType() const			
@@ -710,27 +815,28 @@ NX_INLINE void NxFluidDesc::setToDefault()
 		emitters		.clear();
 	}
 
-NX_INLINE bool NxFluidDesc::isValid() const
+NX_INLINE NxU32 NxFluidDesc::checkValid() const
 	{
-		if (!NxFluidDescBase::isValid())
-			return false;
+		NxU32 checkBase = NxFluidDescBase::checkValid();
+		if(checkBase)
+			return 3*checkBase;
 
-		if (emitters.size() > 0xffff) return false;
+		if (emitters.size() > 0xffff) return 1;
 
 		for (unsigned i = 0; i < emitters.size(); i++)
-			if (!emitters[i].isValid()) return false;
+			if (!emitters[i].isValid()) return 2;
 
-		return true;
+		return 0;
 	}
 /** @} */
 
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

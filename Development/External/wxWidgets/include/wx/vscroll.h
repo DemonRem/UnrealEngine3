@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     30.05.03
-// RCS-ID:      $Id: vscroll.h,v 1.17 2005/04/05 22:43:41 VZ Exp $
+// RCS-ID:      $Id: vscroll.h 38917 2006-04-26 00:17:52Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_VSCROLL_H_
 #define _WX_VSCROLL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "vscroll.h"
-#endif
 
 #include "wx/panel.h"           // base class
 
@@ -139,6 +135,8 @@ public:
     // is kept for backwards compatibility
     size_t GetLastVisibleLine() const { return GetVisibleEnd() - 1; }
 
+    // layout the children (including the sizer if needed)
+    virtual bool Layout();
 
 protected:
     // this function must be overridden in the derived class and it should
@@ -189,6 +187,9 @@ protected:
 
     // update the thumb size shown by the scrollbar
     void UpdateScrollbar();
+
+    // remove the scrollbar completely because we don't need it
+    void RemoveScrollbar();
 
 private:
     // common part of all ctors

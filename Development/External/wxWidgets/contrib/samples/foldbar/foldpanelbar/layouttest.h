@@ -4,17 +4,13 @@
 // Author:      Jorgen Bodde
 // Modified by:
 // Created:     25/06/2004
-// RCS-ID:      $Id: layouttest.h,v 1.2 2004/08/03 14:39:06 ABX Exp $
+// RCS-ID:      $Id: layouttest.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LAYOUTTEST_H_
 #define _LAYOUTTEST_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "layouttest.cpp"
-#endif
 
 /*!
  * Includes

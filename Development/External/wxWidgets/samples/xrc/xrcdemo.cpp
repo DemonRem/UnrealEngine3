@@ -2,18 +2,10 @@
 // Name:        xrcdemo.cpp
 // Purpose:     XML resources sample: Main application file
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: xrcdemo.cpp,v 1.11 2005/07/13 17:58:34 VZ Exp $
+// RCS-ID:      $Id: xrcdemo.cpp 43619 2006-11-24 00:00:37Z VZ $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// GCC implementation
-//-----------------------------------------------------------------------------
-
-#ifdef __GNUG__
-    #pragma implementation "xrcdemo.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Standard wxWidgets headers
@@ -39,16 +31,14 @@
 #include "xrcdemo.h"
 
 //-----------------------------------------------------------------------------
-// Remaining headers: Needed wx headers, then wx/contrib headers, then application headers
+// Remaining headers: Needed wx headers, then wx/contrib headers, then app one
 //-----------------------------------------------------------------------------
 
 #include "wx/image.h"               // wxImage
 
-//-----------------------------------------------------------------------------
+#include "wx/xrc/xmlres.h"          // XRC XML resources
 
-#include "wx/xrc/xmlres.h"          // XRC XML resouces
-
-//-----------------------------------------------------------------------------
+#include "wx/cshelp.h"              // wxSimpleHelpProvider for helptext
 
 #include "myframe.h"
 
@@ -88,27 +78,54 @@ bool MyApp::OnInit()
     // into one giant XRC file if you wanted, but then they become more
     // diffcult to manage, and harder to reuse in later projects.
     // The menubar
-    wxXmlResource::Get()->Load(wxT("rc/menu.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/menu.xrc")))
+        return false;
+
     // The toolbar
-    wxXmlResource::Get()->Load(wxT("rc/toolbar.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/toolbar.xrc")))
+        return false;
+
     // Non-derived dialog example
-    wxXmlResource::Get()->Load(wxT("rc/basicdlg.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/basicdlg.xrc")))
+        return false;
+
     // Derived dialog example
-    wxXmlResource::Get()->Load(wxT("rc/derivdlg.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/derivdlg.xrc")))
+        return false;
+
     // Controls property example
-    wxXmlResource::Get()->Load(wxT("rc/controls.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/controls.xrc")))
+        return false;
+
     // Frame example
-    wxXmlResource::Get()->Load(wxT("rc/frame.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/frame.xrc")))
+        return false;
+
     // Uncentered example
-    wxXmlResource::Get()->Load(wxT("rc/uncenter.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/uncenter.xrc")))
+        return false;
+
     // Custom class example
-    wxXmlResource::Get()->Load(wxT("rc/custclas.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/custclas.xrc")))
+        return false;
+
     // wxArtProvider example
-    wxXmlResource::Get()->Load(wxT("rc/artprov.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/artprov.xrc")))
+        return false;
+
     // Platform property example
-    wxXmlResource::Get()->Load(wxT("rc/platform.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/platform.xrc")))
+        return false;
+
     // Variable expansion example
-    wxXmlResource::Get()->Load(wxT("rc/variable.xrc"));
+    if (!wxXmlResource::Get()->Load(wxT("rc/variable.xrc")))
+        return false;
+
+
+#if wxUSE_HELP
+    // Use the simple help provider to show the context-sensitive help
+    wxHelpProvider::Set( new wxSimpleHelpProvider );
+#endif // wxUSE_HELP
 
     // Make an instance of your derived frame. Passing NULL (the default value
     // of MyFrame's constructor is NULL) as the frame doesn't have a parent

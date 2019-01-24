@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- $Id: mac_bundles.bkl,v 1.8 2005/04/14 22:11:51 RD Exp $ -->
+<!-- $Id: mac_bundles.bkl 53922 2008-06-02 10:38:31Z VS $ -->
 
 <makefile>
 
@@ -31,8 +31,9 @@
             <if cond="TOOLKIT=='MAC'">$(BUNDLE)/PkgInfo</if>
             <if cond="TOOLKIT=='COCOA'">$(BUNDLE)/PkgInfo</if>
         </set>
-        
-        <add-target target="$(BUNDLE_TGT)" type="action"/>
+
+        <add-target target="$(BUNDLE_TGT)" type="action"
+                    cond="target and PLATFORM_MACOSX=='1'"/>
         <modify-target target="$(BUNDLE_TGT)">
             <!-- required data: -->
             <depends>$(id)</depends>
@@ -64,7 +65,7 @@
         
         <!-- add pseudo target id_bundle: -->
         <add-target target="$(id)_bundle" type="phony"
-                    cond="PLATFORM_MACOSX=='1'"/>
+                    cond="target and PLATFORM_MACOSX=='1'"/>
         <modify-target target="$(id)_bundle">
             <dependency-of>all</dependency-of>
             <depends>$(BUNDLE_TGT_REF)</depends>

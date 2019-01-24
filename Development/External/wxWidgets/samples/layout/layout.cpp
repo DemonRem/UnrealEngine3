@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by: Robin Dunn, Vadim Zeitlin
 // Created:     04/01/98
-// RCS-ID:      $Id: layout.cpp,v 1.42 2005/07/13 10:08:52 VZ Exp $
+// RCS-ID:      $Id: layout.cpp 42642 2006-10-29 18:10:32Z RR $
 // Copyright:   (c) 1998 Julian Smart
 //                  2005 Vadim Zeitlin
 // Licence:     wxWindows license
@@ -61,6 +61,8 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
   EVT_MENU(LAYOUT_TEST_SIZER, MyFrame::TestFlexSizers)
   EVT_MENU(LAYOUT_TEST_NB_SIZER, MyFrame::TestNotebookSizers)
   EVT_MENU(LAYOUT_TEST_GB_SIZER, MyFrame::TestGridBagSizer)
+  EVT_MENU(LAYOUT_TEST_SET_MINIMAL, MyFrame::TestSetMinimal)
+  EVT_MENU(LAYOUT_TEST_NESTED, MyFrame::TestNested)
 END_EVENT_TABLE()
 
 // Define my frame constructor
@@ -76,6 +78,8 @@ MyFrame::MyFrame()
   file_menu->Append(LAYOUT_TEST_SIZER, _T("Test wx&FlexSizer...\tF2"));
   file_menu->Append(LAYOUT_TEST_NB_SIZER, _T("Test &notebook sizers...\tF3"));
   file_menu->Append(LAYOUT_TEST_GB_SIZER, _T("Test &gridbag sizer...\tF4"));
+  file_menu->Append(LAYOUT_TEST_SET_MINIMAL, _T("Test Set&ItemMinSize...\tF5"));
+  file_menu->Append(LAYOUT_TEST_NESTED, _T("Test nested sizer in a wxPanel...\tF6"));
 
   file_menu->AppendSeparator();
   file_menu->Append(LAYOUT_QUIT, _T("E&xit"), _T("Quit program"));
@@ -96,8 +100,8 @@ MyFrame::MyFrame()
   SetStatusText(_T("wxWidgets layout demo"));
 #endif // wxUSE_STATUSBAR
 
-  wxPanel* p = new wxPanel(this, -1);
-  
+  wxPanel* p = new wxPanel(this, wxID_ANY);
+
   // we want to get a dialog that is stretchable because it
   // has a text ctrl in the middle. at the bottom, we have
   // two buttons which.
@@ -163,7 +167,7 @@ MyFrame::MyFrame()
   topsizer->Add(button_box, wxSizerFlags().Center());
 
   p->SetSizer( topsizer );
-  
+
   // don't allow frame to get smaller than what the sizers tell it and also set
   // the initial size as calculated by the sizers
   topsizer->SetSizeHints( this );
@@ -190,6 +194,18 @@ void MyFrame::TestNotebookSizers(wxCommandEvent& WXUNUSED(event) )
     MySizerDialog dialog( this, _T("Notebook Sizer Test Dialog") );
 
     dialog.ShowModal();
+}
+
+void MyFrame::TestSetMinimal(wxCommandEvent& WXUNUSED(event) )
+{
+    MySimpleSizerFrame *newFrame = new MySimpleSizerFrame(_T("Simple Sizer Test Frame"), 50, 50);
+    newFrame->Show(true);
+}
+
+void MyFrame::TestNested(wxCommandEvent& WXUNUSED(event) )
+{
+    MyNestedSizerFrame *newFrame = new MyNestedSizerFrame(_T("Nested Sizer Test Frame"), 50, 50);
+    newFrame->Show(true);
 }
 
 
@@ -291,7 +307,7 @@ MyFlexSizerFrame::MyFlexSizerFrame(const wxChar *title, int x, int y )
             : wxFrame(NULL, wxID_ANY, title, wxPoint(x, y) )
 {
     wxFlexGridSizer *sizerFlex;
-    wxPanel* p = new wxPanel(this, -1);
+    wxPanel* p = new wxPanel(this, wxID_ANY);
 
     // consttuct the first column
     wxSizer *sizerCol1 = new wxBoxSizer(wxVERTICAL);
@@ -392,9 +408,9 @@ MySizerDialog::MySizerDialog(wxWindow *parent, const wxChar *title)
 
     wxSizer *panelsizer = new wxBoxSizer( wxVERTICAL );
 
-    wxTextCtrl *text = new wxTextCtrl( panel, wxID_ANY, _T("TextLine 1."), wxDefaultPosition, wxSize(250,-1) );
+    wxTextCtrl *text = new wxTextCtrl( panel, wxID_ANY, _T("TextLine 1."), wxDefaultPosition, wxSize(250,wxDefaultCoord) );
     panelsizer->Add( text, 0, wxGROW|wxALL, 30 );
-    text = new wxTextCtrl( panel, wxID_ANY, _T("TextLine 2."), wxDefaultPosition, wxSize(250,-1) );
+    text = new wxTextCtrl( panel, wxID_ANY, _T("TextLine 2."), wxDefaultPosition, wxSize(250,wxDefaultCoord) );
     panelsizer->Add( text, 0, wxGROW|wxALL, 30 );
     wxButton *button2 = new wxButton( panel, wxID_ANY, _T("Hallo") );
     panelsizer->Add( button2, 0, wxALIGN_RIGHT | wxLEFT|wxRIGHT|wxBOTTOM, 30 );
@@ -417,7 +433,7 @@ MySizerDialog::MySizerDialog(wxWindow *parent, const wxChar *title)
 #define POS(r, c)        wxGBPosition(r,c)
 #define SPAN(r, c)       wxGBSpan(r,c)
 
-wxChar* gbsDescription =_T("\
+const wxChar gbsDescription[] =_T("\
 The wxGridBagSizer is similar to the wxFlexGridSizer except the items are explicitly positioned\n\
 in a virtual cell of the layout grid, and column or row spanning is allowed.  For example, this\n\
 static text is positioned at (0,0) and it spans 7 columns.");
@@ -430,7 +446,7 @@ enum {
     GBS_MOVE_BTN1,
     GBS_MOVE_BTN2,
 
-    GBS_MAX,
+    GBS_MAX
 };
 
 
@@ -478,8 +494,8 @@ MyGridBagSizerFrame::MyGridBagSizerFrame(const wxChar *title, int x, int y )
     m_hideBtn = new wxButton(p, GBS_HIDE_BTN, _T("Hide this item -->"));
     m_gbs->Add(m_hideBtn, POS(12, 3));
 
-    m_hideTxt = new wxTextCtrl(p, wxID_ANY, _T("pos(12,4), size(150, -1)"),
-                                wxDefaultPosition, wxSize(150,-1));
+    m_hideTxt = new wxTextCtrl(p, wxID_ANY, _T("pos(12,4), size(150, wxDefaultCoord)"),
+                                wxDefaultPosition, wxSize(150,wxDefaultCoord));
     m_gbs->Add( m_hideTxt, POS(12,4) );
 
     m_showBtn = new wxButton(p, GBS_SHOW_BTN, _T("<-- Show it again"));
@@ -540,3 +556,105 @@ when compiled in debug mode."), _T("Warning"), wxOK | wxICON_INFORMATION);
     }
     m_gbs->Layout();
 }
+
+// ----------------------------------------------------------------------------
+// MySimpleSizerFrame
+// ----------------------------------------------------------------------------
+
+// Some IDs
+enum {
+    ID_SET_SMALL = 1300,
+    ID_SET_BIG
+};
+
+BEGIN_EVENT_TABLE(MySimpleSizerFrame, wxFrame)
+    EVT_MENU( ID_SET_SMALL, MySimpleSizerFrame::OnSetSmallSize)
+    EVT_MENU( ID_SET_BIG, MySimpleSizerFrame::OnSetBigSize)
+END_EVENT_TABLE()
+
+MySimpleSizerFrame::MySimpleSizerFrame(const wxChar *title, int x, int y )
+    : wxFrame( NULL, wxID_ANY, title, wxPoint(x, y) )
+{
+    wxMenu *menu = new wxMenu;
+
+    menu->Append(ID_SET_SMALL, _T("Make text control small\tF4"));
+    menu->Append(ID_SET_BIG, _T("Make text control big\tF5"));
+
+    wxMenuBar *menu_bar = new wxMenuBar;
+    menu_bar->Append(menu, _T("&File"));
+
+    SetMenuBar( menu_bar );
+
+    wxBoxSizer *main_sizer = new wxBoxSizer( wxHORIZONTAL );
+
+    m_target = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 80, wxDefaultCoord ) );
+    main_sizer->Add( m_target, 1, wxALL, 5 );
+
+    main_sizer->Add( new wxStaticText( this, wxID_ANY, wxT("Set alternating sizes using F4 and F5") ), 0, wxALL, 5 );
+
+    SetSizer( main_sizer);
+
+    Layout();
+    GetSizer()->Fit( this );
+}
+
+void MySimpleSizerFrame::OnSetSmallSize( wxCommandEvent& WXUNUSED(event))
+{
+    GetSizer()->SetItemMinSize( m_target, 40, -1 );
+    Layout();
+    GetSizer()->Fit( this );
+}
+
+void MySimpleSizerFrame::OnSetBigSize( wxCommandEvent& WXUNUSED(event))
+{
+    GetSizer()->SetItemMinSize( m_target, 140, -1 );
+    Layout();
+    GetSizer()->Fit( this );
+}
+
+
+// ----------------------------------------------------------------------------
+// MyNestedSizerFrame
+// ----------------------------------------------------------------------------
+
+
+MyNestedSizerFrame::MyNestedSizerFrame(const wxChar *title, int x, int y )
+    : wxFrame( NULL, wxID_ANY, title, wxPoint(x, y) )
+{
+    wxMenu *menu = new wxMenu;
+
+    menu->Append(wxID_ABOUT, _T("Do nothing"));
+
+    wxMenuBar *menu_bar = new wxMenuBar;
+    menu_bar->Append(menu, _T("&File"));
+
+    SetMenuBar( menu_bar );
+
+    wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
+
+    main_sizer->Add( new wxStaticText( this, -1, wxT("Hello outside") ), 0, wxALIGN_CENTER );
+    main_sizer->Add( new wxStaticText( this, -1, wxT("Hello outside") ), 0, wxALIGN_CENTER );
+    main_sizer->Add( new wxStaticText( this, -1, wxT("Hello outside") ), 0, wxALIGN_CENTER );
+    main_sizer->Add( new wxStaticText( this, -1, wxT("Hello outside") ), 0, wxALIGN_CENTER );
+
+    wxPanel *panel = new wxPanel( this, -1, wxDefaultPosition, wxDefaultSize, 
+                                  wxTAB_TRAVERSAL | wxSUNKEN_BORDER );
+    main_sizer->Add( panel, 0, wxALIGN_CENTER );
+    wxBoxSizer *panel_sizer = new wxBoxSizer( wxVERTICAL );
+    panel->SetSizer( panel_sizer );
+    panel_sizer->Add( new wxStaticText( panel, -1, wxT("Hello inside") ) );
+    panel_sizer->Add( new wxStaticText( panel, -1, wxT("Hello inside") ) );
+    panel_sizer->Add( new wxStaticText( panel, -1, wxT("Hello inside") ) );
+    
+    main_sizer->Add( new wxStaticText( this, -1, wxT("Hello outside") ), 0, wxALIGN_CENTER );
+
+    m_target = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 80, wxDefaultCoord ) );
+    main_sizer->Add( m_target, 1, wxALL|wxGROW, 5 );
+
+    SetSizer( main_sizer);
+
+    Layout();
+    GetSizer()->Fit( this );
+    GetSizer()->SetSizeHints( this );
+}
+

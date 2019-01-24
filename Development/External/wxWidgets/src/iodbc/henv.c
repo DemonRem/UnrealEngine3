@@ -1,7 +1,7 @@
 /*
  *  henv.c
  *
- *  $Id: henv.c,v 1.4 1999/06/01 15:31:41 VZ Exp $
+ *  $Id: henv.c 2613 1999-06-01 15:32:12Z VZ $
  *
  *  Environment object management functions
  *

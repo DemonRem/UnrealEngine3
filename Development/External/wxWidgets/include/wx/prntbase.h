@@ -1,20 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        prntbase.h
+// Name:        wx/prntbase.h
 // Purpose:     Base classes for printing framework
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: prntbase.h,v 1.45 2005/07/28 22:20:05 VZ Exp $
+// RCS-ID:      $Id: prntbase.h 54404 2008-06-28 15:32:52Z VS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_PRNTBASEH__
 #define _WX_PRNTBASEH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "prntbase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -27,21 +23,21 @@
 #include "wx/dialog.h"
 #include "wx/frame.h"
 
-class WXDLLEXPORT wxDC;
-class WXDLLEXPORT wxButton;
-class WXDLLEXPORT wxChoice;
-class WXDLLEXPORT wxPrintout;
-class WXDLLEXPORT wxPrinterBase;
-class WXDLLEXPORT wxPrintDialogBase;
-class WXDLLEXPORT wxPrintDialog;
-class WXDLLEXPORT wxPageSetupDialogBase;
-class WXDLLEXPORT wxPageSetupDialog;
-class WXDLLEXPORT wxPrintPreviewBase;
-class WXDLLEXPORT wxPreviewCanvas;
-class WXDLLEXPORT wxPreviewControlBar;
-class WXDLLEXPORT wxPreviewFrame;
-class WXDLLEXPORT wxPrintFactory;
-class WXDLLEXPORT wxPrintNativeDataBase;
+class WXDLLIMPEXP_FWD_CORE wxDC;
+class WXDLLIMPEXP_FWD_CORE wxButton;
+class WXDLLIMPEXP_FWD_CORE wxChoice;
+class WXDLLIMPEXP_FWD_CORE wxPrintout;
+class WXDLLIMPEXP_FWD_CORE wxPrinterBase;
+class WXDLLIMPEXP_FWD_CORE wxPrintDialogBase;
+class WXDLLIMPEXP_FWD_CORE wxPrintDialog;
+class WXDLLIMPEXP_FWD_CORE wxPageSetupDialogBase;
+class WXDLLIMPEXP_FWD_CORE wxPageSetupDialog;
+class WXDLLIMPEXP_FWD_CORE wxPrintPreviewBase;
+class WXDLLIMPEXP_FWD_CORE wxPreviewCanvas;
+class WXDLLIMPEXP_FWD_CORE wxPreviewControlBar;
+class WXDLLIMPEXP_FWD_CORE wxPreviewFrame;
+class WXDLLIMPEXP_FWD_CORE wxPrintFactory;
+class WXDLLIMPEXP_FWD_CORE wxPrintNativeDataBase;
 
 //----------------------------------------------------------------------------
 // error consts
@@ -81,6 +77,8 @@ public:
     virtual wxPageSetupDialogBase *CreatePageSetupDialog( wxWindow *parent,
                                                           wxPageSetupDialogData * data = NULL ) = 0;
 
+    virtual wxDC* CreatePrinterDC( const wxPrintData& data ) = 0;
+
     // What to do and what to show in the wxPrintDialog
     // a) Use the generic print setup dialog or a native one?
     virtual bool HasPrintSetupDialog() = 0;
@@ -99,6 +97,7 @@ public:
 
     static void SetPrintFactory( wxPrintFactory *factory );
     static wxPrintFactory *GetFactory();
+private:
     static wxPrintFactory *m_factory;
 };
 
@@ -121,6 +120,8 @@ public:
 
     virtual wxPageSetupDialogBase *CreatePageSetupDialog( wxWindow *parent,
                                                           wxPageSetupDialogData * data = NULL );
+
+    virtual wxDC* CreatePrinterDC( const wxPrintData& data );
 
     virtual bool HasPrintSetupDialog();
     virtual wxDialog *CreatePrintSetupDialog( wxWindow *parent, wxPrintData *data );
@@ -146,7 +147,8 @@ public:
     virtual bool TransferTo( wxPrintData &data ) = 0;
     virtual bool TransferFrom( const wxPrintData &data ) = 0;
 
-    virtual bool Ok() const = 0;
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const = 0;
 
     int  m_ref;
 
@@ -259,6 +261,22 @@ public:
 
     wxDC *GetDC() const { return m_printoutDC; }
     void SetDC(wxDC *dc) { m_printoutDC = dc; }
+
+    void FitThisSizeToPaper(const wxSize& imageSize);
+    void FitThisSizeToPage(const wxSize& imageSize);
+    void FitThisSizeToPageMargins(const wxSize& imageSize, const wxPageSetupDialogData& pageSetupData);
+    void MapScreenSizeToPaper();
+    void MapScreenSizeToPage();
+    void MapScreenSizeToPageMargins(const wxPageSetupDialogData& pageSetupData);
+    void MapScreenSizeToDevice();
+
+    wxRect GetLogicalPaperRect() const;
+    wxRect GetLogicalPageRect() const;
+    wxRect GetLogicalPageMarginsRect(const wxPageSetupDialogData& pageSetupData) const;
+
+    void SetLogicalOrigin(wxCoord x, wxCoord y);
+    void OffsetLogicalOrigin(wxCoord xoff, wxCoord yoff);
+
     void SetPageSizePixels(int w, int  h) { m_pageWidthPixels = w; m_pageHeightPixels = h; }
     void GetPageSizePixels(int *w, int  *h) const { *w = m_pageWidthPixels; *h = m_pageHeightPixels; }
     void SetPageSizeMM(int w, int  h) { m_pageWidthMM = w; m_pageHeightMM = h; }
@@ -268,6 +286,9 @@ public:
     void GetPPIScreen(int *x, int *y) const { *x = m_PPIScreenX; *y = m_PPIScreenY; }
     void SetPPIPrinter(int x, int y) { m_PPIPrinterX = x; m_PPIPrinterY = y; }
     void GetPPIPrinter(int *x, int *y) const { *x = m_PPIPrinterX; *y = m_PPIPrinterY; }
+
+    void SetPaperRectPixels(const wxRect& paperRectPixels) { m_paperRectPixels = paperRectPixels; }
+    wxRect GetPaperRectPixels() const { return m_paperRectPixels; }
 
     virtual bool IsPreview() const { return m_isPreview; }
 
@@ -288,6 +309,8 @@ private:
     int              m_PPIPrinterX;
     int              m_PPIPrinterY;
 
+    wxRect           m_paperRectPixels;
+
     bool             m_isPreview;
 
 private:
@@ -295,8 +318,11 @@ private:
     DECLARE_NO_COPY_CLASS(wxPrintout)
 };
 
+//----------------------------------------------------------------------------
+// wxPreviewCanvas
+//----------------------------------------------------------------------------
+
 /*
- * wxPreviewCanvas
  * Canvas upon which a preview is drawn.
  */
 
@@ -309,7 +335,7 @@ public:
                     const wxSize& size = wxDefaultSize,
                     long style = 0,
                     const wxString& name = wxT("canvas"));
-    ~wxPreviewCanvas();
+    virtual ~wxPreviewCanvas();
 
     void OnPaint(wxPaintEvent& event);
     void OnChar(wxKeyEvent &event);
@@ -328,8 +354,11 @@ private:
     DECLARE_NO_COPY_CLASS(wxPreviewCanvas)
 };
 
+//----------------------------------------------------------------------------
+// wxPreviewFrame
+//----------------------------------------------------------------------------
+
 /*
- * wxPreviewFrame
  * Default frame for showing preview.
  */
 
@@ -343,7 +372,7 @@ public:
                    const wxSize& size = wxDefaultSize,
                    long style = wxDEFAULT_FRAME_STYLE,
                    const wxString& name = wxT("frame"));
-    ~wxPreviewFrame();
+    virtual ~wxPreviewFrame();
 
     void OnCloseWindow(wxCloseEvent& event);
     virtual void Initialize();
@@ -364,8 +393,11 @@ private:
     DECLARE_NO_COPY_CLASS(wxPreviewFrame)
 };
 
+//----------------------------------------------------------------------------
+// wxPreviewControlBar
+//----------------------------------------------------------------------------
+
 /*
- * wxPreviewControlBar
  * A panel with buttons for controlling a print preview.
  * The programmer may wish to use other means for controlling
  * the print preview.
@@ -404,7 +436,7 @@ public:
                         const wxSize& size = wxDefaultSize,
                         long style = wxTAB_TRAVERSAL,
                         const wxString& name = wxT("panel"));
-    ~wxPreviewControlBar();
+    virtual ~wxPreviewControlBar();
 
     virtual void CreateButtons();
     virtual void SetZoomControl(int zoom);
@@ -477,6 +509,10 @@ public:
     virtual wxFrame *GetFrame() const;
     virtual wxPreviewCanvas *GetCanvas() const;
 
+    // This is a helper routine, used by the next 4 routines.
+
+    virtual void CalcRects(wxPreviewCanvas *canvas, wxRect& printableAreaRect, wxRect& paperRect);
+
     // The preview canvas should call this from OnPaint
     virtual bool PaintPage(wxPreviewCanvas *canvas, wxDC& dc);
 
@@ -498,7 +534,8 @@ public:
     virtual int GetMaxPage() const;
     virtual int GetMinPage() const;
 
-    virtual bool Ok() const;
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const;
     virtual void SetOk(bool ok);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -523,7 +560,8 @@ protected:
     wxPrintout*       m_printPrintout;
     int               m_currentPage;
     int               m_currentZoom;
-    float             m_previewScale;
+    float             m_previewScaleX;
+    float             m_previewScaleY;
     int               m_topMargin;
     int               m_leftMargin;
     int               m_pageWidth;
@@ -536,6 +574,10 @@ protected:
 
 private:
     void Init(wxPrintout *printout, wxPrintout *printoutForPrinting);
+
+    // helpers for RenderPage():
+    bool RenderPageIntoDC(wxDC& dc, int pageNum);
+    bool RenderPageIntoBitmap(wxBitmap& bmp, int pageNum);
 
     DECLARE_NO_COPY_CLASS(wxPrintPreviewBase)
     DECLARE_CLASS(wxPrintPreviewBase)
@@ -571,6 +613,7 @@ public:
     virtual void AdjustScrollbars(wxPreviewCanvas *canvas);
     virtual bool RenderPage(int pageNum);
     virtual void SetZoom(int percent);
+    virtual int GetZoom() const;
 
     virtual bool Print(bool interactive);
     virtual void DetermineScaling();
@@ -580,7 +623,8 @@ public:
     virtual int GetMaxPage() const;
     virtual int GetMinPage() const;
 
-    virtual bool Ok() const;
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const;
     virtual void SetOk(bool ok);
 
 private:

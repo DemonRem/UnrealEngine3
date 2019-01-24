@@ -1,18 +1,14 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        sizer.cpp
+// Name:        src/common/sizer.cpp
 // Purpose:     provide new wxSizer class for layout
 // Author:      Robert Roebling and Robin Dunn, contributions by
 //              Dirk Holtwick, Ron Lee
 // Modified by: Ron Lee
 // Created:
-// RCS-ID:      $Id: sizer.cpp,v 1.125 2005/06/17 21:46:20 VZ Exp $
+// RCS-ID:      $Id: sizer.cpp 52359 2008-03-06 13:48:50Z VS $
 // Copyright:   (c) Robin Dunn, Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "sizer.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -21,17 +17,22 @@
     #pragma hdrstop
 #endif
 
+#include "wx/display.h"
+#include "wx/sizer.h"
+
 #ifndef WX_PRECOMP
     #include "wx/string.h"
     #include "wx/intl.h"
+    #include "wx/math.h"
+    #include "wx/utils.h"
+    #include "wx/settings.h"
+    #include "wx/button.h"
+    #include "wx/statbox.h"
+    #include "wx/toplevel.h"
 #endif // WX_PRECOMP
 
-#include "wx/sizer.h"
-#include "wx/utils.h"
-#include "wx/statbox.h"
-#include "wx/settings.h"
 #include "wx/listimpl.cpp"
-#include "wx/intl.h"
+
 #if WXWIN_COMPATIBILITY_2_4
     #include "wx/notebook.h"
 #endif
@@ -50,7 +51,7 @@ IMPLEMENT_CLASS(wxStaticBoxSizer, wxBoxSizer)
 IMPLEMENT_CLASS(wxStdDialogButtonSizer, wxBoxSizer)
 #endif
 
-WX_DEFINE_EXPORTED_LIST( wxSizerItemList );
+WX_DEFINE_EXPORTED_LIST( wxSizerItemList )
 
 /*
     TODO PROPERTIES
@@ -84,6 +85,17 @@ WX_DEFINE_EXPORTED_LIST( wxSizerItemList );
        growablecols
     minsize
 */
+
+
+// ----------------------------------------------------------------------------
+// wxSizerFlags
+// ----------------------------------------------------------------------------
+
+wxSizerFlags& wxSizerFlags::ReserveSpaceEvenIfHidden()
+{
+    m_flags |= wxRESERVE_SPACE_EVEN_IF_HIDDEN;
+    return *this;
+}
 
 // ----------------------------------------------------------------------------
 // wxSizerItem
@@ -269,14 +281,14 @@ wxSize wxSizerItem::CalcMin()
 
         // if we have to preserve aspect ratio _AND_ this is
         // the first-time calculation, consider ret to be initial size
-        if ((m_flag & wxSHAPED) && !m_ratio)
+        if ( (m_flag & wxSHAPED) && wxIsNullDouble(m_ratio) )
             SetRatio(m_minSize);
     }
     else if ( IsWindow() )
     {
         // Since the size of the window may change during runtime, we
         // should use the current minimal/best size.
-        m_minSize = m_window->GetBestFittingSize();
+        m_minSize = m_window->GetEffectiveMinSize();
     }
 
     return GetMinSizeWithBorder();
@@ -299,8 +311,10 @@ wxSize wxSizerItem::GetMinSizeWithBorder() const
 }
 
 
-void wxSizerItem::SetDimension( wxPoint pos, wxSize size )
+void wxSizerItem::SetDimension( const wxPoint& pos_, const wxSize& size_ )
 {
+    wxPoint pos = pos_;
+    wxSize size = size_;
     if (m_flag & wxSHAPED)
     {
         // adjust aspect ratio
@@ -351,6 +365,11 @@ void wxSizerItem::SetDimension( wxPoint pos, wxSize size )
     {
         size.y -= m_border;
     }
+
+    if (size.x < 0)
+        size.x = 0;
+    if (size.y < 0)
+        size.y = 0;
 
     m_rect = wxRect(pos, size);
 
@@ -448,7 +467,25 @@ bool wxSizerItem::IsShown() const
             return m_window->IsShown();
 
         case Item_Sizer:
-            return m_sizer->IsShown();
+            // arbitrarily decide that if at least one of our elements is
+            // shown, so are we (this arbitrariness is the reason for
+            // deprecating this function)
+            {
+                // Some apps (such as dialog editors) depend on an empty sizer still
+                // being laid out correctly and reporting the correct size and position.
+                if (m_sizer->GetChildren().GetCount() == 0)
+                    return true;
+
+                for ( wxSizerItemList::compatibility_iterator
+                        node = m_sizer->GetChildren().GetFirst();
+                      node;
+                      node = node->GetNext() )
+                {
+                    if ( node->GetData()->IsShown() )
+                        return true;
+                }
+            }
+            return false;
 
         case Item_Spacer:
             return m_spacer->IsShown();
@@ -461,6 +498,38 @@ bool wxSizerItem::IsShown() const
     return false;
 }
 
+// This is a helper to support wxRESERVE_SPACE_EVEN_IF_HIDDEN. In wx 2.9+,
+// this flag is respected by IsShown(), but not in wx 2.8.
+bool wxSizerItem::ShouldAccountFor() const
+{
+    if ( m_flag & wxRESERVE_SPACE_EVEN_IF_HIDDEN )
+        return true;
+
+    if ( IsSizer() )
+    {
+        // this mirrors wxSizerItem::IsShown() code above
+        const wxSizerItemList& children = m_sizer->GetChildren();
+        if ( children.GetCount() == 0 )
+            return true;
+
+        for ( wxSizerItemList::compatibility_iterator
+              node = children.GetFirst();
+              node;
+              node = node->GetNext() )
+        {
+            if ( node->GetData()->ShouldAccountFor() )
+                return true;
+        }
+        return false;
+    }
+    else
+    {
+        return IsShown();
+    }
+}
+
+
+#if WXWIN_COMPATIBILITY_2_6
 void wxSizerItem::SetOption( int option )
 {
     SetProportion( option );
@@ -470,16 +539,12 @@ int wxSizerItem::GetOption() const
 {
     return GetProportion();
 }
+#endif // WXWIN_COMPATIBILITY_2_6
 
 
 //---------------------------------------------------------------------------
 // wxSizer
 //---------------------------------------------------------------------------
-
-wxSizer::wxSizer()
-{
-    m_isShown = true;
-}
 
 wxSizer::~wxSizer()
 {
@@ -493,13 +558,41 @@ wxSizerItem* wxSizer::Insert( size_t index, wxSizerItem *item )
     if ( item->GetWindow() )
         item->GetWindow()->SetContainingSizer( this );
 
+    if ( item->GetSizer() )
+        item->GetSizer()->SetContainingWindow( m_containingWindow );
+
     return item;
 }
 
+void wxSizer::SetContainingWindow(wxWindow *win)
+{
+    if ( win == m_containingWindow )
+        return;
+
+    m_containingWindow = win;
+
+    // set the same window for all nested sizers as well, they also are in the
+    // same window
+    for ( wxSizerItemList::compatibility_iterator node = m_children.GetFirst();
+          node;
+          node = node->GetNext() )
+    {
+        wxSizerItem *const item = node->GetData();
+        wxSizer *const sizer = item->GetSizer();
+
+        if ( sizer )
+        {
+            sizer->SetContainingWindow(win);
+        }
+    }
+}
+
+#if WXWIN_COMPATIBILITY_2_6
 bool wxSizer::Remove( wxWindow *window )
 {
     return Detach( window );
 }
+#endif // WXWIN_COMPATIBILITY_2_6
 
 bool wxSizer::Remove( wxSizer *sizer )
 {
@@ -609,6 +702,80 @@ bool wxSizer::Detach( int index )
     return true;
 }
 
+bool wxSizer::Replace( wxWindow *oldwin, wxWindow *newwin, bool recursive )
+{
+    wxASSERT_MSG( oldwin, _T("Replacing NULL window") );
+    wxASSERT_MSG( newwin, _T("Replacing with NULL window") );
+
+    wxSizerItemList::compatibility_iterator node = m_children.GetFirst();
+    while (node)
+    {
+        wxSizerItem     *item = node->GetData();
+
+        if (item->GetWindow() == oldwin)
+        {
+            item->GetWindow()->SetContainingSizer( NULL );
+            item->SetWindow(newwin);
+            newwin->SetContainingSizer( this );
+            return true;
+        }
+        else if (recursive && item->IsSizer())
+        {
+            if (item->GetSizer()->Replace( oldwin, newwin, true ))
+                return true;
+        }
+
+        node = node->GetNext();
+    }
+
+    return false;
+}
+
+bool wxSizer::Replace( wxSizer *oldsz, wxSizer *newsz, bool recursive )
+{
+    wxASSERT_MSG( oldsz, _T("Replacing NULL sizer") );
+    wxASSERT_MSG( newsz, _T("Replacing with NULL sizer") );
+
+    wxSizerItemList::compatibility_iterator node = m_children.GetFirst();
+    while (node)
+    {
+        wxSizerItem     *item = node->GetData();
+
+        if (item->GetSizer() == oldsz)
+        {
+            wxSizer *old = item->GetSizer();
+            item->SetSizer(newsz);
+            delete old;
+            return true;
+        }
+        else if (recursive && item->IsSizer())
+        {
+            if (item->GetSizer()->Replace( oldsz, newsz, true ))
+                return true;
+        }
+
+        node = node->GetNext();
+    }
+
+    return false;
+}
+
+bool wxSizer::Replace( size_t old, wxSizerItem *newitem )
+{
+    wxCHECK_MSG( old < m_children.GetCount(), false, _T("Replace index is out of range") );
+    wxASSERT_MSG( newitem, _T("Replacing with NULL item") );
+
+    wxSizerItemList::compatibility_iterator node = m_children.Item( old );
+
+    wxCHECK_MSG( node, false, _T("Failed to find child node") );
+
+    wxSizerItem *item = node->GetData();
+    node->SetData(newitem);
+    delete item;
+
+    return true;
+}
+
 void wxSizer::Clear( bool delete_windows )
 {
     // First clear the ContainingSizer pointers
@@ -642,13 +809,53 @@ void wxSizer::DeleteWindows()
     }
 }
 
+wxSize wxSizer::ComputeFittingWindowSize(wxWindow *window)
+{
+    // take the min size by default and limit it by max size
+    wxSize size = GetMinWindowSize(window);
+    wxSize sizeMax = GetMaxWindowSize(window);
+
+    wxTopLevelWindow *tlw = wxDynamicCast(window, wxTopLevelWindow);
+    if ( tlw )
+    {
+        // hack for small screen devices where TLWs are always full screen
+        if ( tlw->IsAlwaysMaximized() )
+        {
+            size = tlw->GetSize();
+        }
+        else // normal situation
+        {
+            // limit the window to the size of the display it is on
+            int disp = wxDisplay::GetFromWindow(window);
+            if ( disp == wxNOT_FOUND )
+            {
+                // or, if we don't know which one it is, of the main one
+                disp = 0;
+            }
+
+            sizeMax = wxDisplay(disp).GetClientArea().GetSize();
+        }
+    }
+
+    if ( sizeMax.x != wxDefaultCoord && size.x > sizeMax.x )
+        size.x = sizeMax.x;
+    if ( sizeMax.y != wxDefaultCoord && size.y > sizeMax.y )
+        size.y = sizeMax.y;
+
+    return size;
+}
+
+wxSize wxSizer::ComputeFittingClientSize(wxWindow *window)
+{
+    wxCHECK_MSG( window, wxDefaultSize, _T("window can't be NULL") );
+
+    return window->WindowToClientSize(ComputeFittingWindowSize(window));
+}
+
 wxSize wxSizer::Fit( wxWindow *window )
 {
-    wxSize size(window->IsTopLevel() ? FitSize(window)
-                                     : GetMinWindowSize(window));
-
-    window->SetSize( size );
-
+    wxSize size = ComputeFittingWindowSize(window);
+    window->SetSize(size);
     return size;
 }
 
@@ -678,12 +885,19 @@ void wxSizer::SetSizeHints( wxWindow *window )
     // Preserve the window's max size hints, but set the
     // lower bound according to the sizer calculations.
 
-    wxSize size = Fit( window );
+    // This is equivalent to calling Fit(), except that we need to set
+    // the size hints _in between_ the two steps performed by Fit
+    // (1. ComputeFittingWindowSize, 2. SetSize). That's because
+    // otherwise SetSize() could have no effect if there already are
+    // size hints in effect that forbid requested size.
+    const wxSize size = ComputeFittingWindowSize(window);
 
     window->SetSizeHints( size.x,
                           size.y,
                           window->GetMaxWidth(),
                           window->GetMaxHeight() );
+
+    window->SetSize(size);
 }
 
 void wxSizer::SetVirtualSizeHints( wxWindow *window )
@@ -717,23 +931,6 @@ wxSize wxSizer::GetMinWindowSize( wxWindow *window )
 // TODO on mac we need a function that determines how much free space this
 // min size contains, in order to make sure that we have 20 pixels of free
 // space around the controls
-
-// Return a window size that will fit within the screens dimensions
-wxSize wxSizer::FitSize( wxWindow *window )
-{
-    wxSize size     = GetMinWindowSize( window );
-    wxSize sizeMax  = GetMaxWindowSize( window );
-
-    // Limit the size if sizeMax != wxDefaultSize
-
-    if ( size.x > sizeMax.x && sizeMax.x != wxDefaultCoord )
-        size.x = sizeMax.x;
-    if ( size.y > sizeMax.y && sizeMax.y != wxDefaultCoord )
-        size.y = sizeMax.y;
-
-    return size;
-}
-
 wxSize wxSizer::GetMaxClientSize( wxWindow *window ) const
 {
     wxSize maxSize( window->GetMaxSize() );
@@ -1132,7 +1329,7 @@ wxSize wxGridSizer::CalcMin()
 {
     int nrows, ncols;
     if ( CalcRowsCols(nrows, ncols) == 0 )
-        return wxSize(10, 10);
+        return wxSize();
 
     // Find the max width and height for any component
     int w = 0;
@@ -1257,7 +1454,7 @@ wxSize wxFlexGridSizer::CalcMin()
 
     // Number of rows/columns can change as items are added or removed.
     if ( !CalcRowsCols(nrows, ncols) )
-        return wxSize(10, 10);
+        return wxSize();
 
     m_rowHeights.SetCount(nrows);
     m_colWidths.SetCount(ncols);
@@ -1278,7 +1475,7 @@ wxSize wxFlexGridSizer::CalcMin()
     while (node)
     {
         wxSizerItem    *item = node->GetData();
-        if ( item->IsShown() )
+        if ( item->ShouldAccountFor() )
         {
             wxSize sz( item->CalcMin() );
             int row = i / ncols;
@@ -1325,10 +1522,12 @@ void wxFlexGridSizer::AdjustForFlexDirection()
         wxArrayInt& array = m_flexDirection == wxVERTICAL ? m_colWidths
                                                           : m_rowHeights;
 
-        const int count = array.GetCount();
+        const size_t count = array.GetCount();
 
         // find the largest value in this array
-        int n, largest = 0;
+        size_t n;
+        int largest = 0;
+
         for ( n = 0; n < count; ++n )
         {
             if ( array[n] > largest )
@@ -1338,7 +1537,9 @@ void wxFlexGridSizer::AdjustForFlexDirection()
         // and now fill it with the largest value
         for ( n = 0; n < count; ++n )
         {
-            array[n] = largest;
+            // don't touch hidden rows
+            if ( array[n] != -1 )
+                array[n] = largest;
         }
     }
 }
@@ -1378,9 +1579,7 @@ void wxFlexGridSizer::AdjustForGrowables(const wxSize& sz, const wxSize& minsz,
             {
                 if (m_growableRows[idx] >= nrows )
                     continue;
-                if (m_rowHeights[ m_growableRows[idx] ] == -1)
-                    m_rowHeights[ m_growableRows[idx] ] = 0;
-                else
+                if (m_rowHeights[ m_growableRows[idx] ] != -1)
                 {
                     int delta = (sz.y - minsz.y);
                     if (sum_proportions == 0)
@@ -1430,9 +1629,7 @@ void wxFlexGridSizer::AdjustForGrowables(const wxSize& sz, const wxSize& minsz,
             {
                 if (m_growableCols[idx] >= ncols )
                     continue;
-                if (m_colWidths[ m_growableCols[idx] ] == -1)
-                    m_colWidths[ m_growableCols[idx] ] = 0;
-                else
+                if (m_colWidths[ m_growableCols[idx] ] != -1)
                 {
                     int delta = (sz.x - minsz.x);
                     if (sum_proportions == 0)
@@ -1458,20 +1655,38 @@ void wxFlexGridSizer::AddGrowableRow( size_t idx, int proportion )
     m_growableRowsProportions.Add( proportion );
 }
 
-void wxFlexGridSizer::RemoveGrowableRow( size_t idx )
-{
-    m_growableRows.Remove( idx );
-}
-
 void wxFlexGridSizer::AddGrowableCol( size_t idx, int proportion )
 {
     m_growableCols.Add( idx );
     m_growableColsProportions.Add( proportion );
 }
 
+// helper function for RemoveGrowableCol/Row()
+static void
+DoRemoveFromArrays(size_t idx, wxArrayInt& items, wxArrayInt& proportions)
+{
+    const size_t count = items.size();
+    for ( size_t n = 0; n < count; n++ )
+    {
+        if ( (size_t)items[n] == idx )
+        {
+            items.RemoveAt(n);
+            proportions.RemoveAt(n);
+            return;
+        }
+    }
+
+    wxFAIL_MSG( _T("column/row is already not growable") );
+}
+
 void wxFlexGridSizer::RemoveGrowableCol( size_t idx )
 {
-    m_growableCols.Remove( idx );
+    DoRemoveFromArrays(idx, m_growableCols, m_growableColsProportions);
+}
+
+void wxFlexGridSizer::RemoveGrowableRow( size_t idx )
+{
+    DoRemoveFromArrays(idx, m_growableRows, m_growableRowsProportions);
 }
 
 //---------------------------------------------------------------------------
@@ -1499,12 +1714,13 @@ void wxBoxSizer::RecalcSizes()
 
     wxPoint pt( m_position );
 
+    int stretchable = m_stretchable;
     wxSizerItemList::compatibility_iterator node = m_children.GetFirst();
     while (node)
     {
         wxSizerItem     *item = node->GetData();
 
-        if (item->IsShown())
+        if (item->ShouldAccountFor())
         {
             wxSize size( item->GetMinSizeWithBorder() );
 
@@ -1515,7 +1731,9 @@ void wxBoxSizer::RecalcSizes()
                 {
                     // Because of at least one visible item has non-zero
                     // proportion then m_stretchable is not zero
-                    height = (delta * item->GetProportion()) / m_stretchable;
+                    height = (delta * item->GetProportion()) / stretchable;
+                    delta -= height;
+                    stretchable -= item->GetProportion();
                 }
 
                 wxPoint child_pos( pt );
@@ -1541,7 +1759,9 @@ void wxBoxSizer::RecalcSizes()
                 {
                     // Because of at least one visible item has non-zero
                     // proportion then m_stretchable is not zero
-                    width = (delta * item->GetProportion()) / m_stretchable;
+                    width = (delta * item->GetProportion()) / stretchable;
+                    delta -= width;
+                    stretchable -= item->GetProportion();
                 }
 
                 wxPoint child_pos( pt );
@@ -1556,6 +1776,16 @@ void wxBoxSizer::RecalcSizes()
                 //     wxALIGN_CENTER should be used in new code
                     child_pos.y += (m_size.y - size.y) / 2;
 
+                if ( m_containingWindow )
+                {
+                    child_pos.x = m_containingWindow->AdjustForLayoutDirection
+                                                      (
+                                                        child_pos.x,
+                                                        width,
+                                                        m_size.x
+                                                      );
+                }
+
                 item->SetDimension( child_pos, child_size );
 
                 pt.x += width;
@@ -1569,7 +1799,7 @@ void wxBoxSizer::RecalcSizes()
 wxSize wxBoxSizer::CalcMin()
 {
     if (m_children.GetCount() == 0)
-        return wxSize(10,10);
+        return wxSize();
 
     m_stretchable = 0;
     m_minWidth = 0;
@@ -1583,7 +1813,7 @@ wxSize wxBoxSizer::CalcMin()
     {
         wxSizerItem *item = node->GetData();
 
-        if ( item->IsShown() )
+        if ( item->ShouldAccountFor() )
         {
             item->CalcMin();  // result is stored in the item
 
@@ -1601,7 +1831,7 @@ wxSize wxBoxSizer::CalcMin()
     {
         wxSizerItem *item = node->GetData();
 
-        if (item->IsShown() && item->GetProportion() != 0)
+        if (item->ShouldAccountFor() && item->GetProportion() != 0)
         {
             int stretch = item->GetProportion();
             wxSize size( item->GetMinSizeWithBorder() );
@@ -1627,7 +1857,7 @@ wxSize wxBoxSizer::CalcMin()
     {
         wxSizerItem *item = node->GetData();
 
-        if (item->IsShown())
+        if (item->ShouldAccountFor())
         {
             wxSize size( item->GetMinSizeWithBorder() );
             if (item->GetProportion() != 0)
@@ -1675,16 +1905,27 @@ wxSize wxBoxSizer::CalcMin()
 #if wxUSE_STATBOX
 
 wxStaticBoxSizer::wxStaticBoxSizer( wxStaticBox *box, int orient )
-    : wxBoxSizer( orient )
-    , m_staticBox( box )
+    : wxBoxSizer( orient ),
+      m_staticBox( box )
 {
     wxASSERT_MSG( box, wxT("wxStaticBoxSizer needs a static box") );
+
+    // do this so that our Detach() is called if the static box is destroyed
+    // before we are
+    m_staticBox->SetContainingSizer(this);
 }
 
 wxStaticBoxSizer::wxStaticBoxSizer(int orient, wxWindow *win, const wxString& s)
                 : wxBoxSizer(orient),
                   m_staticBox(new wxStaticBox(win, wxID_ANY, s))
 {
+    // same as above
+    m_staticBox->SetContainingSizer(this);
+}
+
+wxStaticBoxSizer::~wxStaticBoxSizer()
+{
+    delete m_staticBox;
 }
 
 static void GetStaticBoxBorders( wxStaticBox *box,
@@ -1732,6 +1973,20 @@ void wxStaticBoxSizer::ShowItems( bool show )
 {
     m_staticBox->Show( show );
     wxBoxSizer::ShowItems( show );
+}
+
+bool wxStaticBoxSizer::Detach( wxWindow *window )
+{
+    // avoid deleting m_staticBox in our dtor if it's being detached from the
+    // sizer (which can happen because it's being already destroyed for
+    // example)
+    if ( window == m_staticBox )
+    {
+        m_staticBox = NULL;
+        return true;
+    }
+
+    return wxSizer::Detach( window );
 }
 
 #endif // wxUSE_STATBOX
@@ -1836,7 +2091,8 @@ void wxStdDialogButtonSizer::Realize()
             if (m_buttonAffirmative->GetId() == wxID_SAVE){
                 // these buttons have set labels under Mac so we should use them
                 m_buttonAffirmative->SetLabel(_("Save"));
-                m_buttonNegative->SetLabel(_("Don't Save"));
+                if (m_buttonNegative)
+                    m_buttonNegative->SetLabel(_("Don't Save"));
             }
         }
 
@@ -1934,11 +2190,15 @@ IMPLEMENT_CLASS(wxNotebookSizer, wxBookCtrlSizer)
 
 #if wxUSE_BOOKCTRL
 
+#if WXWIN_COMPATIBILITY_2_6
+
 wxBookCtrlSizer::wxBookCtrlSizer(wxBookCtrlBase *bookctrl)
                : m_bookctrl(bookctrl)
 {
     wxASSERT_MSG( bookctrl, wxT("wxBookCtrlSizer needs a control") );
 }
+
+#endif // WXWIN_COMPATIBILITY_2_6
 
 void wxBookCtrlSizer::RecalcSizes()
 {
@@ -1985,11 +2245,15 @@ wxSize wxBookCtrlSizer::CalcMin()
 
 #if wxUSE_NOTEBOOK
 
+#if WXWIN_COMPATIBILITY_2_6
+
 wxNotebookSizer::wxNotebookSizer(wxNotebook *nb)
 {
     wxASSERT_MSG( nb, wxT("wxNotebookSizer needs a control") );
     m_bookctrl = nb;
 }
+
+#endif // WXWIN_COMPATIBILITY_2_6
 
 #endif // wxUSE_NOTEBOOOK
 #endif // wxUSE_BOOKCTRL

@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/enhmeta.cpp
+// Name:        src/msw/enhmeta.cpp
 // Purpose:     implementation of wxEnhMetaFileXXX classes
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     13.01.00
-// RCS-ID:      $Id: enhmeta.cpp,v 1.18 2005/05/23 10:54:43 ABX Exp $
+// RCS-ID:      $Id: enhmeta.cpp 39622 2006-06-07 17:12:57Z ABX $
 // Copyright:   (c) 2000 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "enhmeta.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -79,7 +75,7 @@ void wxEnhMetaFile::Init()
     }
     else // have valid file name, load metafile from it
     {
-        m_hMF = GetEnhMetaFile(m_filename);
+        m_hMF = (WXHANDLE)::GetEnhMetaFile(m_filename);
         if ( !m_hMF )
             wxLogSysError(_("Failed to load metafile from file \"%s\"."),
                           m_filename.c_str());
@@ -198,7 +194,9 @@ wxEnhMetaFileDC::wxEnhMetaFileDC(const wxString& filename,
                                  int width, int height,
                                  const wxString& description)
 {
-    ScreenHDC hdcRef;
+    m_width = width;
+    m_height = height;
+
     RECT rect;
     RECT *pRect;
     if ( width && height )
@@ -219,12 +217,21 @@ wxEnhMetaFileDC::wxEnhMetaFileDC(const wxString& filename,
         pRect = (LPRECT)NULL;
     }
 
+    ScreenHDC hdcRef;
     m_hDC = (WXHDC)::CreateEnhMetaFile(hdcRef, GetMetaFileName(filename),
                                        pRect, description);
     if ( !m_hDC )
     {
         wxLogLastError(_T("CreateEnhMetaFile"));
     }
+}
+
+void wxEnhMetaFileDC::DoGetSize(int *width, int *height) const
+{
+    if ( width )
+        *width = m_width;
+    if ( height )
+        *height = m_height;
 }
 
 wxEnhMetaFile *wxEnhMetaFileDC::Close()

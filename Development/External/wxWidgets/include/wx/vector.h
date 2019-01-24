@@ -132,7 +132,7 @@ public:
 };
 
 #define WX_DECLARE_VECTORBASE(obj, cls)\
-private:\
+protected:\
     virtual void Free(void *o)\
     {\
         delete (obj *) o;\
@@ -155,7 +155,7 @@ public:\
 #define _WX_DECLARE_VECTOR(obj, cls, exp)\
 class exp cls : public wxVectorBase\
 {\
-    WX_DECLARE_VECTORBASE(obj, cls);\
+    WX_DECLARE_VECTORBASE(obj, cls)\
 public:\
     void push_back(const obj& o)\
     {\

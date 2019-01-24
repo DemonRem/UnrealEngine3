@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     13.07.03
-// RCS-ID:      $Id: crashrpt.cpp,v 1.23 2005/06/02 20:58:18 JS Exp $
+// RCS-ID:      $Id: crashrpt.cpp 34532 2005-06-02 20:58:18Z JS $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

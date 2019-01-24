@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxCharTraits_H__
@@ -63,8 +63,13 @@ public:
 	/// \param first One string to compare.
 	/// \param second The other string to compare.
 	/// \param num The number of characters to compare.
-	/// \return Same as \a strcmp.
+	/// \return Same as \a strncmp.
 	static FxInt32 FX_CALL Compare(const char_type* first, const char_type* second, FxSize num);
+	/// Compares two strings.
+	/// \param first One string to compare.
+	/// \param second The other string to compare.
+	/// \return Same as \a strcmp.
+	static FxInt32 FX_CALL Compare(const char_type* first, const char_type* second);
 	/// Converts a foreign string to its native equivalent.
 	/// This would convert UNICODE to ANSI, and vice-versa.
 	/// \param dest The destination native string.
@@ -125,7 +130,12 @@ public:
 
 	static FxInt32 FX_CALL Compare(const char_type* first, const char_type* second, FxSize num)
 	{
-		return FxMemcmp(first, second, num);
+		return FxStrncmp(first, second, num);
+	}
+
+	static FxInt32 FX_CALL Compare(const char_type* first, const char_type* second)
+	{
+		return FxStrcmp(first, second);
 	}
 
 	static char_type* FX_CALL Convert(char_type* dest, const foreign_char_type* src, FxSize num)
@@ -197,7 +207,12 @@ public:
 
 	static FxInt32 FX_CALL Compare(const char_type* first, const char_type* second, FxSize num)
 	{
-		return FxWMemcmp(first, second, num);
+		return FxWStrncmp(first, second, num);
+	}
+
+	static FxInt32 FX_CALL Compare(const char_type* first, const char_type* second)
+	{
+		return FxWStrcmp(first, second);
 	}
 
 	static char_type* FX_CALL Convert(char_type* dest, const foreign_char_type* src, FxSize num)

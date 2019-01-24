@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXD6JOINTDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -45,9 +45,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Partial(some features not supported)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxD6Joint NxJointDesc NxScene.createJoint() 
 */
@@ -64,9 +65,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxD6JointMotion xMotion yMotion zMotion
 	*/
@@ -79,9 +81,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxD6JointMotion swing1Motion swing2Motion twistMotion
 	*/
@@ -95,9 +98,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointLimitSoftDesc swing1Limit swing2Limit twistLimit
 	*/
@@ -111,9 +115,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointLimitSoftDesc linearLimit swing2Limit twistLimit
 	*/
@@ -127,9 +132,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointLimitSoftDesc linearLimit swing1Limit twistLimit
 	*/
@@ -143,9 +149,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointLimitSoftDesc linearLimit swing1Limit swing2imit
 	*/
@@ -161,9 +168,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDriveDesc xDrive yDrive zDrive drivePosition
 	*/
@@ -177,9 +185,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDriveDesc swingDrive twistDrive driveOrientation
 	*/
@@ -193,9 +202,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDriveDesc driveOrientation
 	*/
@@ -210,9 +220,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see xDrive yDrive zDrive NxD6Joint.setDrivePosition
 	*/
@@ -226,9 +237,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see slerpDrive swingDrive twistDrive NxD6Joint.setDriveOrientation()
 	*/
@@ -242,9 +254,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see xDrive yDrive zDrive NxD6Joint.setDriveLinearVelocity()
 	*/
@@ -261,9 +274,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see slerpDrive swingDrive twistDrive NxD6Joint.setDriveAngularVelocity()
 	*/
@@ -276,9 +290,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointProjectionMode projectionDistance projectionAngle
 	*/
@@ -292,9 +307,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see projectionMode projectionAngle
 	*/
@@ -308,9 +324,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see projectionMode ProjectionDistance
 	*/
@@ -324,9 +341,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags
 	*/
@@ -339,9 +357,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial (Slerp drive not supported)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxD6JointFlag
 	*/
@@ -364,7 +383,11 @@ public:
 	\return returns true if the current settings are valid
 	*/
 
-	NX_INLINE	bool	isValid() const;
+	NX_INLINE	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 };
 
 NxD6JointDesc::NxD6JointDesc() : NxJointDesc(NX_JOINT_D6)
@@ -397,48 +420,48 @@ void NxD6JointDesc::setToDefault()
 	gearRatio = 1.0f;
 }
 
-bool NxD6JointDesc::isValid() const
+NxU32 NxD6JointDesc::checkValid() const
 {
 	if (flags & NX_D6JOINT_SLERP_DRIVE) {	// only possible with all angular DOF available
 		if (swing1Motion == NX_D6JOINT_MOTION_LOCKED ||
 			swing2Motion == NX_D6JOINT_MOTION_LOCKED ||
-			twistMotion == NX_D6JOINT_MOTION_LOCKED) return false;
+			twistMotion == NX_D6JOINT_MOTION_LOCKED) return 1;
 	}
 
 	// swing limits are symmetric, thus their range is 0..180 degrees
 	if (swing1Motion == NX_D6JOINT_MOTION_LIMITED) {
-		if (swing1Limit.value < 0.0f) return false;
-		if (swing1Limit.value > NxPi) return false;
+		if (swing1Limit.value < 0.0f) return 2;
+		if (swing1Limit.value > NxPi) return 3;
 	}
 	if (swing2Motion == NX_D6JOINT_MOTION_LIMITED) {
-		if (swing2Limit.value < 0.0f) return false;
-		if (swing2Limit.value > NxPi) return false;
+		if (swing2Limit.value < 0.0f) return 4;
+		if (swing2Limit.value > NxPi) return 5;
 	}
 
 	// twist limits are asymmetric with -180 <= low < high <= 180 degrees
 	if (twistMotion == NX_D6JOINT_MOTION_LIMITED) {
-		if (twistLimit.low.value < -NxPi) return false;
-		if (twistLimit.high.value > NxPi) return false;
-		if (twistLimit.low.value > twistLimit.high.value) return false;
+		if (twistLimit.low.value < -NxPi) return 6;
+		if (twistLimit.high.value > NxPi) return 7;
+		if (twistLimit.low.value > twistLimit.high.value) return 8;
 	}
 
 	// in angular limited-free mode, only -90..90 swings are possible
 	if (swing1Motion == NX_D6JOINT_MOTION_LIMITED && swing2Motion == NX_D6JOINT_MOTION_FREE) 
-		if (swing1Limit.value > NxHalfPi) return false; 
+		if (swing1Limit.value > NxHalfPi) return 9; 
 	if (swing2Motion == NX_D6JOINT_MOTION_LIMITED && swing1Motion == NX_D6JOINT_MOTION_FREE) 
-		if (swing2Limit.value > NxHalfPi) return false; 
+		if (swing2Limit.value > NxHalfPi) return 10; 
 
 	if (flags & NX_D6JOINT_GEAR_ENABLED)		// gear only with twist motion enabled
-		if (twistMotion == NX_D6JOINT_MOTION_LOCKED) return false;
+		if (twistMotion == NX_D6JOINT_MOTION_LOCKED) return 11;
 
-	return NxJointDesc::isValid();
+	return 12*NxJointDesc::checkValid();
 }
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

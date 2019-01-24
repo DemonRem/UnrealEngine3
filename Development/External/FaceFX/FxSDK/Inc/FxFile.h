@@ -4,7 +4,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2004 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxFile_H__

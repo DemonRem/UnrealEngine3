@@ -1,0 +1,35 @@
+# perl highlighting
+
+OBJDIR    = obj/$CFG
+OUT       = out
+OPTIMIZE  = speed
+
+LIBC       = static
+CPP_EXCEPT = 1
+
+# Adding _USING_V110_SDK71_ to avoid lots of warnings when building with VS2013+
+DEFINES   = _SECURE_SCL=0 WIN32 NDEBUG _USRDLL _CRT_SECURE_NO_DEPRECATE _CRT_NONSTDC_NO_DEPRECATE _SCL_SECURE_NO_DEPRECATE ISOLATION_AWARE_ENABLED=1 MAX _USING_V110_SDK71_
+OPTIONS   = -GR				# RTTI is required
+DEFFILE   = ActorX_3DSMAX/ActorX.def
+#LINKFLAGS =
+
+!if $VER >= 2013
+	# Max uses Unicode only starting with 2013 version
+	DEFINES += UNICODE _UNICODE
+!endif
+
+INCLUDES  = $SDK_INC
+LIBRARIES = $SDK_LIB
+
+LIBS = kernel32 user32 advapi32 comdlg32 shell32 bmm core geom gfx mesh maxutil maxscrpt gup paramblk2
+
+INCLUDES += ActorX_3DSMAX Common
+
+ALLOW_MISSING_INCLUDES=1
+sources(MAX) = {
+	ActorX_3DSMAX/*.cpp
+	Common/*.cpp
+	ActorX_3DSMAX/Res/ActorX.rc
+}
+
+target(shared, $OUT/$CFG/ActorX.dlu, MAX)

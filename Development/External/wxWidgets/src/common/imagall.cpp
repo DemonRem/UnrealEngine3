@@ -1,31 +1,24 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        imagall.cpp
+// Name:        src/common/imagall.cpp
 // Purpose:     wxImage access all handler
 // Author:      Sylvain Bougnoux
-// RCS-ID:      $Id: imagall.cpp,v 1.13 2004/05/23 20:52:02 JS Exp $
+// RCS-ID:      $Id: imagall.cpp 42644 2006-10-29 18:58:25Z VZ $
 // Copyright:   (c) Sylvain Bougnoux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-/*
-   We don't put pragma implement in this file because it is already present in
-   src/common/image.cpp
-*/
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
-
-#ifndef WX_PRECOMP
-#  include "wx/setup.h"
-#endif
-
-#include "wx/image.h"
 
 #if wxUSE_IMAGE
+
+#ifndef WX_PRECOMP
+    #include "wx/image.h"
+#endif
 
 //-----------------------------------------------------------------------------
 // This function allows dynamic access to all image handlers compile within
@@ -59,6 +52,9 @@ void wxInitAllImageHandlers()
   wxImage::AddHandler( new wxICOHandler );
   wxImage::AddHandler( new wxCURHandler );
   wxImage::AddHandler( new wxANIHandler );
+#endif
+#if wxUSE_TGA
+  wxImage::AddHandler( new wxTGAHandler );
 #endif
 #if wxUSE_XPM
   wxImage::AddHandler( new wxXPMHandler );

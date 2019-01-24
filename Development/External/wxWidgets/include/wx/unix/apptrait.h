@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     23.06.2003
-// RCS-ID:      $Id: apptrait.h,v 1.7 2004/11/12 21:20:46 DE Exp $
+// RCS-ID:      $Id: apptrait.h 43629 2006-11-24 11:33:53Z RR $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,6 @@ public:
     virtual bool IsWriteFDOfEndProcessPipe(wxExecuteData& execData, int fd);
     virtual void DetachWriteFDOfEndProcessPipe(wxExecuteData& execData);
     virtual int WaitForChild(wxExecuteData& execData);
-
-    virtual wxToolkitInfo& GetToolkitInfo();
 };
 
 #if wxUSE_GUI
@@ -40,7 +38,15 @@ public:
 #if defined(__WXMAC__) || defined(__WXCOCOA__)
     virtual wxStandardPathsBase& GetStandardPaths();
 #endif
-    virtual wxToolkitInfo& GetToolkitInfo();
+    virtual wxPortId GetToolkitVersion(int *majVer, int *minVer) const;
+
+#ifdef __WXGTK__
+    virtual wxString GetDesktopEnvironment() const;
+#endif
+
+#if defined(__WXDEBUG__) && defined(__WXGTK20__)
+    virtual bool ShowAssertDialog(const wxString& msg);
+#endif
 };
 
 #endif // wxUSE_GUI

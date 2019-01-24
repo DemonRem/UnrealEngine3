@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/dialup.cpp
+// Name:        src/msw/dialup.cpp
 // Purpose:     MSW implementation of network/dialup classes and functions
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     07.07.99
-// RCS-ID:      $Id: dialup.cpp,v 1.54 2005/07/28 21:15:53 VZ Exp $
+// RCS-ID:      $Id: dialup.cpp 52495 2008-03-14 14:18:24Z JS $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -26,19 +26,20 @@
 
 #if wxUSE_DIALUP_MANAGER
 
+#include "wx/dialup.h"
+
 #ifndef WX_PRECOMP
     #include "wx/log.h"
     #include "wx/intl.h"
     #include "wx/event.h"
+    #include "wx/app.h"
+    #include "wx/timer.h"
+    #include "wx/module.h"
 #endif
 
-#include "wx/timer.h"
-#include "wx/app.h"
 #include "wx/generic/choicdgg.h"
 
 #include "wx/dynlib.h"
-#include "wx/dialup.h"
-#include "wx/module.h"
 
 DEFINE_EVENT_TYPE(wxEVT_DIALUP_CONNECTED)
 DEFINE_EVENT_TYPE(wxEVT_DIALUP_DISCONNECTED)
@@ -162,7 +163,7 @@ struct WXDLLEXPORT wxRasThreadData
     HANDLE  hEventRas,  // automatic event which RAS signals when status changes
             hEventQuit; // manual event which we signal when we terminate
 
-    class WXDLLEXPORT wxDialUpManagerMSW *dialUpManager;  // the owner
+    class WXDLLIMPEXP_FWD_CORE wxDialUpManagerMSW *dialUpManager;  // the owner
 };
 
 // ----------------------------------------------------------------------------
@@ -710,7 +711,13 @@ size_t wxDialUpManagerMSW::GetISPNames(wxArrayString& names) const
         if ( dwRet == ERROR_BUFFER_TOO_SMALL )
         {
             // reallocate the buffer
-            rasEntries = (RASENTRYNAME *)realloc(rasEntries, size);
+            void *n  = realloc(rasEntries, size);
+            if (n == NULL)
+            {
+                free(rasEntries);
+                return 0;
+            }
+            rasEntries = (RASENTRYNAME *)n;
         }
         else if ( dwRet != 0 )
         {
@@ -1188,7 +1195,7 @@ void wxDialUpManagerMSW::DisableAutoCheckOnlineStatus()
 {
     wxCHECK_RET( IsOk(), wxT("using uninitialized wxDialUpManager") );
 
-    if ( --m_autoCheckLevel )
+    if ( --m_autoCheckLevel != 0 )
     {
         // still checking
         return;
@@ -1329,4 +1336,3 @@ static void WINAPI wxRasDialFunc(UINT WXUNUSED(unMsg),
 #endif // __BORLANDC__
 
 #endif // wxUSE_DIALUP_MANAGER
-

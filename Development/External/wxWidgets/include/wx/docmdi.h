@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: docmdi.h,v 1.19 2005/05/04 18:51:57 JS Exp $
+// RCS-ID:      $Id: docmdi.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DOCMDI_H_
 #define _WX_DOCMDI_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "docmdi.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -69,7 +65,7 @@ public:
     wxDocMDIChildFrame(wxDocument *doc, wxView *view, wxMDIParentFrame *frame, wxWindowID id,
         const wxString& title, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
         long type = wxDEFAULT_FRAME_STYLE, const wxString& name = wxT("frame"));
-    ~wxDocMDIChildFrame();
+    virtual ~wxDocMDIChildFrame();
 
     bool Create(wxDocument *doc,
                 wxView *view,

@@ -3,7 +3,7 @@
 // Purpose:     TextCtrl wxWidgets sample
 // Author:      Robert Roebling
 // Modified by:
-// RCS-ID:      $Id: text.cpp,v 1.81 2005/06/02 12:04:38 JS Exp $
+// RCS-ID:      $Id: text.cpp 41744 2006-10-08 20:38:14Z VZ $
 // Copyright:   (c) Robert Roebling, Julian Smart, Vadim Zeitlin
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -43,6 +43,7 @@
 #include "wx/colordlg.h"
 #include "wx/fontdlg.h"
 #include "wx/numdlg.h"
+#include "wx/tokenzr.h"
 
 //----------------------------------------------------------------------
 // class definitions
@@ -71,8 +72,13 @@ public:
     void OnChar(wxKeyEvent& event);
 
     void OnText(wxCommandEvent& event);
+    void OnTextEnter(wxCommandEvent& event);
     void OnTextURL(wxTextUrlEvent& event);
     void OnTextMaxLen(wxCommandEvent& event);
+
+    void OnTextCut(wxClipboardTextEvent & event);
+    void OnTextCopy(wxClipboardTextEvent & event);
+    void OnTextPaste(wxClipboardTextEvent & event);
 
     void OnMouseEvent(wxMouseEvent& event);
 
@@ -84,10 +90,13 @@ public:
     static bool ms_logMouse;
     static bool ms_logText;
     static bool ms_logFocus;
+    static bool ms_logClip;
 
 private:
     static inline wxChar GetChar(bool on, wxChar c) { return on ? c : _T('-'); }
+
     void LogKeyEvent(const wxChar *name, wxKeyEvent& event) const;
+    void LogClipEvent(const wxChar *what, wxClipboardTextEvent& event);
 
     bool m_hasCapture;
 
@@ -116,6 +125,14 @@ public:
     void DoMoveToEndOfText();
     void DoMoveToEndOfEntry();
 
+    // return true if currently text control has any selection
+    bool HasSelection() const
+    {
+        long from, to;
+        GetFocusedText()->GetSelection(&from, &to);
+        return from != to;
+    }
+
     MyTextCtrl    *m_text;
     MyTextCtrl    *m_password;
     MyTextCtrl    *m_enter;
@@ -134,9 +151,10 @@ public:
 #endif // wxUSE_LOG
 
 private:
-    // get the currently focused text control or return the default one is no
-    // text ctrl has focus
-    wxTextCtrl *GetFocusedText(wxTextCtrl *textDef);
+    // get the currently focused text control or return the default one
+    // (m_multitext) is no text ctrl has focus -- in any case, returns
+    // something non NULL
+    wxTextCtrl *GetFocusedText() const;
 };
 
 class MyFrame: public wxFrame
@@ -153,9 +171,27 @@ public:
 
 #if wxUSE_CLIPBOARD
     void OnPasteFromClipboard( wxCommandEvent& WXUNUSED(event) )
-        { m_panel->DoPasteFromClipboard(); }
+    {
+        wxLogMessage(_T("Pasting text from clipboard."));
+        m_panel->DoPasteFromClipboard();
+    }
     void OnCopyToClipboard( wxCommandEvent& WXUNUSED(event) )
-        { m_panel->DoCopyToClipboard(); }
+    {
+        wxLogMessage(_T("Copying text to clipboard."));
+        m_panel->DoCopyToClipboard();
+    }
+
+    void OnUpdatePasteFromClipboard(wxUpdateUIEvent& event)
+    {
+        wxClipboardLocker lockClip;
+
+        event.Enable( wxTheClipboard->IsSupported(wxDF_TEXT) );
+    }
+
+    void OnUpdateCopyToClipboard(wxUpdateUIEvent& event)
+    {
+        event.Enable( m_panel->HasSelection() );
+    }
 #endif // wxUSE_CLIPBOARD
 
     void OnAddTextFreeze( wxCommandEvent& WXUNUSED(event) )
@@ -254,9 +290,19 @@ public:
         MyTextCtrl::ms_logFocus = event.IsChecked();
     }
 
+    void OnLogClip(wxCommandEvent& event)
+    {
+        MyTextCtrl::ms_logClip = event.IsChecked();
+    }
+
     void OnSetText(wxCommandEvent& WXUNUSED(event))
     {
-        m_panel->m_text->SetValue(_T("Hello, world (what else did you expect)?"));
+        m_panel->m_text->SetValue(_T("Hello, world! (what else did you expect?)"));
+    }
+
+    void OnChangeText(wxCommandEvent& WXUNUSED(event))
+    {
+        m_panel->m_text->ChangeValue(_T("Changed, not set: no event"));
     }
 
     void OnIdle( wxIdleEvent& event );
@@ -308,6 +354,7 @@ public:
     void OnChangeBackgroundColour(wxCommandEvent& event);
     void OnLeftIndent(wxCommandEvent& event);
     void OnRightIndent(wxCommandEvent& event);
+    void OnTabStops(wxCommandEvent& event);
 
 private:
     wxTextCtrl *m_textCtrl;
@@ -338,6 +385,7 @@ enum
     // clipboard menu
     TEXT_CLIPBOARD_COPY = 200,
     TEXT_CLIPBOARD_PASTE,
+    TEXT_CLIPBOARD_VETO,
 
     // tooltip menu
     TEXT_TOOLTIPS_SETDELAY = 300,
@@ -362,6 +410,7 @@ enum
     TEXT_REPLACE,
     TEXT_SELECT,
     TEXT_SET,
+    TEXT_CHANGE,
 
     // log menu
     TEXT_LOG_KEY,
@@ -369,6 +418,7 @@ enum
     TEXT_LOG_MOUSE,
     TEXT_LOG_TEXT,
     TEXT_LOG_FOCUS,
+    TEXT_LOG_CLIP,
 
     TEXT_END
 };
@@ -406,11 +456,16 @@ bool MyApp::OnInit()
 #endif // wxUSE_TOOLTIPS
 
 #if wxUSE_CLIPBOARD
+    // notice that we use non default accelerators on purpose here to compare
+    // their behaviour with the built in handling of standard Ctrl/Cmd-C/V
     wxMenu *menuClipboard = new wxMenu;
-    menuClipboard->Append(TEXT_CLIPBOARD_COPY, _T("&Copy\tCtrl-C"),
-                          _T("Copy the first line to the clipboard"));
-    menuClipboard->Append(TEXT_CLIPBOARD_PASTE, _T("&Paste\tCtrl-V"),
+    menuClipboard->Append(TEXT_CLIPBOARD_COPY, _T("&Copy\tCtrl-Shift-C"),
+                          _T("Copy the selection to the clipboard"));
+    menuClipboard->Append(TEXT_CLIPBOARD_PASTE, _T("&Paste\tCtrl-Shift-V"),
                           _T("Paste from clipboard to the text control"));
+    menuClipboard->AppendSeparator();
+    menuClipboard->AppendCheckItem(TEXT_CLIPBOARD_VETO, _T("Vet&o\tCtrl-Shift-O"),
+                                   _T("Veto all clipboard operations"));
     menu_bar->Append(menuClipboard, _T("&Clipboard"));
 #endif // wxUSE_CLIPBOARD
 
@@ -421,6 +476,7 @@ bool MyApp::OnInit()
     menuText->Append(TEXT_REPLACE, _T("&Replace characters 4 to 8 with ABC\tCtrl-R"));
     menuText->Append(TEXT_SELECT, _T("&Select characters 4 to 8\tCtrl-I"));
     menuText->Append(TEXT_SET, _T("&Set the first text zone value\tCtrl-E"));
+    menuText->Append(TEXT_CHANGE, _T("&Change the first text zone value\tShift-Ctrl-E"));
     menuText->AppendSeparator();
     menuText->Append(TEXT_MOVE_ENDTEXT, _T("Move cursor to the end of &text"));
     menuText->Append(TEXT_MOVE_ENDENTRY, _T("Move cursor to the end of &entry"));
@@ -445,13 +501,13 @@ bool MyApp::OnInit()
     menuLog->AppendCheckItem(TEXT_LOG_MOUSE, _T("Log &mouse events"));
     menuLog->AppendCheckItem(TEXT_LOG_TEXT, _T("Log &text events"));
     menuLog->AppendCheckItem(TEXT_LOG_FOCUS, _T("Log &focus events"));
+    menuLog->AppendCheckItem(TEXT_LOG_CLIP, _T("Log clip&board events"));
     menuLog->AppendSeparator();
     menuLog->Append(TEXT_CLEAR, _T("&Clear the log\tCtrl-L"),
                     _T("Clear the log window contents"));
 
     // select only the interesting events by default
-    MyTextCtrl::ms_logKey =
-    MyTextCtrl::ms_logChar = false;
+    MyTextCtrl::ms_logClip =
     MyTextCtrl::ms_logText = true;
 
     menuLog->Check(TEXT_LOG_KEY, MyTextCtrl::ms_logKey);
@@ -481,8 +537,12 @@ BEGIN_EVENT_TABLE(MyTextCtrl, wxTextCtrl)
     EVT_CHAR(MyTextCtrl::OnChar)
 
     EVT_TEXT(wxID_ANY, MyTextCtrl::OnText)
+    EVT_TEXT_ENTER(wxID_ANY, MyTextCtrl::OnTextEnter)
     EVT_TEXT_URL(wxID_ANY, MyTextCtrl::OnTextURL)
     EVT_TEXT_MAXLEN(wxID_ANY, MyTextCtrl::OnTextMaxLen)
+    EVT_TEXT_CUT(wxID_ANY,   MyTextCtrl::OnTextCut)
+    EVT_TEXT_COPY(wxID_ANY,  MyTextCtrl::OnTextCopy)
+    EVT_TEXT_PASTE(wxID_ANY, MyTextCtrl::OnTextPaste)
 
     EVT_MOUSE_EVENTS(MyTextCtrl::OnMouseEvent)
 
@@ -495,6 +555,7 @@ bool MyTextCtrl::ms_logChar = false;
 bool MyTextCtrl::ms_logMouse = false;
 bool MyTextCtrl::ms_logText = false;
 bool MyTextCtrl::ms_logFocus = false;
+bool MyTextCtrl::ms_logClip = false;
 
 void MyTextCtrl::LogKeyEvent(const wxChar *name, wxKeyEvent& event) const
 {
@@ -521,8 +582,6 @@ void MyTextCtrl::LogKeyEvent(const wxChar *name, wxKeyEvent& event) const
             case WXK_MENU: key = _T("MENU"); break;
             case WXK_PAUSE: key = _T("PAUSE"); break;
             case WXK_CAPITAL: key = _T("CAPITAL"); break;
-            case WXK_PRIOR: key = _T("PRIOR"); break;
-            case WXK_NEXT: key = _T("NEXT"); break;
             case WXK_END: key = _T("END"); break;
             case WXK_HOME: key = _T("HOME"); break;
             case WXK_LEFT: key = _T("LEFT"); break;
@@ -591,7 +650,6 @@ void MyTextCtrl::LogKeyEvent(const wxChar *name, wxKeyEvent& event) const
             case WXK_NUMPAD_UP: key = _T("NUMPAD_UP"); break;
             case WXK_NUMPAD_RIGHT: key = _T("NUMPAD_RIGHT"); break;
             case WXK_NUMPAD_DOWN: key = _T("NUMPAD_DOWN"); break;
-            case WXK_NUMPAD_PRIOR: key = _T("NUMPAD_PRIOR"); break;
             case WXK_NUMPAD_PAGEUP: key = _T("NUMPAD_PAGEUP"); break;
             case WXK_NUMPAD_PAGEDOWN: key = _T("NUMPAD_PAGEDOWN"); break;
             case WXK_NUMPAD_END: key = _T("NUMPAD_END"); break;
@@ -733,15 +791,33 @@ void MyTextCtrl::OnText(wxCommandEvent& event)
         return;
 
     MyTextCtrl *win = (MyTextCtrl *)event.GetEventObject();
+    const wxChar *changeVerb = win->IsModified() ? _T("changed")
+                                                 : _T("set by program");
     const wxChar *data = (const wxChar *)(win->GetClientData());
     if ( data )
     {
-        wxLogMessage(_T("Text changed in control '%s'"), data);
+        wxLogMessage(_T("Text %s in control \"%s\""), changeVerb, data);
     }
     else
     {
-        // wxLogMessage( event.GetString() );
-        wxLogMessage(_T("Text changed in some control"));
+        wxLogMessage(_T("Text %s in some control"), changeVerb);
+    }
+}
+
+void MyTextCtrl::OnTextEnter(wxCommandEvent& event)
+{
+    if ( !ms_logText )
+        return;
+
+    MyTextCtrl *win = (MyTextCtrl *)event.GetEventObject();
+    const wxChar *data = (const wxChar *)(win->GetClientData());
+    if ( data )
+    {
+        wxLogMessage(_T("Enter pressed in control '%s'"), data);
+    }
+    else
+    {
+        wxLogMessage(_T("Enter pressed in some control"));
     }
 }
 
@@ -749,6 +825,39 @@ void MyTextCtrl::OnTextMaxLen(wxCommandEvent& WXUNUSED(event))
 {
     wxLogMessage(_T("You can't enter more characters into this control."));
 }
+
+
+void MyTextCtrl::OnTextCut(wxClipboardTextEvent& event)
+{
+    LogClipEvent(_T("cut to"), event);
+}
+
+void MyTextCtrl::OnTextCopy(wxClipboardTextEvent& event)
+{
+    LogClipEvent(_T("copied to"), event);
+}
+
+void MyTextCtrl::OnTextPaste(wxClipboardTextEvent& event)
+{
+    LogClipEvent(_T("pasted from"), event);
+}
+
+void MyTextCtrl::LogClipEvent(const wxChar *what, wxClipboardTextEvent& event)
+{
+    wxFrame *frame = wxDynamicCast(wxGetTopLevelParent(this), wxFrame);
+    wxCHECK_RET( frame, _T("no parent frame?") );
+
+    const bool veto = frame->GetMenuBar()->IsChecked(TEXT_CLIPBOARD_VETO);
+    if ( !veto )
+        event.Skip();
+
+    if ( ms_logClip )
+    {
+        wxLogMessage(_T("Text %s%s the clipboard."),
+                     veto ? _T("not ") : _T(""), what);
+    }
+}
+
 
 void MyTextCtrl::OnTextURL(wxTextUrlEvent& event)
 {
@@ -845,7 +954,7 @@ void MyTextCtrl::OnKeyDown(wxKeyEvent& event)
         case WXK_F6:
             wxLogMessage(_T("IsModified() before SetValue(): %d"),
                          IsModified());
-            SetValue(_T("SetValue() has been called"));
+            ChangeValue(_T("ChangeValue() has been called"));
             wxLogMessage(_T("IsModified() after SetValue(): %d"),
                          IsModified());
             break;
@@ -866,6 +975,11 @@ void MyTextCtrl::OnKeyDown(wxKeyEvent& event)
 
         case WXK_F10:
             AppendText(_T("AppendText() has been called"));
+            break;
+
+        case WXK_F11:
+            DiscardEdits();
+            wxLogMessage(_T("Control marked as non modified"));
             break;
     }
 
@@ -925,14 +1039,14 @@ MyPanel::MyPanel( wxFrame *frame, int x, int y, int w, int h )
                 m_horizontal->SetFont(wxFont(18, wxSWISS, wxNORMAL, wxNORMAL,
                                              false, _T(""),
                                              wxFONTENCODING_ISO8859_2));
-                m_horizontal->AppendText(_T("®lu»ouèký kùò zbìsile èe¹tina «»"));
+                m_horizontal->AppendText(_T("\256lu\273ou\350k\375 k\371\362 zb\354sile \350e\271tina \253\273"));
                 break;
 
             case '1':
                 m_horizontal->SetFont(wxFont(18, wxSWISS, wxNORMAL, wxNORMAL,
                                              false, _T(""),
                                              wxFONTENCODING_CP1251));
-                m_horizontal->AppendText(_T("Ïðèâåò!"));
+                m_horizontal->AppendText(_T("\317\360\350\342\345\362!"));
                 break;
 
             case '8':
@@ -942,7 +1056,7 @@ MyPanel::MyPanel( wxFrame *frame, int x, int y, int w, int h )
 #if wxUSE_UNICODE
                 m_horizontal->AppendText(L"\x0412\x0430\x0434\x0438\x043c \x0426");
 #else
-                m_horizontal->AppendText("ËÁÖÅÔÓÑ ÕÄÁÞÎÙÍ");
+                m_horizontal->AppendText("\313\301\326\305\324\323\321 \325\304\301\336\316\331\315");
 #endif
         }
     }
@@ -1026,12 +1140,12 @@ MyPanel::MyPanel( wxFrame *frame, int x, int y, int w, int h )
     SetSizer(topSizer);
 }
 
-wxTextCtrl *MyPanel::GetFocusedText(wxTextCtrl *textDef)
+wxTextCtrl *MyPanel::GetFocusedText() const
 {
     wxWindow *win = FindFocus();
 
     wxTextCtrl *text = win ? wxDynamicCast(win, wxTextCtrl) : NULL;
-    return text ? text : textDef;
+    return text ? text : m_multitext;
 }
 
 #if wxUSE_CLIPBOARD
@@ -1069,7 +1183,7 @@ void MyPanel::DoPasteFromClipboard()
 #if wxUSE_LOG
             *m_log << _T("Successfully retrieved data from the clipboard.\n");
 #endif // wxUSE_LOG
-            *m_multitext << data.GetText() << _T("\n");
+            GetFocusedText()->AppendText(data.GetText());
         }
         else
         {
@@ -1099,7 +1213,7 @@ void MyPanel::DoCopyToClipboard()
     // call has no effect under MSW.
     wxTheClipboard->UsePrimarySelection();
 
-    wxString text( m_multitext->GetLineText(0) );
+    wxString text( GetFocusedText()->GetStringSelection() );
 
     if (text.IsEmpty())
     {
@@ -1163,17 +1277,17 @@ void MyPanel::DoMoveToEndOfEntry()
 
 void MyPanel::DoRemoveText()
 {
-    GetFocusedText(m_multitext)->Remove(0, 10);
+    GetFocusedText()->Remove(0, 10);
 }
 
 void MyPanel::DoReplaceText()
 {
-    GetFocusedText(m_multitext)->Replace(3, 8, _T("ABC"));
+    GetFocusedText()->Replace(3, 8, _T("ABC"));
 }
 
 void MyPanel::DoSelectText()
 {
-    GetFocusedText(m_multitext)->SetSelection(3, 8);
+    GetFocusedText()->SetSelection(3, 8);
 }
 
 //----------------------------------------------------------------------
@@ -1192,6 +1306,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(TEXT_LOG_MOUSE,MyFrame::OnLogMouse)
     EVT_MENU(TEXT_LOG_TEXT, MyFrame::OnLogText)
     EVT_MENU(TEXT_LOG_FOCUS,MyFrame::OnLogFocus)
+    EVT_MENU(TEXT_LOG_CLIP, MyFrame::OnLogClip)
 #if wxUSE_LOG
     EVT_MENU(TEXT_CLEAR,    MyFrame::OnLogClear)
 #endif // wxUSE_LOG
@@ -1204,6 +1319,9 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 #if wxUSE_CLIPBOARD
     EVT_MENU(TEXT_CLIPBOARD_PASTE,    MyFrame::OnPasteFromClipboard)
     EVT_MENU(TEXT_CLIPBOARD_COPY,     MyFrame::OnCopyToClipboard)
+
+    EVT_UPDATE_UI(TEXT_CLIPBOARD_PASTE, MyFrame::OnUpdatePasteFromClipboard)
+    EVT_UPDATE_UI(TEXT_CLIPBOARD_COPY,  MyFrame::OnUpdateCopyToClipboard)
 #endif // wxUSE_CLIPBOARD
 
     EVT_MENU(TEXT_REMOVE,             MyFrame::OnRemoveText)
@@ -1222,10 +1340,11 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(TEXT_PAGE_DOWN,          MyFrame::OnScrollPageDown)
     EVT_MENU(TEXT_PAGE_UP,            MyFrame::OnScrollPageUp)
 
-    EVT_MENU(TEXT_GET_LINE,            MyFrame::OnGetLine)
-    EVT_MENU(TEXT_GET_LINELENGTH,            MyFrame::OnGetLineLength)
+    EVT_MENU(TEXT_GET_LINE,           MyFrame::OnGetLine)
+    EVT_MENU(TEXT_GET_LINELENGTH,     MyFrame::OnGetLineLength)
 
     EVT_MENU(TEXT_SET,                MyFrame::OnSetText)
+    EVT_MENU(TEXT_CHANGE,             MyFrame::OnChangeText)
 
     EVT_IDLE(MyFrame::OnIdle)
 END_EVENT_TABLE()
@@ -1404,7 +1523,8 @@ enum
     RICHTEXT_CHANGE_TEXT_COLOUR,
     RICHTEXT_CHANGE_BACKGROUND_COLOUR,
     RICHTEXT_LEFT_INDENT,
-    RICHTEXT_RIGHT_INDENT
+    RICHTEXT_RIGHT_INDENT,
+    RICHTEXT_TAB_STOPS
 };
 
 BEGIN_EVENT_TABLE(RichTextFrame, wxFrame)
@@ -1419,6 +1539,7 @@ BEGIN_EVENT_TABLE(RichTextFrame, wxFrame)
     EVT_MENU(RICHTEXT_CHANGE_BACKGROUND_COLOUR, RichTextFrame::OnChangeBackgroundColour)
     EVT_MENU(RICHTEXT_LEFT_INDENT, RichTextFrame::OnLeftIndent)
     EVT_MENU(RICHTEXT_RIGHT_INDENT, RichTextFrame::OnRightIndent)
+    EVT_MENU(RICHTEXT_TAB_STOPS, RichTextFrame::OnTabStops)
 END_EVENT_TABLE()
 
 RichTextFrame::RichTextFrame(wxWindow* parent, const wxString& title):
@@ -1457,7 +1578,8 @@ RichTextFrame::RichTextFrame(wxWindow* parent, const wxString& title):
     editMenu->Append(RICHTEXT_CHANGE_BACKGROUND_COLOUR, _("Change Background Colour"));
     editMenu->AppendSeparator();
     editMenu->Append(RICHTEXT_LEFT_INDENT, _("Left Indent"));
-    editMenu->Append(RICHTEXT_RIGHT_INDENT, _("Right indent"));
+    editMenu->Append(RICHTEXT_RIGHT_INDENT, _("Right Indent"));
+    editMenu->Append(RICHTEXT_TAB_STOPS, _("Tab Stops"));
     menuBar->Append(editMenu, _("Edit"));
 
     SetMenuBar(menuBar);
@@ -1647,6 +1769,35 @@ void RichTextFrame::OnRightIndent(wxCommandEvent& WXUNUSED(event))
 
         m_currentPosition = -1;
     }
+}
+
+void RichTextFrame::OnTabStops(wxCommandEvent& WXUNUSED(event))
+{
+    wxString tabsStr = wxGetTextFromUser
+                         (
+                            _("Please enter the tab stop positions in tenths of a millimetre, separated by spaces.\nLeave empty to reset tab stops."),
+                            _("Tab Stops"),
+                            wxEmptyString,
+                            this
+                         );
+
+    wxArrayInt tabs;
+
+    wxStringTokenizer tokens(tabsStr, _T(" "));
+    while (tokens.HasMoreTokens())
+    {
+        wxString token = tokens.GetNextToken();
+        tabs.Add(wxAtoi(token));
+    }
+
+    wxTextAttr attr;
+    attr.SetTabs(tabs);
+
+    long start, end;
+    m_textCtrl->GetSelection(& start, & end);
+    m_textCtrl->SetStyle(start, end, attr);
+
+    m_currentPosition = -1;
 }
 
 void RichTextFrame::OnIdle(wxIdleEvent& WXUNUSED(event))

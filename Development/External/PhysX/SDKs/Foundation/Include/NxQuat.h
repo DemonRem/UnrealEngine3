@@ -2,15 +2,17 @@
 #define NX_FOUNDATION_NxQuatT
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
   @{
 */
-
+#ifdef __PPCGEKKO__
+#include "wii\NxQuat_Wii.h"
+#else
 #include "Nxf.h"
 #include "NxVec3.h"
 
@@ -36,7 +38,7 @@ class NxQuat
 	/**
 	\brief copies xyz elements from v, and scalar from w (defaults to 0).
 	*/
-	NX_INLINE NxQuat(const NxVec3& v, NxReal w = 0);
+	explicit NX_INLINE NxQuat(const NxVec3& v, NxReal w = 0);
 
 	/**
 	\brief creates from angle-axis representation.
@@ -92,7 +94,7 @@ class NxQuat
 	/**
 	\brief Implicitly extends vector by a 0 w element.
 	*/
-	NX_INLINE NxQuat& operator=  (const NxVec3&);
+	// NX_INLINE NxQuat& operator=  (const NxVec3&);
 
 	NX_INLINE void setx(const NxReal& d);
 	NX_INLINE void sety(const NxReal& d);
@@ -596,8 +598,10 @@ NX_INLINE void NxQuat::multiply(const NxQuat& left, const NxVec3& right)		// thi
 	}
 
 NX_INLINE void NxQuat::slerp(const NxReal t, const NxQuat& left, const NxQuat& right) // this = slerp(t, a, b)
-	{
+{
 	const NxReal	quatEpsilon = (NxReal(1.0e-8f));
+
+	NX_ASSERT(this != &right); // not supported!
 
 	*this = left;
 
@@ -609,30 +613,28 @@ NX_INLINE void NxQuat::slerp(const NxReal t, const NxQuat& left, const NxQuat& r
 
 	NxReal sign = NxReal(1);
 	if (cosine < 0)
-		{
+	{
 		cosine = - cosine;
 		sign = NxReal(-1);
-		}
-
-	NxReal Sin = NxReal(1) - cosine*cosine;
-
-	if(Sin>=quatEpsilon*quatEpsilon)	
-		{
-		Sin = NxMath::sqrt(Sin);
-		const NxReal angle = NxMath::atan2(Sin, cosine);
-		const NxReal i_sin_angle = NxReal(1) / Sin;
-
-
-
-		NxReal lower_weight = NxMath::sin(angle*(NxReal(1)-t)) * i_sin_angle;
-		NxReal upper_weight = NxMath::sin(angle * t) * i_sin_angle * sign;
-
-		w = (w * (lower_weight)) + (right.w * (upper_weight));
-		x = (x * (lower_weight)) + (right.x * (upper_weight));
-		y = (y * (lower_weight)) + (right.y * (upper_weight));
-		z = (z * (lower_weight)) + (right.z * (upper_weight));
-		}
 	}
+
+	NxReal sine = NxReal(1) - cosine*cosine;
+
+	if(sine>=quatEpsilon*quatEpsilon)	
+	{
+		sine = NxMath::sqrt(sine);
+		const NxReal angle = NxMath::atan2(sine, cosine);
+		const NxReal invSine = 1 / sine;
+
+		NxReal leftw = NxMath::sin(angle*(1-t)) * invSine;
+		NxReal rightw = NxMath::sin(angle * t) * invSine * sign;
+
+		w = w * leftw + right.w * rightw;
+		x = x * leftw + right.x * rightw;
+		y = y * leftw + right.y * rightw;
+		z = z * leftw + right.z * rightw;
+	}
+}
 
 
 NX_INLINE void NxQuat::rotate(NxVec3 & v) const						//rotates passed vec by rot expressed by quaternion.  overwrites arg ith the result.
@@ -795,11 +797,22 @@ NX_INLINE const NxVec3 NxQuat::invTransform(const NxVec3 &v, const NxVec3 &p) co
 	return invRot(v-p);
     }
 
- /** @} */
+NX_INLINE bool operator==(const NxQuat& q0, const NxQuat& q1)
+{
+	return q0.x == q1.x && q0.y == q1.y && q0.z == q1.z && q0.w == q1.w;
+}
+
+NX_INLINE bool operator!=(const NxQuat& q0, const NxQuat& q1)
+{
+	return !(q0 == q1);
+}
+
+/** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+#endif
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

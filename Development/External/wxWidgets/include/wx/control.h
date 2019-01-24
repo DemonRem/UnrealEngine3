@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     26.07.99
-// RCS-ID:      $Id: control.h,v 1.45 2005/06/26 15:46:07 RR Exp $
+// RCS-ID:      $Id: control.h 42816 2006-10-31 08:50:17Z RD $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,17 +16,13 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "controlbase.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_CONTROLS
 
 #include "wx/window.h"      // base class
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxControlNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxControlNameStr[];
 
 // ----------------------------------------------------------------------------
 // wxControl is the base class for all controls
@@ -50,6 +46,11 @@ public:
     // get the control alignment (left/right/centre, top/bottom/centre)
     int GetAlignment() const { return m_windowStyle & wxALIGN_MASK; }
 
+    // get the string without mnemonic characters ('&')
+    static wxString GetLabelText(const wxString& label);
+
+    // get just the text of the label, without mnemonic characters ('&')
+    wxString GetLabelText() const { return GetLabelText(GetLabel()); }
 
     // controls by default inherit the colours of their parents, if a
     // particular control class doesn't want to do it, it can override
@@ -66,16 +67,8 @@ public:
     virtual void SetLabel( const wxString &label );
     virtual bool SetFont(const wxFont& font);
 
-    // Reserved for future use
-    virtual void ReservedControlFunc1() {}
-    virtual void ReservedControlFunc2() {}
-    virtual void ReservedControlFunc3() {}
-    virtual void ReservedControlFunc4() {}
-    virtual void ReservedControlFunc5() {}
-    virtual void ReservedControlFunc6() {}
-    virtual void ReservedControlFunc7() {}
-    virtual void ReservedControlFunc8() {}
-    virtual void ReservedControlFunc9() {}
+    // wxControl-specific processing after processing the update event
+    virtual void DoUpdateWindowUI(wxUpdateUIEvent& event);
 
 protected:
     // creates the control (calls wxWindowBase::CreateBase inside) and adds it
@@ -90,17 +83,6 @@ protected:
 
     // initialize the common fields of wxCommandEvent
     void InitCommandEvent(wxCommandEvent& event) const;
-
-    // set the initial window size if none is given (i.e. at least one of the
-    // components of the size passed to ctor/Create() is -1)
-    //
-    // normally just calls SetBestSize() but can be overridden not to do it for
-    // the controls which have to do some additional initialization (e.g. add
-    // strings to list box) before their best size can be accurately calculated
-    virtual void SetInitialBestSize(const wxSize& size)
-    {
-        SetBestSize(size);
-    }
 
     DECLARE_NO_COPY_CLASS(wxControlBase)
 };
@@ -117,8 +99,10 @@ protected:
     #include "wx/msw/control.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/control.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/control.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/control.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/control.h"
 #elif defined(__WXCOCOA__)

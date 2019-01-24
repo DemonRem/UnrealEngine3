@@ -6,17 +6,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: sashwin.h,v 1.22 2005/05/17 23:05:33 VZ Exp $
+// RCS-ID:      $Id: sashwin.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_SASHWIN_H_G_
 #define _WX_SASHWIN_H_G_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "sashwin.h"
-#endif
 
 #if wxUSE_SASH
 
@@ -43,10 +39,17 @@ enum wxSashEdgePosition {
 class WXDLLIMPEXP_ADV wxSashEdge
 {
 public:
-    wxSashEdge() { m_show = false; m_border = false; m_margin = 0; }
+    wxSashEdge()
+    { m_show = false;
+#if WXWIN_COMPATIBILITY_2_6
+      m_border = false;
+#endif
+      m_margin = 0; }
 
     bool    m_show;     // Is the sash showing?
+#if WXWIN_COMPATIBILITY_2_6
     bool    m_border;   // Do we draw a border?
+#endif
     int     m_margin;   // The margin size
 };
 
@@ -84,7 +87,7 @@ public:
         Create(parent, id, pos, size, style, name);
     }
 
-    ~wxSashWindow();
+    virtual ~wxSashWindow();
 
     bool Create(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize, long style = wxSW_3D|wxCLIP_CHILDREN, const wxString& name = wxT("sashWindow"));
@@ -95,11 +98,15 @@ public:
     // Get whether there's a sash in this position
     bool GetSashVisible(wxSashEdgePosition edge) const { return m_sashes[edge].m_show; }
 
+#if WXWIN_COMPATIBILITY_2_6
     // Set whether there's a border in this position
+    // This value is unused in wxSashWindow.
     void SetSashBorder(wxSashEdgePosition edge, bool border) { m_sashes[edge].m_border = border; }
 
     // Get whether there's a border in this position
+    // This value is unused in wxSashWindow.
     bool HasBorder(wxSashEdgePosition edge) const { return m_sashes[edge].m_border; }
+#endif
 
     // Get border size
     int GetEdgeMargin(wxSashEdgePosition edge) const { return m_sashes[edge].m_margin; }

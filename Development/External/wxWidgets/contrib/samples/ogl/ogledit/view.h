@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        view.h
+// Name:        contrib/samples/ogl/ogledit/view.h
 // Purpose:     View-related classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: view.h,v 1.3 2004/06/09 16:42:26 ABX Exp $
+// RCS-ID:      $Id: view.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,12 +12,8 @@
 #ifndef _OGLSAMPLE_VIEW_H_
 #define _OGLSAMPLE_VIEW_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface "view.h"
-#endif
-
 #include "doc.h"
-#include <wx/ogl/ogl.h>
+#include "wx/ogl/ogl.h"
 
 class MyCanvas: public wxShapeCanvas
 {
@@ -55,7 +51,7 @@ class DiagramView: public wxView
  public:
   wxFrame *frame;
   MyCanvas *canvas;
-  
+
   DiagramView(void) { canvas = NULL; frame = NULL; };
   ~DiagramView(void) {};
 
@@ -65,8 +61,6 @@ class DiagramView: public wxView
   bool OnClose(bool deleteWindow = true);
 
   wxShape *FindSelectedShape(void);
-
-//  void OnMenuCommand(int cmd);
 
   void OnCut(wxCommandEvent& event);
   void OnChangeBackgroundColour(wxCommandEvent& event);

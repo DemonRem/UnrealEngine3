@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXJOINT
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -41,9 +41,10 @@ class NxD6Joint;
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes (Up to 64k per scene)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxJointDesc NxScene.createJoint()
  @see NxCylindricalJoint NxD6Joint NxDistanceJoint NxFixedJoint NxPointInPlaneJoint
@@ -66,9 +67,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.actors NxActor
 	*/
@@ -85,9 +87,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.setGlobalAnchor() getGlobalAnchor()
 	*/
@@ -104,9 +107,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.setGlobalAxis() getGlobalAxis()
 	*/
@@ -119,9 +123,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalAnchor() getGlobalAxis()
 	*/
@@ -134,9 +139,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalAxis() getGlobalAnchor()
 	*/
@@ -156,9 +162,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointState setBreakable()
 	*/
@@ -190,9 +197,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.maxForce NxJointDesc.maxTorque getState() getBreakable()
 	*/
@@ -206,13 +214,79 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setBreakable NxJointDesc.maxForce NxJointDesc.maxTorque getState()
 	*/
 	virtual void getBreakable(NxReal & maxForce, NxReal & maxTorque) = 0;
+
+	/**
+	\brief Sets the solver extrapolation factor.
+
+	\param[in] solverExtrapolationFactor The solver extrapolation factor.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxJointDesc.solverExtrapolationFactor
+	*/
+
+	virtual void setSolverExtrapolationFactor(NxReal solverExtrapolationFactor) = 0;
+
+	/**
+	\brief Retrieves the solver extrapolation factor.
+
+	\return The solver extrapolation factor.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxJointDesc.solverExtrapolationFactor
+	*/
+	virtual NxReal getSolverExtrapolationFactor() const = 0;
+
+	/**
+	\brief Switch between acceleration and force based spring.
+
+	\param[in] b {true: use acceleration spring, false: use force spring}.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxJointDesc.useAccelerationSpring
+	*/
+	virtual void setUseAccelerationSpring(bool b) = 0;
+
+	/**
+	\brief Checks whether acceleration spring is used.
+
+	\return True if acceleration spring is used else false.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxJointDesc.useAccelerationSpring
+	*/
+	virtual bool getUseAccelerationSpring() const = 0;
 
 /************************************************************************************************/
 
@@ -244,9 +318,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLimitPoint() addLimitPlane()
 	*/
@@ -263,9 +338,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLimitPoint() addLimitPlane()
 	*/
@@ -296,9 +372,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLimitPoint() purgeLimitPlanes() getNextLimitPlane()
 	*/
@@ -313,9 +390,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see addLimitPlane() getNextLimitPlane()
 	*/
@@ -332,9 +410,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see hasMoreLimitPlanes() getNextLimitPlane()
 	*/
@@ -349,9 +428,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetLimitPlaneIterator() getNextLimitPlane()
 	*/
@@ -374,9 +454,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetLimitPlaneIterator() hasMoreLimitPlanes()
 	*/
@@ -390,9 +471,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Only D6 joints are supported in hardware)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointType
 	*/
@@ -412,9 +494,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointType
 	*/
@@ -429,9 +512,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxRevoluteJoint
 	*/
@@ -446,9 +530,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxPointInPlaneJoint
 	*/
@@ -463,9 +548,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxPointOnLineJoint
 	*/
@@ -480,9 +566,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxD6Joint
 	*/
@@ -497,9 +584,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxPrismaticJoint
 	*/
@@ -514,9 +602,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxCylindricalJoint
 	*/
@@ -531,9 +620,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxSphericalJoint
 	*/
@@ -548,9 +638,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxFixedJoint
 	*/
@@ -565,9 +656,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxDistanceJoint
 	*/
@@ -582,9 +674,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see is NxPulleyJoint
 	*/
@@ -601,9 +694,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
@@ -616,9 +710,10 @@ class NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
@@ -632,9 +727,10 @@ class NxJoint
 	<b>Platform:</b>
 	
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene
 	*/
@@ -646,9 +742,9 @@ class NxJoint
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

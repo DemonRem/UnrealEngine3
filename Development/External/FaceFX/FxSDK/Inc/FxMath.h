@@ -3,13 +3,14 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxMath_H__
 #define FxMath_H__
 
 #include "FxPlatform.h"
+#include "FxUtil.h"
 
 // For now all platforms will use ANSI math routines.
 #include "FxMathANSI.h"
@@ -66,18 +67,15 @@ FX_INLINE FxBool FX_CALL FxDRealEquality( FxDReal first, FxDReal second )
 /// Hermite interpolation.
 FX_INLINE FxReal FX_CALL FxHermiteInterpolate( FxReal start, FxReal end, FxReal alpha )
 {
-	if( alpha <= 0.0f ) return start;
-	if( alpha >= 1.0f ) return end;
-	return alpha * (alpha * (alpha * (2.0f*start - 2.0f*end) + (-3.0f*start + 3.0f*end))) 
-		   + start;
+	FxReal a = FxClamp(0.0f, alpha, 1.0f);
+	return a * (a * (a * (2.0f*start - 2.0f*end) + (-3.0f*start + 3.0f*end))) + start;
 }
 
 /// Linear interpolation.
 FX_INLINE FxReal FX_CALL FxLinearInterpolate( FxReal start, FxReal end, FxReal alpha )
 {
-	if( alpha <= 0.0f ) return start;
-	if( alpha >= 1.0f ) return end;
-	return (end - start) * alpha + start;
+	FxReal a = FxClamp(0.0f, alpha, 1.0f);
+	return (end - start) * a + start;
 }
 
 } // namespace Face

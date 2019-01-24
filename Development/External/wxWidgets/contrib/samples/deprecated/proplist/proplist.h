@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: proplist.h,v 1.2 2003/08/17 11:31:04 JS Exp $
+// RCS-ID:      $Id: proplist.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "proplist_sample.h"
-#endif
 
 #ifndef _PROPTEST_H_
 #define _PROPTEST_H_

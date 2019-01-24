@@ -4,7 +4,7 @@
 // Author:      Andrew Davison
 // Modified by:
 // Created:     05.04.94
-// RCS-ID:      $Id: fractal.cpp,v 1.8 2005/01/31 18:15:37 ABX Exp $
+// RCS-ID:      $Id: fractal.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1994 Andrew Davison
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,11 +26,6 @@ quite right as the original code used SetViewportOrg() which there
 doesn't seem to be an equivalent of under wxWidgets, and my quick
 hack doesn't fix.
 */
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 #include "wx/wxprec.h"
 

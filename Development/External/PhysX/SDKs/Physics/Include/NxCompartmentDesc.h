@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NX_COMPARTMENT_DESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -33,7 +33,7 @@ enum NxDeviceCode
 	// ...
 
 	NX_DC_CPU = 0xffff0000,						//!< Compartment is to be simulated on CPU
-	NX_DC_PPU_AUTO_ASSIGN = 0xffff0001,			//!< Compartment is to be simulated on a processor (PPU or CPU) chosen by the HSM for best performance.
+	NX_DC_PPU_AUTO_ASSIGN = 0xffff0001			//!< Compartment is to be simulated on a processor (PPU or CPU) chosen by the HSM for best performance (CPU is only used in the absence of a PPU).
 	};
 
 
@@ -45,7 +45,12 @@ class NxCompartmentDesc
 	{
 	public:
 	NxCompartmentType type;						//!< Compartment meant for this type of simulation.  Will be removed in 3.0, as comparments will become type-neutral. Cloth type compartments must have a non-CPU device code.
-	NxU32			deviceCode;					//!< A NxDeviceCode, incl. a PPU index from 0 to 31.
+
+	/**
+	\brief A NxDeviceCode, incl. a PPU index from 0 to 31.
+	@see NxDeviceCode
+	*/
+	NxU32			deviceCode;	
 	NxReal			gridHashCellSize;			//!< Size in distance units of a single cell in the paging grid.  Should be set to the size of the largest common dynamic object in this compartment.
 	NxU32			gridHashTablePower;			//!< 2-power used to determine size of the hash table that geometry gets hashed into.  Hash table size is (1 << gridHashTablePower).
 	NxU32			flags;						//!< Combination of ::NxCompartmentFlag values
@@ -61,7 +66,7 @@ class NxCompartmentDesc
 	NX_INLINE void setToDefault()
 		{
 		type = NX_SCT_RIGIDBODY;
-		deviceCode = NX_DC_CPU;
+		deviceCode = (NxU32) NX_DC_CPU;
 		gridHashCellSize = 100.0f;				//was 2.0f in 2.5, bumped up.
 		gridHashTablePower = 8;
 		flags = NX_CF_INHERIT_SETTINGS;
@@ -75,17 +80,22 @@ class NxCompartmentDesc
 	\return return true if the current settings are valid
 	*/
 
-	NX_INLINE bool isValid() const
-		{
+	NX_INLINE bool isValid() const { return !checkValid(); }
+
+	NX_INLINE NxU32 checkValid() const 
+	{
 		if (deviceCode != NX_DC_PPU_0 && 
 			deviceCode != NX_DC_PPU_AUTO_ASSIGN &&
 			deviceCode != NX_DC_CPU)
-			return false;
+			return 0;
 		if (timeScale < 0.0f)
-			return false;
-		if (deviceCode == NX_DC_CPU && type == NX_SCT_CLOTH)
-			return false;
-		return (type <= NX_SCT_CLOTH) && (gridHashCellSize > 0.0f);
+			return 1;
+		if (type > NX_SCT_CLOTH)
+			return 2;
+		if (gridHashCellSize <= 0.0f)
+			return 3;
+
+		return 0;
 		}
 
 	NxCompartmentDesc()
@@ -94,10 +104,11 @@ class NxCompartmentDesc
 		}
 	};
 
+/** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

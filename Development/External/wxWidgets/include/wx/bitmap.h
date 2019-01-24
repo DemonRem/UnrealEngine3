@@ -4,7 +4,7 @@
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     22.04.01
-// RCS-ID:      $Id: bitmap.h,v 1.29 2005/02/05 14:17:21 RR Exp $
+// RCS-ID:      $Id: bitmap.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,30 +16,71 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "bitmapbase.h"
+#include "wx/string.h"
+#include "wx/gdicmn.h"  // for wxBitmapType
+#include "wx/colour.h"
+
+class WXDLLIMPEXP_FWD_CORE wxBitmap;
+class WXDLLIMPEXP_FWD_CORE wxBitmapHandler;
+class WXDLLIMPEXP_FWD_CORE wxIcon;
+class WXDLLIMPEXP_FWD_CORE wxImage;
+class WXDLLIMPEXP_FWD_CORE wxMask;
+class WXDLLIMPEXP_FWD_CORE wxPalette;
+
+// ----------------------------------------------------------------------------
+// wxVariant support
+// ----------------------------------------------------------------------------
+
+#if wxUSE_VARIANT
+#include "wx/variant.h"
+DECLARE_VARIANT_OBJECT_EXPORTED(wxBitmap,WXDLLEXPORT)
 #endif
 
-#include "wx/defs.h"
-#include "wx/object.h"
-#include "wx/string.h"
-#include "wx/gdiobj.h"
-#include "wx/gdicmn.h"  // for wxBitmapType
+// ----------------------------------------------------------------------------
+// wxMask represents the transparent area of the bitmap
+// ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxBitmap;
-class WXDLLEXPORT wxBitmapHandler;
-class WXDLLEXPORT wxImage;
-class WXDLLEXPORT wxMask;
-class WXDLLEXPORT wxPalette;
+class WXDLLEXPORT wxMaskBase : public wxObject
+{
+public:
+    // create the mask from bitmap pixels of the given colour
+    bool Create(const wxBitmap& bitmap, const wxColour& colour);
+
+#if wxUSE_PALETTE
+    // create the mask from bitmap pixels with the given palette index
+    bool Create(const wxBitmap& bitmap, int paletteIndex);
+#endif // wxUSE_PALETTE
+
+    // create the mask from the given mono bitmap
+    bool Create(const wxBitmap& bitmap);
+
+protected:
+    // this function is called from Create() to free the existing mask data
+    virtual void FreeData() = 0;
+
+    // these functions must be overridden to implement the corresponding public
+    // Create() methods, they shouldn't call FreeData() as it's already called
+    // by the public wrappers
+    virtual bool InitFromColour(const wxBitmap& bitmap,
+                                const wxColour& colour) = 0;
+    virtual bool InitFromMonoBitmap(const wxBitmap& bitmap) = 0;
+};
 
 #if defined(__WXMGL__) || \
+    defined(__WXDFB__) || \
     defined(__WXMAC__) || \
     defined(__WXGTK__) || \
     defined(__WXCOCOA__) || \
     defined(__WXMOTIF__) || \
     defined(__WXX11__)
+    #define wxUSE_BITMAP_BASE 1
+#else
+    #define wxUSE_BITMAP_BASE 0
+#endif
+
 // Only used by some ports
 // FIXME -- make all ports (but MSW which uses wxGDIImage) use these base classes
+#if wxUSE_BITMAP_BASE
 
 // ----------------------------------------------------------------------------
 // wxBitmapHandler: class which knows how to create/load/save bitmaps in
@@ -49,26 +90,21 @@ class WXDLLEXPORT wxPalette;
 class WXDLLEXPORT wxBitmapHandlerBase : public wxObject
 {
 public:
-    wxBitmapHandlerBase()
-        : m_name()
-        , m_extension()
-        , m_type(wxBITMAP_TYPE_INVALID)
-    { }
-
+    wxBitmapHandlerBase() { m_type = wxBITMAP_TYPE_INVALID; }
     virtual ~wxBitmapHandlerBase() { }
 
-    virtual bool Create(wxBitmap *bitmap, void *data, long flags,
-                          int width, int height, int depth = 1) = 0;
+    virtual bool Create(wxBitmap *bitmap, const void* data, long flags,
+                        int width, int height, int depth = 1);
     virtual bool LoadFile(wxBitmap *bitmap, const wxString& name, long flags,
-                          int desiredWidth, int desiredHeight) = 0;
+                          int desiredWidth, int desiredHeight);
     virtual bool SaveFile(const wxBitmap *bitmap, const wxString& name,
-                          int type, const wxPalette *palette = NULL) = 0;
+                          int type, const wxPalette *palette = NULL);
 
     void SetName(const wxString& name)      { m_name = name; }
     void SetExtension(const wxString& ext)  { m_extension = ext; }
     void SetType(wxBitmapType type)         { m_type = type; }
-    wxString GetName() const                { return m_name; }
-    wxString GetExtension() const           { return m_extension; }
+    const wxString& GetName() const         { return m_name; }
+    const wxString& GetExtension() const    { return m_extension; }
     wxBitmapType GetType() const            { return m_type; }
 
 private:
@@ -76,37 +112,29 @@ private:
     wxString      m_extension;
     wxBitmapType  m_type;
 
-private:
     DECLARE_ABSTRACT_CLASS(wxBitmapHandlerBase)
 };
 
 class WXDLLEXPORT wxBitmapBase : public wxGDIObject
 {
 public:
-    wxBitmapBase() : wxGDIObject() {}
-    virtual ~wxBitmapBase() {}
-
     /*
     Derived class must implement these:
 
     wxBitmap();
     wxBitmap(int width, int height, int depth = -1);
     wxBitmap(const char bits[], int width, int height, int depth = 1);
-    wxBitmap(const char **bits);
-    wxBitmap(char **bits);
-    wxBitmap(const wxBitmap& bmp);
+    wxBitmap(const char* const* bits);
     wxBitmap(const wxString &filename, wxBitmapType type = wxBITMAP_TYPE_XPM);
     wxBitmap(const wxImage& image, int depth = -1);
-    wxBitmap& operator = (const wxBitmap& bmp);
-    bool operator == (const wxBitmap& bmp) const;
-    bool operator != (const wxBitmap& bmp) const;
 
     bool Create(int width, int height, int depth = -1);
 
     static void InitStandardHandlers();
     */
 
-    virtual bool Ok() const = 0;
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const = 0;
 
     virtual int GetHeight() const = 0;
     virtual int GetWidth() const = 0;
@@ -158,32 +186,56 @@ public:
 
     static void CleanUpHandlers();
 
+    // this method is only used by the generic implementation of wxMask
+    // currently but could be useful elsewhere in the future: it can be
+    // overridden to quantize the colour to correspond to bitmap colour depth
+    // if necessary; default implementation simply returns the colour as is
+    virtual wxColour QuantizeColour(const wxColour& colour) const
+    {
+        return colour;
+    }
+
 protected:
     static wxList sm_handlers;
 
     DECLARE_ABSTRACT_CLASS(wxBitmapBase)
 };
-#endif
+
+#endif // wxUSE_BITMAP_BASE
 
 #if defined(__WXPALMOS__)
-#include "wx/palmos/bitmap.h"
+    #include "wx/palmos/bitmap.h"
 #elif defined(__WXMSW__)
-#include "wx/msw/bitmap.h"
+    #include "wx/msw/bitmap.h"
 #elif defined(__WXMOTIF__)
-#include "wx/x11/bitmap.h"
+    #include "wx/x11/bitmap.h"
+#elif defined(__WXGTK20__)
+    #include "wx/gtk/bitmap.h"
 #elif defined(__WXGTK__)
-#include "wx/gtk/bitmap.h"
+    #include "wx/gtk1/bitmap.h"
 #elif defined(__WXX11__)
-#include "wx/x11/bitmap.h"
+    #include "wx/x11/bitmap.h"
 #elif defined(__WXMGL__)
-#include "wx/mgl/bitmap.h"
+    #include "wx/mgl/bitmap.h"
+#elif defined(__WXDFB__)
+    #include "wx/dfb/bitmap.h"
 #elif defined(__WXMAC__)
-#include "wx/mac/bitmap.h"
+    #include "wx/mac/bitmap.h"
 #elif defined(__WXCOCOA__)
-#include "wx/cocoa/bitmap.h"
+    #include "wx/cocoa/bitmap.h"
 #elif defined(__WXPM__)
-#include "wx/os2/bitmap.h"
+    #include "wx/os2/bitmap.h"
 #endif
 
+// we must include generic mask.h after wxBitmap definition
+#if defined(__WXMGL__) || defined(__WXDFB__)
+    #define wxUSE_GENERIC_MASK 1
+#else
+    #define wxUSE_GENERIC_MASK 0
 #endif
-    // _WX_BITMAP_H_BASE_
+
+#if wxUSE_GENERIC_MASK
+    #include "wx/generic/mask.h"
+#endif
+
+#endif // _WX_BITMAP_H_BASE_

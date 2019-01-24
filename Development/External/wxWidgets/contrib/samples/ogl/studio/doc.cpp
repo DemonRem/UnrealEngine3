@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        doc.cpp
+// Name:        contrib/samples/ogl/studio/doc.cpp
 // Purpose:     Implements document functionality
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: doc.cpp,v 1.9 2005/03/31 19:18:23 ABX Exp $
+// RCS-ID:      $Id: doc.cpp 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -21,13 +17,13 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
 #include "studio.h"
 #include "doc.h"
 #include "view.h"
-#include <wx/ogl/basicp.h>
+#include "wx/ogl/basicp.h"
 
 IMPLEMENT_DYNAMIC_CLASS(csDiagramDocument, wxDocument)
 
@@ -595,4 +591,3 @@ bool csCommandState::Undo()
 
     return true;
 }
-

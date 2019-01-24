@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXBOXSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -34,9 +34,10 @@ class NxBoxShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBoxShape.setDimensions() NxBoxShape.getDimensions()
 	*/
@@ -55,7 +56,11 @@ class NxBoxShapeDesc : public NxShapeDesc
 
 	\return True if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxBoxShapeDesc::NxBoxShapeDesc() : NxShapeDesc(NX_SHAPE_BOX)	//constructor sets to default
@@ -69,20 +74,20 @@ NX_INLINE void NxBoxShapeDesc::setToDefault()
 	dimensions.zero();
 	}
 
-NX_INLINE bool NxBoxShapeDesc::isValid() const
+NX_INLINE NxU32 NxBoxShapeDesc::checkValid() const
 	{
-	if(!dimensions.isFinite())			return false;
-	if(dimensions.x<0.0f)				return false;
-	if(dimensions.y<0.0f)				return false;
-	if(dimensions.z<0.0f)				return false;
-	return NxShapeDesc::isValid();
+	if(!dimensions.isFinite())			return 1;
+	if(dimensions.x<0.0f)				return 2;
+	if(dimensions.y<0.0f)				return 3;
+	if(dimensions.z<0.0f)				return 4;
+	return 5*NxShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

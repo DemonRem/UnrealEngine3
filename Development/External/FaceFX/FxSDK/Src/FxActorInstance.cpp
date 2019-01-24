@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxActorInstance.h"
@@ -21,62 +21,64 @@ namespace Face
 FX_IMPLEMENT_CLASS(FxActorInstance, kCurrentFxActorInstanceVersion, FxNamedObject)
 
 FxActorInstance::FxActorInstance( FxActor* actor )
-	: _actor(NULL)
+	: _pActor(NULL)
+	, _isOpenInStudio(FxFalse)
 	, _allowNonAnimTick(FxFalse)
+	, _hasBeenTicked(FxFalse)
 {
 	SetActor(actor);
 }
 
 FxActorInstance::~FxActorInstance()
 {
-	// Find this instance in the actor's instance list and remove it.
-	if( _actor )
+	// Remove this instance from the actor's instance list.  _pActor is 
+	// explicitly checked here (instead of an assert) just in case the actor was
+	// destroyed before its instances.  If it was, it would have called 
+	// SetActor(NULL) on all of them.
+	if( _pActor )
 	{
-		FxList<FxActorInstance*>::Iterator curr = _actor->_instanceList.Begin();
-		FxList<FxActorInstance*>::Iterator end  = _actor->_instanceList.End();
-		for( ; curr != end; ++curr )
+		_pActor->RemoveInstance(this);
+	}
+}
+
+void FxActorInstance::SetActor( FxActor* pActor )
+{
+	FxBool isSameActor = FxFalse;
+	if( _pActor && pActor && _pActor == pActor )
+	{
+		isSameActor = FxTrue;
+	}
+	if( _pActor )
+	{
+		if( !isSameActor )
 		{
-			if( (*curr) == this )
-			{
-				_actor->_instanceList.Remove(curr);
-				break;
-			}
+			_pActor->RemoveInstance(this);
+		}
+		_registers.Clear();
+		_pActor = NULL;
+	}
+	_pActor = pActor;
+	if( _pActor )
+	{
+		// Add this instance to the instance list of the actor.
+		if( !isSameActor )
+		{
+			_pActor->AddInstance(this);
+		}
+		// Add all the registers.
+		FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+		FxSize numNodes = cg.nodes.Length();
+		_registers.Reserve(numNodes);
+		for( FxSize i = 0; i < numNodes; ++i )
+		{
+			_registers.PushBack(FxRegister());
 		}
 	}
 }
 
-void FxActorInstance::SetActor( FxActor* actor )
+void FxActorInstance::SetIsOpenInStudio( FxBool isOpenInStudio )
 {
-	FxAssert(_actor == NULL);
-	if( !_actor && actor )
-	{
-		_actor = actor;
-		_deltaNodeCache.Clear();
-		_registers.Clear();
-		_animPlayer.SetActor(_actor);
-		// Add this instance to the instance list of the actor.
-		_actor->_instanceList.PushBack(this);
-		// Set up the FxDeltaNode cache.
-		FxFaceGraph& faceGraph = _actor->GetFaceGraph();
-		_deltaNodeCache.Reserve(faceGraph.CountNodes(FxDeltaNode::StaticClass()));
-		FxFaceGraph::Iterator deltaNodeIter    = faceGraph.Begin(FxDeltaNode::StaticClass());
-		FxFaceGraph::Iterator deltaNodeEndIter = faceGraph.End(FxDeltaNode::StaticClass());
-		for( ; deltaNodeIter != deltaNodeEndIter; ++deltaNodeIter )
-		{
-			FxDeltaNode* pDeltaNode = FxCast<FxDeltaNode>(deltaNodeIter.GetNode());
-			if( pDeltaNode )
-			{
-				_deltaNodeCache.PushBack(FxActorInstanceDeltaNodeCacheEntry(pDeltaNode));
-			}
-		}
-		// Add all the registers.
-		FxSize numRegisterDefs = _actor->_registerDefs.Length();
-		_registers.Reserve(numRegisterDefs);
-		for( FxSize i = 0; i < numRegisterDefs; ++i )
-		{
-			_addRegister(_actor->_registerDefs[i]);
-		}
-	}
+	_isOpenInStudio = isOpenInStudio;
 }
 
 void FxActorInstance::SetAllowNonAnimTick( FxBool allowNonAnimTick )
@@ -84,286 +86,298 @@ void FxActorInstance::SetAllowNonAnimTick( FxBool allowNonAnimTick )
 	_allowNonAnimTick = allowNonAnimTick;
 }
 
+FxBool FxActorInstance
+::PlayAnim( const FxName& animName, const FxName& groupName, FxBool ignoreNegativeTime )
+{
+	FxAssert(_pActor);
+	StopAnim();
+	_animPlaybackInfo.pAnim = _pActor->GetAnimPtr(groupName, animName);
+	if( _animPlaybackInfo.pAnim )
+	{
+		_animPlaybackInfo.currentAnimGroupName = groupName;
+		_animPlaybackInfo.currentAnimName      = animName;
+		_animPlaybackInfo.ignoreNegativeTime   = ignoreNegativeTime;
+		_animPlaybackInfo.state                = APS_Playing;
+		return FxTrue;
+	}
+	return FxFalse;
+}
+
+void FxActorInstance::StopAnim( void )
+{
+	_animPlaybackInfo.currentAnimGroupName = FxName::NullName;
+	_animPlaybackInfo.currentAnimName      = FxName::NullName;
+	_animPlaybackInfo.pAnim                = NULL;
+	_animPlaybackInfo.startTime            = FxInvalidValue;
+	_animPlaybackInfo.currentTime          = FxInvalidValue;
+	_animPlaybackInfo.leadinDuration       = FxInvalidValue;
+	_animPlaybackInfo.hasStartedAudio      = FxFalse;
+	_animPlaybackInfo.ignoreNegativeTime   = FxFalse;
+	_animPlaybackInfo.state	               = APS_Stopped;
+}
+
 void FxActorInstance::BeginFrame( void )
 {	
-	// Update all of the FxDeltaNodes.
-	FxSize numDeltaNodesInCache = _deltaNodeCache.Length();
-	for( FxSize i = 0; i < numDeltaNodesInCache; ++i )
-	{
-		FxActorInstanceDeltaNodeCacheEntry& cacheEntry  = _deltaNodeCache[i];
-		cacheEntry.pDeltaNode->_previousFirstInputValue = cacheEntry.deltaNodePreviousFirstInputValue;
-	}
-	// Update all nodes with register values set by client code.
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
-	{
-		FxAssert(_registers[i].pBinding);
-		_registers[i].pBinding->SetUserValue(_registers[i].interpLastValue,
-										     _registers[i].regOp);
-	}
+	// Nothing to do here as of version 1.7, but it is reserved for future use.
 }
 
 void FxActorInstance::EndFrame( void )
 {
-	// Cache all of the FxDeltaNodes.
-	FxSize numDeltaNodesInCache = _deltaNodeCache.Length();
-	for( FxSize i = 0; i < numDeltaNodesInCache; ++i )
-	{
-		FxActorInstanceDeltaNodeCacheEntry& cacheEntry = _deltaNodeCache[i];
-		cacheEntry.deltaNodePreviousFirstInputValue    = cacheEntry.pDeltaNode->_previousFirstInputValue;
-	}
-	// Set all register values to the values of their bindings.
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
-	{
-		FxAssert(_registers[i].pBinding);
-		_registers[i].value = _registers[i].pBinding->GetValue();
-	}
+	// Nothing to do here as of version 1.7, but it is reserved for future use.
 }
 
-FxAnimPlayerState 
+FxAnimPlaybackState 
 FxActorInstance::Tick( const FxDReal appTime, const FxReal audioTime )
 {
-	FxAssert(_actor != NULL);
-	FxAnimPlayerState currentState = APS_Stopped;
-	FxReal appTimeReal = static_cast<FxReal>(appTime);
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
+	FxAssert(_pActor);
+	FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+	FxAnimPlaybackState currentState = APS_Stopped;
+	if( APS_Stopped != _animPlaybackInfo.state )
 	{
-		// Only do register processing if the register is not in the shut off
-		// state.
-		if( FxInvalidValue != _registers[i].interpEndValue )
+		if( _animPlaybackInfo.pAnim )
 		{
-			if( FxInvalidValue == _registers[i].interpStartTime )
+			// Reset the reference bone weights.
+			FxMasterBoneList& masterBoneList = _pActor->GetMasterBoneList();
+			masterBoneList.ResetRefBoneWeights();
+			// Set the reference bone weights for the current animation.
+			FxSize numBoneWeights = _animPlaybackInfo.pAnim->GetNumBoneWeights();
+			for( FxSize i = 0; i < numBoneWeights; ++i )
 			{
-				_registers[i].interpStartTime = appTimeReal;
+				const FxAnimBoneWeight& boneWeight = _animPlaybackInfo.pAnim->GetBoneWeight(i);
+				masterBoneList.SetRefBoneCurrentWeight(boneWeight.boneName, boneWeight.boneWeight);
 			}
-			if( 0.0f == _registers[i].interpInverseDuration )
+
+			if( APS_Playing == _animPlaybackInfo.state )
 			{
-				_registers[i].interpLastValue = _registers[i].interpEndValue;
+				// Start the animation if it hasn't started yet.
+				if( FxDRealEquality(_animPlaybackInfo.startTime, static_cast<FxDReal>(FxInvalidValue)) )
+				{
+					// Check to see if there is negative time to play through.
+					FxReal animStartTime = _animPlaybackInfo.pAnim->GetStartTime();
+					if( animStartTime < 0.0f && !_animPlaybackInfo.ignoreNegativeTime )
+					{
+						_animPlaybackInfo.leadinDuration = FxAbs(animStartTime);
+					}
+					else
+					{
+						_animPlaybackInfo.leadinDuration = 0.0f;
+					}
+					_animPlaybackInfo.startTime = appTime;
+				}
+
+				// See if there is audio playing (if not, audioTime should be less than 0.0)
+				// and update currentTime accordingly.
+				if( audioTime < 0.0f )
+				{
+					_animPlaybackInfo.currentTime = static_cast<FxReal>(appTime - _animPlaybackInfo.startTime) - _animPlaybackInfo.leadinDuration;
+				}
+				else
+				{
+					_animPlaybackInfo.currentTime = audioTime;
+					// Keep appTime and audioTime from diverging.  This prevents situations
+					// where appTime is slightly behind audioTime, so when the audio playback ends,
+					// we don't go backwards in time when picking up at appTime where audioTime 
+					// left off.
+					_animPlaybackInfo.startTime = appTime - audioTime - _animPlaybackInfo.leadinDuration;
+				}
+
+				// Evaluate the curves.
+				FxSize numCurves = _animPlaybackInfo.pAnim->GetNumAnimCurves();
+				for( FxSize i = 0; i < numCurves; ++i )
+				{
+					const FxAnimCurve& curve = _animPlaybackInfo.pAnim->GetAnimCurve(i);
+					FxSize nodeIndex = cg.FindNodeIndex(curve.GetName());
+					if( FxInvalidIndex != nodeIndex )
+					{
+						cg.nodes[nodeIndex].trackValue = curve.EvaluateAt(_animPlaybackInfo.currentTime);
+					}
+				}
+			}
+			else if( APS_Stopped == _animPlaybackInfo.state )
+			{
+				// Nothing to do here for now.
 			}
 			else
 			{
-				FxReal parametricTime = (appTimeReal - _registers[i].interpStartTime) * 
-					_registers[i].interpInverseDuration;
-				// If there is a "next" interpolation operation and it is time to
-				// start it, promote the "next" interpolation parameters up to the
-				// "current" interpolation parameters.
-				if( parametricTime >= 1.0f && 
-					FxInvalidValue != _registers[i].interpNextEndValue )
-				{
-					_registers[i].interpStartTime       = appTimeReal;
-					_registers[i].interpStartValue      = _registers[i].interpEndValue;
-					_registers[i].interpEndValue        = _registers[i].interpNextEndValue;
-					_registers[i].interpInverseDuration = _registers[i].interpNextInverseDuration;
-					_registers[i].interpNextEndValue    = FxInvalidValue;
-					parametricTime                      = 0.0f;
-				}
-				_registers[i].interpLastValue = 
-					FxHermiteInterpolate(_registers[i].interpStartValue, 
-					_registers[i].interpEndValue, 
-					parametricTime);
+				FxAssert(!"Unknown state in FxAnimPlayer::Tick()!");
+			}
+			
+			// Tick the Face Graph.
+			cg.Tick(static_cast<FxReal>(appTime), _registers, _hasBeenTicked);
+
+			// Check if the animation is finished.
+			if( APS_Playing == _animPlaybackInfo.state && _animPlaybackInfo.currentTime >= _animPlaybackInfo.pAnim->GetEndTime() )
+			{
+				// The animation has stopped.
+				StopAnim();
+			}
+
+			// Check if we should start the audio.
+			if( APS_Playing == _animPlaybackInfo.state && !_animPlaybackInfo.hasStartedAudio && _animPlaybackInfo.currentTime >= 0.0f )
+			{
+				_animPlaybackInfo.hasStartedAudio = FxTrue;
+				return APS_StartAudio;
 			}
 		}
-	}
-	if( _animPlayer.IsPlaying() )
-	{
-		currentState = _animPlayer.Tick(appTime, audioTime);
+		currentState = _animPlaybackInfo.state;
 	}
 	else if( _allowNonAnimTick )
 	{
-		// Clear the face graph.
-		FxFaceGraph& faceGraph = _actor->GetFaceGraph();
-		faceGraph.ClearValues();
-		// Set the current time in the face graph.
-		faceGraph.SetTime(appTimeReal);
+		cg.Tick(static_cast<FxReal>(appTime), _registers, _hasBeenTicked);
 		currentState = APS_Playing;
 	}
-
+	else if( _isOpenInStudio )
+	{
+		cg.Tick(static_cast<FxReal>(appTime), _registers, _hasBeenTicked);
+	}
 	return currentState;
 }
 
 void FxActorInstance::ForceTick( const FxName& animName, const FxName& groupName, 
 							     const FxReal forcedAnimationTime )
 {
-	// Need to set the animation as playing to make it valid inside the player.
-	_animPlayer.Play(animName, groupName);
+	// Need to set the animation as playing to make it valid.
+	PlayAnim(animName, groupName);
+	// Turn off all of the registers.
+	SetAllRegisters(RO_None, 0.0f);
 	// Force tick it.
-	_animPlayer.Tick(forcedAnimationTime);
-	// Stop it to clear it out of the player.
-	_animPlayer.Stop();
+	if( _animPlaybackInfo.pAnim )
+	{
+		FxAssert(_pActor);
+		// Reset the reference bone weights.
+		FxMasterBoneList& masterBoneList = _pActor->GetMasterBoneList();
+		masterBoneList.ResetRefBoneWeights();
+		// Set the reference bone weights for the current animation.
+		FxSize numBoneWeights = _animPlaybackInfo.pAnim->GetNumBoneWeights();
+		for( FxSize i = 0; i < numBoneWeights; ++i )
+		{
+			const FxAnimBoneWeight& boneWeight = _animPlaybackInfo.pAnim->GetBoneWeight(i);
+			masterBoneList.SetRefBoneCurrentWeight(boneWeight.boneName, boneWeight.boneWeight);
+		}
+		// Evaluate the curves.
+		FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+		FxSize numCurves = _animPlaybackInfo.pAnim->GetNumAnimCurves();
+		for( FxSize i = 0; i < numCurves; ++i )
+		{
+			const FxAnimCurve& curve = _animPlaybackInfo.pAnim->GetAnimCurve(i);
+			FxSize nodeIndex = cg.FindNodeIndex(curve.GetName());
+			if( FxInvalidIndex != nodeIndex )
+			{
+				cg.nodes[nodeIndex].trackValue = curve.EvaluateAt(forcedAnimationTime);
+			}
+		}
+		cg.Tick(forcedAnimationTime, _registers, _hasBeenTicked);
+	}
+	// Stop it to clear it out.
+	StopAnim();
 }
 
 FxBool 
-FxActorInstance::SetRegisterEx( const FxName& regName, FxValueOp regOp, 
+FxActorInstance::SetRegisterEx( const FxName& regName, FxRegisterOp firstRegOp, 
 							    FxReal firstValue, FxReal firstInterpDuration, 
-								FxReal nextValue, FxReal nextInterpDuration )
+								FxRegisterOp nextRegOp, FxReal nextValue, 
+								FxReal nextInterpDuration )
 {
-	FxAssert(_actor != NULL);
-	// Find the register and set the value.
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
+	FxAssert(_pActor);
+	FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+	FxSize regIndex = cg.FindNodeIndex(regName);
+	if( FxInvalidIndex != regIndex )
 	{
-		FxAssert(_registers[i].pBinding);
-		if( _registers[i].pBinding->GetName() == regName )
-		{
-			// If firstValue is FxInvalidValue, this indicates that the 
-			// register should be shut off.
-			if( FxInvalidValue == firstValue )
-			{
-				_registers[i].interpLastValue = FxInvalidValue;
-			}
-			else if( FxInvalidValue == _registers[i].interpLastValue )
-			{
-				_registers[i].interpLastValue = 0.0f;
-			}
-			_registers[i].interpStartValue   = _registers[i].interpLastValue;
-			_registers[i].interpEndValue     = firstValue;
-			_registers[i].interpNextEndValue = nextValue;
-			if( 0.0f == firstInterpDuration )
-			{
-				_registers[i].interpInverseDuration = 0.0f;
-			}
-			else
-			{
-				_registers[i].interpInverseDuration = 1.0f / firstInterpDuration;
-			}
-			if( 0.0f == nextInterpDuration )
-			{
-				_registers[i].interpNextInverseDuration = 0.0f;
-			}
-			else
-			{
-				_registers[i].interpNextInverseDuration = 1.0f / nextInterpDuration;
-			}
-			_registers[i].interpStartTime = FxInvalidValue;
-			_registers[i].regOp           = regOp;
-			return FxTrue;
-		}
-	}
-	// The register was not found.
-	// This will add the register to all instances, including this one.
-	if( _actor->AddRegister(regName) )
-	{
-		// The register will now be at the end of the array, so we don't have
-		// to search for it again.
-		_registers.Back().interpEndValue     = firstValue;
-		_registers.Back().interpNextEndValue = nextValue;
-		if( 0.0f == firstInterpDuration )
-		{
-			_registers.Back().interpInverseDuration = 0.0f;
-		}
-		else
-		{
-			_registers.Back().interpInverseDuration = 1.0f / firstInterpDuration;
-		}
-		if( 0.0f == nextInterpDuration )
-		{
-			_registers.Back().interpNextInverseDuration = 0.0f;
-		}
-		else
-		{
-			_registers.Back().interpNextInverseDuration = 1.0f / nextInterpDuration;
-		}
-		_registers.Back().regOp = regOp;
-		// If firstValue is FxInvalidValue, this indicates that the 
-		// register should be shut off.
-		if( FxInvalidValue == firstValue )
-		{
-			_registers.Back().interpLastValue = FxInvalidValue;
-		}
+		_registers[regIndex].interpStartValue   = (RO_LoadAdd      == firstRegOp || 
+			                                       RO_LoadMultiply == firstRegOp || 
+												   RO_LoadReplace  == firstRegOp) 
+			                                      ? _registers[regIndex].value 
+												  : _registers[regIndex].interpLastValue;
+		_registers[regIndex].interpEndValue            = firstValue;
+		_registers[regIndex].interpNextEndValue        = nextValue;
+#ifdef FX_XBOX_360
+		_registers[regIndex].interpInverseDuration     = static_cast<FxReal>(__fsel(firstInterpDuration, 
+			                                             __fsel(-firstInterpDuration, 0.0f, 1.0f / firstInterpDuration), 
+														 1.0f / firstInterpDuration));
+		_registers[regIndex].interpNextInverseDuration = static_cast<FxReal>(__fsel(nextInterpDuration, 
+														 __fsel(-nextInterpDuration, 0.0f, 1.0f / nextInterpDuration), 
+													     1.0f / firstInterpDuration));
+#else // !FX_XBOX_360
+		_registers[regIndex].interpInverseDuration     = (0.0f == firstInterpDuration) ? 0.0f : 1.0f / firstInterpDuration;
+		_registers[regIndex].interpNextInverseDuration = (0.0f == nextInterpDuration)  ? 0.0f : 1.0f / nextInterpDuration;
+#endif // FX_XBOX_360
+		_registers[regIndex].interpStartTime           = 0.0f;
+		_registers[regIndex].firstRegOp                = FxRegister::GetUserOpForRegOp(firstRegOp);
+		_registers[regIndex].nextRegOp		           = nextRegOp;
+		_registers[regIndex].isInterpolating           = FxFalse;
 		return FxTrue;
 	}
 	return FxFalse;
 }
 
-void FxActorInstance::SetAllRegisters( FxValueOp regOp, FxReal newValue, 
-									   FxReal interpDuration )
+void FxActorInstance::SetAllRegisters( FxRegisterOp firstRegOp, FxReal firstValue, 
+									   FxReal firstInterpDuration, 
+									   FxRegisterOp nextRegOp, FxReal nextValue, 
+									   FxReal nextInterpDuration )
 {
 	FxSize numRegisters = _registers.Length();
 	for( FxSize i = 0; i < numRegisters; ++i )
 	{
-		FxAssert(_registers[i].pBinding);
-		// If newValue is FxInvalidValue, this indicates that the 
-		// register should be shut off.
-		if( FxInvalidValue == newValue )
-		{
-			_registers[i].interpLastValue = FxInvalidValue;
-		}
-		else if( FxInvalidValue == _registers[i].interpLastValue )
-		{
-			_registers[i].interpLastValue = 0.0f;
-		}
-		_registers[i].interpStartValue   = _registers[i].interpLastValue;
-		_registers[i].interpEndValue     = newValue;
-		_registers[i].interpNextEndValue = FxInvalidValue;
-		if( 0.0f == interpDuration )
-		{
-			_registers[i].interpInverseDuration = 0.0f;
-		}
-		else
-		{
-			_registers[i].interpInverseDuration = 1.0f / interpDuration;
-		}
-		_registers[i].interpNextInverseDuration = 0.0f;
-		_registers[i].interpStartTime           = FxInvalidValue;
-		_registers[i].regOp                     = regOp;
+		_registers[i].interpStartValue   = (RO_LoadAdd      == firstRegOp || 
+			                                RO_LoadMultiply == firstRegOp || 
+											RO_LoadReplace  == firstRegOp)
+			                               ? _registers[i].value 
+										   : _registers[i].interpLastValue;
+		_registers[i].interpEndValue            = firstValue;
+		_registers[i].interpNextEndValue        = nextValue;
+#ifdef FX_XBOX_360
+		_registers[i].interpInverseDuration     = static_cast<FxReal>(__fsel(firstInterpDuration, 
+												  __fsel(-firstInterpDuration, 0.0f, 1.0f / firstInterpDuration), 
+												  1.0f / firstInterpDuration));
+		_registers[i].interpNextInverseDuration = static_cast<FxReal>(__fsel(nextInterpDuration, 
+												  __fsel(-nextInterpDuration, 0.0f, 1.0f / nextInterpDuration), 
+												  1.0f / firstInterpDuration));
+#else // !FX_XBOX_360
+		_registers[i].interpInverseDuration     = (0.0f == firstInterpDuration) ? 0.0f : 1.0f / firstInterpDuration;
+		_registers[i].interpNextInverseDuration = (0.0f == nextInterpDuration)  ? 0.0f : 1.0f / nextInterpDuration;
+#endif // FX_XBOX_360
+		_registers[i].interpStartTime           = 0.0f;
+		_registers[i].firstRegOp                = FxRegister::GetUserOpForRegOp(firstRegOp);
+		_registers[i].nextRegOp		            = nextRegOp;
+		_registers[i].isInterpolating           = FxFalse;
 	}
 }
 
 FxReal FxActorInstance::GetRegister( const FxName& regName )
 {
-	FxAssert(_actor != NULL);
-	// Find the register and get the value.
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
+	FxAssert(_pActor);
+	FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+	FxSize regIndex = cg.FindNodeIndex(regName);
+	if( FxInvalidIndex != regIndex )
 	{
-		FxAssert(_registers[i].pBinding);
-		if( _registers[i].pBinding->GetName() == regName )
-		{
-			return _registers[i].value;
-		}
-	}
-	// The register was not found.
-	// This will add the register to all instances, including this one.
-	if( _actor->AddRegister(regName) )
-	{
-		// The register will now be at the end of the array, so we don't have
-		// to search for it again.  The new registers value will be zero
-		// by default.
-		return _registers.Back().value;
+		return _registers[regIndex].value;
 	}
 	return 0.0f;
 }
 
-FxBool FxActorInstance::_addRegister( FxFaceGraphNode* registerDef )
+FxBool FxActorInstance::GetRegisterState( const FxName& regName, FxRegister& regState )
 {
-	// Make sure this isn't a duplicate.
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
+	FxAssert(_pActor);
+	FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+	FxSize regIndex = cg.FindNodeIndex(regName);
+	if( FxInvalidIndex != regIndex )
 	{
-		if( _registers[i].pBinding == registerDef )
-		{
-			return FxFalse;
-		}
-	}
-	_registers.PushBack(FxActorInstanceRegister(registerDef));
-	return FxTrue;
-}
-
-FxBool FxActorInstance::_removeRegister( FxFaceGraphNode* registerDef )
-{
-	// Find this register.
-	FxSize numRegisters = _registers.Length();
-	for( FxSize i = 0; i < numRegisters; ++i )
-	{
-		if( _registers[i].pBinding == registerDef )
-		{
-			_registers.Remove(i);
-			return FxTrue;
-		}
+		regState = _registers[regIndex];
+		return FxTrue;
 	}
 	return FxFalse;
+}
+
+FxReal FxActorInstance::GetOriginalRegisterValue( const FxName& regName )
+{
+	FxAssert(_pActor);
+	FxCompiledFaceGraph& cg = _pActor->GetCompiledFaceGraph();
+	FxSize regIndex = cg.FindNodeIndex(regName);
+	if( FxInvalidIndex != regIndex )
+	{
+		return _registers[regIndex].interpEndValue;
+	}
+	return 0.0f;
 }
 
 } // namespace Face

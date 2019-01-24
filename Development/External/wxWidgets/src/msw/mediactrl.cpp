@@ -1,21 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/mediactrl.cpp
+// Name:        src/msw/mediactrl.cpp
 // Purpose:     Built-in Media Backends for Windows
 // Author:      Ryan Norton <wxprojects@comcast.net>
 // Modified by:
 // Created:     11/07/04
-// RCS-ID:      $Id: mediactrl.cpp,v 1.56 2005/09/11 11:03:52 VZ Exp $
+// RCS-ID:      $Id: mediactrl.cpp 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Ryan Norton
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-/*
-   FIXME FIXME FIXME:
-    - extract different backends in different files (better yet, make backends
-      dynamically loadable...), they have nothing to do with each other and
-      this file is huge and also separate the standard contents from our code
-      itself
- */
+// FIXME FIXME FIXME:
+// extract different backends in different files (better yet, make backends
+// dynamically loadable...), they have nothing to do with each other and this
+// file is huge and also separate the standard contents from our code itself
+
 
 //===========================================================================
 //  DECLARATIONS
@@ -25,35 +23,25 @@
 // Pre-compiled header stuff
 //---------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "mediactrl.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
-//---------------------------------------------------------------------------
-// MediaCtrl include
-//---------------------------------------------------------------------------
-#include "wx/mediactrl.h"
-
-//---------------------------------------------------------------------------
-// Compilation guard
-//---------------------------------------------------------------------------
 #if wxUSE_MEDIACTRL
 
-//---------------------------------------------------------------------------
-// WX Includes
-//---------------------------------------------------------------------------
-#include "wx/log.h"         //wxLogDebug
-#include "wx/math.h"        //log10 & pow
-#include "wx/msw/private.h" //user info and wndproc setting/getting
-#include "wx/dcclient.h"
-#include "wx/timer.h"
+#include "wx/mediactrl.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/log.h"
+    #include "wx/dcclient.h"
+    #include "wx/timer.h"
+    #include "wx/math.h"        // log10 & pow
+#endif
+
+#include "wx/msw/private.h" // user info and wndproc setting/getting
 #include "wx/dynlib.h"
 
 //---------------------------------------------------------------------------
@@ -69,23 +57,30 @@ extern WXDLLIMPEXP_CORE const wxChar *wxCanvasClassName;
 LRESULT WXDLLIMPEXP_CORE APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message,
                                    WPARAM wParam, LPARAM lParam);
 
+//---------------------------------------------------------------------------
+// Killed MSVC warnings
+//---------------------------------------------------------------------------
+//disable "cast truncates constant value" for VARIANT_BOOL values
+//passed as parameters in VC5 and up
+#ifdef _MSC_VER
+#pragma warning (disable:4310)
+#endif
+
 //===========================================================================
-//  BACKEND DECLARATIONS
+// BACKEND DECLARATIONS
 //===========================================================================
 
 //---------------------------------------------------------------------------
-//
-//  wxAMMediaBackend
-//
+// wxAMMediaBackend
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-//  wxActiveXContainer - includes all the COM-specific stuff we need
+// wxActiveXContainer - includes all the COM-specific stuff we need
 //---------------------------------------------------------------------------
 #include "wx/msw/ole/activex.h"
 
 //---------------------------------------------------------------------------
-//  IIDS - used by CoCreateInstance and IUnknown::QueryInterface
+// IIDS - used by CoCreateInstance and IUnknown::QueryInterface
 //
 //  [idl name]          [idl decription]
 //  amcompat.idl        Microsoft Active Movie Control (Ver 2.0)
@@ -93,22 +88,25 @@ LRESULT WXDLLIMPEXP_CORE APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message,
 //  msdxm.idl           Windows Media Player (Ver 1.0)
 //  quartz.idl
 //
-//  First, when I say I "from XXX.idl", I mean I go into the COM Browser
-//  ($Microsoft Visual Studio$/Common/Tools/OLEVIEW.EXE), open
-//  "type libraries", open a specific type library (for quartz for example its
-//  "ActiveMovie control type library (V1.0)"), save it as an .idl, compile the
-//  idl using the midl compiler that comes with visual studio
-//  ($Microsoft Visual Studio$/VC98/bin/midl.exe on VC6) with the /h argument
-//  to make it generate stubs (a .h & .c file), then clean up the generated
-//  interfaces I want with the STDMETHOD wrappers and then put them into
-//  mediactrl.cpp.
+// First, when I say I "from XXX.idl", I mean I go into the COM Browser
+// ($Microsoft Visual Studio$/Common/Tools/OLEVIEW.EXE), open
+// "type libraries", open a specific type library (for quartz for example its
+// "ActiveMovie control type library (V1.0)"), save it as an .idl, compile the
+// idl using the midl compiler that comes with visual studio
+// ($Microsoft Visual Studio$/VC98/bin/midl.exe on VC6) with the /h argument
+// to make it generate stubs (a .h & .c file), then clean up the generated
+// interfaces I want with the STDMETHOD wrappers and then put them into
+// mediactrl.cpp.
 //
-//  According to the MSDN docs, IMediaPlayer requires Windows 98 SE
-//  or greater.  NetShow is available on Windows 3.1 and I'm guessing
-//  IActiveMovie is too.  IMediaPlayer is essentially the Windows Media
-//  Player 6.4 SDK.
+// According to the MSDN docs, IMediaPlayer requires Windows 98 SE
+// or greater. NetShow is available on Windows 3.1 and I'm guessing
+// IActiveMovie is too. IMediaPlayer is essentially the Windows Media
+// Player 6.4 SDK.
 //
-//  Some of these are not used but are kept here for future reference anyway
+// IWMP is from PlayerOCX.idl on PocketPC 2000, which uses CLSID_MediaPlayer
+// as well as the main windows line.
+//
+// Some of these are not used but are kept here for future reference anyway
 //---------------------------------------------------------------------------
 const IID IID_IActiveMovie          = {0x05589FA2,0xC356,0x11CE,{0xBF,0x01,0x00,0xAA,0x00,0x55,0x59,0x5A}};
 const IID IID_IActiveMovie2         = {0xB6CD6554,0xE9CB,0x11D0,{0x82,0x1F,0x00,0xA0,0xC9,0x1F,0x9C,0xA0}};
@@ -120,6 +118,8 @@ const IID IID_INSPlay1              = {0x265EC141,0xAE62,0x11D1,{0x85,0x00,0x00,
 
 const IID IID_IMediaPlayer          = {0x22D6F311,0xB0F6,0x11D0,{0x94,0xAB,0x00,0x80,0xC7,0x4C,0x7E,0x95}};
 const IID IID_IMediaPlayer2         = {0x20D4F5E0,0x5475,0x11D2,{0x97,0x74,0x00,0x00,0xF8,0x08,0x55,0xE6}};
+
+const IID IID_IWMP                  = {0x136B66EC,0xF30D,0x46A8,{0x88,0xDD,0xF2,0xD0,0x55,0x16,0x3E,0x49}};
 
 const CLSID CLSID_ActiveMovie       = {0x05589FA1,0xC356,0x11CE,{0xBF,0x01,0x00,0xAA,0x00,0x55,0x59,0x5A}};
 const CLSID CLSID_MediaPlayer       = {0x22D6F312,0xB0F6,0x11D0,{0x94,0xAB,0x00,0x80,0xC7,0x4C,0x7E,0x95}};
@@ -160,28 +160,28 @@ struct IMediaEvent : public IDispatch
 };
 
 //---------------------------------------------------------------------------
-//  ACTIVEMOVIE COM INTERFACES (dumped from amcompat.idl from MSVC COM Browser)
+// ACTIVEMOVIE COM INTERFACES (dumped from amcompat.idl from MSVC COM Browser)
 //---------------------------------------------------------------------------
 
 enum ReadyStateConstants
 {
-    amvUninitialized    = 0,
-    amvLoading    = 1,
+    amvUninitialized  = 0,
+    amvLoading        = 1,
     amvInteractive    = 3,
-    amvComplete    = 4
+    amvComplete       = 4
 };
 
 enum StateConstants
 {
     amvNotLoaded    = -1,
-    amvStopped    = 0,
-    amvPaused    = 1,
-    amvRunning    = 2
+    amvStopped      = 0,
+    amvPaused       = 1,
+    amvRunning      = 2
 };
 
 enum DisplayModeConstants
 {
-    amvTime    = 0,
+    amvTime      = 0,
     amvFrames    = 1
 };
 
@@ -287,7 +287,6 @@ struct IActiveMovie : public IDispatch
     STDMETHOD(put_Enabled)(VARIANT_BOOL pEnabled) PURE;
     STDMETHOD(get_Info)(long __RPC_FAR *ppInfo) PURE;
 };
-
 
 
 struct IActiveMovie2 : public IActiveMovie
@@ -745,6 +744,564 @@ struct INSPlay1 : public INSPlay
 };
 
 //---------------------------------------------------------------------------
+//  IWMP (PocketPC 2000) COM INTERFACES (dumped from PlayerOCX.idl)
+//---------------------------------------------------------------------------
+
+struct IWMP : public IDispatch
+{
+public:
+    virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_AutoSize(
+        /* [in] */ VARIANT_BOOL vbool) = 0;
+
+    virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_AutoSize(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pbool) = 0;
+
+    virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_BorderStyle(
+        /* [in] */ long style) = 0;
+
+    virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_BorderStyle(
+        /* [retval][out] */ long __RPC_FAR *pstyle) = 0;
+
+    virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_Enabled(
+        /* [in] */ VARIANT_BOOL vbool) = 0;
+
+    virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Enabled(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pbool) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_FileName(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_FileName(
+        /* [in] */ BSTR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Volume(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Volume(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Mute(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Mute(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AutoStart(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AutoStart(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_PlayCount(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_PlayCount(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowStatusBar(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowStatusBar(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowAudioControls(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowAudioControls(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowCaptioning(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowCaptioning(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowControls(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowControls(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowDisplay(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowDisplay(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowGotoBar(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowGotoBar(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowPositionControls(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowPositionControls(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ShowTracker(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ShowTracker(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Startup( void ) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Shutdown( void ) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Bandwidth(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_BaseURL(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_BaseURL(
+        /* [in] */ BSTR pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_BufferingCount(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_BufferingProgress(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_BufferingTime(
+        /* [retval][out] */ double __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CanSeek(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CanSeekToMarkers(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ChannelDescription(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ChannelName(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ChannelURL(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ClientID(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ConnectionSpeed(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ContactAddress(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ContactEmail(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ContactPhone(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CurrentMarker(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_CurrentMarker(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CurrentPosition(
+        /* [retval][out] */ double __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_CurrentPosition(
+        /* [in] */ double newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_DefaultFrame(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_DefaultFrame(
+        /* [in] */ BSTR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Duration(
+        /* [retval][out] */ double __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_EntryCount(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ErrorCode(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ErrorDescription(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_HasError(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_HasMultipleItems(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ImageSourceHeight(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ImageSourceWidth(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_InvokeURLs(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_InvokeURLs(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_IsBroadcast(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_IsDurationValid(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_LostPackets(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_MarkerCount(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_OpenState(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_PlayState(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_PreviewMode(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_PreviewMode(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ReadyState(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ReceivedPackets(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ReceptionQuality(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_RecoveredPackets(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SAMIFileName(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SAMIFileName(
+        /* [in] */ BSTR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SAMILang(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SAMILang(
+        /* [in] */ BSTR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SAMIStyle(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SAMIStyle(
+        /* [in] */ BSTR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SelectionEnd(
+        /* [retval][out] */ double __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SelectionEnd(
+        /* [in] */ double newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SelectionStart(
+        /* [retval][out] */ double __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SelectionStart(
+        /* [in] */ double newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendErrorEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendErrorEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendKeyboardEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendKeyboardEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendMouseClickEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendMouseClickEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendMouseMoveEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendMouseMoveEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendOpenStateChangeEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendOpenStateChangeEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendPlayStateChangeEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendPlayStateChangeEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SendWarningEvents(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_SendWarningEvents(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SourceLink(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE AboutBox( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Cancel( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetCodecDescription(
+        /* [in] */ long nCodec,
+        /* [retval][out] */ BSTR __RPC_FAR *pDescription) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetCodecInstalled(
+        /* [in] */ BSTR __RPC_FAR *pstrCodec,
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pIsInstalled) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetCurrentEntry(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetMarkerName(
+        /* [in] */ long nMarker,
+        /* [retval][out] */ BSTR __RPC_FAR *pMarkerName) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetMarkerTime(
+        /* [in] */ long nMarker,
+        /* [retval][out] */ double __RPC_FAR *pMarkerTime) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetMediaInfoString(
+        /* [in] */ long MPMediaInfoType,
+        /* [retval][out] */ BSTR __RPC_FAR *pstrMediaInfo) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Next( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Open(
+        BSTR pstrClip) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Pause( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Play( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Previous( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Stop( void) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Rate(
+        /* [retval][out] */ double __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Rate(
+        /* [in] */ double newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_DisplaySize(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_DisplaySize(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_SourceProtocol(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ErrorCorrection(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE FinalConstruct( void) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AllowChangeDisplaySize(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AllowChangeDisplaySize(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AllowScan(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AllowScan(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AnimationAtStart(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AnimationAtStart(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AudioStream(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AudioStream(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AutoRewind(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AutoRewind(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Balance(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Balance(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CanPreview(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CanScan(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CaptioningID(
+        /* [retval][out] */ BSTR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_ClickToPlay(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_ClickToPlay(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CodecCount(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CreationDate(
+        /* [retval][out] */ DATE __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_CursorType(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_CursorType(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_DisplayBackColor(
+        /* [retval][out] */ VB_OLE_COLOR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_DisplayBackColor(
+        /* [in] */ VB_OLE_COLOR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_DisplayForeColor(
+        /* [retval][out] */ VB_OLE_COLOR __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_DisplayForeColor(
+        /* [in] */ VB_OLE_COLOR newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_DisplayMode(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_DisplayMode(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_EnableContextMenu(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_EnableContextMenu(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_EnableFullScreenControls(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_EnableFullScreenControls(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_EnablePositionControls(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_EnablePositionControls(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_EnableTracker(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_EnableTracker(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Language(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_StreamCount(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_TransparentAtStart(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_TransparentAtStart(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_VideoBorder3D(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_VideoBorder3D(
+        /* [in] */ VARIANT_BOOL newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_VideoBorderColor(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_VideoBorderColor(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_VideoBorderWidth(
+        /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+
+    virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_VideoBorderWidth(
+        /* [in] */ long newVal) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE FastForward( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE FastReverse( void) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetCodecURL(
+        /* [retval][out] */ BSTR __RPC_FAR *pstrCodecURL) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetMediaParameter(
+        /* [in] */ long nParam,
+        BSTR szParameterName,
+        /* [retval][out] */ BSTR __RPC_FAR *pstrParameterValue) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetMediaParameterName(
+        /* [in] */ long nParam,
+        long nIndex,
+        /* [retval][out] */ BSTR __RPC_FAR *pstrParameterName) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetMoreInfoURL(
+        /* [retval][out] */ BSTR __RPC_FAR *pstrMoreInfoURL) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetStreamGroup(
+        /* [retval][out] */ BSTR __RPC_FAR *pstrStreamGroup) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetStreamName(
+        /* [retval][out] */ BSTR __RPC_FAR *pstrStreamName) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE GetStreamSelected(
+        /* [in] */ long nStream,
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *fIsSelected) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE IsSoundCardEnabled(
+        /* [retval][out] */ VARIANT_BOOL __RPC_FAR *fIsEnabled) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE SetCurrentEntry(
+        long nValue) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ShowDialog(
+        long nValue) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE StreamSelect(
+        long nSelect) = 0;
+
+    virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE OnWindowMessage(
+        UINT msg,
+        WPARAM wParam,
+        LPARAM lParam,
+        LRESULT __RPC_FAR *plResult) = 0;
+};
+
+//---------------------------------------------------------------------------
 // MISC COM INTERFACES
 //---------------------------------------------------------------------------
 typedef enum _FilterState
@@ -752,27 +1309,36 @@ typedef enum _FilterState
     State_Stopped,
     State_Paused,
     State_Running
-} FILTER_STATE;
-typedef enum _PinDirection {
+}
+FILTER_STATE;
+
+typedef enum _PinDirection
+{
     PINDIR_INPUT,
     PINDIR_OUTPUT
-} PIN_DIRECTION;
+}
+PIN_DIRECTION;
 
-typedef struct _FilterInfo {
+typedef struct _FilterInfo
+{
     WCHAR        achName[128];
     struct IFilterGraph *pGraph;
-} FILTER_INFO;
+}
+FILTER_INFO;
 
-typedef struct _PinInfo {
+typedef struct _PinInfo
+{
     struct IBaseFilter *pFilter;
     PIN_DIRECTION dir;
     WCHAR achName[128];
-} PIN_INFO;
+}
+PIN_INFO;
 
 struct IBaseFilter;
 struct IPin;
 struct IEnumFilters;
-typedef struct  _MediaType {
+typedef struct  _MediaType
+{
     GUID      majortype;
     GUID      subtype;
     BOOL      bFixedSizeSamples;
@@ -782,7 +1348,8 @@ typedef struct  _MediaType {
     IUnknown  *pUnk;
     ULONG     cbFormat;
     BYTE *pbFormat;
-} AM_MEDIA_TYPE;
+}
+AM_MEDIA_TYPE;
 
 struct IFilterGraph : public IUnknown
 {
@@ -831,13 +1398,9 @@ struct IBaseFilter : public IMediaFilter
 };
 
 
-//###########################################################################
-//
-//
+//---------------------------------------------------------------------------
 //  wxAMMediaBackend
-//
-//
-//###########################################################################
+//---------------------------------------------------------------------------
 
 typedef BOOL (WINAPI* LPAMGETERRORTEXT)(HRESULT, wxChar *, DWORD);
 
@@ -886,12 +1449,14 @@ public:
     void Cleanup();
 
     void DoGetDownloadProgress(wxLongLong*, wxLongLong*);
+
     virtual wxLongLong GetDownloadProgress()
     {
         wxLongLong progress, total;
         DoGetDownloadProgress(&progress, &total);
         return progress;
     }
+
     virtual wxLongLong GetDownloadTotal()
     {
         wxLongLong progress, total;
@@ -899,9 +1464,23 @@ public:
         return total;
     }
 
+    // WinCE helpers
+
     wxActiveXContainer* m_pAX;
+
+#ifdef __WXWINCE__
+    IWMP* m_pWMP;
+
+    IWMP* GetMP() { return m_pWMP; }
+    IWMP* GetAM() { return m_pWMP; }
+#else
     IActiveMovie* m_pAM;
     IMediaPlayer* m_pMP;
+
+    IMediaPlayer* GetMP() { return m_pMP; }
+    IActiveMovie* GetAM() { return m_pAM; }
+#endif
+
     wxTimer* m_pTimer;
     wxSize m_bestSize;
 
@@ -909,28 +1488,26 @@ public:
     wxDynamicLibrary m_dllQuartz;
     LPAMGETERRORTEXT m_lpAMGetErrorText;
     wxString GetErrorString(HRESULT hrdsv);
-#endif // __WXDEBUG__
+#endif
 
     DECLARE_DYNAMIC_CLASS(wxAMMediaBackend)
 };
 
 //---------------------------------------------------------------------------
-//
 //  wxMCIMediaBackend
-//
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 //  MCI Includes
 //---------------------------------------------------------------------------
+#ifndef __WXWINCE__
 #include <mmsystem.h>
 
 class WXDLLIMPEXP_MEDIA wxMCIMediaBackend : public wxMediaBackendCommonBase
 {
 public:
-
     wxMCIMediaBackend();
-    ~wxMCIMediaBackend();
+    virtual ~wxMCIMediaBackend();
 
     virtual bool CreateControl(wxControl* ctrl, wxWindow* parent,
                                      wxWindowID id,
@@ -978,9 +1555,9 @@ public:
 
     DECLARE_DYNAMIC_CLASS(wxMCIMediaBackend)
 };
+#endif
 
 //---------------------------------------------------------------------------
-//
 //  wxQTMediaBackend
 //
 // We don't include Quicktime headers here and define all the types
@@ -994,8 +1571,8 @@ public:
 //---------------------------------------------------------------------------
 //  QT Includes
 //---------------------------------------------------------------------------
-//#include <qtml.h>                   //Windoze QT include
-//#include <QuickTimeComponents.h>    //Standard QT stuff
+//#include <qtml.h>                   // Windoze QT include
+//#include <QuickTimeComponents.h>    // Standard QT stuff
 #include "wx/dynlib.h"
 
 //---------------------------------------------------------------------------
@@ -1033,36 +1610,42 @@ const OSType VisualMediaCharacteristic = 'eyes';
 #endif
 #endif
 
-struct FSSpec {
+struct FSSpec
+{
     short      vRefNum;
     long       parID;
-    Str255     name;  /*Str63 on mac, Str255 on msw */
+    Str255     name;  // Str63 on mac, Str255 on msw
 };
 
-struct Rect {
+struct Rect
+{
     short      top;
     short      left;
     short      bottom;
     short      right;
 };
 
-struct wide {
+struct wide
+{
     wxInt32    hi;
     wxUint32   lo;
 };
 
-struct TimeRecord {
-    wide       value; /* units */
-    TimeScale  scale; /* units per second */
+struct TimeRecord
+{
+    wide       value; // units
+    TimeScale  scale; // units per second
     TimeBase   base;
 };
 
-struct Point {
+struct Point
+{
     short                           v;
     short                           h;
 };
 
-struct EventRecord {
+struct EventRecord
+{
     wxUint16                       what;
     wxUint32                          message;
     wxUint32                          when;
@@ -1070,7 +1653,8 @@ struct EventRecord {
     wxUint16                  modifiers;
 };
 
-enum {
+enum
+{
     mcTopLeftMovie              = 1,
     mcScaleMovieToFit           = 2,
     mcWithBadge                 = 4,
@@ -1095,7 +1679,7 @@ enum {
 
 #define wxDL_METHOD_LOAD( lib, name, success ) \
     pfn_ ## name = (name ## Type) lib.GetSymbol( wxT(#name), &success ); \
-    if (!success) { wxLog::EnableLogging(bWasLoggingEnabled); return false; }
+    if (!success) return false
 
 
 class WXDLLIMPEXP_MEDIA wxQuickTimeLibrary
@@ -1103,7 +1687,7 @@ class WXDLLIMPEXP_MEDIA wxQuickTimeLibrary
 public:
     ~wxQuickTimeLibrary()
     {
-        if(m_dll.IsLoaded())
+        if (m_dll.IsLoaded())
             m_dll.Unload();
     }
 
@@ -1180,7 +1764,6 @@ public:
     wxDL_VOIDMETHOD_DEFINE(DisposeMovieController, (ComponentInstance ci), (ci));
     wxDL_METHOD_DEFINE(int, MCSetVisible, (ComponentInstance m, int b), (m, b), 0);
 
-
     wxDL_VOIDMETHOD_DEFINE(PrePrerollMovie, (Movie m, long t, Fixed r, WXFARPROC p1, void* p2), (m,t,r,p1,p2) );
     wxDL_VOIDMETHOD_DEFINE(PrerollMovie, (Movie m, long t, Fixed r), (m,t,r) );
     wxDL_METHOD_DEFINE(Fixed, GetMoviePreferredRate, (Movie m), (m), 0);
@@ -1210,11 +1793,12 @@ bool wxQuickTimeLibrary::Initialize()
 {
     m_ok = false;
 
-    bool bWasLoggingEnabled = wxLog::EnableLogging(false);    //Turn off the wxDynamicLibrary logging
+    // Turn off the wxDynamicLibrary logging as we're prepared to handle the
+    // errors
+    wxLogNull nolog;
 
-    if(!m_dll.Load(wxT("qtmlClient.dll")))
+    if (!m_dll.Load(wxT("qtmlClient.dll")))
     {
-        wxLog::EnableLogging(bWasLoggingEnabled);
         return false;
     }
 
@@ -1274,7 +1858,6 @@ bool wxQuickTimeLibrary::Initialize()
     wxDL_METHOD_LOAD( m_dll, EndUpdate, m_ok );
     wxDL_METHOD_LOAD( m_dll, GetMoviesStickyError, m_ok );
 
-    wxLog::EnableLogging(bWasLoggingEnabled);
     m_ok = true;
 
     return true;
@@ -1284,7 +1867,7 @@ class WXDLLIMPEXP_MEDIA wxQTMediaBackend : public wxMediaBackendCommonBase
 {
 public:
     wxQTMediaBackend();
-    ~wxQTMediaBackend();
+    virtual ~wxQTMediaBackend();
 
     virtual bool CreateControl(wxControl* ctrl, wxWindow* parent,
                                      wxWindowID id,
@@ -1324,23 +1907,25 @@ public:
     void FinishLoad();
 
     static void PPRMProc (Movie theMovie, OSErr theErr, void* theRefCon);
-    //TODO: Last param actually long - does this work on 64bit machines?
-    static Boolean MCFilterProc (MovieController theController,
+
+    // TODO: Last param actually long - does this work on 64bit machines?
+    static Boolean MCFilterProc(MovieController theController,
         short action, void *params, LONG_PTR refCon);
 
     static LRESULT CALLBACK QTWndProc(HWND, UINT, WPARAM, LPARAM);
 
     virtual bool ShowPlayerControls(wxMediaCtrlPlayerControls flags);
 
-    wxSize m_bestSize;              //Original movie size
-    Movie m_movie;    //QT Movie handle/instance
-    bool m_bVideo;                  //Whether or not we have video
-    bool m_bPlaying;                //Whether or not movie is playing
-    wxTimer* m_timer;               //Load or Play timer
-    wxQuickTimeLibrary m_lib;       //DLL to load functions from
-    ComponentInstance m_pMC;        //Movie Controller
+    wxSize m_bestSize;              // Original movie size
+    Movie m_movie;    // QT Movie handle/instance
+    bool m_bVideo;                  // Whether or not we have video
+    bool m_bPlaying;                // Whether or not movie is playing
+    wxTimer* m_timer;               // Load or Play timer
+    wxQuickTimeLibrary m_lib;       // DLL to load functions from
+    ComponentInstance m_pMC;        // Movie Controller
 
     friend class wxQTMediaEvtHandler;
+
     DECLARE_DYNAMIC_CLASS(wxQTMediaBackend)
 };
 
@@ -1354,10 +1939,9 @@ public:
         m_hwnd = hwnd;
 
         m_qtb->m_ctrl->Connect(m_qtb->m_ctrl->GetId(),
-            wxEVT_ERASE_BACKGROUND, 
+            wxEVT_ERASE_BACKGROUND,
             wxEraseEventHandler(wxQTMediaEvtHandler::OnEraseBackground),
-            NULL, this
-                              );
+            NULL, this);
     }
 
     void OnEraseBackground(wxEraseEvent& event);
@@ -1374,13 +1958,11 @@ private:
 //  IMPLEMENTATION
 //===========================================================================
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//
+//---------------------------------------------------------------------------
 // wxAMMediaBackend
-//
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//---------------------------------------------------------------------------
 
-IMPLEMENT_DYNAMIC_CLASS(wxAMMediaBackend, wxMediaBackend);
+IMPLEMENT_DYNAMIC_CLASS(wxAMMediaBackend, wxMediaBackend)
 
 //---------------------------------------------------------------------------
 // Usual debugging macros
@@ -1388,23 +1970,23 @@ IMPLEMENT_DYNAMIC_CLASS(wxAMMediaBackend, wxMediaBackend);
 #ifdef __WXDEBUG__
 #define MAX_ERROR_TEXT_LEN 160
 
-//Get the error string for Active Movie
+// Get the error string for Active Movie
 wxString wxAMMediaBackend::GetErrorString(HRESULT hrdsv)
 {
     wxChar szError[MAX_ERROR_TEXT_LEN];
-    if( m_lpAMGetErrorText != NULL &&
-       (*m_lpAMGetErrorText)(hrdsv, szError, MAX_ERROR_TEXT_LEN) == 0)
+    if ( m_lpAMGetErrorText != NULL &&
+        (*m_lpAMGetErrorText)(hrdsv, szError, MAX_ERROR_TEXT_LEN) == 0)
     {
         return wxString::Format(wxT("DirectShow error \"%s\" \n")
                                      wxT("(numeric %X)\n")
-                                     wxT("occured"),
+                                     wxT("occurred"),
                                      szError, (int)hrdsv);
     }
     else
     {
         return wxString::Format(wxT("Unknown error \n")
                                      wxT("(numeric %X)\n")
-                                     wxT("occured"),
+                                     wxT("occurred"),
                                      (int)hrdsv);
     }
 }
@@ -1413,7 +1995,6 @@ wxString wxAMMediaBackend::GetErrorString(HRESULT hrdsv)
 #define wxVERIFY(x) wxASSERT((x))
 #define wxAMLOG(x) wxLogDebug(GetErrorString(x))
 #else
-#define wxAMVERIFY(x) (x)
 #define wxVERIFY(x) (x)
 #define wxAMLOG(x)
 #define wxAMFAIL(x)
@@ -1440,11 +2021,17 @@ public:
 
     void Notify()
     {
-        if(m_parent->m_pMP)
+        if (m_parent->GetMP())
         {
             MPReadyStateConstants nState;
-            m_parent->m_pMP->get_ReadyState(&nState);
-            if(nState != mpReadyStateLoading)
+
+#ifdef __WXWINCE__ //Cast to long needed for IWMP (??)
+            m_parent->GetMP()->get_ReadyState((long*)&nState);
+#else
+            m_parent->GetMP()->get_ReadyState(&nState);
+#endif
+
+            if (nState != mpReadyStateLoading)
             {
                 Stop();
                 m_parent->FinishLoad();
@@ -1455,12 +2042,11 @@ public:
         {
             IActiveMovie2* pAM2 = NULL;
             ReadyStateConstants nState;
-            if(m_parent->m_pAM->QueryInterface(IID_IActiveMovie2,
-                                              (void**)&pAM2) == 0 &&
-                pAM2->get_ReadyState(&nState) == 0)
+            if (m_parent->GetAM()->QueryInterface(IID_IActiveMovie2, (void**)&pAM2) == 0
+                && pAM2->get_ReadyState(&nState) == 0)
             {
                 pAM2->Release();
-                if(nState != amvLoading)
+                if (nState != amvLoading)
                 {
                     Stop();
                     m_parent->FinishLoad();
@@ -1469,7 +2055,7 @@ public:
             }
             else
             {
-                if(pAM2)
+                if (pAM2)
                     pAM2->Release();
 
                 Stop();
@@ -1477,11 +2063,10 @@ public:
                 delete this;
             }
         }
-
     }
 
 protected:
-    wxAMMediaBackend* m_parent;     //Backend pointer
+    wxAMMediaBackend* m_parent;     // Backend pointer
 };
 
 //---------------------------------------------------------------------------
@@ -1499,21 +2084,20 @@ public:
 
     void Notify()
     {
-        if(m_parent->GetState() == wxMEDIASTATE_STOPPED &&
-           //NB:  Stop events could get triggered by the interface
-           //if ShowPlayerControls is enabled,
-           //so we need this hack here to make an attempt
-           //at it not getting sent - but its far from ideal -
-           //they can still get sent in some cases
-           m_parent->GetPosition() == m_parent->GetDuration())
+       // NB: Stop events could get triggered by the interface
+       // if ShowPlayerControls is enabled, so the "GetPosition == GetDuration"
+       // hack is needed here to make an attempt at it not getting sent
+       // - but its far from ideal - they can still get sent in some cases
+        if (m_parent->GetState() == wxMEDIASTATE_STOPPED &&
+            m_parent->GetPosition() == m_parent->GetDuration())
         {
             if ( m_parent->SendStopEvent() )
             {
-                //Seek to beginning of movie
+                // seek to beginning of movie
                 m_parent->wxAMMediaBackend::SetPosition(0);
                 Stop();
 
-                //send the event to our child
+                // send the event to our child
                 m_parent->QueueFinishEvent();
             }
         }
@@ -1524,7 +2108,7 @@ protected:
 };
 
 
-/*
+#if 0
 // The following is an alternative way - but it doesn't seem
 // to work with the IActiveMovie control - it probably processes
 // its own events
@@ -1542,14 +2126,14 @@ public:
     {
         HRESULT hr;
         IUnknown* pGB;
-        hr = m_pBE->m_pAM->get_FilterGraph(&pGB);
+        hr = m_pBE->GetAM()->get_FilterGraph(&pGB);
         wxASSERT(SUCCEEDED(hr));
         hr = pGB->QueryInterface(IID_IMediaEvent, (void**)&m_pME);
         wxASSERT(SUCCEEDED(hr));
         pGB->Release();
     }
 
-    ~wxAMPlayTimer()
+    virtual ~wxAMPlayTimer()
     {
         SAFE_RELEASE(m_pME);
     }
@@ -1557,33 +2141,27 @@ public:
     void Notify()
     {
         LONG        evCode;
-        LONG_PTR    evParam1,
-                    evParam2;
+        LONG_PTR    evParam1, evParam2;
 
-        //
         // DirectShow keeps a list of queued events, and we need
-        // to go through them one by one, stopping at (Hopefully only one)
+        // to go through them one by one, stopping at (hopefully only one)
         // EC_COMPLETE message
-        //
-        while( m_pME->GetEvent(&evCode, &evParam1, &evParam2, 0) == 0 )
+        while ( m_pME->GetEvent(&evCode, &evParam1, &evParam2, 0) == 0 )
         {
             // Cleanup memory that GetEvent allocated
-            HRESULT hr = m_pME->FreeEventParams(evCode,
-                                                evParam1, evParam2);
-            if(hr != 0)
+            HRESULT hr = m_pME->FreeEventParams(evCode, evParam1, evParam2);
+            if (hr != 0)
             {
-                //Even though this makes a messagebox this
-                //is windows where we can do gui stuff in seperate
-                //threads :)
+                // Even though this makes a messagebox, this is Windows,
+                // where we can do GUI stuff in separate threads :)
                 wxFAIL_MSG(m_pBE->GetErrorString(hr));
             }
             // If this is the end of the clip, notify handler
-            else if(1 == evCode) //EC_COMPLETE
+            else if (1 == evCode) // EC_COMPLETE
             {
                 if ( m_pBE->SendStopEvent() )
                 {
                     Stop();
-
                     m_pBE->QueueFinishEvent();
                 }
             }
@@ -1591,18 +2169,22 @@ public:
     }
 
 protected:
-    wxAMMediaBackend* m_pBE;     //Backend pointer
-    IMediaEvent* m_pME;          //To determine when to send stop event
+    wxAMMediaBackend* m_pBE;     // Backend pointer
+    IMediaEvent* m_pME;          // To determine when to send stop event
 };
-*/
+#endif
 
 //---------------------------------------------------------------------------
 // wxAMMediaBackend Constructor
 //---------------------------------------------------------------------------
 wxAMMediaBackend::wxAMMediaBackend()
                  :m_pAX(NULL),
+#ifdef __WXWINCE__
+                  m_pWMP(NULL),
+#else
                   m_pAM(NULL),
                   m_pMP(NULL),
+#endif
                   m_pTimer(NULL)
 {
 }
@@ -1612,16 +2194,20 @@ wxAMMediaBackend::wxAMMediaBackend()
 //---------------------------------------------------------------------------
 wxAMMediaBackend::~wxAMMediaBackend()
 {
-    Clear(); //Free memory from Load()
+    // Free memory from Load()
+    Clear();
 
-    if(m_pAX)
+    if (m_pAX)
     {
         m_pAX->DissociateHandle();
         delete m_pAX;
-        m_pAM->Release();
 
-        if(m_pMP)
-            m_pMP->Release();
+#ifndef __WXWINCE__
+        m_pAM->Release();
+#endif
+
+        if (GetMP())
+            GetMP()->Release();
     }
 }
 
@@ -1632,8 +2218,11 @@ wxAMMediaBackend::~wxAMMediaBackend()
 //---------------------------------------------------------------------------
 void wxAMMediaBackend::Clear()
 {
-    if(m_pTimer)
+    if (m_pTimer)
+    {
         delete m_pTimer;
+        m_pTimer = NULL;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -1647,77 +2236,109 @@ bool wxAMMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
                                      const wxValidator& validator,
                                      const wxString& name)
 {
-    // First get the AMGetErrorText procedure in debug
-    // mode for more meaningful messages
+    // First get the AMGetErrorText procedure in
+    // debug mode for more meaningful messages
 #ifdef __WXDEBUG__
     if ( m_dllQuartz.Load(_T("quartz.dll"), wxDL_VERBATIM) )
     {
         m_lpAMGetErrorText = (LPAMGETERRORTEXT)
                                 m_dllQuartz.GetSymbolAorW(wxT("AMGetErrorText"));
     }
-#endif // __WXDEBUG__
+#endif
 
-    // Now determine which (if any) media player interface is
-    // available - IMediaPlayer or IActiveMovie
-    if( ::CoCreateInstance(CLSID_MediaPlayer, NULL,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_IMediaPlayer, (void**)&m_pMP) != 0 )
-    {
-        if( ::CoCreateInstance(CLSID_ActiveMovie, NULL,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_IActiveMovie, (void**)&m_pAM) != 0 )
-            return false;
-        m_pAM->QueryInterface(IID_IMediaPlayer, (void**)&m_pMP);
-    }
-    else
-    {
-        m_pMP->QueryInterface(IID_IActiveMovie, (void**)&m_pAM);
-    }
-    //
+#ifdef __WXWINCE__
+   CLSID clsid;
+
+   // Try progids first - *.WMP is PocketPC and Mediaplayer.1 is CE.NET
+   // later versions support straight creation from CLSID
+   if (CLSIDFromProgID(L"WPCEOCX.WMP", &clsid) != S_OK &&
+       CLSIDFromProgID(L"MediaPlayer.MediaPlayer.1", &clsid) != S_OK)
+   {
+       clsid = CLSID_MediaPlayer;
+   }
+
+   // While the CLSID is the same as CLSID_MediaPlayer
+   // CE only supports the IWMP interface
+   if ( ::CoCreateInstance(clsid, NULL,
+                                 CLSCTX_INPROC_SERVER,
+                                 IID_IWMP, (void**)&m_pWMP) != 0 )
+   {
+           return false;
+   }
+
+#else
+   // determine which (if any) media player interface
+   // is available - IMediaPlayer or IActiveMovie
+   if ( ::CoCreateInstance(CLSID_MediaPlayer, NULL,
+                                 CLSCTX_INPROC_SERVER,
+                                 IID_IMediaPlayer, (void**)&m_pMP) != 0 )
+   {
+       if ( ::CoCreateInstance(CLSID_ActiveMovie, NULL,
+                                 CLSCTX_INPROC_SERVER,
+                                 IID_IActiveMovie, (void**)&m_pAM) != 0 )
+       {
+           return false;
+       }
+
+       m_pAM->QueryInterface(IID_IMediaPlayer, (void**)&m_pMP);
+   }
+   else
+   {
+       m_pMP->QueryInterface(IID_IActiveMovie, (void**)&m_pAM);
+   }
+#endif
+
     // Create window
     // By default wxWindow(s) is created with a border -
     // so we need to get rid of those
     //
     // Since we don't have a child window like most other
     // backends, we don't need wxCLIP_CHILDREN
-    //
     if ( !ctrl->wxControl::Create(parent, id, pos, size,
                             (style & ~wxBORDER_MASK) | wxBORDER_NONE,
                             validator, name) )
+    {
         return false;
+    }
 
-    //
-    // Now create the ActiveX container along with the media player
+    // Create the ActiveX container along with the media player
     // interface and query them
-    //
     m_ctrl = wxStaticCast(ctrl, wxMediaCtrl);
     m_pAX = new wxActiveXContainer(ctrl,
-                m_pMP ? IID_IMediaPlayer : IID_IActiveMovie,
-                m_pAM);
+#ifdef __WXWINCE__
+                IID_IWMP, m_pWMP
+#else
+                m_pMP ? IID_IMediaPlayer : IID_IActiveMovie, m_pAM
+#endif
+                );
 
-
-    //
-    //  Here we set up wx-specific stuff for the default
-    //  settings wxMediaCtrl says it will stay to
-    //
-    if(m_pMP)
+    // Set up wx-specific stuff for the default
+    // settings wxMediaCtrl says it will conform to (???)
+    if (GetMP())
     {
-        m_pMP->put_DisplaySize(mpFitToSize);
-        // TODO: Unsure what actual effect this has
-        m_pMP->put_WindowlessVideo(VARIANT_TRUE);
-    }
-    else
-        m_pAM->put_MovieWindowSize(amvDoubleOriginalSize);
+        GetMP()->put_DisplaySize(mpFitToSize);
 
-    //by default true
-    m_pAM->put_AutoStart(VARIANT_FALSE);
-    //by default enabled
+#ifndef __WXWINCE__ // Not in CE's IWMP
+        // TODO: Unsure what actual effect this has
+        GetMP()->put_WindowlessVideo(VARIANT_TRUE);
+#endif
+    }
+#ifndef __WXWINCE__ // Not in CE's IWMP
+    else
+        GetAM()->put_MovieWindowSize(amvDoubleOriginalSize);
+#endif
+
+    // by default true
+    GetAM()->put_AutoStart(VARIANT_FALSE);
+
+    // by default enabled
     wxAMMediaBackend::ShowPlayerControls(wxMEDIACTRLPLAYERCONTROLS_NONE);
-    //by default with AM only 0.5
+
+    // by default with AM only 0.5
     wxAMMediaBackend::SetVolume(1.0);
 
-    // don't erase the background of our control window so that resizing is a
-    // bit smoother
+    // don't erase the background of our control window
+    // so that resizing is a bit smoother
     m_ctrl->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
     // success
@@ -1737,11 +2358,10 @@ bool wxAMMediaBackend::Load(const wxString& fileName)
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::Load(const wxURI& location)
 {
-    //  Turn off loading from a proxy as user
-    //  may have set it previously
+    // Turn off loading from a proxy, as user may have set it previously
     INSPlay* pPlay = NULL;
-    m_pAM->QueryInterface(IID_INSPlay, (void**) &pPlay);
-    if(pPlay)
+    GetAM()->QueryInterface(IID_INSPlay, (void**) &pPlay);
+    if (pPlay)
     {
         pPlay->put_UseHTTPProxy(VARIANT_FALSE);
         pPlay->Release();
@@ -1757,9 +2377,9 @@ bool wxAMMediaBackend::Load(const wxURI& location, const wxURI& proxy)
 {
     // Set the proxy of the NETSHOW interface
     INSPlay* pPlay = NULL;
-    m_pAM->QueryInterface(IID_INSPlay, (void**) &pPlay);
+    GetAM()->QueryInterface(IID_INSPlay, (void**) &pPlay);
 
-    if(pPlay)
+    if (pPlay)
     {
         pPlay->put_UseHTTPProxy(VARIANT_TRUE);
         pPlay->put_HTTPProxyHost(wxBasicString(proxy.GetServer()).Get());
@@ -1778,20 +2398,21 @@ bool wxAMMediaBackend::Load(const wxURI& location, const wxURI& proxy)
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::DoLoad(const wxString& location)
 {
-    Clear(); //Clear up previously allocated memory
+    //Clear up previously allocated memory
+    Clear();
 
     HRESULT hr;
 
-    // Play the movie the normal way through the embedded
-    // WMP.  Supposively Open is better in theory because
+    // Play the movie the normal way through the embedded WMP.
+    // Supposedly, Open is better in theory because
     // the docs say its async and put_FileName is not -
-    // but in practice they both seem to be async anyway
-    if(m_pMP)
-        hr = m_pMP->Open( wxBasicString(location).Get() );
+    // but in practice they both appear to be async anyway
+    if (GetMP())
+        hr = GetMP()->Open( wxBasicString(location).Get() );
     else
-        hr = m_pAM->put_FileName( wxBasicString(location).Get() );
+        hr = GetAM()->put_FileName( wxBasicString(location).Get() );
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return false;
@@ -1801,6 +2422,7 @@ bool wxAMMediaBackend::DoLoad(const wxString& location)
     // the user plays before the media is loaded
     m_pTimer = new wxAMLoadTimer(this);
     m_pTimer->Start(20);
+
     return true;
 }
 
@@ -1815,14 +2437,12 @@ bool wxAMMediaBackend::DoLoad(const wxString& location)
 //---------------------------------------------------------------------------
 void wxAMMediaBackend::FinishLoad()
 {
-    //Get the original video size
-    m_pAM->get_ImageSourceWidth((long*)&m_bestSize.x);
-    m_pAM->get_ImageSourceHeight((long*)&m_bestSize.y);
+    // Get the original video size
+    GetAM()->get_ImageSourceWidth((long*)&m_bestSize.x);
+    GetAM()->get_ImageSourceHeight((long*)&m_bestSize.y);
 
-    //
-    //Start the play timer to catch stop events
-    //Previous load timer cleans up itself
-    //
+    // Start the play timer to catch stop events
+    // Previous load timer cleans up itself
     m_pTimer = new wxAMPlayTimer(this);
 
     NotifyMovieLoaded();
@@ -1836,26 +2456,26 @@ bool wxAMMediaBackend::ShowPlayerControls(wxMediaCtrlPlayerControls flags)
     // Note that IMediaPlayer doesn't have a statusbar by
     // default but IActiveMovie does - so lets try to keep
     // the interface consistant
-    if(!flags)
+    if (!flags)
     {
-        m_pAM->put_Enabled(VARIANT_FALSE);
-        m_pAM->put_ShowControls(VARIANT_FALSE);
-        if(m_pMP)
-            m_pMP->put_ShowStatusBar(VARIANT_FALSE);
+        GetAM()->put_Enabled(VARIANT_FALSE);
+        GetAM()->put_ShowControls(VARIANT_FALSE);
+        if (GetMP())
+            GetMP()->put_ShowStatusBar(VARIANT_FALSE);
     }
     else
     {
-        m_pAM->put_Enabled(VARIANT_TRUE);
-        m_pAM->put_ShowControls(VARIANT_TRUE);
+        GetAM()->put_Enabled(VARIANT_TRUE);
+        GetAM()->put_ShowControls(VARIANT_TRUE);
 
-        m_pAM->put_ShowPositionControls(
+        GetAM()->put_ShowPositionControls(
                 (flags & wxMEDIACTRLPLAYERCONTROLS_STEP) ?
                 VARIANT_TRUE : VARIANT_FALSE);
 
-        if(m_pMP)
+        if (GetMP())
         {
-            m_pMP->put_ShowStatusBar(VARIANT_TRUE);
-            m_pMP->put_ShowAudioControls(
+            GetMP()->put_ShowStatusBar(VARIANT_TRUE);
+            GetMP()->put_ShowAudioControls(
                 (flags & wxMEDIACTRLPLAYERCONTROLS_VOLUME) ?
                 VARIANT_TRUE : VARIANT_FALSE);
         }
@@ -1874,40 +2494,20 @@ bool wxAMMediaBackend::ShowPlayerControls(wxMediaCtrlPlayerControls flags)
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::Play()
 {
-    // if the movie isn't done loading yet
-    // go into an sync getmessage loop until it is :)
-    if(m_pMP)
-    {
-        MPReadyStateConstants nState;
-        m_pMP->get_ReadyState(&nState);
-        while(nState == mpReadyStateLoading && wxYieldIfNeeded())
-        {
-          m_pMP->get_ReadyState(&nState);
-        }
-    }
-    else
-    {
-        IActiveMovie2* pAM2;
-        ReadyStateConstants nState;
-        if(m_pAM->QueryInterface(IID_IActiveMovie2, (void**)&pAM2) == 0 &&
-            pAM2->get_ReadyState(&nState) == 0)
-        {
-            while(nState == amvLoading && wxYieldIfNeeded())
-            {
-                pAM2->get_ReadyState(&nState);
-            }
-            pAM2->Release();
-        }
-    }
-
-    //Actually try to play the movie
-    HRESULT hr = m_pAM->Run();
-    if(SUCCEEDED(hr))
+    // Actually try to play the movie, even though it may not be loaded yet.
+#ifdef __WXWINCE__
+    HRESULT hr = m_pWMP->Play();
+#else
+    HRESULT hr = GetAM()->Run();
+#endif
+    if (SUCCEEDED(hr))
     {
         m_pTimer->Start(20);
         return true;
     }
+
     wxAMLOG(hr);
+
     return false;
 }
 
@@ -1918,10 +2518,12 @@ bool wxAMMediaBackend::Play()
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::Pause()
 {
-    HRESULT hr = m_pAM->Pause();
-    if(SUCCEEDED(hr))
+    HRESULT hr = GetAM()->Pause();
+    if (SUCCEEDED(hr))
         return true;
+
     wxAMLOG(hr);
+
     return false;
 }
 
@@ -1932,16 +2534,19 @@ bool wxAMMediaBackend::Pause()
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::Stop()
 {
-    HRESULT hr = m_pAM->Stop();
-    if(SUCCEEDED(hr))
+    HRESULT hr = GetAM()->Stop();
+    if (SUCCEEDED(hr))
     {
-        //Seek to beginning
+        // Seek to beginning
         wxAMMediaBackend::SetPosition(0);
-        //Stop stop event timer
+
+        // Stop stop event timer
         m_pTimer->Stop();
         return true;
     }
+
     wxAMLOG(hr);
+
     return false;
 }
 
@@ -1956,10 +2561,9 @@ bool wxAMMediaBackend::Stop()
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::SetPosition(wxLongLong where)
 {
-    HRESULT hr = m_pAM->put_CurrentPosition(
-                        ((LONGLONG)where.GetValue()) / 1000.0
-                                     );
-    if(FAILED(hr))
+    HRESULT hr = GetAM()->put_CurrentPosition(
+                        ((LONGLONG)where.GetValue()) / 1000.0 );
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return false;
@@ -1977,14 +2581,14 @@ bool wxAMMediaBackend::SetPosition(wxLongLong where)
 wxLongLong wxAMMediaBackend::GetPosition()
 {
     double outCur;
-    HRESULT hr = m_pAM->get_CurrentPosition(&outCur);
-    if(FAILED(hr))
+    HRESULT hr = GetAM()->get_CurrentPosition(&outCur);
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return 0;
     }
 
-    //h,m,s,milli - outdur is in 1 second (double)
+    // h,m,s,milli - outdur is in 1 second (double)
     outCur *= 1000;
     wxLongLong ll;
     ll.Assign(outCur);
@@ -2001,14 +2605,15 @@ wxLongLong wxAMMediaBackend::GetPosition()
 //---------------------------------------------------------------------------
 double wxAMMediaBackend::GetVolume()
 {
-        long lVolume;
-    HRESULT hr = m_pAM->get_Volume(&lVolume);
-        if(FAILED(hr))
-        {
-            wxAMLOG(hr);
-            return 0.0;
+    long lVolume;
+    HRESULT hr = GetAM()->get_Volume(&lVolume);
+    if (FAILED(hr))
+    {
+        wxAMLOG(hr);
+        return 0.0;
     }
-    return pow(10.0, lVolume/2000.0);
+
+    return pow(10.0, lVolume / 2000.0);
 }
 
 //---------------------------------------------------------------------------
@@ -2020,15 +2625,16 @@ double wxAMMediaBackend::GetVolume()
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::SetVolume(double dVolume)
 {
-    //pow(10.0, -80.0) to correct 0 == -INF
-    long lVolume = (long)(2000.0 * log10(pow(10.0, -80.0)+dVolume));
-    HRESULT hr = m_pAM->put_Volume( lVolume );
-        if(FAILED(hr))
-        {
-            wxAMLOG(hr);
-            return false;
-        }
-        return true;
+    // pow(10.0, -80.0) to correct 0 == -INF
+    long lVolume = (long)(2000.0 * log10( pow( 10.0, -80.0) + dVolume ) );
+    HRESULT hr = GetAM()->put_Volume( lVolume );
+    if (FAILED(hr))
+    {
+        wxAMLOG(hr);
+        return false;
+    }
+
+    return true;
 }
 
 //---------------------------------------------------------------------------
@@ -2044,14 +2650,14 @@ bool wxAMMediaBackend::SetVolume(double dVolume)
 wxLongLong wxAMMediaBackend::GetDuration()
 {
     double outDuration;
-    HRESULT hr = m_pAM->get_Duration(&outDuration);
-    if(FAILED(hr))
+    HRESULT hr = GetAM()->get_Duration(&outDuration);
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return 0;
     }
 
-    //h,m,s,milli - outdur is in 1 second (double)
+    // h,m,s,milli - outdur is in 1 second (double)
     outDuration *= 1000;
     wxLongLong ll;
     ll.Assign(outDuration);
@@ -2067,8 +2673,12 @@ wxLongLong wxAMMediaBackend::GetDuration()
 wxMediaState wxAMMediaBackend::GetState()
 {
     StateConstants nState;
-    HRESULT hr = m_pAM->get_CurrentState(&nState);
-    if(FAILED(hr))
+#ifdef __WXWINCE__
+    HRESULT hr = m_pWMP->get_PlayState((long*)&nState);
+#else
+    HRESULT hr = GetAM()->get_CurrentState(&nState);
+#endif
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return wxMEDIASTATE_STOPPED;
@@ -2086,12 +2696,13 @@ wxMediaState wxAMMediaBackend::GetState()
 double wxAMMediaBackend::GetPlaybackRate()
 {
     double dRate;
-    HRESULT hr = m_pAM->get_Rate(&dRate);
-    if(FAILED(hr))
+    HRESULT hr = GetAM()->get_Rate(&dRate);
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return 0.0;
     }
+
     return dRate;
 }
 
@@ -2103,8 +2714,8 @@ double wxAMMediaBackend::GetPlaybackRate()
 //---------------------------------------------------------------------------
 bool wxAMMediaBackend::SetPlaybackRate(double dRate)
 {
-    HRESULT hr = m_pAM->put_Rate(dRate);
-    if(FAILED(hr))
+    HRESULT hr = GetAM()->put_Rate(dRate);
+    if (FAILED(hr))
     {
         wxAMLOG(hr);
         return false;
@@ -2123,32 +2734,35 @@ bool wxAMMediaBackend::SetPlaybackRate(double dRate)
 void wxAMMediaBackend::DoGetDownloadProgress(wxLongLong* pLoadProgress,
                                              wxLongLong* pLoadTotal)
 {
+#ifndef __WXWINCE__
     LONGLONG loadTotal = 0, loadProgress = 0;
     IUnknown* pFG;
     IAMOpenProgress* pOP;
     HRESULT hr;
-    hr = m_pAM->get_FilterGraph(&pFG);
-    if(SUCCEEDED(hr))
-        {
+    hr = GetAM()->get_FilterGraph(&pFG);
+    if (SUCCEEDED(hr))
+    {
         hr = pFG->QueryInterface(IID_IAMOpenProgress, (void**)&pOP);
-        if(SUCCEEDED(hr))
+        if (SUCCEEDED(hr))
         {
             hr = pOP->QueryProgress(&loadTotal, &loadProgress);
             pOP->Release();
         }
+
         pFG->Release();
     }
 
-    if(SUCCEEDED(hr))
-            {
+    if (SUCCEEDED(hr))
+    {
         *pLoadProgress = loadProgress;
         *pLoadTotal = loadTotal;
-            }
+    }
     else
-            {
-        //When not loading from a URL QueryProgress will return
-        //E_NOINTERFACE or whatever
-        //wxAMFAIL(hr);
+#endif
+    {
+        // When not loading from a URL QueryProgress will return
+        // E_NOINTERFACE or whatever
+        // wxAMFAIL(hr);
         *pLoadProgress = 0;
         *pLoadTotal = 0;
     }
@@ -2178,13 +2792,12 @@ void wxAMMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y),
 // End of wxAMMediaBackend
 //---------------------------------------------------------------------------
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//
+//---------------------------------------------------------------------------
 // wxMCIMediaBackend
-//
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//---------------------------------------------------------------------------
 
-IMPLEMENT_DYNAMIC_CLASS(wxMCIMediaBackend, wxMediaBackend);
+#ifndef __WXWINCE__
+IMPLEMENT_DYNAMIC_CLASS(wxMCIMediaBackend, wxMediaBackend)
 
 //---------------------------------------------------------------------------
 // Usual debugging macros for MCI returns
@@ -2213,7 +2826,8 @@ IMPLEMENT_DYNAMIC_CLASS(wxMCIMediaBackend, wxMediaBackend);
 // windows - so we provide the declarations for the types we use here
 //---------------------------------------------------------------------------
 
-typedef struct {
+typedef struct
+{
     DWORD_PTR   dwCallback;
 #ifdef MCI_USE_OFFEXT
     POINT   ptOffset;
@@ -2221,9 +2835,11 @@ typedef struct {
 #else
     RECT    rc;
 #endif
-} MCI_DGV_RECT_PARMS;
+}
+MCI_DGV_RECT_PARMS;
 
-typedef struct {
+typedef struct
+{
     DWORD_PTR   dwCallback;
     HWND    hWnd;
 #ifndef _WIN32
@@ -2234,24 +2850,29 @@ typedef struct {
     WORD    wReserved2;
 #endif
     wxChar*   lpstrText;
-} MCI_DGV_WINDOW_PARMS;
+}
+MCI_DGV_WINDOW_PARMS;
 
-typedef struct {
+typedef struct
+{
     DWORD_PTR dwCallback;
     DWORD     dwTimeFormat;
     DWORD     dwAudio;
     DWORD     dwFileFormat;
     DWORD     dwSpeed;
-} MCI_DGV_SET_PARMS;
+}
+MCI_DGV_SET_PARMS;
 
-typedef struct {
+typedef struct
+{
     DWORD_PTR   dwCallback;
     DWORD   dwItem;
     DWORD   dwValue;
     DWORD   dwOver;
     wxChar*   lpstrAlgorithm;
     wxChar*   lpstrQuality;
-} MCI_DGV_SETAUDIO_PARMS;
+}
+MCI_DGV_SETAUDIO_PARMS;
 
 //---------------------------------------------------------------------------
 // wxMCIMediaBackend Constructor
@@ -2265,12 +2886,12 @@ wxMCIMediaBackend::wxMCIMediaBackend() : m_hNotifyWnd(NULL), m_bVideo(false)
 //---------------------------------------------------------------------------
 // wxMCIMediaBackend Destructor
 //
-// We close the mci device - note that there may not be an mci device here,
+// We close the MCI device - note that there may not be an MCI device here,
 // or it may fail - but we don't really care, since we're destructing
 //---------------------------------------------------------------------------
 wxMCIMediaBackend::~wxMCIMediaBackend()
 {
-    if(m_hNotifyWnd)
+    if (m_hNotifyWnd)
     {
         mciSendCommand(m_hDev, MCI_CLOSE, 0, 0);
         DestroyWindow(m_hNotifyWnd);
@@ -2281,7 +2902,7 @@ wxMCIMediaBackend::~wxMCIMediaBackend()
 //---------------------------------------------------------------------------
 // wxMCIMediaBackend::Create
 //
-// Here we just tell wxMediaCtrl that mci does exist (which it does, on all
+// Here we just tell wxMediaCtrl that MCI does exist (which it does, on all
 // msw systems, at least in some form dating back to win16 days)
 //---------------------------------------------------------------------------
 bool wxMCIMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
@@ -2292,19 +2913,18 @@ bool wxMCIMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
                                      const wxValidator& validator,
                                      const wxString& name)
 {
-    //
     // Create window
     // By default wxWindow(s) is created with a border -
     // so we need to get rid of those, and create with
     // wxCLIP_CHILDREN, so that if the driver/backend
     // is a child window, it refereshes properly
-    //
     if ( !ctrl->wxControl::Create(parent, id, pos, size,
                             (style & ~wxBORDER_MASK) | wxBORDER_NONE | wxCLIP_CHILDREN,
                             validator, name) )
         return false;
 
     m_ctrl = wxStaticCast(ctrl, wxMediaCtrl);
+
     return true;
 }
 
@@ -2316,61 +2936,52 @@ bool wxMCIMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
 //---------------------------------------------------------------------------
 bool wxMCIMediaBackend::Load(const wxString& fileName)
 {
-    //
-    //if the user already called load close the previous MCI device
-    //
-    if(m_hNotifyWnd)
+    // if the user already called load close the previous MCI device
+    if (m_hNotifyWnd)
     {
         mciSendCommand(m_hDev, MCI_CLOSE, 0, 0);
         DestroyWindow(m_hNotifyWnd);
         m_hNotifyWnd = NULL;
     }
 
-    //
-    //Opens a file and has MCI select a device.  Normally you'd put
-    //MCI_OPEN_TYPE in addition to MCI_OPEN_ELEMENT - however if you
-    //omit this it tells MCI to select the device instead.  This is
-    //good because we have no reliable way of "enumerating" the devices
-    //in MCI
-    //
+    // Opens a file and has MCI select a device.  Normally you'd put
+    // MCI_OPEN_TYPE in addition to MCI_OPEN_ELEMENT - however if you
+    // omit this it tells MCI to select the device instead. This is good
+    // because we have no reliable way of "enumerating" the devices in MCI
     MCI_OPEN_PARMS openParms;
     openParms.lpstrElementName = (wxChar*) fileName.c_str();
 
-    if ( mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT,
+    if (mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT,
                         (DWORD)(LPVOID)&openParms) != 0)
+    {
         return false;
+    }
 
     m_hDev = openParms.wDeviceID;
 
-    //
-    //Now set the time format for the device to milliseconds
-    //
+    // set the time format for the device to milliseconds
     MCI_SET_PARMS setParms;
     setParms.dwCallback = 0;
     setParms.dwTimeFormat = MCI_FORMAT_MILLISECONDS;
 
     if (mciSendCommand(m_hDev, MCI_SET, MCI_SET_TIME_FORMAT,
                          (DWORD)(LPVOID)&setParms) != 0)
+    {
         return false;
+    }
 
-    //
-    //Now tell the MCI device to display the video in our wxMediaCtrl
-    //
+    // tell the MCI device to display the video in our wxMediaCtrl
     MCI_DGV_WINDOW_PARMS windowParms;
     windowParms.hWnd = (HWND)m_ctrl->GetHandle();
 
     m_bVideo = (mciSendCommand(m_hDev, MCI_WINDOW,
-                               0x00010000L, //MCI_DGV_WINDOW_HWND
+                               0x00010000L, // MCI_DGV_WINDOW_HWND
                                (DWORD)(LPVOID)&windowParms) == 0);
 
-    //
-    // Create a hidden window and register to handle
-    // MCI events
+    // Create a hidden window and register to handle MCI events
     // Note that wxCanvasClassName is already registered
     // and used by all wxWindows and normal wxControls
-    //
-    m_hNotifyWnd = ::CreateWindow
-                    (
+    m_hNotifyWnd = ::CreateWindow(
                         wxCanvasClassName,
                         NULL,
                         0, 0, 0, 0,
@@ -2378,10 +2989,9 @@ bool wxMCIMediaBackend::Load(const wxString& fileName)
                         (HWND) NULL,
                         (HMENU)NULL,
                         wxGetInstance(),
-                        (LPVOID) NULL
-                    );
+                        (LPVOID)NULL );
 
-    if(!m_hNotifyWnd)
+    if (!m_hNotifyWnd)
     {
         wxLogSysError( wxT("Could not create hidden needed for ")
                        wxT("registering for MCI events!")  );
@@ -2402,7 +3012,7 @@ bool wxMCIMediaBackend::Load(const wxString& fileName)
 //
 // MCI doesn't support URLs directly (?)
 //
-// TODO:  Use wxURL/wxFileSystem and mmioInstallProc
+// TODO: Use wxURL/wxFileSystem and mmioInstallProc
 //---------------------------------------------------------------------------
 bool wxMCIMediaBackend::Load(const wxURI& WXUNUSED(location))
 {
@@ -2424,10 +3034,10 @@ bool wxMCIMediaBackend::Play()
     MCI_PLAY_PARMS playParms;
     playParms.dwCallback = (DWORD)m_hNotifyWnd;
 
-    bool bOK = ( mciSendCommand(m_hDev, MCI_PLAY, MCI_NOTIFY,
-                            (DWORD)(LPVOID)&playParms) == 0 );
+    bool bOK = (mciSendCommand(m_hDev, MCI_PLAY, MCI_NOTIFY,
+                            (DWORD)(LPVOID)&playParms) == 0);
 
-    if(bOK)
+    if (bOK)
         m_ctrl->Show(m_bVideo);
 
     return bOK;
@@ -2470,9 +3080,9 @@ wxMediaState wxMCIMediaBackend::GetState()
     mciSendCommand(m_hDev, MCI_STATUS, MCI_STATUS_ITEM,
                          (DWORD)(LPVOID)&statusParms);
 
-    if(statusParms.dwReturn == MCI_MODE_PAUSE)
+    if (statusParms.dwReturn == MCI_MODE_PAUSE)
         return wxMEDIASTATE_PAUSED;
-    else if(statusParms.dwReturn == MCI_MODE_PLAY)
+    else if (statusParms.dwReturn == MCI_MODE_PLAY)
         return wxMEDIASTATE_PLAYING;
     else
         return wxMEDIASTATE_STOPPED;
@@ -2490,22 +3100,25 @@ bool wxMCIMediaBackend::SetPosition(wxLongLong where)
 {
     MCI_SEEK_PARMS seekParms;
     seekParms.dwCallback = 0;
+
 #if wxUSE_LONGLONG_NATIVE && !wxUSE_LONGLONG_WX
     seekParms.dwTo = (DWORD)where.GetValue();
-#else /* wxUSE_LONGLONG_WX */
-    /* no way to return it in one piece */
-    wxASSERT( where.GetHi()==0 );
+#else // wxUSE_LONGLONG_WX
+    // no way to return it in one piece
+    wxASSERT( where.GetHi() == 0 );
     seekParms.dwTo = (DWORD)where.GetLo();
-#endif /* wxUSE_LONGLONG_* */
+#endif
 
-    //device was playing?
+    // device was playing?
     bool bReplay = GetState() == wxMEDIASTATE_PLAYING;
 
-    if( mciSendCommand(m_hDev, MCI_SEEK, MCI_TO,
+    if ( mciSendCommand(m_hDev, MCI_SEEK, MCI_TO,
                        (DWORD)(LPVOID)&seekParms) != 0)
+    {
         return false;
+    }
 
-    //If the device was playing, resume it
+    // If the device was playing, resume it
     if (bReplay)
         return Play();
     else
@@ -2525,7 +3138,9 @@ wxLongLong wxMCIMediaBackend::GetPosition()
 
     if (mciSendCommand(m_hDev, MCI_STATUS, MCI_STATUS_ITEM,
                        (DWORD)(LPSTR)&statusParms) != 0)
+    {
         return 0;
+    }
 
     return statusParms.dwReturn;
 }
@@ -2540,11 +3155,13 @@ double wxMCIMediaBackend::GetVolume()
 {
     MCI_STATUS_PARMS statusParms;
     statusParms.dwCallback = 0;
-    statusParms.dwItem = 0x4019; //MCI_DGV_STATUS_VOLUME
+    statusParms.dwItem = 0x4019; // MCI_DGV_STATUS_VOLUME
 
     if (mciSendCommand(m_hDev, MCI_STATUS, MCI_STATUS_ITEM,
                        (DWORD)(LPSTR)&statusParms) != 0)
+    {
         return 0;
+    }
 
     return ((double)statusParms.dwReturn) / 1000.0;
 }
@@ -2559,17 +3176,20 @@ bool wxMCIMediaBackend::SetVolume(double dVolume)
 {
     MCI_DGV_SETAUDIO_PARMS audioParms;
     audioParms.dwCallback = 0;
-    audioParms.dwItem = 0x4002; //MCI_DGV_SETAUDIO_VOLUME
+    audioParms.dwItem = 0x4002; // MCI_DGV_SETAUDIO_VOLUME
     audioParms.dwValue = (DWORD) (dVolume * 1000.0);
     audioParms.dwOver = 0;
     audioParms.lpstrAlgorithm = NULL;
     audioParms.lpstrQuality = NULL;
 
-    if (mciSendCommand(m_hDev, 0x0873, //MCI_SETAUDIO
-                        //MCI_DGV_SETAUDIO+(_ITEM | _VALUE)
+    if (mciSendCommand(m_hDev, 0x0873, // MCI_SETAUDIO
+                        // MCI_DGV_SETAUDIO + (_ITEM | _VALUE)
                         0x00800000L | 0x01000000L,
                        (DWORD)(LPSTR)&audioParms) != 0)
+    {
         return false;
+    }
+
     return true;
 }
 
@@ -2585,7 +3205,9 @@ wxLongLong wxMCIMediaBackend::GetDuration()
 
     if (mciSendCommand(m_hDev, MCI_STATUS, MCI_STATUS_ITEM,
                         (DWORD)(LPSTR)&statusParms) != 0)
+    {
         return 0;
+    }
 
     return statusParms.dwReturn;
 }
@@ -2595,23 +3217,22 @@ wxLongLong wxMCIMediaBackend::GetDuration()
 //
 // Moves the window to a location
 //---------------------------------------------------------------------------
-void wxMCIMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y),
-                                       int w,           int h)
+void wxMCIMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y), int w, int h)
 {
     if (m_hNotifyWnd && m_bVideo)
     {
-        MCI_DGV_RECT_PARMS putParms; //ifdefed MCI_DGV_PUT_PARMS
+        MCI_DGV_RECT_PARMS putParms; // ifdefed MCI_DGV_PUT_PARMS
         memset(&putParms, 0, sizeof(MCI_DGV_RECT_PARMS));
         putParms.rc.bottom = h;
         putParms.rc.right = w;
 
-        //wxStackWalker will crash and burn here on assert
-        //and mci doesn't like 0 and 0 for some reason (out of range )
-        //so just don't it in that case
-        if(w || h)
+        // wxStackWalker will crash and burn here on assert
+        // and MCI doesn't like 0 and 0 for some reason (out of range)
+        // so just don't it in that case
+        if (w || h)
         {
             wxMCIVERIFY( mciSendCommand(m_hDev, MCI_PUT,
-                                   0x00040000L, //MCI_DGV_PUT_DESTINATION
+                                   0x00040000L, // MCI_DGV_PUT_DESTINATION
                                    (DWORD)(LPSTR)&putParms) );
         }
     }
@@ -2624,17 +3245,18 @@ void wxMCIMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y),
 //---------------------------------------------------------------------------
 wxSize wxMCIMediaBackend::GetVideoSize() const
 {
-    if(m_bVideo)
+    if (m_bVideo)
     {
-        MCI_DGV_RECT_PARMS whereParms; //ifdefed MCI_DGV_WHERE_PARMS
+        MCI_DGV_RECT_PARMS whereParms; // ifdefed MCI_DGV_WHERE_PARMS
 
         wxMCIVERIFY( mciSendCommand(m_hDev, MCI_WHERE,
-                       0x00020000L, //MCI_DGV_WHERE_SOURCE
+                       0x00020000L, // MCI_DGV_WHERE_SOURCE
                        (DWORD)(LPSTR)&whereParms) );
 
         return wxSize(whereParms.rc.right, whereParms.rc.bottom);
     }
-    return wxSize(0,0);
+
+    return wxSize(0, 0);
 }
 
 //---------------------------------------------------------------------------
@@ -2654,15 +3276,16 @@ double wxMCIMediaBackend::GetPlaybackRate()
 //---------------------------------------------------------------------------
 bool wxMCIMediaBackend::SetPlaybackRate(double WXUNUSED(dRate))
 {
-/*
+#if 0
     MCI_WAVE_SET_SAMPLESPERSEC
     MCI_DGV_SET_PARMS setParms;
     setParms.dwSpeed = (DWORD) (dRate * 1000.0);
 
     return (mciSendCommand(m_hDev, MCI_SET,
-                       0x00020000L, //MCI_DGV_SET_SPEED
+                       0x00020000L, // MCI_DGV_SET_SPEED
                        (DWORD)(LPSTR)&setParms) == 0);
-*/
+#endif
+
     return false;
 }
 
@@ -2686,43 +3309,38 @@ LRESULT CALLBACK wxMCIMediaBackend::OnNotifyWndProc(HWND hWnd, UINT nMsg,
                                                   WPARAM wParam,
                                                   LPARAM lParam)
 {
-    if(nMsg == MM_MCINOTIFY)
+    if (nMsg == MM_MCINOTIFY)
     {
         wxASSERT(lParam == (LPARAM) m_hDev);
-        if(wParam == MCI_NOTIFY_SUCCESSFUL && lParam == (LPARAM)m_hDev)
+        if (wParam == MCI_NOTIFY_SUCCESSFUL && lParam == (LPARAM)m_hDev)
         {
             if ( SendStopEvent() )
             {
-                wxMCIVERIFY( mciSendCommand(m_hDev, MCI_SEEK,
-                                            MCI_SEEK_TO_START, 0) );
-
+                wxMCIVERIFY( mciSendCommand(m_hDev, MCI_SEEK, MCI_SEEK_TO_START, 0) );
                 QueueFinishEvent();
             }
         }
     }
     return DefWindowProc(hWnd, nMsg, wParam, lParam);
 }
-
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//
-// wxQTMediaBackend
-//
-// TODO: Use a less cludgy way to pause/get state/set state
-// FIXME: Greg Hazel reports that sometimes files that cannot be played
-// with this backend are treated as playable anyway - not verifyed though.
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-IMPLEMENT_DYNAMIC_CLASS(wxQTMediaBackend, wxMediaBackend);
-
-//Time between timer calls - this is the Apple recommondation to the TCL
-//team I believe
-#define MOVIE_DELAY 20
-
-#include "wx/timer.h"
-
+#endif // __WXWINCE__
 
 //---------------------------------------------------------------------------
-//          wxQTLoadTimer
+// wxQTMediaBackend
+//
+// TODO: Use a less kludgy way to pause/get state/set state
+// FIXME: Greg Hazel reports that sometimes files that cannot be played
+// with this backend are treated as playable anyway - not verified though.
+//---------------------------------------------------------------------------
+
+IMPLEMENT_DYNAMIC_CLASS(wxQTMediaBackend, wxMediaBackend)
+
+// Time between timer calls - this is the Apple recommendation to the TCL
+// team I believe
+#define MOVIE_DELAY 20
+
+//---------------------------------------------------------------------------
+// wxQTLoadTimer
 //
 //  QT, esp. QT for Windows is very picky about how you go about
 //  async loading.  If you were to go through a Windows message loop
@@ -2739,12 +3357,12 @@ public:
     void Notify()
     {
         m_pLib->MoviesTask(m_movie, 0);
-        //kMovieLoadStatePlayable
-        if(m_pLib->GetMovieLoadState(m_movie) >= 10000)
-    {
+        // kMovieLoadStatePlayable
+        if (m_pLib->GetMovieLoadState(m_movie) >= 10000)
+        {
             m_parent->FinishLoad();
             delete this;
-    }
+        }
     }
 
 protected:
@@ -2755,7 +3373,7 @@ protected:
 
 
 // --------------------------------------------------------------------------
-//          wxQTPlayTimer - Handle Asyncronous Playing
+// wxQTPlayTimer - Handle Asyncronous Playing
 //
 // 1) Checks to see if the movie is done, and if not continues
 //    streaming the movie
@@ -2786,14 +3404,14 @@ public:
         m_pLib->MoviesTask(m_movie, 0);
 
         //
-        //  Handle the stop event - if the movie has reached
-        //  the end, notify our handler
+        // Handle the stop event - if the movie has reached
+        // the end, notify our handler
         //
         //  m_bPlaying == !(Stopped | Paused)
         //
         if (m_parent->m_bPlaying)
         {
-            if(m_pLib->IsMovieDone(m_movie))
+            if (m_pLib->IsMovieDone(m_movie))
             {
                 if ( m_parent->SendStopEvent() )
                 {
@@ -2807,7 +3425,7 @@ public:
     }
 
 protected:
-    Movie m_movie;                  //Our movie instance
+    Movie m_movie;                  // Our movie instance
     wxQTMediaBackend* m_parent;     //Backend pointer
     wxQuickTimeLibrary* m_pLib;         //Interfaces
 };
@@ -2835,6 +3453,7 @@ LRESULT CALLBACK wxQTMediaBackend::QTWndProc(HWND hWnd, UINT nMsg,
     EventRecord theEvent;
     pThis->m_lib.NativeEventToMacEvent(&msg, &theEvent);
     pThis->m_lib.MCIsPlayerEvent(pThis->m_pMC, &theEvent);
+
     return pThis->m_ctrl->MSWWindowProc(nMsg, wParam, lParam);
 }
 
@@ -2859,15 +3478,15 @@ wxQTMediaBackend::wxQTMediaBackend()
 //---------------------------------------------------------------------------
 wxQTMediaBackend::~wxQTMediaBackend()
 {
-    if(m_movie)
+    if (m_movie)
         Cleanup();
 
-    if(m_lib.IsOk())
+    if (m_lib.IsOk())
     {
-        if(m_pMC)
+        if (m_pMC)
         {
             m_lib.DisposeMovieController(m_pMC);
-        //    m_pMC = NULL;
+            // m_pMC = NULL;
         }
 
         // destroy wxQTMediaEvtHandler we pushed on it
@@ -2897,31 +3516,30 @@ bool wxQTMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
                                      const wxValidator& validator,
                                      const wxString& name)
 {
-    if(!m_lib.Initialize())
+    if (!m_lib.Initialize())
         return false;
 
     int nError = m_lib.InitializeQTML(0);
     if (nError != noErr)    //-2093 no dll
     {
-        wxFAIL_MSG(wxString::Format(wxT("Couldn't Initialize Quicktime-%i"),
-                                    nError));
+        wxFAIL_MSG(wxString::Format(wxT("Couldn't Initialize Quicktime-%i"), nError));
         return false;
     }
+
     m_lib.EnterMovies();
 
-    //
     // Create window
     // By default wxWindow(s) is created with a border -
     // so we need to get rid of those
     //
     // Since we don't have a child window like most other
     // backends, we don't need wxCLIP_CHILDREN
-    //
     if ( !ctrl->wxControl::Create(parent, id, pos, size,
                             (style & ~wxBORDER_MASK) | wxBORDER_NONE,
                             validator, name) )
+    {
         return false;
-
+    }
 
     m_ctrl = wxStaticCast(ctrl, wxMediaCtrl);
 
@@ -2929,8 +3547,8 @@ bool wxQTMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
     // can use it as a WindowRef
     m_lib.CreatePortAssociation(m_ctrl->GetHWND(), NULL, 0L);
 
-    //Part of a suggestion from Greg Hazel to repaint
-    //movie when idle
+    // Part of a suggestion from Greg Hazel
+    // to repaint movie when idle
     m_ctrl->PushEventHandler(new wxQTMediaEvtHandler(this, m_ctrl->GetHWND()));
 
     // done
@@ -2948,46 +3566,52 @@ bool wxQTMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
 //---------------------------------------------------------------------------
 bool wxQTMediaBackend::Load(const wxString& fileName)
 {
-    if(m_movie)
+    if (m_movie)
         Cleanup();
 
+    bool result = true;
+    OSErr err = noErr;
     short movieResFile = 0; //= 0 because of annoying VC6 warning
     FSSpec sfFile;
 
-    if (m_lib.NativePathNameToFSSpec ((char*) (const char*) fileName.mb_str(),
-                                &sfFile, 0) != noErr)
-        return false;
+    err = m_lib.NativePathNameToFSSpec(
+        (char*) (const char*) fileName.mb_str(),
+        &sfFile, 0);
+    result = (err == noErr);
 
-    if (m_lib.OpenMovieFile (&sfFile, &movieResFile, fsRdPerm) != noErr)
-        return false;
+    if (result)
+    {
+        err = m_lib.OpenMovieFile(&sfFile, &movieResFile, fsRdPerm);
+        result = (err == noErr);
+    }
 
-    short movieResID = 0;
-    Str255 movieName;
+    if (result)
+    {
+        short movieResID = 0;
+        Str255 movieName;
 
-    OSErr err = m_lib.NewMovieFromFile (
+        err = m_lib.NewMovieFromFile(
                    &m_movie,
                    movieResFile,
                    &movieResID,
                    movieName,
                    newMovieActive,
-                   NULL
-                ); //wasChanged
+                   NULL ); // wasChanged
+        result = (err == noErr && m_lib.GetMoviesStickyError() == noErr);
 
-    //m_lib.GetMoviesStickyError() because it may not find the
-    //proper codec and play black video and other strange effects,
-    //not to mention mess up the dynamic backend loading scheme
-    //of wxMediaCtrl - so it just does what the QuickTime player does
-    if(err == noErr  && m_lib.GetMoviesStickyError() == noErr)
-    {
-    m_lib.CloseMovieFile (movieResFile);
-
-        FinishLoad();
-        return true;
+        // check m_lib.GetMoviesStickyError() because it may not find the
+        // proper codec and play black video and other strange effects,
+        // not to mention mess up the dynamic backend loading scheme
+        // of wxMediaCtrl - so it just does what the QuickTime player does
+        if (result)
+        {
+            m_lib.CloseMovieFile(movieResFile);
+            FinishLoad();
+        }
     }
-    else
-        return false;
-}
 
+    return result;
+}
 
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::PPRMProc (static)
@@ -3008,11 +3632,10 @@ void wxQTMediaBackend::PPRMProc (Movie theMovie,
 
     long lTime = pBE->m_lib.GetMovieTime(theMovie,NULL);
     Fixed rate = pBE->m_lib.GetMoviePreferredRate(theMovie);
-    pBE->m_lib.PrerollMovie(theMovie,lTime,rate);
+    pBE->m_lib.PrerollMovie(theMovie, lTime, rate);
     pBE->m_timer = new wxQTLoadTimer(pBE->m_movie, pBE, &pBE->m_lib);
     pBE->m_timer->Start(MOVIE_DELAY);
 }
-
 
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::Load (URL Version)
@@ -3027,7 +3650,7 @@ void wxQTMediaBackend::PPRMProc (Movie theMovie,
 //---------------------------------------------------------------------------
 bool wxQTMediaBackend::Load(const wxURI& location)
 {
-    if(m_movie)
+    if (m_movie)
         Cleanup();
 
     wxString theURI = location.BuildURI();
@@ -3037,10 +3660,10 @@ bool wxQTMediaBackend::Load(const wxURI& location)
 
     m_lib.BlockMove(theURI.mb_str(), *theHandle, theURI.length() + 1);
 
-    //create the movie from the handle that refers to the URI
+    // create the movie from the handle that refers to the URI
     OSErr err = m_lib.NewMovieFromDataRef(&m_movie, newMovieActive |
                                                     newMovieAsyncOK
-                                                    /*|newMovieIdleImportOK*/,
+                                                    /* | newMovieIdleImportOK */,
                                 NULL, theHandle,
                                 URLDataHandlerSubType);
 
@@ -3049,7 +3672,7 @@ bool wxQTMediaBackend::Load(const wxURI& location)
     if (err == noErr)
     {
         long timeNow;
-    Fixed playRate;
+        Fixed playRate;
 
         timeNow = m_lib.GetMovieTime(m_movie, NULL);
         wxASSERT(m_lib.GetMoviesError() == noErr);
@@ -3057,24 +3680,23 @@ bool wxQTMediaBackend::Load(const wxURI& location)
         playRate = m_lib.GetMoviePreferredRate(m_movie);
         wxASSERT(m_lib.GetMoviesError() == noErr);
 
-        //
-        //  Note that the callback here is optional,
-        //  but without it PrePrerollMovie can be buggy
-        //  (see Apple ml).  Also, some may wonder
-        //  why we need this at all - this is because
-        //  Apple docs say QuickTime streamed movies
-        //  require it if you don't use a Movie Controller,
-        //  which we don't by default.
+        // Note that the callback here is optional,
+        // but without it PrePrerollMovie can be buggy
+        // (see Apple ml).  Also, some may wonder
+        // why we need this at all - this is because
+        // Apple docs say QuickTime streamed movies
+        // require it if you don't use a Movie Controller,
+        // which we don't by default.
         //
         m_lib.PrePrerollMovie(m_movie, timeNow, playRate,
                               (WXFARPROC)wxQTMediaBackend::PPRMProc,
                               (void*)this);
+
         return true;
     }
     else
         return false;
 }
-
 
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::FinishLoad
@@ -3092,21 +3714,20 @@ void wxQTMediaBackend::FinishLoad()
     // Create the playing/streaming timer
     m_timer = new wxQTPlayTimer(m_movie, (wxQTMediaBackend*) this, &m_lib);
     wxASSERT(m_timer);
+
     m_timer->Start(MOVIE_DELAY, wxTIMER_CONTINUOUS);
 
-    //get the real size of the movie
+    // get the real size of the movie
     Rect outRect;
-    memset(&outRect, 0, sizeof(Rect)); //for annoying VC6 warning
+    memset(&outRect, 0, sizeof(Rect)); // suppress annoying VC6 warning
     m_lib.GetMovieNaturalBoundsRect (m_movie, &outRect);
     wxASSERT(m_lib.GetMoviesError() == noErr);
 
     m_bestSize.x = outRect.right - outRect.left;
     m_bestSize.y = outRect.bottom - outRect.top;
 
-    //
     // Handle the movie GWorld
-    //
-    if(m_pMC)
+    if (m_pMC)
     {
         Point thePoint;
         thePoint.h = thePoint.v = 0;
@@ -3123,9 +3744,7 @@ void wxQTMediaBackend::FinishLoad()
                        NULL);
     }
 
-    //
     // Set the movie to millisecond precision
-    //
     m_lib.SetMovieTimeScale(m_movie, 1000);
     wxASSERT(m_lib.GetMoviesError() == noErr);
 
@@ -3148,6 +3767,7 @@ bool wxQTMediaBackend::Play()
 {
     m_lib.StartMovie(m_movie);
     m_bPlaying = true;
+
     return m_lib.GetMoviesError() == noErr;
 }
 
@@ -3161,6 +3781,7 @@ bool wxQTMediaBackend::Pause()
 {
     m_bPlaying = false;
     m_lib.StopMovie(m_movie);
+
     return m_lib.GetMoviesError() == noErr;
 }
 
@@ -3176,17 +3797,16 @@ bool wxQTMediaBackend::Stop()
     m_bPlaying = false;
 
     m_lib.StopMovie(m_movie);
-    if(m_lib.GetMoviesError() != noErr)
-        return false;
+    if (m_lib.GetMoviesError() == noErr)
+        m_lib.GoToBeginningOfMovie(m_movie);
 
-    m_lib.GoToBeginningOfMovie(m_movie);
     return m_lib.GetMoviesError() == noErr;
 }
 
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::GetPlaybackRate
 //
-// 1) Get the movie playback rate from ::GetMovieRate
+// Get the movie playback rate from ::GetMovieRate
 //---------------------------------------------------------------------------
 double wxQTMediaBackend::GetPlaybackRate()
 {
@@ -3196,11 +3816,12 @@ double wxQTMediaBackend::GetPlaybackRate()
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::SetPlaybackRate
 //
-// 1) Convert dRate to Fixed and Set the movie rate through SetMovieRate
+// Convert dRate to Fixed and Set the movie rate through SetMovieRate
 //---------------------------------------------------------------------------
 bool wxQTMediaBackend::SetPlaybackRate(double dRate)
 {
     m_lib.SetMovieRate(m_movie, (Fixed) (dRate * 0x10000));
+
     return m_lib.GetMoviesError() == noErr;
 }
 
@@ -3212,12 +3833,12 @@ bool wxQTMediaBackend::SetPlaybackRate(double dRate)
 //---------------------------------------------------------------------------
 bool wxQTMediaBackend::SetPosition(wxLongLong where)
 {
-    //NB:  For some reason SetMovieTime does not work
-    //correctly with the Quicktime Windows SDK (6)
-    //From Muskelkatermann at the wxForum
-    //http://www.solidsteel.nl/users/wxwidgets/viewtopic.php?t=2957
-    //RN - note that I have not verified this but there
-    //is no harm in calling SetMovieTimeValue instead
+    // NB:  For some reason SetMovieTime does not work
+    // correctly with the Quicktime Windows SDK (6)
+    // From Muskelkatermann at the wxForum
+    // http://www.solidsteel.nl/users/wxwidgets/viewtopic.php?t=2957
+    // RN - note that I have not verified this but there
+    // is no harm in calling SetMovieTimeValue instead
 #if 0
     TimeRecord theTimeRecord;
     memset(&theTimeRecord, 0, sizeof(TimeRecord));
@@ -3228,10 +3849,8 @@ bool wxQTMediaBackend::SetPosition(wxLongLong where)
 #else
     m_lib.SetMovieTimeValue(m_movie, where.GetLo());
 #endif
-    if (m_lib.GetMoviesError() != noErr)
-        return false;
 
-    return true;
+    return (m_lib.GetMoviesError() == noErr);
 }
 
 //---------------------------------------------------------------------------
@@ -3265,10 +3884,10 @@ double wxQTMediaBackend::GetVolume()
     short sVolume = m_lib.GetMovieVolume(m_movie);
     wxASSERT(m_lib.GetMoviesError() == noErr);
 
-    if(sVolume & (128 << 8)) //negative - no sound
+    if (sVolume & (128 << 8)) //negative - no sound
         return 0.0;
 
-    return sVolume/256.0;
+    return sVolume / 256.0;
 }
 
 //---------------------------------------------------------------------------
@@ -3305,14 +3924,14 @@ wxLongLong wxQTMediaBackend::GetDuration()
 //---------------------------------------------------------------------------
 // wxQTMediaBackend::GetState
 //
-// Determines the current state - if we are at the beginning we
-// are stopped
+// Determines the current state:
+// if we are at the beginning, then we are stopped
 //---------------------------------------------------------------------------
 wxMediaState wxQTMediaBackend::GetState()
 {
-    if (m_bPlaying == true)
+    if (m_bPlaying)
         return wxMEDIASTATE_PLAYING;
-    else if ( !m_movie || wxQTMediaBackend::GetPosition() == 0)
+    else if ( !m_movie || wxQTMediaBackend::GetPosition() == 0 )
         return wxMEDIASTATE_STOPPED;
     else
         return wxMEDIASTATE_PAUSED;
@@ -3329,15 +3948,15 @@ void wxQTMediaBackend::Cleanup()
 {
     m_bPlaying = false;
 
-    if(m_timer)
+    if (m_timer)
     {
-    delete m_timer;
-    m_timer = NULL;
+        delete m_timer;
+        m_timer = NULL;
     }
 
     m_lib.StopMovie(m_movie);
 
-    if(m_pMC)
+    if (m_pMC)
     {
         Point thePoint;
         thePoint.h = thePoint.v = 0;
@@ -3356,22 +3975,24 @@ void wxQTMediaBackend::Cleanup()
 //---------------------------------------------------------------------------
 bool wxQTMediaBackend::ShowPlayerControls(wxMediaCtrlPlayerControls flags)
 {
-    if(m_pMC)
+    if (m_pMC)
     {
-        //restore old wndproc
+        // restore old wndproc
         wxSetWindowProc((HWND)m_ctrl->GetHWND(), wxWndProc);
         m_lib.DisposeMovieController(m_pMC);
         m_pMC = NULL;
-        m_bestSize.y -= 16; //movie controller height
+
+        // movie controller height
+        m_bestSize.y -= 16;
     }
 
-    if(flags && m_movie)
+    if (flags && m_movie)
     {
         Rect rect;
         wxRect wxrect = m_ctrl->GetClientRect();
 
-        //make room for controller
-        if(wxrect.width < 320)
+        // make room for controller
+        if (wxrect.width < 320)
             wxrect.width = 320;
 
         rect.top = (short)wxrect.y;
@@ -3379,42 +4000,40 @@ bool wxQTMediaBackend::ShowPlayerControls(wxMediaCtrlPlayerControls flags)
         rect.right = (short)(rect.left + wxrect.width);
         rect.bottom = (short)(rect.top + wxrect.height);
 
-        if(!m_pMC)
+        if (!m_pMC)
         {
             m_pMC = m_lib.NewMovieController(m_movie, &rect, mcTopLeftMovie |
                                 //                        mcScaleMovieToFit |
                                 //                        mcWithBadge |
                                                         mcWithFrame);
-            m_lib.MCDoAction(m_pMC, 32, (void*)true); //mcActionSetKeysEnabled
+            m_lib.MCDoAction(m_pMC, 32, (void*)true); // mcActionSetKeysEnabled
             m_lib.MCSetActionFilterWithRefCon(m_pMC,
                 (WXFARPROC)wxQTMediaBackend::MCFilterProc, (void*)this);
-            m_bestSize.y += 16; //movie controller height
+            m_bestSize.y += 16; // movie controller height
 
-            //
-            // By default the movie controller uses its own color
-            // pallette for the movie which can be bad on some files -
-            // so turn it off.  Also turn off its frame/border for
-            // the movie
-            //
-            // Also we take care of a couple of the interface flags here
-            //
+            // By default the movie controller uses its own colour palette
+            // for the movie which can be bad on some files, so turn it off.
+            // Also turn off its frame / border for the movie
+            // Also take care of a couple of the interface flags here
             long mcFlags = 0;
             m_lib.MCDoAction(m_pMC, 39/*mcActionGetFlags*/, (void*)&mcFlags);
-            mcFlags |= (  //(1<<0)/*mcFlagSuppressMovieFrame*/ |
-                 (1<<3)/*mcFlagsUseWindowPalette*/
-                   | ((flags & wxMEDIACTRLPLAYERCONTROLS_STEP)
-                      ? 0 : (1<<1)/*mcFlagSuppressStepButtons*/)
-                   | ((flags & wxMEDIACTRLPLAYERCONTROLS_VOLUME)
-                      ? 0 : (1<<2)/*mcFlagSuppressSpeakerButton*/)
-     //              | (1<<4) /*mcFlagDontInvalidate*/ //if we take care of repainting ourselves
-                      );
+
+            mcFlags |=
+                // (1<< 0) /*mcFlagSuppressMovieFrame*/ |
+                (1<< 3) /*mcFlagsUseWindowPalette*/
+                | ((flags & wxMEDIACTRLPLAYERCONTROLS_STEP)
+                      ? 0 : (1<< 1) /*mcFlagSuppressStepButtons*/)
+                | ((flags & wxMEDIACTRLPLAYERCONTROLS_VOLUME)
+                      ? 0 : (1<< 2) /*mcFlagSuppressSpeakerButton*/)
+//              | (1<< 4) /*mcFlagDontInvalidate*/ // if we take care of repainting ourselves
+                      ;
+
             m_lib.MCDoAction(m_pMC, 38/*mcActionSetFlags*/, (void*)mcFlags);
 
-            //intercept the wndproc of our control window
-            wxSetWindowProc((HWND)m_ctrl->GetHWND(),
-                wxQTMediaBackend::QTWndProc);
+            // intercept the wndproc of our control window
+            wxSetWindowProc((HWND)m_ctrl->GetHWND(), wxQTMediaBackend::QTWndProc);
 
-            //set the user data of our window
+            // set the user data of our window
             wxSetWindowUserData((HWND)m_ctrl->GetHWND(), this);
         }
     }
@@ -3429,32 +4048,40 @@ bool wxQTMediaBackend::ShowPlayerControls(wxMediaCtrlPlayerControls flags)
 //
 // Callback for when the movie controller recieves a message
 //---------------------------------------------------------------------------
-Boolean
-wxQTMediaBackend::MCFilterProc(MovieController WXUNUSED(theController),
+Boolean wxQTMediaBackend::MCFilterProc(MovieController WXUNUSED(theController),
                                short action,
                                void * WXUNUSED(params),
                                LONG_PTR refCon)
 {
-    if(action != 1) //don't process idle events
-    {
-        wxQTMediaBackend* pThis = (wxQTMediaBackend*)refCon;
+// NB: potential optimisation
+//    if (action == 1)
+//        return 0;
 
-        switch(action)
-        {
-        case 8: //play button triggered - MC will set movie to opposite state
-                //of current - playing ? paused : playing
+    wxQTMediaBackend* pThis = (wxQTMediaBackend*)refCon;
+
+    switch (action)
+    {
+    case 1:
+        // don't process idle events
+        break;
+
+    case 8:
+        // play button triggered - MC will set movie to opposite state
+        // of current - playing ? paused : playing
+        if (pThis)
             pThis->m_bPlaying = !(pThis->m_bPlaying);
 
-            // NB: Sometimes it doesn't redraw properly -
-            // if you click on the button but don't move the mouse
-            // the button will not change its state until you move
-            // mcActionDraw and Refresh/Update combo do nothing
-            // to help this unfortunately
-            break;
-        default:
-            break;
-        }
+        // NB: Sometimes it doesn't redraw properly -
+        // if you click on the button but don't move the mouse
+        // the button will not change its state until you move
+        // mcActionDraw and Refresh/Update combo do nothing
+        // to help this unfortunately
+        break;
+
+    default:
+        break;
     }
+
     return 0;
 }
 
@@ -3475,12 +4102,12 @@ wxSize wxQTMediaBackend::GetVideoSize() const
 //---------------------------------------------------------------------------
 void wxQTMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y), int w, int h)
 {
-    if(m_movie)
+    if (m_movie)
     {
-        //make room for controller
-        if(m_pMC)
+        // make room for controller
+        if (m_pMC)
         {
-            if(w < 320)
+            if (w < 320)
                 w = 320;
 
             Rect theRect = {0, 0, (short)h, (short)w};
@@ -3489,7 +4116,7 @@ void wxQTMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y), int w, int h)
         else
         {
             Rect theRect = {0, 0, (short)h, (short)w};
-        m_lib.SetMovieBox(m_movie, &theRect);
+            m_lib.SetMovieBox(m_movie, &theRect);
         }
 
         wxASSERT(m_lib.GetMoviesError() == noErr);
@@ -3502,8 +4129,8 @@ void wxQTMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y), int w, int h)
 // Suggestion from Greg Hazel to repaint the movie when idle
 // (on pause also)
 //
-// TODO:  We may be repainting too much here - under what exact circumstances
-// do we need this?  I think Move also repaints correctly for the Movie
+// TODO: We may be repainting too much here - under what exact circumstances
+// do we need this? I think Move also repaints correctly for the Movie
 // Controller, so in that instance we don't need this either
 //---------------------------------------------------------------------------
 void wxQTMediaEvtHandler::OnEraseBackground(wxEraseEvent& evt)
@@ -3516,22 +4143,21 @@ void wxQTMediaEvtHandler::OnEraseBackground(wxEraseEvent& evt)
         m_pLib.MCDoAction(m_qtb->m_pMC, 2 /*mcActionDraw*/,
                             m_pLib.GetNativeWindowPort(m_hwnd));
     }
-    else // no movie controller
+    else if ( m_qtb->m_movie )
     {
-        if ( m_qtb->m_movie )
-        {
-            CGrafPtr port = (CGrafPtr)m_pLib.GetNativeWindowPort(m_hwnd);
+        // no movie controller
+        CGrafPtr port = (CGrafPtr)m_pLib.GetNativeWindowPort(m_hwnd);
 
-            m_pLib.BeginUpdate(port);
-            m_pLib.UpdateMovie(m_qtb->m_movie);
-            wxASSERT(m_pLib.GetMoviesError() == noErr);
-            m_pLib.EndUpdate(port);
-        }
-        else // no movie
-        {
-            // let the system repaint the window
-            evt.Skip();
-        }
+        m_pLib.BeginUpdate(port);
+        m_pLib.UpdateMovie(m_qtb->m_movie);
+        wxASSERT(m_pLib.GetMoviesError() == noErr);
+        m_pLib.EndUpdate(port);
+    }
+    else
+    {
+        // no movie
+        // let the system repaint the window
+        evt.Skip();
     }
 }
 
@@ -3540,12 +4166,7 @@ void wxQTMediaEvtHandler::OnEraseBackground(wxEraseEvent& evt)
 //---------------------------------------------------------------------------
 
 //in source file that contains stuff you don't directly use
-#include <wx/html/forcelnk.h>
-FORCE_LINK_ME(basewxmediabackends);
+#include "wx/html/forcelnk.h"
+FORCE_LINK_ME(basewxmediabackends)
 
-//---------------------------------------------------------------------------
-//  End wxMediaCtrl Compilation Guard and this file
-//---------------------------------------------------------------------------
 #endif //wxUSE_MEDIACTRL
-
-

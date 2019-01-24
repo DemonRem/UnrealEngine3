@@ -7,17 +7,13 @@
 // Author:      Robert Roebling, Harm van der Heijden, Julian Smart et al
 // Modified by:
 // Created:     21/3/2000
-// RCS-ID:      $Id: dirctrlg.h,v 1.30 2005/03/31 19:03:54 JS Exp $
+// RCS-ID:      $Id: dirctrlg.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Robert Roebling, Harm van der Heijden, Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DIRCTRL_H_
 #define _WX_DIRCTRL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dirctrlg.h"
-#endif
 
 #if wxUSE_DIRDLG || wxUSE_FILEDLG
     #include "wx/imaglist.h"
@@ -34,9 +30,9 @@
 // classes
 //-----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_CORE wxTextCtrl;
-class WXDLLIMPEXP_CORE wxImageList;
-class WXDLLIMPEXP_BASE wxHashTable;
+class WXDLLIMPEXP_FWD_CORE wxTextCtrl;
+class WXDLLIMPEXP_FWD_CORE wxImageList;
+class WXDLLIMPEXP_FWD_BASE wxHashTable;
 
 //-----------------------------------------------------------------------------
 // Extra styles for wxGenericDirCtrl
@@ -64,7 +60,7 @@ class WXDLLEXPORT wxDirItemData : public wxTreeItemData
 {
 public:
     wxDirItemData(const wxString& path, const wxString& name, bool isDir);
-    ~wxDirItemData(){}
+    virtual ~wxDirItemData(){}
     void SetNewDirName(const wxString& path);
 
     bool HasSubDirs() const;
@@ -80,7 +76,7 @@ public:
 // wxDirCtrl
 //-----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxDirFilterListCtrl;
+class WXDLLIMPEXP_FWD_CORE wxDirFilterListCtrl;
 
 class WXDLLEXPORT wxGenericDirCtrl: public wxControl
 {
@@ -120,6 +116,8 @@ public:
 
     // Try to expand as much of the given path as possible.
     virtual bool ExpandPath(const wxString& path);
+    // collapse the path
+    virtual bool CollapsePath(const wxString& path);
 
     // Accessors
 
@@ -227,7 +225,7 @@ public:
 
     void Init();
 
-    ~wxDirFilterListCtrl() {}
+    virtual ~wxDirFilterListCtrl() {}
 
     //// Operations
     void FillFilterList(const wxString& filter, int defaultFilter);

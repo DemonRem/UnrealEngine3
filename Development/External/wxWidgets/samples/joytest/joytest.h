@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: joytest.h,v 1.9 2004/10/06 20:53:29 ABX Exp $
+// RCS-ID:      $Id: joytest.h 29684 2004-10-06 20:54:57Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////

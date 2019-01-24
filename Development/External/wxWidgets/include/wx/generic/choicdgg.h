@@ -4,22 +4,18 @@
 // Author:      Julian Smart
 // Modified by: 03.11.00: VZ to add wxArrayString and multiple sel functions
 // Created:     01/02/97
-// RCS-ID:      $Id: choicdgg.h,v 1.34 2005/04/02 21:39:53 JS Exp $
+// RCS-ID:      $Id: choicdgg.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef __CHOICEDLGH_G__
-#define __CHOICEDLGH_G__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "choicdgg.h"
-#endif
+#ifndef _WX_GENERIC_CHOICDGG_H_
+#define _WX_GENERIC_CHOICDGG_H_
 
 #include "wx/dynarray.h"
 #include "wx/dialog.h"
 
-class WXDLLEXPORT wxListBox;
+class WXDLLIMPEXP_FWD_CORE wxListBoxBase;
 
 // ----------------------------------------------------------------------------
 // some (ugly...) constants
@@ -84,7 +80,11 @@ public:
                 long styleLbox = wxLB_ALWAYS_SB);
 
 protected:
-    wxListBox  *m_listbox;
+    wxListBoxBase *m_listbox;
+
+    virtual wxListBoxBase *CreateList(int n,
+                                      const wxString *choices,
+                                      long styleLbox);
 
     DECLARE_NO_COPY_CLASS(wxAnyChoiceDialog)
 };
@@ -142,11 +142,18 @@ public:
 
     // implementation from now on
     void OnOK(wxCommandEvent& event);
+#ifndef __SMARTPHONE__
     void OnListBoxDClick(wxCommandEvent& event);
+#endif
+#ifdef __WXWINCE__
+    void OnJoystickButtonDown(wxJoystickEvent& event);
+#endif
 
 protected:
     int         m_selection;
     wxString    m_stringSelection;
+
+    void DoChoice();
 
 private:
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxSingleChoiceDialog)
@@ -203,6 +210,12 @@ public:
     virtual bool TransferDataFromWindow();
 
 protected:
+#if wxUSE_CHECKLISTBOX
+    virtual wxListBoxBase *CreateList(int n,
+                                      const wxString *choices,
+                                      long styleLbox);
+#endif // wxUSE_CHECKLISTBOX
+
     wxArrayInt m_selections;
 
 private:
@@ -217,7 +230,7 @@ private:
 WXDLLEXPORT wxString wxGetSingleChoice(const wxString& message,
                                        const wxString& caption,
                                        const wxArrayString& choices,
-                                       wxWindow *parent = (wxWindow *) NULL,
+                                       wxWindow *parent = NULL,
                                        int x = wxDefaultCoord,
                                        int y = wxDefaultCoord,
                                        bool centre = true,
@@ -227,7 +240,7 @@ WXDLLEXPORT wxString wxGetSingleChoice(const wxString& message,
 WXDLLEXPORT wxString wxGetSingleChoice(const wxString& message,
                                        const wxString& caption,
                                        int n, const wxString *choices,
-                                       wxWindow *parent = (wxWindow *) NULL,
+                                       wxWindow *parent = NULL,
                                        int x = wxDefaultCoord,
                                        int y = wxDefaultCoord,
                                        bool centre = true,
@@ -239,7 +252,7 @@ WXDLLEXPORT wxString wxGetSingleChoice(const wxString& message,
 WXDLLEXPORT int wxGetSingleChoiceIndex(const wxString& message,
                                        const wxString& caption,
                                        const wxArrayString& choices,
-                                       wxWindow *parent = (wxWindow *) NULL,
+                                       wxWindow *parent = NULL,
                                        int x = wxDefaultCoord,
                                        int y = wxDefaultCoord,
                                        bool centre = true,
@@ -249,7 +262,7 @@ WXDLLEXPORT int wxGetSingleChoiceIndex(const wxString& message,
 WXDLLEXPORT int wxGetSingleChoiceIndex(const wxString& message,
                                        const wxString& caption,
                                        int n, const wxString *choices,
-                                       wxWindow *parent = (wxWindow *) NULL,
+                                       wxWindow *parent = NULL,
                                        int x = wxDefaultCoord,
                                        int y = wxDefaultCoord,
                                        bool centre = true,
@@ -261,7 +274,7 @@ WXDLLEXPORT void* wxGetSingleChoiceData(const wxString& message,
                                         const wxString& caption,
                                         const wxArrayString& choices,
                                         void **client_data,
-                                        wxWindow *parent = (wxWindow *) NULL,
+                                        wxWindow *parent = NULL,
                                         int x = wxDefaultCoord,
                                         int y = wxDefaultCoord,
                                         bool centre = true,
@@ -272,7 +285,7 @@ WXDLLEXPORT void* wxGetSingleChoiceData(const wxString& message,
                                         const wxString& caption,
                                         int n, const wxString *choices,
                                         void **client_data,
-                                        wxWindow *parent = (wxWindow *) NULL,
+                                        wxWindow *parent = NULL,
                                         int x = wxDefaultCoord,
                                         int y = wxDefaultCoord,
                                         bool centre = true,
@@ -286,7 +299,7 @@ WXDLLEXPORT size_t wxGetMultipleChoices(wxArrayInt& selections,
                                         const wxString& message,
                                         const wxString& caption,
                                         int n, const wxString *choices,
-                                        wxWindow *parent = (wxWindow *) NULL,
+                                        wxWindow *parent = NULL,
                                         int x = wxDefaultCoord,
                                         int y = wxDefaultCoord,
                                         bool centre = true,
@@ -297,12 +310,11 @@ WXDLLEXPORT size_t wxGetMultipleChoices(wxArrayInt& selections,
                                         const wxString& message,
                                         const wxString& caption,
                                         const wxArrayString& choices,
-                                        wxWindow *parent = (wxWindow *) NULL,
+                                        wxWindow *parent = NULL,
                                         int x = wxDefaultCoord,
                                         int y = wxDefaultCoord,
                                         bool centre = true,
                                         int width = wxCHOICE_WIDTH,
                                         int height = wxCHOICE_HEIGHT);
 
-#endif // __CHOICEDLGH_G__
-
+#endif // _WX_GENERIC_CHOICDGG_H_

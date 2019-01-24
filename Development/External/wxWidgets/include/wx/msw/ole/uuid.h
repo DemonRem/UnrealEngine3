@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     11.07.97
-// RCS-ID:      $Id: uuid.h,v 1.11 2004/08/16 12:45:40 ABX Exp $
+// RCS-ID:      $Id: uuid.h 55113 2008-08-18 11:30:10Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 //
@@ -14,9 +14,6 @@
 #ifndef   _WX_OLEUUID_H
 #define   _WX_OLEUUID_H
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "uuid.h"
-#endif
 #include "wx/wxchar.h"
 // ------------------------------------------------------------------
 // UUID (Universally Unique IDentifier) definition
@@ -76,6 +73,12 @@ public:
   // set value of UUID
   bool Set(const wxChar *pc); // from a string, returns true if ok
   void Set(const UUID& uuid); // from another UUID (never fails)
+
+#if wxABI_VERSION >= 20809
+  // comparison operators
+  bool operator==(const Uuid& uuid) const;
+  bool operator!=(const Uuid& uuid) const;
+#endif // wxABI_VERSION >= 2.8.9
 
   // accessors
   operator const UUID*()   const { return &m_uuid;               }

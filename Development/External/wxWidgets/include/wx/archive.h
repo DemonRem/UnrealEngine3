@@ -1,18 +1,14 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        archive.h
+// Name:        wx/archive.h
 // Purpose:     Streams for archive formats
 // Author:      Mike Wetherell
-// RCS-ID:      $Id: archive.h,v 1.7 2005/04/11 23:24:30 MW Exp $
+// RCS-ID:      $Id: archive.h 43445 2006-11-16 14:30:20Z MW $
 // Copyright:   (c) 2004 Mike Wetherell
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_ARCHIVE_H__
 #define _WX_ARCHIVE_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "archive.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -59,7 +55,7 @@ public:
     virtual void SetIsReadOnly(bool isReadOnly = true) = 0;
     virtual void SetName(const wxString& name,
                          wxPathFormat format = wxPATH_NATIVE) = 0;
-    
+
     wxArchiveEntry *Clone() const { return DoClone(); }
 
     void SetNotifier(wxArchiveNotifier& notifier);
@@ -98,16 +94,17 @@ public:
     typedef wxArchiveEntry entry_type;
 
     virtual ~wxArchiveInputStream() { }
-    
+
     virtual bool OpenEntry(wxArchiveEntry& entry) = 0;
     virtual bool CloseEntry() = 0;
 
     wxArchiveEntry *GetNextEntry()  { return DoGetNextEntry(); }
 
     virtual char Peek()             { return wxInputStream::Peek(); }
-    
+
 protected:
     wxArchiveInputStream(wxInputStream& stream, wxMBConv& conv);
+    wxArchiveInputStream(wxInputStream *stream, wxMBConv& conv);
 
     virtual wxArchiveEntry *DoGetNextEntry() = 0;
 
@@ -126,7 +123,7 @@ private:
 //
 // Only one entry can be open for output at a time; another call to
 // PutNextEntry closes the current entry and begins the next.
-// 
+//
 // The overload 'bool PutNextEntry(wxArchiveEntry *entry)' takes ownership
 // of the entry object.
 
@@ -153,6 +150,7 @@ public:
 
 protected:
     wxArchiveOutputStream(wxOutputStream& stream, wxMBConv& conv);
+    wxArchiveOutputStream(wxOutputStream *stream, wxMBConv& conv);
 
     wxMBConv& GetConv() const { return m_conv; }
 
@@ -209,7 +207,7 @@ public:
         if (m_rep)
             m_rep->AddRef();
     }
-    
+
     ~wxArchiveIterator() {
         if (m_rep)
             m_rep->UnRef();
@@ -257,13 +255,13 @@ private:
         typename Arc::entry_type* m_entry;
         T m_value;
         int m_ref;
-        
+
     public:
         Rep(Arc& arc, typename Arc::entry_type* entry)
             : m_arc(arc), m_entry(entry), m_value(), m_ref(1) { }
         ~Rep()
             { delete m_entry; }
-        
+
         void AddRef() {
             m_ref++;
         }
@@ -280,7 +278,7 @@ private:
                 return NULL;
             }
             if (m_ref > 1) {
-                m_ref--; 
+                m_ref--;
                 return new Rep(m_arc, entry);
             }
             delete m_entry;
@@ -312,7 +310,9 @@ typedef wxArchiveIterator<wxArchiveInputStream,
 // A wxArchiveClassFactory instance for a particular archive type allows
 // the creation of the other classes that may be needed.
 
-class WXDLLIMPEXP_BASE wxArchiveClassFactory : public wxObject
+void WXDLLIMPEXP_BASE wxUseArchiveClasses();
+
+class WXDLLIMPEXP_BASE wxArchiveClassFactory : public wxFilterClassFactoryBase
 {
 public:
     typedef wxArchiveEntry        entry_type;
@@ -332,13 +332,28 @@ public:
         { return DoNewStream(stream); }
     wxArchiveOutputStream *NewStream(wxOutputStream& stream) const
         { return DoNewStream(stream); }
+    wxArchiveInputStream *NewStream(wxInputStream *stream) const
+        { return DoNewStream(stream); }
+    wxArchiveOutputStream *NewStream(wxOutputStream *stream) const
+        { return DoNewStream(stream); }
 
     virtual wxString GetInternalName(
         const wxString& name,
         wxPathFormat format = wxPATH_NATIVE) const = 0;
 
     void SetConv(wxMBConv& conv) { m_pConv = &conv; }
-    wxMBConv& GetConv() const { return *m_pConv; }
+    wxMBConv& GetConv() const
+        { if (m_pConv) return *m_pConv; else return wxConvLocal; }
+
+    static const wxArchiveClassFactory *Find(const wxChar *protocol,
+                                             wxStreamProtocolType type
+                                             = wxSTREAM_PROTOCOL);
+
+    static const wxArchiveClassFactory *GetFirst();
+    const wxArchiveClassFactory *GetNext() const { return m_next; }
+
+    void PushFront() { Remove(); m_next = sm_first; sm_first = this; }
+    void Remove();
 
 protected:
     // old compilers don't support covarient returns, so 'Do' methods are
@@ -346,13 +361,17 @@ protected:
     virtual wxArchiveEntry        *DoNewEntry() const = 0;
     virtual wxArchiveInputStream  *DoNewStream(wxInputStream& stream) const = 0;
     virtual wxArchiveOutputStream *DoNewStream(wxOutputStream& stream) const = 0;
+    virtual wxArchiveInputStream  *DoNewStream(wxInputStream *stream) const = 0;
+    virtual wxArchiveOutputStream *DoNewStream(wxOutputStream *stream) const = 0;
 
-    wxArchiveClassFactory() : m_pConv(&wxConvLocal) { }
+    wxArchiveClassFactory() : m_pConv(NULL), m_next(this) { }
     wxArchiveClassFactory& operator=(const wxArchiveClassFactory& WXUNUSED(f))
         { return *this; }
 
 private:
     wxMBConv *m_pConv;
+    static wxArchiveClassFactory *sm_first;
+    wxArchiveClassFactory *m_next;
 
     DECLARE_ABSTRACT_CLASS(wxArchiveClassFactory)
 };

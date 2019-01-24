@@ -3,21 +3,20 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxPlatformANSI_H__
 #define FxPlatformANSI_H__
 
+//@todo Move this to FxPlatformPS3.h.
 #ifdef PS3
 	#include "stdlib.h"
 	#include "string.h"
 	#include "wchar.h"
 	#include "math.h"
-	#include "ctype.h" // needed for toupper, tolower in char traits.
-	#include "stdio.h"
-#else
-	#include <locale> // needed for toupper, tolower in char traits.
+	#include "ctype.h" // Needed for toupper, tolower in char traits.
+	#include "stdio.h" // Needed for sprintf in FxFtoa.
 #endif
 
 #include <cstring>
@@ -26,9 +25,19 @@
 #include <cfloat>
 #include <cassert>
 #include <memory>
-#include <cmath> // needed for log10 in Itoa.
+#include <cmath>  // Needed for log10 in Itoa.
+#include <cctype> // Needed for toupper, tolower in char traits.
+#include <cstdio> // Needed for sprintf in FxFtoa.
 
-#define FxAssert assert
+#ifdef __UNREAL__
+        #if FINAL_RELEASE
+                #define FxAssert(x) ((void)0)
+        #else
+                #define FxAssert assert
+        #endif
+#else 
+        #define FxAssert assert
+#endif // __UNREAL__
 
 #define FX_REAL_EPSILON FLT_EPSILON
 #define FX_REAL_MAX     FLT_MAX
@@ -47,11 +56,15 @@ namespace Face
 /// Wrapper for memcpy().
 FX_INLINE void* FX_CALL FxMemcpy( void* dest, const void* src, FxSize cnt )
 {
+#ifdef FX_XBOX_360
+	return XMemCpy(dest, src, cnt);
+#else
 	return fx_std(memcpy)(dest, src, cnt);
+#endif // FX_XBOX_360
 }
 
 /// Wrapper for memmove().
-FX_INLINE void* FX_CALL FxMemmove(void* dest, const void* src, FxSize numBytes)
+FX_INLINE void* FX_CALL FxMemmove( void* dest, const void* src, FxSize numBytes )
 {
 	return fx_std(memmove)(dest, src, numBytes);
 }
@@ -59,12 +72,16 @@ FX_INLINE void* FX_CALL FxMemmove(void* dest, const void* src, FxSize numBytes)
 /// Wrapper for memset().
 FX_INLINE void* FX_CALL FxMemset( void* dest, FxInt32 val, FxSize cnt )
 {
+#ifdef FX_XBOX_360
+	return XMemSet(dest, val, cnt);
+#else
 	return fx_std(memset)(dest, val, cnt);
+#endif // FX_XBOX_360
 }
 
 /// Wrapper for memcmp().
 FX_INLINE FxInt32 FX_CALL FxMemcmp( const void* mem1, const void* mem2, 
-								   FxSize cnt )
+								    FxSize cnt )
 {
 	return fx_std(memcmp)(mem1, mem2, cnt);
 }
@@ -76,15 +93,30 @@ FX_INLINE const void* FX_CALL FxMemchr(const void* buffer, FxInt32 val, FxSize s
 }
 
 /// Wrapper for strcpy().
-FX_INLINE FxChar* FX_CALL FxStrcpy( FxChar* dest, const FxChar* src )
+FX_INLINE FxChar* FX_CALL FxStrcpy( FxChar* dest, FxSize destLen, const FxChar* src )
 {
+#if _MSC_VER >= 1400
+	strcpy_s(dest, destLen, src);
+	return dest;
+#else
+	// Shut up non-Microsoft compilers.
+	destLen = 0;
 	return fx_std(strcpy)(dest, src);
+#endif
 }
 
 /// Wrapper for strncpy().
-FX_INLINE FxChar* FX_CALL FxStrncpy( FxChar* dest, const FxChar* src, FxSize n )
+FX_INLINE FxChar* FX_CALL FxStrncpy( FxChar* dest, FxSize destLen, const FxChar* src, FxSize n )
 {
+#if _MSC_VER >= 1400
+	n;
+	strncpy_s(dest, destLen, src, _TRUNCATE);
+	return dest;
+#else
+	// Shut up non-Microsoft compilers.
+	destLen = 0;
 	return fx_std(strncpy)(dest, src, n);
+#endif
 }
 
 /// Wrapper for strlen().
@@ -99,10 +131,23 @@ FX_INLINE FxInt32 FX_CALL FxStrcmp( const FxChar* str1, const FxChar* str2 )
 	return fx_std(strcmp)(str1, str2);
 }
 
-/// Wrapper for strcat().
-FX_INLINE FxChar* FX_CALL FxStrcat( FxChar* dest, const FxChar* src )
+/// Wrapper for strncmp().
+FX_INLINE FxInt32 FX_CALL FxStrncmp( const FxChar* str1, const FxChar* str2, FxSize cnt )
 {
+	return fx_std(strncmp)(str1, str2, cnt);
+}
+
+/// Wrapper for strcat().
+FX_INLINE FxChar* FX_CALL FxStrcat( FxChar* dest, FxSize destLen, const FxChar* src )
+{
+#if _MSC_VER >= 1400
+	strcat_s(dest, destLen, src);
+	return dest;
+#else
+	// Shut up non-Microsoft compilers.
+	destLen = 0;
 	return fx_std(strcat)(dest, src);
+#endif
 }
 
 /// Wrapper for strrchr().
@@ -153,6 +198,18 @@ FX_INLINE FxSize FX_CALL FxWStrlen( const FxWChar* str )
 	return static_cast<FxSize>(fx_std(wcslen)(str));
 }
 
+/// Wrapper for wcscmp().
+FX_INLINE FxInt32 FX_CALL FxWStrcmp( const FxWChar* str1, const FxWChar* str2 )
+{
+	return fx_std(wcscmp)(str1, str2);
+}
+
+/// Wrapper for wcsncmp().
+FX_INLINE FxInt32 FX_CALL FxWStrncmp( const FxWChar* str1, const FxWChar* str2, FxSize cnt )
+{
+	return fx_std(wcsncmp)(str1, str2, cnt);
+}
+
 /// Wrapper for wcsrchr().
 FX_INLINE const FxWChar* FX_CALL FxWStrrchr( const FxWChar* str, FxWChar val )
 {
@@ -178,7 +235,7 @@ FX_INLINE FxInt32 FX_CALL FxAtoi( const FxChar* str )
 }
 
 /// Converts a 32-bit integer to a string.
-FX_INLINE FxChar* FX_CALL FxItoa( FxInt32 val, FxChar* buf )
+FX_INLINE FxChar* FX_CALL FxItoa( FxInt32 val, FxChar* buf, FxSize bufLen )
 {
 	FxChar buffer[64] = {0};
 	if( val == 0 )
@@ -202,7 +259,7 @@ FX_INLINE FxChar* FX_CALL FxItoa( FxInt32 val, FxChar* buf )
 			buffer[0] = '-';
 		}
 	}
-	return FxStrcpy(buf, buffer);
+	return FxStrcpy(buf, bufLen, buffer);
 }
 
 /// Converts a floating-point number to a string.
@@ -210,8 +267,12 @@ FX_INLINE FxChar* FX_CALL FxFtoa( FxReal val, FxChar* buf )
 {
 	//@todo revise.
 	FxChar buffer[64] = {0};
+#if _MSC_VER >= 1400
+	sprintf_s(buffer, 64, "%f", val);
+#else
 	sprintf(buffer, "%f", val);
-	return FxStrcpy(buf, buffer);
+#endif
+	return FxStrcpy(buf, 64, buffer);
 }
 
 } // namespace Face

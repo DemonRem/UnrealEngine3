@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     31.01.01
-// RCS-ID:      $Id: event.cpp,v 1.13 2004/10/02 12:35:41 VS Exp $
+// RCS-ID:      $Id: event.cpp 41547 2006-10-02 05:36:31Z PC $
 // Copyright:   (c) 2001 Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,13 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    // DO NOT use event.cpp here, it breaks statics initialization in
-    // src/common/event.cpp and nothing works at all then!
-    #pragma implementation "eventsample.cpp"
-    #pragma interface "eventsample.cpp"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -104,7 +97,7 @@ public:
 
 protected:
     // number of pushed event handlers
-    size_t m_nPush;
+    unsigned m_nPush;
 
 private:
     // any class wishing to process wxWidgets events must use this macro
@@ -127,7 +120,7 @@ public:
     }
 
 private:
-    size_t m_level;
+    unsigned m_level;
 
     DECLARE_EVENT_TABLE()
 };

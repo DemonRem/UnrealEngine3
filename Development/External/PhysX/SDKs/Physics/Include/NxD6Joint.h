@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXD6Joint
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -79,8 +79,7 @@ Example:
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Partial(some features are not supported. Hardware D6 joints have different properties to 
-software joints so may behave slightly differently. See the user guide for details)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
 
@@ -106,9 +105,10 @@ class NxD6Joint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see saveToDesc NxD6JointDesc
 	*/
@@ -121,9 +121,10 @@ class NxD6Joint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see loadFromDesc NxD6JointDesc
 	*/
@@ -141,9 +142,10 @@ class NxD6Joint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDriveOrientation() NxD6JointDesc.drivePosition
 	@see NxD6JointDesc
@@ -162,9 +164,10 @@ class NxD6Joint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDrivePosition NxD6JointDesc.driveOrientation
 	*/
@@ -182,9 +185,10 @@ class NxD6Joint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDriveAngularVelocity NxD6JointDesc.driveLinearVelocity
 	*/
@@ -204,9 +208,10 @@ class NxD6Joint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDriveLinearVelocity() NxD6JointDesc.driveAngularVelocity
 	*/
@@ -214,9 +219,9 @@ class NxD6Joint: public NxJoint
 	};
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     24.06.2003 (extracted from src/unix/utilsunx.cpp)
-// RCS-ID:      $Id: pipe.h,v 1.7 2004/06/21 12:36:34 VZ Exp $
+// RCS-ID:      $Id: pipe.h 40518 2006-08-08 13:06:05Z VS $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,7 +74,10 @@ public:
         for ( size_t n = 0; n < WXSIZEOF(m_fds); n++ )
         {
             if ( m_fds[n] != INVALID_FD )
+            {
                 close(m_fds[n]);
+                m_fds[n] = INVALID_FD;
+            }
         }
     }
 
@@ -85,7 +88,7 @@ private:
     int m_fds[2];
 };
 
-#if wxUSE_STREAMS
+#if wxUSE_STREAMS && wxUSE_FILE
 
 #include "wx/wfstream.h"
 
@@ -105,7 +108,7 @@ public:
     virtual bool CanRead() const;
 };
 
-#endif // wxUSE_STREAMS
+#endif // wxUSE_STREAMS && wxUSE_FILE
 
 #endif // _WX_UNIX_PIPE_H_
 

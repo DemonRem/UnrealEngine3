@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxArray_H__
@@ -22,8 +22,6 @@ namespace Face
 // Forward declare the array base.
 template<typename Elem> class FxArrayBase;
 
-#define kCurrentFxArrayVersion 0
-
 /// A templated dynamic array.
 ///
 /// The array uses the array base as the underlying storage mechanism to help
@@ -40,8 +38,8 @@ public:
 	typedef Elem value_type;
 	typedef Elem* pointer;
 	typedef const Elem* const_pointer;
-	typedef pointer iterator;
-	typedef const_pointer const_iterator;
+	typedef pointer Iterator;
+	typedef const_pointer ConstIterator;
 
 	/// Construct an array with room for numReserved elements.
 	/// \param numReserved The maximum length the array could attain without a
@@ -78,13 +76,13 @@ public:
 	const value_type& operator[](FxSize index) const;
 
 	/// Returns an iterator to the beginning of the array.
-	iterator Begin();
+	Iterator Begin();
 	/// Returns a const iterator to the beginning of the array.
-	const_iterator Begin() const;
+	ConstIterator Begin() const;
 	// Returns an iterator to the end of the array.
-	iterator End();
+	Iterator End();
 	/// Returns a const iterator to the end of the array.
-	const_iterator End() const;
+	ConstIterator End() const;
 
 	/// Ensures a minimum size for the array.
 	/// \param n The maximum number of elements the array could hold without a 
@@ -115,6 +113,12 @@ public:
 	/// Removes the element at index.
 	/// \param index The index of the element to remove.
 	void Remove(FxSize index);
+	/// Removes the element at index by swapping it for the last on in the array.
+	/// \param index The index of the element to remove.
+	void RemoveInPlace(FxSize index);
+	/// Removes the element at the iterator.
+	/// \param iter The iterator to remove.
+	void RemoveIterator(Iterator iter);
 
 	/// Finds the index of \a element, starting the search at \a startIndex.
 	/// \param element The element for which to search.
@@ -125,6 +129,9 @@ public:
 
 	/// Swaps the contents with an other array.
 	void Swap(FxArray& other);
+	/// Prefetches the entire array into L1 and L2 if running on XBox 360.
+	/// Does nothing otherwise.
+	void Prefetch() const;
 
 	/// Returns a pointer to the underlying C-style array.
 	/// For compatibility with systems requiring a C-style array.  Returns a
@@ -140,14 +147,21 @@ public:
 	/// Serializes the array to an archive.
 	FxArchive& Serialize( FxArchive& arc )
 	{
-		FxUInt16 version = kCurrentFxArrayVersion;
-		arc << version;
-
+		// As of version 1.7, container classes have the same version as the 
+		// SDK itself so there is no need to explicitly serialize it.  This eats
+		// the version when loading pre-1.7 archives.
+		if( arc.GetSDKVersion() < 1700 && arc.IsLoading() )
+		{
+			FxUInt16 version = 0;
+			arc << version;
+		}
+		
 		FxSize length = Length();
 		arc << length;
 
 		if( arc.IsSaving() )
 		{
+#ifndef NO_SAVE_VERSION
 			if( FxTypeTraits::is_arithmetic<Elem>::value )
 			{
 				// Shortcut saving for arithmetic types.
@@ -160,6 +174,7 @@ public:
 					arc << operator[](i);
 				}
 			}
+#endif
 		}
 		else
 		{

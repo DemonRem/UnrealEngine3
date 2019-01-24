@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: helpbase.h,v 1.30 2004/09/15 13:20:10 ABX Exp $
+// RCS-ID:      $Id: helpbase.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_HELPBASEH__
 #define _WX_HELPBASEH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "helpbase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -39,7 +35,7 @@ enum wxHelpSearchMode
 class WXDLLEXPORT wxHelpControllerBase: public wxObject
 {
 public:
-    inline wxHelpControllerBase() {}
+    inline wxHelpControllerBase(wxWindow* parentWindow = NULL) { m_parentWindow = parentWindow; }
     inline ~wxHelpControllerBase() {}
 
     // Must call this to set the filename and server name.
@@ -61,7 +57,7 @@ public:
     virtual bool DisplaySection(int sectionNo) = 0;
 
     // Display the section using a context id
-    virtual bool DisplayContextPopup(int WXUNUSED(contextId)) { return false; };
+    virtual bool DisplayContextPopup(int WXUNUSED(contextId)) { return false; }
 
     // Display the text in a popup, if possible
     virtual bool DisplayTextPopup(const wxString& WXUNUSED(text), const wxPoint& WXUNUSED(pos)) { return false; }
@@ -92,6 +88,14 @@ public:
     virtual bool Quit() = 0;
     virtual void OnQuit() {}
 
+    /// Set the window that can optionally be used for the help window's parent.
+    virtual void SetParentWindow(wxWindow* win) { m_parentWindow = win; }
+
+    /// Get the window that can optionally be used for the help window's parent.
+    virtual wxWindow* GetParentWindow() const { return m_parentWindow; }
+
+protected:
+    wxWindow* m_parentWindow;
 private:
     DECLARE_CLASS(wxHelpControllerBase)
 };

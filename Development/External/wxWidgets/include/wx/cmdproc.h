@@ -4,7 +4,7 @@
 // Author:      Julian Smart (extracted from docview.h by VZ)
 // Modified by:
 // Created:     05.11.00
-// RCS-ID:      $Id: cmdproc.h,v 1.19 2005/02/19 16:49:25 VZ Exp $
+// RCS-ID:      $Id: cmdproc.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,15 +12,11 @@
 #ifndef _WX_CMDPROC_H_
 #define _WX_CMDPROC_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "cmdproc.h"
-#endif
-
 #include "wx/defs.h"
 #include "wx/object.h"
 #include "wx/list.h"
 
-class WXDLLEXPORT wxMenu;
+class WXDLLIMPEXP_FWD_CORE wxMenu;
 
 // ----------------------------------------------------------------------------
 // wxCommand: a single command capable of performing itself
@@ -30,7 +26,7 @@ class WXDLLEXPORT wxCommand : public wxObject
 {
 public:
     wxCommand(bool canUndoIt = false, const wxString& name = wxEmptyString);
-    ~wxCommand(){}
+    virtual ~wxCommand(){}
 
     // Override this to perform a command
     virtual bool Do() = 0;
@@ -91,7 +87,8 @@ public:
 #endif // wxUSE_MENUS
 
     // command list access
-    wxList& GetCommands() const { return (wxList&) m_commands; }
+    wxList& GetCommands() { return m_commands; }
+    const wxList& GetCommands() const { return m_commands; }
     wxCommand *GetCurrentCommand() const
     {
         return (wxCommand *)(m_currentCommand ? m_currentCommand->GetData() : NULL);

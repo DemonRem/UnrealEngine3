@@ -2,9 +2,9 @@
 #define NX_CHARACTER_H
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 #elif defined NXCHARACTER_EXPORTS
     #if defined(WIN32)
 	#define NXCHARACTER_API __declspec(dllexport)
-    #elif defined(LINUX) && defined(NX_LINUX_USE_VISIBILITY)
+    #elif defined(__linux__) && defined(NX_LINUX_USE_VISIBILITY)
 	#define NXCHARACTER_API __attribute__ ((visibility ("default")))
     #else
 	#define NXCHARACTER_API
@@ -28,7 +28,7 @@
 #else
     #if defined(WIN32)
 	#define NXCHARACTER_API __declspec(dllimport)
-    #elif defined(LINUX)
+    #elif defined(__linux__)
 	#define NXCHARACTER_API
     #else
 	#define NXCHARACTER_API 
@@ -37,9 +37,9 @@
 #endif
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: led.cpp,v 1.7 2004/08/25 18:50:45 ABX Exp $
+// RCS-ID:      $Id: led.cpp 28893 2004-08-25 18:50:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

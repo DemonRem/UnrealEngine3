@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     27/7/98
-// RCS-ID:      $Id: project.cpp,v 1.5 2004/06/09 16:42:29 ABX Exp $
+// RCS-ID:      $Id: project.cpp 27708 2004-06-09 16:42:34Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:
 /////////////////////////////////////////////////////////////////////////////

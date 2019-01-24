@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxActor.h"
@@ -14,6 +14,7 @@
 #include "FxArchiveStoreFileFast.h"
 #include "FxArchiveStoreMemory.h"
 #include "FxArchiveStoreMemoryNoCopy.h"
+#include "FxVersionInfo.h"
 
 namespace OC3Ent
 {
@@ -25,7 +26,7 @@ FxList<FxActor*>* FxActor::_pActorList = NULL;
 FxBool FxActor::_shouldFreeActorMemory = FxTrue;
 FxName FxActor::NewActor;
 
-#define kCurrentFxActorVersion 2
+#define kCurrentFxActorVersion 3
 
 FX_IMPLEMENT_CLASS(FxActor, kCurrentFxActorVersion, FxNamedObject)
 
@@ -39,6 +40,14 @@ FxActor::FxActor()
 
 FxActor::~FxActor()
 {
+	FxAssert(_instanceList.IsEmpty());
+	// Set the actor in any active instances to NULL.
+	FxList<FxActorInstance*>::Iterator curr = _instanceList.Begin();
+	FxList<FxActorInstance*>::Iterator end  = _instanceList.End();
+	for( ; curr != end; ++curr )
+	{
+		(*curr)->SetActor(NULL);
+	}
 }
 
 void FX_CALL FxActor::Startup( void )
@@ -57,12 +66,6 @@ void FX_CALL FxActor::Shutdown( void )
 	_pActorList = NULL;
 }
 
-void FxActor::Link( void )
-{
-	_linkBones();
-	_linkAnims();
-}
-
 void FxActor::SetShouldClientRelink( FxBool shouldClientRelink )
 {
 	_shouldClientRelink = shouldClientRelink;
@@ -71,6 +74,27 @@ void FxActor::SetShouldClientRelink( FxBool shouldClientRelink )
 void FxActor::SetIsOpenInStudio( FxBool isOpenInStudio )
 {
 	_isOpenInStudio = isOpenInStudio;
+}
+
+void FxActor::CompileFaceGraph( void )
+{
+	_compiledFaceGraph.Compile(_decompiledFaceGraph);
+	// "Pull" the bones from _faceGraph's bone pose nodes into _masterBoneList.
+	_masterBoneList.PullBones(_decompiledFaceGraph, _compiledFaceGraph);
+	// Tell all the actor instances.
+	FxList<FxActorInstance*>::Iterator curr = _instanceList.Begin();
+	FxList<FxActorInstance*>::Iterator end  = _instanceList.End();
+	for( ; curr != end; ++curr )
+	{
+		(*curr)->SetActor(this);
+	}
+}
+
+void FxActor::DecompileFaceGraph( void )
+{
+	_compiledFaceGraph.Decompile(_decompiledFaceGraph);
+	// "Push" the bones from _masterBoneList to _faceGraph's bone pose nodes.
+	_masterBoneList.PushBones(_decompiledFaceGraph, _compiledFaceGraph);
 }
 
 FxBool FxActor::AddAnim( const FxName& group, const FxAnim& anim )
@@ -82,7 +106,6 @@ FxBool FxActor::AddAnim( const FxName& group, const FxAnim& anim )
 	{
 		FxAnimGroup& animGroup = GetAnimGroup(groupIndex);
 		animGroup.AddAnim(anim);
-		animGroup.Link(_faceGraph);
 		return FxTrue;
 	}
 	return FxFalse;
@@ -132,7 +155,6 @@ FxBool FxActor::MountAnimSet( const FxAnimSet& animSet,
 	if( FxInvalidIndex == FindAnimGroup(animGroupName) )
 	{
 		_mountedAnimGroups.PushBack(animGroup);
-		_mountedAnimGroups.Back().Link(_faceGraph);
 		if( pExtendedInfo )
 		{
 			*pExtendedInfo = MUE_None;
@@ -159,12 +181,13 @@ FxBool FxActor::UnmountAnimSet( const FxName& animSetName, FxBool bStopPlayback,
 			FxList<FxActorInstance*>::Iterator end  = _instanceList.End();
 			for( ; curr != end; ++curr )
 			{
-				FxAnimPlayer& animPlayer = (*curr)->GetAnimPlayer();
-				if( animPlayer.IsPlaying() && animPlayer.GetCurrentAnimGroupName() == animSetName )
+				FxActorInstance* pActorInstance = (*curr);
+				if( pActorInstance->IsPlayingAnim() && 
+					pActorInstance->GetCurrentAnimGroupName() == animSetName )
 				{
 					if( bStopPlayback )
 					{
-						animPlayer.Stop();
+						pActorInstance->StopAnim();
 					}
 					else
 					{
@@ -198,7 +221,6 @@ FxBool FxActor::ImportAnimSet( const FxAnimSet& animSet )
 	if( FxInvalidIndex == FindAnimGroup(animGroupName) )
 	{
 		_animGroups.PushBack(animGroup);
-		_animGroups.Back().Link(_faceGraph);
 		return FxTrue;
 	}
 	return FxFalse;
@@ -235,6 +257,22 @@ FxActor* FX_CALL FxActor::FindActor( const FxName& name )
 		}
 	}
 	return NULL;
+}
+
+FxBool FX_CALL FxActor::FindActorPtr( FxActor* actor ) {
+	if( _pActorList )
+	{
+		FxList<FxActor*>::Iterator curr = _pActorList->Begin();
+		FxList<FxActor*>::Iterator end  = _pActorList->End();
+		for( ; curr != end; ++curr )
+		{
+			if( (*curr) == actor )
+			{
+				return FxTrue;
+			}
+		}
+	}
+	return FxFalse;
 }
 
 void FX_CALL FxActor::SetShouldFreeActorMemory( FxBool shouldFreeActorMemory )
@@ -310,65 +348,53 @@ void FX_CALL FxActor::FlushActors( void )
 	}
 }
 
-FxBool FxActor::AddRegister( const FxName& name )
+void FxActor::AddInstance( FxActorInstance* pActorInstance )
 {
-	// First make sure this register isn't already available.
-	FxSize numRegisterDefs = _registerDefs.Length();
-	for( FxSize i = 0; i < numRegisterDefs; ++i )
+	FxList<FxActorInstance*>::Iterator instanceIter;
+	if( !_findInstance(pActorInstance, instanceIter) )
 	{
-		if( _registerDefs[i]->GetName() == name )
-		{
-			return FxFalse;
-		}
+		_instanceList.PushBack(pActorInstance);
 	}
-	// Find the node in the face graph and add it as a register.
-	FxFaceGraphNode* node = _faceGraph.FindNode(name);
-	if( node )
+	else
 	{
-		_registerDefs.PushBack(node);
-		// Update all the instances of this actor with the new register.
-		FxList<FxActorInstance*>::Iterator curr = _instanceList.Begin();
-		FxList<FxActorInstance*>::Iterator end  = _instanceList.End();
-		for( ; curr != end; ++curr )
-		{
-			(*curr)->_addRegister(_registerDefs.Back());
-		}
-		return FxTrue;
+		FxAssert(!"Attempt to add duplicate actor instance!");
 	}
-	return FxFalse;
 }
 
-FxBool FxActor::RemoveRegister( const FxName& name )
+void FxActor::RemoveInstance( FxActorInstance* pActorInstance )
 {
-	// First make sure this register is available.
-	FxSize numRegisterDefs = _registerDefs.Length();
-	for( FxSize i = 0; i < numRegisterDefs; ++i )
+	FxList<FxActorInstance*>::Iterator instanceIter;
+	if( _findInstance(pActorInstance, instanceIter) )
 	{
-		if( _registerDefs[i]->GetName() == name )
-		{
-			// Remove it from all instances.
-			FxList<FxActorInstance*>::Iterator curr = _instanceList.Begin();
-			FxList<FxActorInstance*>::Iterator end  = _instanceList.End();
-			for( ; curr != end; ++curr )
-			{
-				(*curr)->_removeRegister(_registerDefs[i]);
-			}
-			// Remove it from this list.
-			_registerDefs.Remove(i);
-			return FxTrue;
-		}
+		_instanceList.Remove(instanceIter);
 	}
-	return FxFalse;
+	else
+	{
+		FxAssert(!"Attempt to remove non-existing actor instance!");
+	}
 }
 
 void FxActor::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxActor);
-	arc << version;
-
-	arc << _masterBoneList << _faceGraph;
+	FxUInt16 version = arc.SerializeClassVersion("FxActor");
+	
+	arc << _masterBoneList;
+	
+	if( version < 3 )
+	{
+		if( arc.IsLoading() )
+		{
+			arc << _decompiledFaceGraph;
+			CompileFaceGraph();
+			_decompiledFaceGraph.Clear();
+		}
+	}
+	else
+	{
+		arc << _compiledFaceGraph;
+	}
 
 	if( version >= 2 )
 	{
@@ -390,43 +416,18 @@ void FxActor::Serialize( FxArchive& arc )
 		}
 	}
 	
-	FxSize registerDefsLength = _registerDefs.Length();
-	arc << registerDefsLength;
-
-	if( arc.IsSaving() )
+	if( arc.IsLoading() )
 	{
-		for( FxSize i = 0; i < registerDefsLength; ++i )
+		if( version < 3 )
 		{
-			arc << const_cast<FxName&>(_registerDefs[i]->GetName());
-		}
-	}
-	else
-	{
-		_registerDefs.Clear();
-		_registerDefs.Reserve(registerDefsLength);
-		for( FxSize i = 0; i < registerDefsLength; ++i )
-		{
-			FxName registerDefName;
-			arc << registerDefName;
-			AddRegister(registerDefName);
-		}
-		// If there are mounted animation sets the only way to
-		// unmount them is to call FxActor::UnmountAnimSet(), but if any
-		// of them were linked to the Face Graph the links need to be 
-		// cleared and recreated later.
-		if( _mountedAnimGroups.Length() )
-		{
-			FxList<FxAnimGroup>::Iterator magIter    = _mountedAnimGroups.Begin();
-			FxList<FxAnimGroup>::Iterator magEndIter = _mountedAnimGroups.End();
-			for( ; magIter != magEndIter; ++magIter )
+			FxSize trashedRegisterDefsLength = 0;
+			arc << trashedRegisterDefsLength;
+			for( FxSize i = 0; i < trashedRegisterDefsLength; ++i )
 			{
-				magIter->Unlink();
+				FxName trashedRegisterDefName;
+				arc << trashedRegisterDefName;
 			}
 		}
-		// Link up the bones.
-		_linkBones();
-		// Animation linking is deferred until the animation is played for
-		// the first time (as of FaceFX 1.6).
 	}
 
 	if( (arc.IsLoading() && version >= 1) || arc.IsSaving() )
@@ -435,25 +436,20 @@ void FxActor::Serialize( FxArchive& arc )
 	}
 }
 
-FX_INLINE void FxActor::_linkBones( void )
+FX_INLINE FxBool FxActor::_findInstance( FxActorInstance* pActorInstance, 
+										 FxList<FxActorInstance*>::Iterator& instanceIter )
 {
-	_masterBoneList.Link(_faceGraph);
-}
-
-FX_INLINE void FxActor::_linkAnims( void )
-{
-	_defaultAnimGroup.Link(_faceGraph);
-	FxSize numGroups = _animGroups.Length();
-	for( FxSize i = 0; i < numGroups; ++i )
+	FxList<FxActorInstance*>::Iterator curr = _instanceList.Begin();
+	FxList<FxActorInstance*>::Iterator end  = _instanceList.End();
+	for( ; curr != end; ++curr )
 	{
-		_animGroups[i].Link(_faceGraph);
+		if( (*curr) == pActorInstance )
+		{
+			instanceIter = curr;
+			return FxTrue;
+		}
 	}
-	FxList<FxAnimGroup>::Iterator magIter    = _mountedAnimGroups.Begin();
-	FxList<FxAnimGroup>::Iterator magEndIter = _mountedAnimGroups.End();
-	for( ; magIter != magEndIter; ++magIter )
-	{
-		magIter->Link(_faceGraph);
-	}
+	return FxFalse;
 }
 
 FxBool FX_CALL FxLoadActorFromFile( FxActor& actor, const FxChar* filename, const FxBool bUseFastMethod,
@@ -476,6 +472,7 @@ FxBool FX_CALL FxSaveActorToFile( FxActor& actor, const FxChar* filename,
 						          FxArchive::FxArchiveByteOrder byteOrder,
 						          void(FX_CALL *callbackFunction)(FxReal), FxReal updateFrequency )
 {
+#ifndef NO_SAVE_VERSION
 	FxArchive directoryCreater(FxArchiveStoreNull::Create(), FxArchive::AM_CreateDirectory);
 	directoryCreater.Open();
 	directoryCreater << actor;
@@ -488,6 +485,9 @@ FxBool FX_CALL FxSaveActorToFile( FxActor& actor, const FxChar* filename,
 		actorArchive << actor;
 		return FxTrue;
 	}
+#else
+	actor; filename; byteOrder; callbackFunction; updateFrequency;
+#endif
 	return FxFalse;
 }
 
@@ -512,6 +512,7 @@ FxBool FX_CALL FxSaveActorToMemory( FxActor& actor, FxByte*& pMemory, FxSize& nu
 						            FxArchive::FxArchiveByteOrder byteOrder,
 						            void(FX_CALL *callbackFunction)(FxReal), FxReal updateFrequency )
 {
+#ifndef NO_SAVE_VERSION
 	FxAssert(pMemory == NULL);
 	if( !pMemory )
 	{
@@ -532,6 +533,9 @@ FxBool FX_CALL FxSaveActorToMemory( FxActor& actor, FxByte*& pMemory, FxSize& nu
 			return FxTrue;
 		}
 	}
+#else
+	actor; pMemory; numBytes; byteOrder; callbackFunction; updateFrequency;
+#endif
 	return FxFalse;
 }
 

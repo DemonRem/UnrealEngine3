@@ -2,10 +2,6 @@
 // headers
 // ============================================================================
 
-#ifdef __GNUG__
-    #pragma  implementation "wxLEDNumberCtrl.h"
-#endif
-
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
@@ -178,7 +174,6 @@ void wxLEDNumberCtrl::OnPaint(wxPaintEvent &WXUNUSED(event))
     wxMemoryDC MemDc;
 
     MemDc.SelectObject(*pMemoryBitmap);
-    MemDc.BeginDrawing();
 
     // Draw background.
     MemDc.SetBrush(wxBrush(GetBackgroundColour(), wxSOLID));
@@ -244,8 +239,6 @@ void wxLEDNumberCtrl::OnPaint(wxPaintEvent &WXUNUSED(event))
                 break;
         }
     }
-
-    MemDc.EndDrawing();
 
     // Blit the memory dc to screen.
     Dc.Blit(0, 0, Width, Height, &MemDc, 0, 0, wxCOPY);

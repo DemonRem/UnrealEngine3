@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxObject.h"
@@ -28,8 +28,7 @@ FxObject::~FxObject()
 
 void FxObject::Serialize( FxArchive& arc )
 {
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxObject);
-	arc << version;
+	arc.SerializeClassVersion("FxObject");
 }
 
 FxDataContainer::FxDataContainer()

@@ -1,20 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        joystick.h
+// Name:        wx/unix/joystick.h
 // Purpose:     wxJoystick class
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: joystick.h,v 1.6 2005/05/04 18:53:05 JS Exp $
+// RCS-ID:      $Id: joystick.h 42077 2006-10-17 14:44:52Z ABX $
 // Copyright:   (c) Guilhem Lavaux
-// Licence:   	wxWindows licence
+// Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __JOYSTICKH__
 #define __JOYSTICKH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "joystick.h"
-#endif
 
 #include "wx/event.h"
 #include "wx/thread.h"
@@ -30,7 +26,7 @@ class WXDLLEXPORT wxJoystick: public wxObject
      */
 
     wxJoystick(int joystick = wxJOYSTICK1);
-    ~wxJoystick();
+    virtual ~wxJoystick();
 
     // Attributes
     ////////////////////////////////////////////////////////////////////////////
@@ -50,7 +46,7 @@ class WXDLLEXPORT wxJoystick: public wxObject
     ////////////////////////////////////////////////////////////////////////////
 
     bool IsOk() const; // Checks that the joystick is functioning
-    int GetNumberJoysticks() const ;
+    static int GetNumberJoysticks() ;
     int GetManufacturerId() const ;
     int GetProductId() const ;
     wxString GetProductName() const ;
@@ -96,5 +92,4 @@ protected:
 };
 
 #endif
-// __JOYSTICKH__
-
+    // __JOYSTICKH__

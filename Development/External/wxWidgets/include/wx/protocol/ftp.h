@@ -5,17 +5,13 @@
 // Modified by: Mark Johnson, wxWindows@mj10777.de 
 //              20000917 : RmDir, GetLastResult, GetList
 // Created:     07/07/1997
-// RCS-ID:      $Id: ftp.h,v 1.21 2005/05/31 09:18:48 JS Exp $
+// RCS-ID:      $Id: ftp.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __WX_FTP_H__
 #define __WX_FTP_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "ftp.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -51,7 +47,7 @@ public:
     // Parameters set up
 
     // set transfer mode now
-    void SetPassive(bool pasv) { m_bPassive = pasv; };
+    void SetPassive(bool pasv) { m_bPassive = pasv; }
     void SetDefaultTimeout(wxUint32 Value);
     bool SetBinary() { return SetTransferMode(BINARY); }
     bool SetAscii() { return SetTransferMode(ASCII); }
@@ -142,7 +138,7 @@ protected:
     wxSocketBase *GetActivePort();
 
     // helper for GetPort()
-    wxString GetPortCmdArgument(wxIPV4address Local, wxIPV4address New);
+    wxString GetPortCmdArgument(const wxIPV4address& Local, const wxIPV4address& New);
 
     // accept connection from server in active mode, returns the same socket as
     // passed in in passive mode

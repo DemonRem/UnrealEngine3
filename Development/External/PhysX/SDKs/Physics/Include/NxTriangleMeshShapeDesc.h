@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXTRIANGLEMESHSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -29,9 +29,10 @@ class NxTriangleMeshShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh
 	*/
@@ -44,9 +45,10 @@ class NxTriangleMeshShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshShapeFlag
 	*/
@@ -59,7 +61,7 @@ class NxTriangleMeshShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: No
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: No
 
@@ -83,7 +85,11 @@ class NxTriangleMeshShapeDesc : public NxShapeDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxTriangleMeshShapeDesc::NxTriangleMeshShapeDesc() : NxShapeDesc(NX_SHAPE_MESH)	//constructor sets to default
@@ -102,20 +108,20 @@ NX_INLINE void NxTriangleMeshShapeDesc::setToDefault()
 #endif
 	}
 
-NX_INLINE bool NxTriangleMeshShapeDesc::isValid() const
+NX_INLINE NxU32 NxTriangleMeshShapeDesc::checkValid() const
 	{
-	if(!meshData)	return false;
+	if(!meshData)	return 1;
 #ifdef NX_SUPPORT_MESH_SCALE
-	if(scale<=0.0f)	return false;
+	if(scale<=0.0f)	return 2;
 #endif
-	return NxShapeDesc::isValid();
+	return 3*NxShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

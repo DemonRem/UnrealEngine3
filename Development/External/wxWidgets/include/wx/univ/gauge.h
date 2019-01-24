@@ -4,14 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.02.01
-// RCS-ID:      $Id: gauge.h,v 1.9 2004/05/23 20:51:45 JS Exp $
+// RCS-ID:      $Id: gauge.h 35698 2005-09-25 20:49:40Z MW $
 // Copyright:   (c) 2001 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "gaugeuniv.h"
-#endif
+#ifndef _WX_UNIV_GAUGE_H_
+#define _WX_UNIV_GAUGE_H_
 
 // ----------------------------------------------------------------------------
 // wxGauge: a progress bar
@@ -72,3 +71,5 @@ protected:
 
     DECLARE_DYNAMIC_CLASS(wxGauge)
 };
+
+#endif // _WX_UNIV_GAUGE_H_

@@ -1,9 +1,9 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/framecmn.cpp
+// Name:        src/common/framecmn.cpp
 // Purpose:     common (for all platforms) wxFrame functions
 // Author:      Julian Smart, Vadim Zeitlin
 // Created:     01/02/97
-// Id:          $Id: framecmn.cpp,v 1.65 2005/05/10 19:10:52 ABX Exp $
+// Id:          $Id: framecmn.cpp 51463 2008-01-30 21:31:03Z VZ $
 // Copyright:   (c) 1998 Robert Roebling and Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "framebase.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -27,19 +23,15 @@
     #pragma hdrstop
 #endif
 
+#include "wx/frame.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/frame.h"
     #include "wx/menu.h"
     #include "wx/menuitem.h"
     #include "wx/dcclient.h"
-#endif // WX_PRECOMP
-
-#if wxUSE_TOOLBAR
     #include "wx/toolbar.h"
-#endif
-#if wxUSE_STATUSBAR
     #include "wx/statusbr.h"
-#endif
+#endif // WX_PRECOMP
 
 // ----------------------------------------------------------------------------
 // event table
@@ -179,9 +171,21 @@ wxPoint wxFrameBase::GetClientAreaOrigin() const
 
 void wxFrameBase::SendSizeEvent()
 {
-    wxSizeEvent event( GetSize(), GetId() );
+    const wxSize size = GetSize();
+    wxSizeEvent event( size, GetId() );
     event.SetEventObject( this );
     GetEventHandler()->AddPendingEvent( event );
+
+#ifdef __WXGTK__
+    // SendSizeEvent is typically called when a toolbar is shown
+    // or hidden, but sending the size event alone is not enough
+    // to trigger a full layout.
+    ((wxFrame*)this)->GtkOnSize(
+#ifndef __WXGTK20__
+        0, 0, size.x, size.y
+#endif // __WXGTK20__
+    );
+#endif // __WXGTK__
 }
 
 
@@ -217,8 +221,7 @@ bool wxFrameBase::ProcessCommand(int id)
         }
     }
 
-    GetEventHandler()->ProcessEvent(commandEvent);
-    return true;
+    return GetEventHandler()->ProcessEvent(commandEvent);
 #else // !wxUSE_MENUS
     return false;
 #endif // wxUSE_MENUS/!wxUSE_MENUS
@@ -411,6 +414,7 @@ void wxFrameBase::SetStatusBar(wxStatusBar *statBar)
 
 #endif // wxUSE_STATUSBAR
 
+#if wxUSE_MENUS || wxUSE_TOOLBAR
 void wxFrameBase::DoGiveHelp(const wxString& text, bool show)
 {
 #if wxUSE_STATUSBAR
@@ -426,26 +430,37 @@ void wxFrameBase::DoGiveHelp(const wxString& text, bool show)
 
     wxString help;
     if ( show )
+    {
         help = text;
 
-    // remember the old status bar text if this is the first time we're called
-    // since the menu has been opened as we're going to overwrite it in our
-    // DoGiveHelp() and we want to restore it when the menu is closed
-    //
-    // note that it would be logical to do this in OnMenuOpen() but under MSW
-    // we get an EVT_MENU_HIGHLIGHT before EVT_MENU_OPEN, strangely enough, and
-    // so this doesn't work and instead we use the ugly trick with using
-    // special m_oldStatusText value as "menu opened" (but it is arguably
-    // better than adding yet another member variable to wxFrame on all
-    // platforms)
-    if ( m_oldStatusText.empty() )
-    {
-        m_oldStatusText = statbar->GetStatusText(m_statusBarPane);
+        // remember the old status bar text if this is the first time we're
+        // called since the menu has been opened as we're going to overwrite it
+        // in our DoGiveHelp() and we want to restore it when the menu is
+        // closed
+        //
+        // note that it would be logical to do this in OnMenuOpen() but under
+        // MSW we get an EVT_MENU_HIGHLIGHT before EVT_MENU_OPEN, strangely
+        // enough, and so this doesn't work and instead we use the ugly trick
+        // with using special m_oldStatusText value as "menu opened" (but it is
+        // arguably better than adding yet another member variable to wxFrame
+        // on all platforms)
         if ( m_oldStatusText.empty() )
         {
-            // use special value to prevent us from doing this the next time
-            m_oldStatusText += _T('\0');
+            m_oldStatusText = statbar->GetStatusText(m_statusBarPane);
+            if ( m_oldStatusText.empty() )
+            {
+                // use special value to prevent us from doing this the next time
+                m_oldStatusText += _T('\0');
+            }
         }
+    }
+    else // hide the status bar text
+    {
+        // i.e. restore the old one
+        help = m_oldStatusText;
+
+        // make sure we get the up to date text when showing it the next time
+        m_oldStatusText.clear();
     }
 
     statbar->SetStatusText(help, m_statusBarPane);
@@ -454,6 +469,7 @@ void wxFrameBase::DoGiveHelp(const wxString& text, bool show)
     wxUnusedVar(show);
 #endif // wxUSE_STATUSBAR
 }
+#endif // wxUSE_MENUS || wxUSE_TOOLBAR
 
 
 // ----------------------------------------------------------------------------
@@ -466,7 +482,7 @@ wxToolBar* wxFrameBase::CreateToolBar(long style,
                                       wxWindowID id,
                                       const wxString& name)
 {
-    // the main toolbar can't be recreated (unless it was explicitly deeleted
+    // the main toolbar can't be recreated (unless it was explicitly deleted
     // before)
     wxCHECK_MSG( !m_frameToolBar, (wxToolBar *)NULL,
                  wxT("recreating toolbar in wxFrame") );
@@ -527,16 +543,16 @@ void wxFrameBase::SetToolBar(wxToolBar *toolbar)
 // update all menus
 void wxFrameBase::DoMenuUpdates(wxMenu* menu)
 {
-    wxEvtHandler* source = GetEventHandler();
-    wxMenuBar* bar = GetMenuBar();
-
     if (menu)
-        menu->UpdateUI(source);
-    else if ( bar != NULL )
     {
-        int nCount = bar->GetMenuCount();
-        for (int n = 0; n < nCount; n++)
-            bar->GetMenu(n)->UpdateUI(source);
+        wxEvtHandler* source = GetEventHandler();
+        menu->UpdateUI(source);
+    }
+    else
+    {
+        wxMenuBar* bar = GetMenuBar();
+        if (bar != NULL)
+            bar->UpdateMenus();
     }
 }
 
@@ -572,12 +588,3 @@ void wxFrameBase::SetMenuBar(wxMenuBar *menubar)
 }
 
 #endif // wxUSE_MENUS
-
-#if WXWIN_COMPATIBILITY_2_2
-
-bool wxFrameBase::Command(int winid)
-{
-    return ProcessCommand(winid);
-}
-
-#endif // WXWIN_COMPATIBILITY_2_2

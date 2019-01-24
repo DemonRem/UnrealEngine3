@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxAnimCurve_H__
@@ -19,10 +19,6 @@ namespace OC3Ent
 
 namespace Face
 {
-
-// Forward declare the %Face Graph.
-class FxFaceGraph;
-class FxFaceGraphNode;
 
 /// An animation curve.
 /// An animation curve uses FxAnimKey keys as its key type, which contain
@@ -107,25 +103,12 @@ public:
 	/// executed inside of FaceFX Studio.
 	void FindValueExtents( FxReal& minValue, FxReal& maxValue ) const;
 
-	/// Links the curve to a node in the %Face Graph with the same name as the curve.
-	void Link( const FxFaceGraph* faceGraph );
-	/// Unlinks the curve from the node in the %Face Graph by setting its 
-	/// _controlNode pointer to NULL.
-	/// \note Internal use only.
-	FX_INLINE void Unlink( void ) { _controlNode = NULL; }
-	/// Get a pointer to the %Face Graph node that the curve controls.
-	/// \return A pointer to the %Face Graph node that the animation curve 
-	/// controls or \p NULL if the animation curve does not control a %Face Graph
-	/// node.
-	FX_INLINE FxFaceGraphNode* GetControlNode( void ) { return _controlNode; }
-	
 	/// Serializes the curve to an archive.
 	virtual void Serialize( FxArchive& arc );
 
 private:
-	/// Returns pointers to the two keys which bound time.
-	void _findBoundingKeys( FxReal time, const FxAnimKey*& first, 
-		                    const FxAnimKey*& second ) const;
+	/// Fills in copies of the two keys which bound time.
+	void _findBoundingKeys( FxReal time, FxAnimKey& first, FxAnimKey& second ) const;
 
 	/// The keys in the curve.
 	FxArray<FxAnimKey> _keys;
@@ -133,8 +116,6 @@ private:
 	mutable FxSize _cachedPos;
 	/// The interpolator to use.
 	FxInterpolationType _interp;
-	/// The node in the %Face Graph driven by this curve.
-	FxFaceGraphNode* _controlNode;
 };
 
 FX_INLINE FxBool FxAnimCurve::operator==( const FxAnimCurve& other ) const
@@ -147,8 +128,8 @@ FX_INLINE FxBool FxAnimCurve::operator!=( const FxAnimCurve& other ) const
 	return !(operator==(other));
 }
 
-FX_INLINE void FxAnimCurve::_findBoundingKeys( FxReal time, const FxAnimKey*& first, 
-									           const FxAnimKey*& second ) const
+FX_INLINE void 
+FxAnimCurve::_findBoundingKeys( FxReal time, FxAnimKey& first, FxAnimKey& second ) const
 {
 	FxSize numKeysM1 = _keys.Length() - 1;
 	FxSize pos = 0;
@@ -165,13 +146,13 @@ FX_INLINE void FxAnimCurve::_findBoundingKeys( FxReal time, const FxAnimKey*& fi
 
 	if( pos != numKeysM1 )
 	{
-		first  = &(_keys[pos]);
-		second = &(_keys[pos+1]);
+		first  = _keys[pos];
+		second = _keys[pos+1];
 	}
 	else
 	{
-		first  = &(_keys[pos-1]);
-		second = &(_keys[pos]);
+		first  = _keys[pos-1];
+		second = _keys[pos];
 	}
 
 	_cachedPos = pos;

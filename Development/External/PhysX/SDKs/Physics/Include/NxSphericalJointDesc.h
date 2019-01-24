@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXSPHEREJOINTDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -37,9 +37,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxVec3 swingAxis;
 
@@ -60,9 +61,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see projectionMode NxJointProjectionMode
 	*/
@@ -79,9 +81,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointLimitPairDesc swingLimit
 	*/
@@ -95,9 +98,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointLimitDesc twistLimit
 	*/
@@ -114,9 +118,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSpringDesc
 	*/
@@ -130,9 +135,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSpringDesc
 	*/
@@ -146,9 +152,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSpringDesc
 	*/
@@ -161,9 +168,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphericalJointFlag
 	*/
@@ -176,9 +184,10 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see projectionDistance NxJointProjectionMode
 	*/
@@ -197,7 +206,11 @@ class NxSphericalJointDesc : public NxJointDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxSphericalJointDesc::NxSphericalJointDesc() : NxJointDesc(NX_JOINT_SPHERICAL)	//constructor sets to default
@@ -223,26 +236,27 @@ NX_INLINE void NxSphericalJointDesc::setToDefault()
 	projectionMode = NX_JPM_NONE;
 	}
 
-NX_INLINE bool NxSphericalJointDesc::isValid() const
+NX_INLINE NxU32 NxSphericalJointDesc::checkValid() const
 	{
 	//check unit vectors
-	if (swingAxis.magnitudeSquared() < 0.9f) return false;
-	if (projectionDistance < 0.0f) return false;
+	if (swingAxis.magnitudeSquared() < 0.9f) return 1;
+	if (projectionDistance < 0.0f) return 2;
 
-	if (!twistLimit.isValid()) return false;
-	if (!swingLimit.isValid()) return false;
-	if (!swingSpring.isValid()) return false;
-	if (!twistSpring.isValid()) return false;
-	if (!jointSpring.isValid()) return false;
+	NxU32 check;
+	check = twistLimit.checkValid(); if(check) return 0x100 + check;
+	check = swingLimit.checkValid(); if(check) return 0x100 + check;
+	check = swingSpring.checkValid(); if(check) return 0x100 + check;
+	check = twistSpring.checkValid(); if(check) return 0x100 + check;
+	check = jointSpring.checkValid(); if(check) return 0x100 + check;
 
-	return NxJointDesc::isValid();
+	return 3*NxJointDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

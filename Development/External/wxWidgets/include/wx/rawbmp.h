@@ -4,7 +4,7 @@
 // Author:      Eric Kidd, Vadim Zeitlin
 // Modified by:
 // Created:     10.03.03
-// RCS-ID:      $Id: rawbmp.h,v 1.30 2005/06/13 12:19:14 ABX Exp $
+// RCS-ID:      $Id: rawbmp.h 41661 2006-10-06 16:34:45Z PC $
 // Copyright:   (c) 2002 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,12 +70,6 @@
         p.OffsetY(data, 1);
     }
  */
-
-#ifdef __VISUALC__
-    // VC++ gives an absolutely harmless warning for wxPixelData<wxBitmap> ctor
-    #pragma warning(push)
-    #pragma warning(disable: 4355) // 'this' used in initializer list
-#endif
 
 /*
     Note: we do not use WXDLLEXPORT with classes in this file because VC++ has
@@ -170,7 +164,7 @@ typedef wxPixelFormat<unsigned char, 24, 0, 1, 2> wxImagePixelFormat;
 
     #define wxPIXEL_FORMAT_ALPHA 3
 #elif defined(__WXGTK__)
-    // Under GTK+ 2.X we use GdkPixbuf, which should be RGBA
+    // Under GTK+ 2.X we use GdkPixbuf, which is standard RGB or RGBA
     typedef wxPixelFormat<unsigned char, 24, 0, 1, 2> wxNativePixelFormat;
 
     #define wxPIXEL_FORMAT_ALPHA 3
@@ -526,6 +520,12 @@ struct wxPixelDataOut<wxBitmap>
                             bmp.GetRawData(data, PixelFormat::BitsPerPixel);
             }
 
+            // default constructor
+            Iterator()
+            {
+                m_ptr = NULL;
+            }
+            
             // return true if this iterator is valid
             bool IsOk() const { return m_ptr != NULL; }
 
@@ -658,14 +658,6 @@ struct wxPixelDataOut<wxBitmap>
 };
 #endif //wxUSE_GUI
 
-#ifdef __VISUALC__
-    // typedef-name 'foo' used as synonym for class-name 'bar'
-    // (VC++ gives this warning each time wxPixelData::Base is used but it
-    //  doesn't make any sense here -- what's wrong with using typedef instead
-    //  of class, this is what it is here for!)
-    #pragma warning(disable: 4097)
-#endif // __VISUALC__
-
 template <class Image, class PixelFormat = wxPixelFormatFor<Image> >
 class wxPixelData :
     public wxPixelDataOut<Image>::template wxPixelDataIn<PixelFormat>
@@ -716,10 +708,6 @@ template < class Image, class PixelFormat = wxPixelFormatFor<Image> >
 struct wxPixelIterator : public wxPixelData<Image, PixelFormat>::Iterator
 {
 };
-
-#ifdef __VISUALC__
-    #pragma warning(pop)
-#endif
 
 #endif // _WX_RAWBMP_H_BASE_
 

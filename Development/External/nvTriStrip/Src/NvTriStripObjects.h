@@ -101,6 +101,7 @@ typedef std::list  <NvFaceInfoVec*>  NvStripList;
 typedef std::vector<NvEdgeInfo*>     NvEdgeInfoVec;
 
 typedef std::vector<WORD> WordVec;
+typedef std::vector<unsigned int> UIntVec;
 typedef std::vector<int> IntVec;
 typedef std::vector<MyVertex> MyVertexVec;
 typedef std::vector<MyFace> MyFaceVec;
@@ -176,8 +177,8 @@ public:
 	~NvStripifier();
 	
 	//the target vertex cache size, the structure to place the strips in, and the input indices
-	void Stripify(const WordVec &in_indices, const int in_cacheSize, const int in_minStripLength, 
-				  const unsigned short maxIndex, NvStripInfoVec &allStrips, NvFaceInfoVec &allFaces);
+	void Stripify(const UIntVec &in_indices, const int in_cacheSize, const int in_minStripLength, 
+				  const unsigned int maxIndex, NvStripInfoVec &allStrips, NvFaceInfoVec &allFaces);
 	void CreateStrips(const NvStripInfoVec& allStrips, IntVec& stripIndices, const bool bStitchStrips, unsigned int& numSeparateStrips);
 	
 	static int GetUniqueVertexInB(NvFaceInfo *faceA, NvFaceInfo *faceB);
@@ -188,7 +189,7 @@ public:
 	
 protected:
 	
-	WordVec indices;
+	UIntVec indices;
 	int cacheSize;
 	int minStripLength;
 	float meshJump;
@@ -207,9 +208,9 @@ protected:
 	bool IsCW(NvFaceInfo *faceInfo, int v0, int v1);
 	bool NextIsCW(const int numIndices);
 	
-	bool IsDegenerate(const unsigned short v0, const unsigned short v1, const unsigned short v2);
+	bool IsDegenerate(const unsigned int v0, const unsigned int v1, const unsigned int v2);
 	
-	static int  GetNextIndex(const WordVec &indices, NvFaceInfo *face);
+	static int  GetNextIndex(const UIntVec &indices, NvFaceInfo *face);
 	static NvEdgeInfo *FindEdgeInfo(NvEdgeInfoVec &edgeInfos, int v0, int v1);
 	static NvFaceInfo *FindOtherFace(NvEdgeInfoVec &edgeInfos, int v0, int v1, NvFaceInfo *faceInfo);
 	NvFaceInfo *FindGoodResetPoint(NvFaceInfoVec &faceInfos, NvEdgeInfoVec &edgeInfos);
@@ -232,7 +233,7 @@ protected:
 	int CalcNumHitsFace(VertexCache* vcache, NvFaceInfo* face);
 	int NumNeighbors(NvFaceInfo* face, NvEdgeInfoVec& edgeInfoVec);
 	
-	void BuildStripifyInfo(NvFaceInfoVec &faceInfos, NvEdgeInfoVec &edgeInfos, const unsigned short maxIndex);
+	void BuildStripifyInfo(NvFaceInfoVec &faceInfos, NvEdgeInfoVec &edgeInfos, const unsigned int maxIndex);
 	bool AlreadyExists(NvFaceInfo* faceInfo, NvFaceInfoVec& faceInfos);
 	
 	// let our strip info classes and the other classes get

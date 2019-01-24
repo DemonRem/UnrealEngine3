@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXJOINTDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -24,9 +24,10 @@ Joint descriptors for all the different joint types are derived from this class.
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxJoint NxScene.createJoint()
 @see NxCylindricalJointDesc NxD6JointDesc NxDistanceJointDesc NxFixedJointDesc NxPointInPlaneJointDesc
@@ -55,9 +56,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor
 	*/
@@ -75,9 +77,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see localAxis setGlobalAxis()
 	*/
@@ -95,9 +98,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see localNormal setGlobalAxis()
 	*/
@@ -112,9 +116,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalAnchor()
 	*/
@@ -128,9 +133,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJoint.setBreakable() NxUserNotify.onJointBreak()
 	*/
@@ -144,13 +150,60 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJoint.setBreakable() NxUserNotify.onJointBreak()
 	*/
 	NxReal maxTorque;
+
+	/**
+	\brief Extrapolation factor for solving joint constraints.
+
+	This parameter can be used to build stronger joints and increase the solver convergence. Higher values
+	lead to stronger joints.
+
+	\note Setting the value too high can decrease the joint stability.
+
+	\note Currently, this feature is supported for D6, Revolute and Spherical Joints only.
+	
+	<b>Range:</b> [0.5,2]<br>
+	<b>Default:</b> 1
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxJoint.setSolverExtrapolationFactor(), NxJoint.getSolverExtrapolationFactor()
+	*/
+	NxReal solverExtrapolationFactor;
+
+	/**
+	\brief Switch to acceleration based spring.
+
+	This parameter can be used to switch between acceleration and force based spring. Acceleration
+	based springs do not take the mass of the attached objects into account, i.e., the spring/damping
+	behaviour will be independent of the load.
+
+	\note Currently, this feature is supported for D6, Revolute and Spherical Joints only.
+	
+	<b>Range:</b> {0: use force spring, 1: use acceleration spring}<br>
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+
+	@see NxJoint.setUseAccelerationSpring(), NxJoint.getUseAccelerationSpring()
+	*/
+	NxU32 useAccelerationSpring;
 	
 	/**
 	\brief Will be copied to NxJoint::userData.
@@ -159,9 +212,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	void* userData;
 
@@ -172,9 +226,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	const char* name;
 
@@ -185,9 +240,10 @@ class NxJointDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32 jointFlags;
 
@@ -204,7 +260,11 @@ class NxJointDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE virtual bool isValid() const;
+	NX_INLINE virtual bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 
 	/**
@@ -271,38 +331,44 @@ NX_INLINE void NxJointDesc::setToDefault()
 
 	maxForce	= NX_MAX_REAL;
 	maxTorque	= NX_MAX_REAL;
+	solverExtrapolationFactor = 1.0f;
+	useAccelerationSpring = 0;
 	userData	= NULL;
 	name		= NULL;
 	jointFlags	= NX_JF_VISUALIZATION;
 	}
 
-NX_INLINE bool NxJointDesc::isValid() const
+NX_INLINE NxU32 NxJointDesc::checkValid() const
 	{
 	if (actor[0] == actor[1])
-		return false;
+		return 1;
 	if (!(actor[0] || actor[1]))
-		return false;
+		return 2;
 	//non-null pointers must be dynamic:
 	if (actor[0] && ! actor[0]->isDynamic())
-		return false;
+		return 3;
 	if (actor[1] && ! actor[1]->isDynamic())
-		return false;
+		return 4;
 
 	if (type >= NX_JOINT_COUNT)
-		return false;
+		return 5;
 	for (int i=0; i<2; i++)
 		{
-		if (fabsf(localAxis[i].magnitudeSquared() - 1.0f) > 0.1f) return false;
-		if (fabsf(localNormal[i].magnitudeSquared() - 1.0f) > 0.1f) return false;
+		if (fabsf(localAxis[i].magnitudeSquared() - 1.0f) > 0.1f) return 6;
+		if (fabsf(localNormal[i].magnitudeSquared() - 1.0f) > 0.1f) return 7;
 		//check orthogonal pairs
-		if (fabsf(localAxis[i].dot(localNormal[i])) > 0.1f) return false;
+		if (fabsf(localAxis[i].dot(localNormal[i])) > 0.1f) return 8;
 		}
 	if (maxForce <= 0)
-		return false;
+		return 9;
 	if (maxTorque <= 0)
-		return false;
+		return 10;
+	if ((solverExtrapolationFactor < 0.5f) || (solverExtrapolationFactor > 2.0f))
+		return 11;
+	if (useAccelerationSpring > 1)
+		return 12;
 
-	return true;
+	return 0;
 	}
 
 NX_INLINE void NxJointDesc::setGlobalAnchor(const NxVec3 & wsAnchor)
@@ -317,9 +383,9 @@ NX_INLINE void NxJointDesc::setGlobalAxis(const NxVec3 & wsAxis)
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dragimag.cpp
+// Name:        src/msw/dragimag.cpp
 // Purpose:     wxDragImage
 // Author:      Julian Smart
 // Modified by:
 // Created:     08/04/99
-// RCS-ID:      $Id: dragimag.cpp,v 1.34 2005/01/04 19:40:53 ABX Exp $
+// RCS-ID:      $Id: dragimag.cpp 43883 2006-12-09 19:49:02Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,36 +17,30 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dragimag.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_DRAGIMAGE
 
-#if defined(__WIN95__)
-
 #ifndef WX_PRECOMP
-#include <stdio.h>
-#include "wx/setup.h"
-#include "wx/window.h"
-#include "wx/dcclient.h"
-#include "wx/dcscreen.h"
-#include "wx/dcmemory.h"
-#include "wx/settings.h"
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
+    #include <stdio.h>
+    #include "wx/window.h"
+    #include "wx/dcclient.h"
+    #include "wx/dcscreen.h"
+    #include "wx/dcmemory.h"
+    #include "wx/settings.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/frame.h"
+    #include "wx/image.h"
 #endif
 
 #include "wx/msw/private.h"
-#include "wx/log.h"
-#include "wx/intl.h"
-#include "wx/frame.h"
-#include "wx/image.h"
 
 #include "wx/msw/dragimag.h"
 #include "wx/msw/private.h"
@@ -54,10 +48,6 @@
 #ifdef __WXWINCE__  // for SM_CXCURSOR and SM_CYCURSOR
 #include "wx/msw/wince/missing.h"
 #endif // __WXWINCE__
-
-#if defined(__WIN95__) && !(defined(__GNUWIN32_OLD__) && !defined(__CYGWIN10__))
-#include <commctrl.h>
-#endif
 
 // Wine doesn't have this yet
 #ifndef ListView_CreateDragImage
@@ -192,9 +182,8 @@ bool wxDragImage::Create(const wxIcon& image, const wxCursor& cursor)
     else
         flags = ILC_COLOR32;
 #endif
-    bool mask = true;
-    if ( mask )
-        flags |= ILC_MASK;
+
+    flags |= ILC_MASK;
 
     m_hImageList = (WXHIMAGELIST) ImageList_Create(image.GetWidth(), image.GetHeight(), flags, 1, 1);
 
@@ -216,7 +205,7 @@ bool wxDragImage::Create(const wxString& str, const wxCursor& cursor)
 {
     wxFont font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
-    long w, h;
+    long w = 0, h = 0;
     wxScreenDC dc;
     dc.SetFont(font);
     dc.GetTextExtent(str, & w, & h);
@@ -243,10 +232,14 @@ bool wxDragImage::Create(const wxString& str, const wxCursor& cursor)
 
     dc2.SelectObject(wxNullBitmap);
 
+#if wxUSE_WXDIB
     // Make the bitmap masked
     wxImage image = bitmap.ConvertToImage();
     image.SetMaskColour(255, 255, 255);
     return Create(wxBitmap(image), cursor);
+#else
+    return false;
+#endif
 }
 
 #if wxUSE_TREECTRL
@@ -301,9 +294,14 @@ bool wxDragImage::BeginDrag(const wxPoint& hotspot, wxWindow* window, bool fullS
 #else
         if (!m_hCursorImageList)
         {
+#ifndef SM_CXCURSOR
+            // Smartphone may not have these metric symbol
+            int cxCursor = 16;
+            int cyCursor = 16;
+#else
             int cxCursor = ::GetSystemMetrics(SM_CXCURSOR);
             int cyCursor = ::GetSystemMetrics(SM_CYCURSOR);
-
+#endif
             m_hCursorImageList = (WXHIMAGELIST) ImageList_Create(cxCursor, cyCursor, ILC_MASK, 1, 1);
         }
 
@@ -456,8 +454,5 @@ bool wxDragImage::Hide()
 
     return ret;
 }
-
-#endif
-    // __WIN95__
 
 #endif // wxUSE_DRAGIMAGE

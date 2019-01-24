@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     19.09.2003 (extracted from wx/fontenc.h)
-// RCS-ID:      $Id: encinfo.h,v 1.6 2004/12/20 12:43:48 ABX Exp $
+// RCS-ID:      $Id: encinfo.h 40865 2006-08-27 09:42:42Z VS $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,10 +58,12 @@ struct WXDLLEXPORT wxNativeEncodingInfo
     // seems to be handled internally.
 #elif defined(__WXMGL__)
     int      mglEncoding;
+#elif defined(__WXDFB__)
+    // DirectFB uses UTF-8 internally, doesn't use font encodings
 #else
     #error "Unsupported toolkit"
 #endif
-#endif
+#endif // !__WXPALMOS__
     // this struct is saved in config by wxFontMapper, so it should know to
     // serialise itself (implemented in platform-specific code)
     bool FromString(const wxString& s);

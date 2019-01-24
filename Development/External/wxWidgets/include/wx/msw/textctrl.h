@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: textctrl.h,v 1.68 2005/07/29 23:01:56 VZ Exp $
+// RCS-ID:      $Id: textctrl.h 52547 2008-03-15 12:33:04Z VS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_TEXTCTRL_H_
 #define _WX_TEXTCTRL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "textctrl.h"
-#endif
 
 class WXDLLEXPORT wxTextCtrl : public wxTextCtrlBase
 {
@@ -35,7 +31,7 @@ public:
 
         Create(parent, id, value, pos, size, style, validator, name);
     }
-    ~wxTextCtrl();
+    virtual ~wxTextCtrl();
 
     bool Create(wxWindow *parent, wxWindowID id,
                 const wxString& value = wxEmptyString,
@@ -49,7 +45,7 @@ public:
     // ----------------------------------
 
     virtual wxString GetValue() const;
-    virtual void SetValue(const wxString& value);
+    virtual bool IsEmpty() const;
 
     virtual wxString GetRange(long from, long to) const;
 
@@ -70,8 +66,8 @@ public:
     virtual void Replace(long from, long to, const wxString& value);
     virtual void Remove(long from, long to);
 
-    // load the controls contents from the file
-    virtual bool LoadFile(const wxString& file);
+    // load the control's contents from the file
+    virtual bool DoLoadFile(const wxString& file, int fileType);
 
     // clears the dirty flag
     virtual void MarkDirty();
@@ -160,7 +156,15 @@ public:
     // the colours for them otherwise
     virtual bool SetBackgroundColour(const wxColour& colour);
     virtual bool SetForegroundColour(const wxColour& colour);
+#else
+    bool IsRich() const { return false; }
 #endif // wxUSE_RICHEDIT
+
+#if wxUSE_INKEDIT && wxUSE_RICHEDIT
+    bool IsInkEdit() const { return m_isInkEdit != 0; }
+#else
+    bool IsInkEdit() const { return false; }
+#endif
 
     virtual void AdoptAttributesFromHWND();
 
@@ -194,12 +198,27 @@ public:
     // called HideNativeCaret() before
     void OnSetFocus(wxFocusEvent& event);
 
+    // intercept WM_GETDLGCODE
+    virtual WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
+
+    virtual bool MSWShouldPreProcessMessage(WXMSG* pMsg);
+    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
+    virtual wxVisualAttributes GetDefaultAttributes() const;
+
 protected:
     // common part of all ctors
     void Init();
 
-    // intercept WM_GETDLGCODE
-    virtual WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
+    // creates the control of appropriate class (plain or rich edit) with the
+    // styles corresponding to m_windowStyle
+    //
+    // this is used by ctor/Create() and when we need to recreate the control
+    // later
+    bool MSWCreateText(const wxString& value,
+                       const wxPoint& pos,
+                       const wxSize& size);
+
+    virtual void DoSetValue(const wxString &value, int flags = 0);
 
     // return true if this control has a user-set limit on amount of text (i.e.
     // the limit is due to a previous call to SetMaxLength() and not built in)
@@ -223,7 +242,8 @@ protected:
 
     // replace the contents of the selection or of the entire control with the
     // given text
-    void DoWriteText(const wxString& text, bool selectionOnly = true);
+    void DoWriteText(const wxString& text,
+                     int flags = SetValue_SendEvent | SetValue_SelectionOnly);
 
     // set the selection possibly without scrolling the caret into view
     void DoSetSelection(long from, long to, bool scrollCaret = true);
@@ -238,11 +258,7 @@ protected:
     // send TEXT_UPDATED event, return true if it was handled, false otherwise
     bool SendUpdateEvent();
 
-    // override some base class virtuals
-    virtual bool MSWShouldPreProcessMessage(WXMSG* pMsg);
     virtual wxSize DoGetBestSize() const;
-
-    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
 
 #if wxUSE_RICHEDIT
     // we're using RICHEDIT (and not simple EDIT) control if this field is not
@@ -255,15 +271,20 @@ protected:
     // text ourselves: we want this to be exactly 1
     int m_updatesCount;
 
-    virtual wxVisualAttributes GetDefaultAttributes() const;
-
 private:
+    void OnKeyDown(wxKeyEvent& event);
+
     DECLARE_EVENT_TABLE()
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxTextCtrl)
 
     wxMenu* m_privateContextMenu;
 
     bool m_isNativeCaretShown;
+
+#if wxUSE_INKEDIT && wxUSE_RICHEDIT
+    int  m_isInkEdit;
+#endif
+
 };
 
 #endif

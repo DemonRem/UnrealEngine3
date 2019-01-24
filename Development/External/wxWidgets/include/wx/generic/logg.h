@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: logg.h,v 1.6 2004/09/14 15:15:20 VZ Exp $
+// RCS-ID:      $Id: logg.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef   _WX_LOGG_H_
 #define   _WX_LOGG_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "logg.h"
-#endif
 
 #if wxUSE_GUI
 
@@ -32,10 +28,11 @@ class WXDLLEXPORT wxLogTextCtrl : public wxLog
 public:
     wxLogTextCtrl(wxTextCtrl *pTextCtrl);
 
-private:
+protected:
     // implement sink function
     virtual void DoLogString(const wxChar *szString, time_t t);
 
+private:
     // the control we use
     wxTextCtrl *m_pTextCtrl;
 
@@ -93,7 +90,7 @@ public:
                 bool bShow = true,        // show window immediately?
                 bool bPassToOld = true);  // pass messages to the old target?
 
-    ~wxLogWindow();
+    virtual ~wxLogWindow();
 
     // window operations
         // show/hide the log window

@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     14.07.99
-// RCS-ID:      $Id: ffile.cpp,v 1.24 2005/03/03 19:09:11 ABX Exp $
+// RCS-ID:      $Id: ffile.cpp 38570 2006-04-05 14:37:47Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "ffile.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -33,6 +29,10 @@
 #ifndef WX_PRECOMP
     #include "wx/intl.h"
     #include "wx/log.h"
+#endif
+
+#ifdef __WINDOWS__
+#include "wx/msw/mslu.h"
 #endif
 
 #include "wx/ffile.h"
@@ -103,12 +103,12 @@ bool wxFFile::Close()
 // read/write
 // ----------------------------------------------------------------------------
 
-bool wxFFile::ReadAll(wxString *str, wxMBConv& conv)
+bool wxFFile::ReadAll(wxString *str, const wxMBConv& conv)
 {
     wxCHECK_MSG( str, false, wxT("invalid parameter") );
     wxCHECK_MSG( IsOpened(), false, wxT("can't read from closed file") );
     wxCHECK_MSG( Length() >= 0, false, wxT("invalid length") );
-    size_t length = (size_t)Length();
+    size_t length = wx_truncate_cast(size_t, Length());
     wxCHECK_MSG( (wxFileOffset)length == Length(), false, wxT("huge file not supported") );
 
     clearerr(m_fp);

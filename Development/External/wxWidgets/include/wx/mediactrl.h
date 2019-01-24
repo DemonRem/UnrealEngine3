@@ -4,7 +4,7 @@
 // Author:      Ryan Norton <wxprojects@comcast.net>
 // Modified by:
 // Created:     11/07/04
-// RCS-ID:      $Id: mediactrl.h,v 1.25 2005/09/11 11:03:38 VZ Exp $
+// RCS-ID:      $Id: mediactrl.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Ryan Norton
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,9 +22,6 @@
 // ----------------------------------------------------------------------------
 // Pre-compiled header stuff
 // ----------------------------------------------------------------------------
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "mediactrl.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -74,7 +71,8 @@ enum wxMediaCtrlPlayerControls
 #define wxMEDIABACKEND_MCI          wxT("wxMCIMediaBackend")
 #define wxMEDIABACKEND_QUICKTIME    wxT("wxQTMediaBackend")
 #define wxMEDIABACKEND_GSTREAMER    wxT("wxGStreamerMediaBackend")
-
+#define wxMEDIABACKEND_REALPLAYER   wxT("wxRealPlayerMediaBackend")
+#define wxMEDIABACKEND_WMP10        wxT("wxWMP10MediaBackend")
 
 // ----------------------------------------------------------------------------
 //
@@ -153,7 +151,7 @@ public:
     {   Create(parent, winid, location, pos, size, style,
                szBackend, validator, name);                             }
 
-    ~wxMediaCtrl();
+    virtual ~wxMediaCtrl();
 
     bool Create(wxWindow* parent, wxWindowID winid,
                 const wxString& fileName = wxEmptyString,
@@ -202,8 +200,8 @@ public:
     bool Load(const wxURI& location);
     bool Load(const wxURI& location, const wxURI& proxy);
 
-    wxFileOffset GetDownloadProgress();
-    wxFileOffset GetDownloadTotal();
+    wxFileOffset GetDownloadProgress(); // DirectShow only
+    wxFileOffset GetDownloadTotal();    // DirectShow only
 
     double GetVolume();
     bool   SetVolume(double dVolume);
@@ -217,6 +215,7 @@ public:
     bool LoadURIWithProxy(const wxString& fileName, const wxString& proxy)
     {   return Load(wxURI(fileName), wxURI(proxy));       }
 #endif
+
 protected:
     static wxClassInfo* NextBackend();
 
@@ -226,6 +225,9 @@ protected:
 
     //FIXME:  This is nasty... find a better way to work around
     //inheritance issues
+#if defined(__WXMAC__)
+    virtual void MacVisibilityChanged();
+#endif
 #if defined(__WXMAC__) || defined(__WXCOCOA__)
     friend class wxQTMediaBackend;
 #endif
@@ -320,7 +322,8 @@ public:
     virtual wxLongLong GetDownloadTotal()
     {    return 0;                      }
 
-    virtual void RESERVED8() {}
+    virtual void MacVisibilityChanged()
+    {                                   }
     virtual void RESERVED9() {}
 
     DECLARE_DYNAMIC_CLASS(wxMediaBackend)
@@ -351,6 +354,18 @@ typedef void (wxEvtHandler::*wxMediaEventFunction)(wxMediaEvent&);
 #   define EVT_MEDIA_LOADED(winid, fn) DECLARE_EVENT_TABLE_ENTRY( wxEVT_MEDIA_LOADED, winid, wxID_ANY, wxMediaEventHandler(fn), (wxObject *) NULL ),
 #endif
 
+#if wxABI_VERSION >= 20603 /* 2.6.3+ only */
+#   define wxMEDIA_STATECHANGED_ID      13003
+#   define wxMEDIA_PLAY_ID      13004
+#   define wxMEDIA_PAUSE_ID      13005
+    DECLARE_EXPORTED_EVENT_TYPE(WXDLLIMPEXP_MEDIA, wxEVT_MEDIA_STATECHANGED,     wxMEDIA_STATECHANGED_ID)
+    DECLARE_EXPORTED_EVENT_TYPE(WXDLLIMPEXP_MEDIA, wxEVT_MEDIA_PLAY,     wxMEDIA_PLAY_ID)
+    DECLARE_EXPORTED_EVENT_TYPE(WXDLLIMPEXP_MEDIA, wxEVT_MEDIA_PAUSE,     wxMEDIA_PAUSE_ID)
+#   define EVT_MEDIA_STATECHANGED(winid, fn) DECLARE_EVENT_TABLE_ENTRY( wxEVT_MEDIA_STATECHANGED, winid, wxID_ANY, wxMediaEventHandler(fn), (wxObject *) NULL ),
+#   define EVT_MEDIA_PLAY(winid, fn) DECLARE_EVENT_TABLE_ENTRY( wxEVT_MEDIA_PLAY, winid, wxID_ANY, wxMediaEventHandler(fn), (wxObject *) NULL ),
+#   define EVT_MEDIA_PAUSE(winid, fn) DECLARE_EVENT_TABLE_ENTRY( wxEVT_MEDIA_PAUSE, winid, wxID_ANY, wxMediaEventHandler(fn), (wxObject *) NULL ),
+#endif
+
 // ----------------------------------------------------------------------------
 // common backend base class used by many other backends
 // ----------------------------------------------------------------------------
@@ -362,10 +377,25 @@ public:
     void QueueEvent(wxEventType evtType);
 
     // notify that the movie playback is finished
-    void QueueFinishEvent() { QueueEvent(wxEVT_MEDIA_FINISHED); }
+    void QueueFinishEvent()
+    {
+#if wxABI_VERSION >= 20603 /* 2.6.3+ only */
+        QueueEvent(wxEVT_MEDIA_STATECHANGED);
+#endif
+        QueueEvent(wxEVT_MEDIA_FINISHED);
+    }
 
     // send the stop event and return true if it hasn't been vetoed
     bool SendStopEvent();
+
+    // Queue pause event
+    void QueuePlayEvent();
+
+    // Queue pause event
+    void QueuePauseEvent();
+
+    // Queue stop event (no veto)
+    void QueueStopEvent();
 
 protected:
     // call this when the movie size has changed but not because it has just

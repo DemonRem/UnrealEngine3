@@ -4,14 +4,10 @@
 // Author:      Paul Gammans, Roger Gammans
 // Modified by:
 // Created:     11/04/2001
-// RCS-ID:      $Id: gridctrl.cpp,v 1.17 2005/07/22 17:07:54 ABX Exp $
+// RCS-ID:      $Id: gridctrl.cpp 54421 2008-06-29 15:15:19Z SN $
 // Copyright:   (c) The Computer Surgery (paul@compsurg.co.uk)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "gridctrl.h"
-#endif
 
 #include "wx/wxprec.h"
 
@@ -21,12 +17,14 @@
 
 #if wxUSE_GRID
 
+#include "wx/generic/gridctrl.h"
+
 #ifndef WX_PRECOMP
     #include "wx/textctrl.h"
     #include "wx/dc.h"
+    #include "wx/combobox.h"
 #endif // WX_PRECOMP
 
-#include "wx/generic/gridctrl.h"
 #include "wx/tokenzr.h"
 
 // ----------------------------------------------------------------------------
@@ -35,9 +33,9 @@
 
 #if wxUSE_DATETIME
 
-// Enables a grid cell to display a formated date and or time
+// Enables a grid cell to display a formatted date and or time
 
-wxGridCellDateTimeRenderer::wxGridCellDateTimeRenderer(wxString outformat, wxString informat)
+wxGridCellDateTimeRenderer::wxGridCellDateTimeRenderer(const wxString& outformat, const wxString& informat)
 {
     m_iformat = informat;
     m_oformat = outformat;
@@ -56,7 +54,7 @@ wxGridCellRenderer *wxGridCellDateTimeRenderer::Clone() const
     return renderer;
 }
 
-wxString wxGridCellDateTimeRenderer::GetString(wxGrid& grid, int row, int col)
+wxString wxGridCellDateTimeRenderer::GetString(const wxGrid& grid, int row, int col)
 {
     wxGridTableBase *table = grid.GetTable();
 
@@ -146,7 +144,7 @@ wxGridCellRenderer *wxGridCellEnumRenderer::Clone() const
     return renderer;
 }
 
-wxString wxGridCellEnumRenderer::GetString(wxGrid& grid, int row, int col)
+wxString wxGridCellEnumRenderer::GetString(const wxGrid& grid, int row, int col)
 {
     wxGridTableBase *table = grid.GetTable();
     wxString text;
@@ -330,7 +328,7 @@ wxGridCellAutoWrapStringRenderer::Draw(wxGrid& grid,
 wxArrayString
 wxGridCellAutoWrapStringRenderer::GetTextLines(wxGrid& grid,
                                                wxDC& dc,
-                                               wxGridCellAttr& attr,
+                                               const wxGridCellAttr& attr,
                                                const wxRect& rect,
                                                int row, int col)
 {
@@ -382,7 +380,10 @@ wxGridCellAutoWrapStringRenderer::GetBestSize(wxGrid& grid,
                                               wxDC& dc,
                                               int row, int col)
 {
-    wxCoord x,y, height , width = grid.GetColSize(col) -10;
+    wxCoord x,y, height , width = grid.GetColSize(col) -20;
+    // for width, subtract 20 because ColSize includes a magin of 10 pixels
+    // that we do not want here and because we always start with an increment
+    // by 10 in the loop below.
     int count = 250; //Limit iterations..
 
     wxRect rect(0,0,width,10);
@@ -394,7 +395,7 @@ wxGridCellAutoWrapStringRenderer::GetBestSize(wxGrid& grid,
     {
         width+=10;
         rect.SetWidth(width);
-        height = y *( GetTextLines(grid,dc,attr,rect,row,col).GetCount());
+        height = y * (wx_truncate_cast(wxCoord, GetTextLines(grid,dc,attr,rect,row,col).GetCount()));
         count--;
     // Search for a shape no taller than the golden ratio.
     } while (count && (width  < (height*1.68)) );

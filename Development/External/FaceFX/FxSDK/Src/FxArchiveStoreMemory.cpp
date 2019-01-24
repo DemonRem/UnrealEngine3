@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxArchiveStoreMemory.h"
@@ -95,7 +95,7 @@ FxBool FxArchiveStoreMemory::Write( const FxByte* data, FxSize size )
 	}
 	FxMemcpy(_memory + _currentPos, data, size);
 	_currentPos += size;
-	_inUse += size;
+	_inUse = FxMax(_inUse, _currentPos);
 	return FxTrue;
 }
 
@@ -106,7 +106,7 @@ FxInt32 FxArchiveStoreMemory::Tell( void ) const
 
 void FxArchiveStoreMemory::Seek( const FxInt32 pos )
 {
-	FxAssert(static_cast<FxSize>(pos) < _size);
+	FxAssert(static_cast<FxSize>(pos) <= _size);
 	_currentPos = static_cast<FxSize>(pos);
 }
 

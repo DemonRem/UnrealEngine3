@@ -2,38 +2,28 @@
 #define NX_COLLISION_CONTROLLER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
 /* Exclude from documentation */
 /** \cond */
 
-//#include "NxAllocateable.h"
 #include "NxController.h"
+#include "CharacterController.h"
 
 class NxScene;
 class NxActor;
 class NxBounds3;
 class CharacterControllerManager;
-class SweptVolume;
 
-#ifdef NEW_CALLBACKS_DESIGN
-class Controller : public CCT_HitReport
-#else
-class Controller //: public NxAllocateable
-#endif
+class Controller 
 	{
 	public:
 										Controller(const NxControllerDesc& desc, NxScene* scene);
 	virtual								~Controller();
-
-#ifdef NEW_CALLBACKS_DESIGN
-	virtual	void						ShapeHitCallback(const SweptContact& contact, const Point& dir, float length);
-	virtual	void						UserHitCallback(const SweptContact& contact, const Point& dir, float length);
-#endif
 
 	virtual	bool						getWorldBox(NxExtendedBounds3& box)	const	= 0;
 	virtual	NxController*				getNxController()						= 0;
@@ -51,7 +41,7 @@ class Controller //: public NxAllocateable
 			void*						userData;
 
 	// Internal data
-			void*						cctModule;			// Internal CCT object. Optim test for Ubi.
+			SweepTest					cctModule;			// Internal CCT object. Optim test for Ubi.
 			NxActor*					kineActor;			// Associated kinematic actor
 			NxExtendedVec3				position;			// Current position
 			NxExtendedVec3				filteredPosition;	// Current position after feedback filter
@@ -65,7 +55,7 @@ class Controller //: public NxAllocateable
 	// Internal methods
 			bool						setPos(const NxExtendedVec3& pos);
 			void						setCollision(bool enabled);
-			void						move(SweptVolume& volume, const NxVec3& disp, NxU32 activeGroups, NxF32 minDist, NxU32& collisionFlags, NxF32 sharpness, const NxGroupsMask* groupsMask, bool apply_ubi_fix);
+			void						move(SweptVolume& volume, const NxVec3& disp, NxU32 activeGroups, NxF32 minDist, NxU32& collisionFlags, NxF32 sharpness, const NxGroupsMask* groupsMask, bool constrainedClimbingMode);
 			void						setInteraction(NxCCTInteractionFlag flag)	{ interactionFlag = flag;	}
 			NxCCTInteractionFlag		getInteraction()					const	{ return interactionFlag;	}
 	};
@@ -73,9 +63,9 @@ class Controller //: public NxAllocateable
 /** \endcond */
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

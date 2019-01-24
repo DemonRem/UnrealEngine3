@@ -1,27 +1,26 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        generic/wizard.h
+// Name:        wx/generic/wizard.h
 // Purpose:     declaration of generic wxWizard class
 // Author:      Vadim Zeitlin
 // Modified by: Robert Vazan (sizers)
 // Created:     28.09.99
-// RCS-ID:      $Id: wizard.h,v 1.21 2005/07/22 20:21:14 MW Exp $
+// RCS-ID:      $Id: wizard.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifndef _WX_GENERIC_WIZARD_H_
+#define _WX_GENERIC_WIZARD_H_
 
 // ----------------------------------------------------------------------------
 // wxWizard
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "wizardg.h"
-#endif
-
-class WXDLLEXPORT wxButton;
-class WXDLLEXPORT wxStaticBitmap;
-class WXDLLIMPEXP_ADV wxWizardEvent;
-class WXDLLEXPORT wxBoxSizer;
-class WXDLLIMPEXP_ADV wxWizardSizer;
+class WXDLLIMPEXP_FWD_CORE wxButton;
+class WXDLLIMPEXP_FWD_CORE wxStaticBitmap;
+class WXDLLIMPEXP_FWD_ADV wxWizardEvent;
+class WXDLLIMPEXP_FWD_CORE wxBoxSizer;
+class WXDLLIMPEXP_FWD_ADV wxWizardSizer;
 
 class WXDLLIMPEXP_ADV wxWizard : public wxWizardBase
 {
@@ -46,6 +45,10 @@ public:
              long style = wxDEFAULT_DIALOG_STYLE);
     void Init();
 
+#if wxABI_VERSION >= 20804
+    virtual ~wxWizard();
+#endif
+
     // implement base class pure virtuals
     virtual bool RunWizard(wxWizardPage *firstPage);
     virtual wxWizardPage *GetCurrentPage() const;
@@ -54,6 +57,12 @@ public:
     virtual void FitToPage(const wxWizardPage *firstPage);
     virtual wxSizer *GetPageAreaSizer() const;
     virtual void SetBorder(int border);
+
+    /// set/get bitmap
+#if wxABI_VERSION >= 20805
+    const wxBitmap& GetBitmap() const { return m_bitmap; }
+    void SetBitmap(const wxBitmap& bitmap);
+#endif
 
     // implementation only from now on
     // -------------------------------
@@ -69,6 +78,10 @@ public:
     // do fill the dialog with controls
     // this is app-overridable to, for example, set help and tooltip text
     virtual void DoCreateControls();
+
+protected:
+    // for compatibility only, doesn't do anything any more
+    void FinishLayout() { }
 
 private:
     // was the dialog really created?
@@ -86,14 +99,6 @@ private:
     void AddBackNextPair(wxBoxSizer *buttonRow);
     void AddButtonRow(wxBoxSizer *mainColumn);
 
-#if wxABI_VERSION >= 20602
-protected:
-#endif
-    void FinishLayout();
-
-private:
-    wxSize GetManualPageSize() const;
-
     // the page size requested by user
     wxSize m_sizePage;
 
@@ -109,13 +114,17 @@ private:
                 *m_btnNext;     // the "Next>" or "Finish" button
     wxStaticBitmap *m_statbmp;  // the control for the bitmap
 
-    // Whether user called SetBorder()
-    bool m_calledSetBorder;
     // Border around page area sizer requested using SetBorder()
     int m_border;
 
     // Whether RunWizard() was called
     bool m_started;
+
+    // Whether was modal (modeless has to be destroyed on finish or cancel)
+    bool m_wasModal;
+
+    // True if pages are laid out using the sizer
+    bool m_usingSizer;
 
     // Page area sizer will be inserted here with padding
     wxBoxSizer *m_sizerBmpAndPage;
@@ -130,3 +139,4 @@ private:
     DECLARE_NO_COPY_CLASS(wxWizard)
 };
 
+#endif // _WX_GENERIC_WIZARD_H_

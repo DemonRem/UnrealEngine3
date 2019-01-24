@@ -4,7 +4,7 @@
 // Purpose:     Part of the widgets sample showing wxRadioBox
 // Author:      Vadim Zeitlin
 // Created:     15.04.01
-// Id:          $Id: radiobox.cpp,v 1.17 2005/08/28 08:54:54 MBN Exp $
+// Id:          $Id: radiobox.cpp 43755 2006-12-03 13:43:44Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -51,13 +51,13 @@
 // control ids
 enum
 {
-    RadioPage_Reset = 100,
+    RadioPage_Reset = wxID_HIGHEST,
     RadioPage_Update,
     RadioPage_Selection,
     RadioPage_Label,
     RadioPage_LabelBtn,
-    RadioPage_Enable2nd,
-    RadioPage_Show2nd,
+    RadioPage_EnableItem,
+    RadioPage_ShowItem,
     RadioPage_Radio
 };
 
@@ -73,6 +73,9 @@ enum
 static const unsigned int DEFAULT_NUM_ENTRIES = 12;
 static const unsigned int DEFAULT_MAJOR_DIM = 3;
 
+// this item is enabled/disabled shown/hidden by the test checkboxes
+static const int TEST_BUTTON = 1;
+
 // ----------------------------------------------------------------------------
 // RadioWidgetsPage
 // ----------------------------------------------------------------------------
@@ -80,10 +83,14 @@ static const unsigned int DEFAULT_MAJOR_DIM = 3;
 class RadioWidgetsPage : public WidgetsPage
 {
 public:
-    RadioWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist);
+    RadioWidgetsPage(WidgetsBookCtrl *book, wxImageList *imaglist);
     virtual ~RadioWidgetsPage(){};
 
     virtual wxControl *GetWidget() const { return m_radio; }
+    virtual void RecreateWidget() { CreateRadio(); }
+
+    // lazy creation of the content
+    virtual void CreateContent();
 
 protected:
     // event handlers
@@ -96,9 +103,14 @@ protected:
     void OnButtonSelection(wxCommandEvent& event);
     void OnButtonSetLabel(wxCommandEvent& event);
 
+    void OnEnableItem(wxCommandEvent& event);
+    void OnShowItem(wxCommandEvent& event);
+
     void OnUpdateUIReset(wxUpdateUIEvent& event);
     void OnUpdateUIUpdate(wxUpdateUIEvent& event);
     void OnUpdateUISelection(wxUpdateUIEvent& event);
+    void OnUpdateUIEnableItem(wxUpdateUIEvent& event);
+    void OnUpdateUIShowItem(wxUpdateUIEvent& event);
 
     // reset the wxRadioBox parameters
     void Reset();
@@ -111,8 +123,8 @@ protected:
 
     // the check/radio boxes for styles
     wxCheckBox *m_chkVert;
-    wxCheckBox *m_2ndEnabled;
-    wxCheckBox *m_2ndShown;
+    wxCheckBox *m_chkEnableItem;
+    wxCheckBox *m_chkShowItem;
     wxRadioBox *m_radioDir;
 
     // the gauge itself and the sizer it is in
@@ -150,6 +162,12 @@ BEGIN_EVENT_TABLE(RadioWidgetsPage, WidgetsPage)
 
     EVT_RADIOBOX(RadioPage_Radio, RadioWidgetsPage::OnRadioBox)
 
+    EVT_CHECKBOX(RadioPage_EnableItem, RadioWidgetsPage::OnEnableItem)
+    EVT_CHECKBOX(RadioPage_ShowItem, RadioWidgetsPage::OnShowItem)
+
+    EVT_UPDATE_UI(RadioPage_EnableItem, RadioWidgetsPage::OnUpdateUIEnableItem)
+    EVT_UPDATE_UI(RadioPage_ShowItem, RadioWidgetsPage::OnUpdateUIShowItem)
+
     EVT_CHECKBOX(wxID_ANY, RadioWidgetsPage::OnCheckOrRadioBox)
     EVT_RADIOBOX(wxID_ANY, RadioWidgetsPage::OnCheckOrRadioBox)
 END_EVENT_TABLE()
@@ -158,18 +176,24 @@ END_EVENT_TABLE()
 // implementation
 // ============================================================================
 
-IMPLEMENT_WIDGETS_PAGE(RadioWidgetsPage, _T("Radio"));
+#if defined(__WXUNIVERSAL__)
+    #define FAMILY_CTRLS UNIVERSAL_CTRLS
+#else
+    #define FAMILY_CTRLS NATIVE_CTRLS
+#endif
 
-RadioWidgetsPage::RadioWidgetsPage(wxBookCtrlBase *book,
+IMPLEMENT_WIDGETS_PAGE(RadioWidgetsPage, _T("Radio"),
+                       FAMILY_CTRLS | WITH_ITEMS_CTRLS
+                       );
+
+RadioWidgetsPage::RadioWidgetsPage(WidgetsBookCtrl *book,
                                    wxImageList *imaglist)
-                  : WidgetsPage(book)
+                  : WidgetsPage(book, imaglist, radio_xpm)
 {
-    imaglist->Add(wxBitmap(radio_xpm));
-
     // init everything
     m_chkVert = (wxCheckBox *)NULL;
-    m_2ndEnabled = (wxCheckBox *)NULL;
-    m_2ndShown = (wxCheckBox *)NULL;
+    m_chkEnableItem = (wxCheckBox *)NULL;
+    m_chkShowItem = (wxCheckBox *)NULL;
 
     m_textNumBtns =
     m_textLabelBtns =
@@ -178,7 +202,10 @@ RadioWidgetsPage::RadioWidgetsPage(wxBookCtrlBase *book,
     m_radio =
     m_radioDir = (wxRadioBox *)NULL;
     m_sizerRadio = (wxSizer *)NULL;
+}
 
+void RadioWidgetsPage::CreateContent()
+{
     wxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
 
     // left pane
@@ -253,8 +280,12 @@ RadioWidgetsPage::RadioWidgetsPage(wxBookCtrlBase *book,
                                             &m_textLabelBtns);
     sizerMiddle->Add(sizerRow, 0, wxGROW | wxALL, 5);
 
-    m_2ndEnabled = CreateCheckBoxAndAddToSizer(sizerMiddle, _T("2nd item enabled"));
-    m_2ndShown = CreateCheckBoxAndAddToSizer(sizerMiddle, _T("2nd item shown"));
+    m_chkEnableItem = CreateCheckBoxAndAddToSizer(sizerMiddle,
+                                                  _T("Disable &2nd item"),
+                                                  RadioPage_EnableItem);
+    m_chkShowItem = CreateCheckBoxAndAddToSizer(sizerMiddle,
+                                                _T("Hide 2nd &item"),
+                                                RadioPage_ShowItem);
 
     // right pane
     wxSizer *sizerRight = new wxBoxSizer(wxHORIZONTAL);
@@ -271,8 +302,6 @@ RadioWidgetsPage::RadioWidgetsPage(wxBookCtrlBase *book,
 
     // final initializations
     SetSizer(sizerTop);
-
-    sizerTop->Fit(this);
 }
 
 // ----------------------------------------------------------------------------
@@ -287,8 +316,8 @@ void RadioWidgetsPage::Reset()
     m_textLabelBtns->SetValue(_T("item"));
 
     m_chkVert->SetValue(false);
-    m_2ndEnabled->SetValue(true);
-    m_2ndShown->SetValue(true);
+    m_chkEnableItem->SetValue(true);
+    m_chkShowItem->SetValue(true);
     m_radioDir->SetSelection(RadioDir_Default);
 }
 
@@ -338,6 +367,8 @@ void RadioWidgetsPage::CreateRadio()
     int flags = m_chkVert->GetValue() ? wxRA_VERTICAL
                                       : wxRA_HORIZONTAL;
 
+    flags |= ms_defaultFlags;
+
 #ifdef wxRA_LEFTTORIGHT
     switch ( m_radioDir->GetSelection() )
     {
@@ -375,8 +406,8 @@ void RadioWidgetsPage::CreateRadio()
     m_sizerRadio->Add(m_radio, 1, wxGROW);
     m_sizerRadio->Layout();
 
-    m_radio->Enable( 1 , m_2ndEnabled->GetValue() );
-    m_radio->Show( 1 , m_2ndShown->GetValue() );
+    m_chkEnableItem->SetValue(true);
+    m_chkEnableItem->SetValue(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -433,6 +464,16 @@ void RadioWidgetsPage::OnButtonSelection(wxCommandEvent& WXUNUSED(event))
     }
 }
 
+void RadioWidgetsPage::OnEnableItem(wxCommandEvent& event)
+{
+    m_radio->Enable(TEST_BUTTON, event.IsChecked());
+}
+
+void RadioWidgetsPage::OnShowItem(wxCommandEvent& event)
+{
+    m_radio->Show(TEST_BUTTON, event.IsChecked());
+}
+
 void RadioWidgetsPage::OnUpdateUIUpdate(wxUpdateUIEvent& event)
 {
     unsigned long n;
@@ -469,6 +510,18 @@ void RadioWidgetsPage::OnUpdateUIReset(wxUpdateUIEvent& event)
     }
 
     event.Enable(enable);
+}
+
+void RadioWidgetsPage::OnUpdateUIEnableItem(wxUpdateUIEvent& event)
+{
+    event.SetText(m_radio->IsItemEnabled(TEST_BUTTON) ? _T("Disable &2nd item")
+                                                      : _T("Enable &2nd item"));
+}
+
+void RadioWidgetsPage::OnUpdateUIShowItem(wxUpdateUIEvent& event)
+{
+    event.SetText(m_radio->IsItemShown(TEST_BUTTON) ? _T("Hide 2nd &item")
+                                                    : _T("Show 2nd &item"));
 }
 
 #endif // wxUSE_RADIOBOX

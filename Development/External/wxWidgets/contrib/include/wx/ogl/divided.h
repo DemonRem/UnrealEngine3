@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: divided.h,v 1.6 2004/06/09 16:42:21 ABX Exp $
+// RCS-ID:      $Id: divided.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _OGL_DIVIDED_H_
 #define _OGL_DIVIDED_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "divided.h"
-#endif
 
 
 /*

@@ -2,11 +2,11 @@
 // Name:        confbase.h
 // Purpose:     declaration of the base class of all config implementations
 //              (see also: fileconf.h and msw/regconf.h and iniconf.h)
-// Author:      Karsten Ballüder & Vadim Zeitlin
+// Author:      Karsten Ballueder & Vadim Zeitlin
 // Modified by:
 // Created:     07.04.98 (adapted from appconf.h)
-// RCS-ID:      $Id: confbase.h,v 1.53 2004/10/13 14:07:56 ABX Exp $
-// Copyright:   (c) 1997 Karsten Ballüder   Ballueder@usa.net
+// RCS-ID:      $Id: confbase.h 50711 2007-12-15 02:57:58Z VZ $
+// Copyright:   (c) 1997 Karsten Ballueder   Ballueder@usa.net
 //                       Vadim Zeitlin      <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -14,14 +14,10 @@
 #ifndef   _WX_CONFBASE_H_
 #define   _WX_CONFBASE_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "confbase.h"
-#endif
-
 #include "wx/defs.h"
 #include "wx/string.h"
 
-class WXDLLIMPEXP_BASE wxArrayString;
+class WXDLLIMPEXP_FWD_BASE wxArrayString;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -60,7 +56,8 @@ enum
     wxCONFIG_USE_LOCAL_FILE = 1,
     wxCONFIG_USE_GLOBAL_FILE = 2,
     wxCONFIG_USE_RELATIVE_PATH = 4,
-    wxCONFIG_USE_NO_ESCAPE_CHARACTERS = 8
+    wxCONFIG_USE_NO_ESCAPE_CHARACTERS = 8,
+    wxCONFIG_USE_SUBDIR = 16
 };
 
 // ----------------------------------------------------------------------------
@@ -229,7 +226,7 @@ public:
     // delete the group (with all subgroups)
   virtual bool DeleteGroup(const wxString& key) = 0;
     // delete the whole underlying object (disk file, registry key, ...)
-    // primarly for use by desinstallation routine.
+    // primarily for use by uninstallation routine.
   virtual bool DeleteAll() = 0;
 
   // options
@@ -257,6 +254,13 @@ public:
 protected:
   static bool IsImmutable(const wxString& key)
     { return !key.IsEmpty() && key[0] == wxCONFIG_IMMUTABLE_PREFIX; }
+
+  // return the path without trailing separator, if any: this should be called
+  // to sanitize paths referring to the group names before passing them to
+  // wxConfigPathChanger as "/foo/bar/" should be the same as "/foo/bar" and it
+  // isn't interpreted in the same way by it (and this can't be changed there
+  // as it's not the same for the entries names)
+  static wxString RemoveTrailingSeparator(const wxString& key);
 
   // do read/write the values of different types
   virtual bool DoReadString(const wxString& key, wxString *pStr) const = 0;
@@ -297,12 +301,20 @@ private:
 class WXDLLIMPEXP_BASE wxConfigPathChanger
 {
 public:
-  // ctor/dtor do path changing/restorin
+  // ctor/dtor do path changing/restoring of the path
   wxConfigPathChanger(const wxConfigBase *pContainer, const wxString& strEntry);
  ~wxConfigPathChanger();
 
   // get the key name
   const wxString& Name() const { return m_strName; }
+
+  // this method must be called if the original path (i.e. the current path at
+  // the moment of creation of this object) could have been deleted to prevent
+  // us from restoring the not existing (any more) path
+  //
+  // if the original path doesn't exist any more, the path will be restored to
+  // the deepest still existing component of the old path
+  void UpdateIfDeleted();
 
 private:
   wxConfigBase *m_pContainer;   // object we live in

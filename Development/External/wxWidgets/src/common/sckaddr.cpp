@@ -1,29 +1,24 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        sckaddr.cpp
+// Name:        src/common/sckaddr.cpp
 // Purpose:     Network address manager
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     26/04/97
-// RCS-ID:      $Id: sckaddr.cpp,v 1.46 2005/04/12 17:03:49 RN Exp $
+// RCS-ID:      $Id: sckaddr.cpp 38787 2006-04-18 07:24:35Z ABX $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma implementation "sckaddr.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_SOCKETS
 
 #ifndef WX_PRECOMP
-    #include "wx/defs.h"
     #include "wx/object.h"
     #include "wx/log.h"
     #include "wx/intl.h"
@@ -86,8 +81,11 @@ wxSockAddress::~wxSockAddress()
 
 void wxSockAddress::SetAddress(GAddress *address)
 {
-  GAddress_destroy(m_address);
-  m_address = GAddress_copy(address);
+    if ( address != m_address )
+    {
+        GAddress_destroy(m_address);
+        m_address = GAddress_copy(address);
+    }
 }
 
 wxSockAddress& wxSockAddress::operator=(const wxSockAddress& addr)
@@ -209,19 +207,18 @@ wxSockAddress *wxIPV4address::Clone() const
 wxString wxIPV4address::IPAddress() const
 {
     unsigned long raw =  GAddress_INET_GetHostAddress(m_address);
-    return wxString::Format(
-        _T("%u.%u.%u.%u"),
-        (unsigned char)((raw>>24) & 0xff),
-        (unsigned char)((raw>>16) & 0xff),
-        (unsigned char)((raw>>8) & 0xff),
-        (unsigned char)(raw & 0xff)
+    return wxString::Format(_T("%lu.%lu.%lu.%lu"),
+                (raw>>24) & 0xff,
+                (raw>>16) & 0xff,
+                (raw>>8) & 0xff,
+                raw & 0xff
         );
 }
 
-bool wxIPV4address::operator==(wxIPV4address& addr)
+bool wxIPV4address::operator==(const wxIPV4address& addr) const
 {
-    if(Hostname().Cmp(addr.Hostname().c_str()) == 0 && Service() == addr.Service()) return true;
-    return false;
+    return Hostname().Cmp(addr.Hostname().c_str()) == 0 &&
+            Service() == addr.Service();
 }
 
 #if wxUSE_IPV6

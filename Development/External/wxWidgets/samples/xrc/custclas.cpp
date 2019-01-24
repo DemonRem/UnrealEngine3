@@ -2,18 +2,10 @@
 // Name:        custclass.cpp
 // Purpose:     XML resources sample: A custom class to insert into a XRC file
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: custclas.cpp,v 1.6 2005/01/04 19:41:51 ABX Exp $
+// RCS-ID:      $Id: custclas.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// GCC implementation
-//-----------------------------------------------------------------------------
-
-#ifdef __GNUG__
-    #pragma implementation "custclas.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Standard wxWidgets headers

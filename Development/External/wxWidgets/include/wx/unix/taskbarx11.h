@@ -4,17 +4,13 @@
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     04/04/2003
-// RCS-ID:      $Id: taskbarx11.h,v 1.5 2004/05/29 17:01:18 VS Exp $
+// RCS-ID:      $Id: taskbarx11.h 53563 2008-05-11 22:45:36Z PC $
 // Copyright:   (c) Vaclav Slavik, 2003
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef _TASKBAR_H_
 #define _TASKBAR_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "taskbarx11.h"
-#endif
 
 class WXDLLEXPORT wxIcon;
 class WXDLLEXPORT wxFrame;
@@ -39,6 +35,9 @@ public:
 
 protected:
     wxTaskBarIconArea *m_iconWnd;
+
+private:
+    void OnDestroy(wxWindowDestroyEvent&);
 
     DECLARE_DYNAMIC_CLASS(wxTaskBarIcon)
 };

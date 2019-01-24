@@ -2,9 +2,9 @@
 #define NX_INTERSECTION_SEGMENT_BOX
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -36,9 +36,10 @@ class NxRay;
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_INLINE bool NxSegmentBoxIntersect(const NxVec3& p1, const NxVec3& p2,
 		const NxVec3& bbox_min,const NxVec3& bbox_max, NxVec3& intercept)
@@ -63,9 +64,10 @@ class NxRay;
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_INLINE bool NxRayAABBIntersect(const NxVec3& min, const NxVec3& max, 
 		const NxVec3& origin, const NxVec3& dir, NxVec3& coord)
@@ -91,9 +93,10 @@ class NxRay;
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_INLINE NxU32 NxRayAABBIntersect2(const NxVec3& min, const NxVec3& max, 
 		const NxVec3& origin, const NxVec3& dir, NxVec3& coord, NxReal & t)
@@ -118,9 +121,10 @@ class NxRay;
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_INLINE bool NxSegmentOBBIntersect(const NxVec3& p0, const NxVec3& p1, 
 		const NxVec3& center, const NxVec3& extents, const NxMat33& rot)
@@ -144,9 +148,10 @@ class NxRay;
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_INLINE bool NxSegmentAABBIntersect(const NxVec3& p0, const NxVec3& p1, 
 		const NxVec3& min, const NxVec3& max)
@@ -170,9 +175,10 @@ class NxRay;
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_INLINE bool NxRayOBBIntersect(const NxRay& ray, const NxVec3& center, 
 		const NxVec3& extents, const NxMat33& rot)
@@ -183,9 +189,9 @@ class NxRay;
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXDEBUGRENDERABLE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -27,7 +27,7 @@ enum NxDebugColor
 	NX_ARGB_YELLOW	= 0xffffff00,
 	NX_ARGB_MAGENTA	= 0xffff00ff,
 	NX_ARGB_CYAN	= 0xff00ffff,
-	NX_ARGB_WHITE	= 0xffffffff,
+	NX_ARGB_WHITE	= 0xffffffff
 	};
 
 /**
@@ -126,9 +126,9 @@ class NxDebugRenderable
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

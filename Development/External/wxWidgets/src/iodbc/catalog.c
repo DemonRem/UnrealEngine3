@@ -1,7 +1,7 @@
 /*
  *  catalog.c
  *
- *  $Id: catalog.c,v 1.5 1999/06/01 15:31:39 VZ Exp $
+ *  $Id: catalog.c 2613 1999-06-01 15:32:12Z VZ $
  *
  *  Catalog functions
  *

@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: basic.cpp,v 1.25 2005/03/23 11:31:03 JS Exp $
+// RCS-ID:      $Id: basic.cpp 38810 2006-04-18 22:26:26Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation "basic.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -21,11 +17,11 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
 #if wxUSE_PROLOGIO
-#include <wx/deprecated/wxexpr.h>
+#include "wx/deprecated/wxexpr.h"
 #endif
 
 #ifdef new
@@ -688,12 +684,12 @@ bool wxShape::GetPerimeterPoint(double WXUNUSED(x1), double WXUNUSED(y1),
   return false;
 }
 
-void wxShape::SetPen(wxPen *the_pen)
+void wxShape::SetPen(const wxPen *the_pen)
 {
   m_pen = the_pen;
 }
 
-void wxShape::SetBrush(wxBrush *the_brush)
+void wxShape::SetBrush(const wxBrush *the_brush)
 {
   m_brush = the_brush;
 }
@@ -3288,4 +3284,3 @@ wxBrush wxShape::GetBackgroundBrush()
     }
     return * g_oglWhiteBackgroundBrush;
 }
-

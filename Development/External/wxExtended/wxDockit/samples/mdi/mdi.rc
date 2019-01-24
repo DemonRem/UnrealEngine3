@@ -1,5 +1,0 @@
-mainicon ICON "resources/mainicon.ico"
-
-#include "wx/msw/wx.rc"
-#include "wx/msw/wxDockIt.rc"
-

@@ -4,17 +4,11 @@
 // Author:      Mark Johnson
 // Modified by:
 // Created:     19991129
-// RCS-ID:      $Id: dbtree.cpp,v 1.29 2005/01/31 18:09:45 ABX Exp $
+// RCS-ID:      $Id: dbtree.cpp 44499 2007-02-13 23:22:24Z VZ $
 // Copyright:   (c) Mark Johnson, Berlin Germany
 // Licence:     wxWindows license
 //----------------------------------------------------------------------------------------
-//-- all #ifdefs that the whole Project needs. -------------------------------------------
-//----------------------------------------------------------------------------------------
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
-//----------------------------------------------------------------------------------------
+
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 //----------------------------------------------------------------------------------------
@@ -281,7 +275,7 @@ void DBTree::OnSelChanged(wxTreeEvent& WXUNUSED(event))
         //-------------------------------------------------------------------------------------
         if (Temp1.Contains(_T("ODBC-")))
         {
-            Temp1 = Temp1.Mid(5,wxSTRING_MAXLEN);
+            Temp1 = Temp1.Mid(5);
             for (i=0;i<pDoc->i_DSN;i++)
             {
                 if (Temp1 == (pDoc->p_DSN+i)->Dsn)

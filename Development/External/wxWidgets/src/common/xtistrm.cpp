@@ -4,34 +4,30 @@
 // Author:      Stefan Csomor
 // Modified by:
 // Created:     27/07/03
-// RCS-ID:      $Id: xtistrm.cpp,v 1.25 2004/09/24 14:32:35 ABX Exp $
+// RCS-ID:      $Id: xtistrm.cpp 38939 2006-04-27 12:47:14Z ABX $
 // Copyright:   (c) 2003 Stefan Csomor
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "xtistrm.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
-
-#ifndef WX_PRECOMP
-#include "wx/hash.h"
-#include "wx/object.h"
-#endif
-
-#include "wx/tokenzr.h"
-#include "wx/txtstrm.h"
-#include "wx/event.h"
 
 #if wxUSE_EXTENDED_RTTI
 
 #include "wx/xtistrm.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/object.h"
+    #include "wx/hash.h"
+    #include "wx/event.h"
+#endif
+
+#include "wx/tokenzr.h"
+#include "wx/txtstrm.h"
 
 #include "wx/beforestd.h"
 #include <map>
@@ -844,8 +840,8 @@ void wxCodeDepersister::SetConnect(int eventSourceObjectID,
     }
 }
 
-#include <wx/arrimpl.cpp>
+#include "wx/arrimpl.cpp"
 
 WX_DEFINE_OBJARRAY(wxxVariantArray);
 
-#endif
+#endif // wxUSE_EXTENDED_RTTI

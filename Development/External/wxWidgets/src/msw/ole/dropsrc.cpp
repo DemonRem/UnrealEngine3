@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/ole/dropsrc.cpp
+// Name:        src/msw/ole/dropsrc.cpp
 // Purpose:     implementation of wxIDropSource and wxDropSource
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     10.05.98
-// RCS-ID:      $Id: dropsrc.cpp,v 1.29 2004/08/16 12:45:45 ABX Exp $
+// RCS-ID:      $Id: dropsrc.cpp 38920 2006-04-26 08:21:31Z ABX $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,25 +17,20 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma implementation "dropsrc.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #if defined(__BORLANDC__)
   #pragma hdrstop
 #endif
-#ifndef WX_PRECOMP
-#include "wx/window.h"
-#endif
-
-#include "wx/setup.h"
 
 #if wxUSE_OLE && wxUSE_DRAG_AND_DROP
 
-#include "wx/log.h"
+#ifndef WX_PRECOMP
+    #include "wx/window.h"
+    #include "wx/log.h"
+#endif
+
 #include "wx/dnd.h"
 
 #include "wx/msw/private.h"
@@ -57,18 +52,19 @@ class wxIDropSource : public IDropSource
 {
 public:
   wxIDropSource(wxDropSource *pDropSource);
-
-  DECLARE_IUNKNOWN_METHODS;
+  virtual ~wxIDropSource() { }
 
   // IDropSource
   STDMETHODIMP QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState);
   STDMETHODIMP GiveFeedback(DWORD dwEffect);
 
+    DECLARE_IUNKNOWN_METHODS;
+
 private:
   DWORD         m_grfInitKeyState;  // button which started the d&d operation
   wxDropSource *m_pDropSource;      // pointer to C++ class we belong to
 
-    DECLARE_NO_COPY_CLASS(wxIDropSource)
+  DECLARE_NO_COPY_CLASS(wxIDropSource)
 };
 
 // ============================================================================
@@ -249,4 +245,4 @@ bool wxDropSource::GiveFeedback(wxDragResult effect)
     }
 }
 
-#endif  //USE_DRAG_AND_DROP
+#endif  // wxUSE_OLE && wxUSE_DRAG_AND_DROP

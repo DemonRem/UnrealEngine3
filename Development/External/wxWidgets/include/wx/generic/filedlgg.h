@@ -1,23 +1,21 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        filedlgg.h
+// Name:        wx/generic/filedlgg.h
 // Purpose:     wxGenericFileDialog
 // Author:      Robert Roebling
 // Modified by:
 // Created:     8/17/99
 // Copyright:   (c) Robert Roebling
-// RCS-ID:      $Id: filedlgg.h,v 1.39 2005/03/08 00:29:56 VZ Exp $
+// RCS-ID:      $Id: filedlgg.h 39631 2006-06-08 10:05:42Z RR $
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_FILEDLGG_H_
 #define _WX_FILEDLGG_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "filedlgg.h"
-#endif
-
 #include "wx/listctrl.h"
 #include "wx/datetime.h"
+#include "wx/filefn.h"
+#include "wx/filedlg.h"
 
 //-----------------------------------------------------------------------------
 // classes
@@ -34,10 +32,6 @@ class WXDLLEXPORT wxListItem;
 class WXDLLEXPORT wxStaticText;
 class WXDLLEXPORT wxTextCtrl;
 
-#if defined(__WXUNIVERSAL__)||defined(__WXX11__)||defined(__WXMGL__)||defined(__WXCOCOA__)
-    #define USE_GENERIC_FILEDIALOG
-#endif
-
 //-------------------------------------------------------------------------
 // wxGenericFileDialog
 //-------------------------------------------------------------------------
@@ -52,8 +46,10 @@ public:
                         const wxString& defaultDir = wxEmptyString,
                         const wxString& defaultFile = wxEmptyString,
                         const wxString& wildCard = wxFileSelectorDefaultWildcardStr,
-                        long style = 0,
+                        long style = wxFD_DEFAULT_STYLE,
                         const wxPoint& pos = wxDefaultPosition,
+                        const wxSize& sz = wxDefaultSize,
+                        const wxString& name = wxFileDialogNameStr,
                         bool bypassGenericImpl = false );
 
     bool Create( wxWindow *parent,
@@ -61,8 +57,10 @@ public:
                  const wxString& defaultDir = wxEmptyString,
                  const wxString& defaultFile = wxEmptyString,
                  const wxString& wildCard = wxFileSelectorDefaultWildcardStr,
-                 long style = 0,
+                 long style = wxFD_DEFAULT_STYLE,
                  const wxPoint& pos = wxDefaultPosition,
+                 const wxSize& sz = wxDefaultSize,
+                 const wxString& name = wxFileDialogNameStr,
                  bool bypassGenericImpl = false );
 
     virtual ~wxGenericFileDialog();
@@ -126,7 +124,7 @@ private:
     static bool ms_lastShowHidden;    // did we show hidden files?
 };
 
-#ifdef USE_GENERIC_FILEDIALOG
+#ifdef wxUSE_GENERIC_FILEDIALOG
 
 class WXDLLEXPORT wxFileDialog: public wxGenericFileDialog
 {
@@ -148,7 +146,7 @@ private:
      DECLARE_DYNAMIC_CLASS(wxFileDialog)
 };
 
-#endif // USE_GENERIC_FILEDIALOG
+#endif // wxUSE_GENERIC_FILEDIALOG
 
 //-----------------------------------------------------------------------------
 //  wxFileData - a class to hold the file info for the wxFileCtrl
@@ -187,7 +185,7 @@ public:
     void SetNewName( const wxString &filePath, const wxString &fileName );
 
     // Get the size of the file in bytes
-    long GetSize() const { return m_size; }
+    wxFileOffset GetSize() const { return m_size; }
     // Get the type of file, either file extension or <DIR>, <LINK>, <DRIVE>
     wxString GetFileType() const;
     // get the last modification time
@@ -235,12 +233,12 @@ public:
 protected:
     wxString m_fileName;
     wxString   m_filePath;
-    long     m_size;
+    wxFileOffset m_size;
     wxDateTime m_dateTime;
     wxString m_permissions;
     int      m_type;
-    int        m_image;
-    
+    int      m_image;
+
 private:
     void Init();
 };
@@ -307,4 +305,3 @@ private:
 };
 
 #endif // _WX_FILEDLGG_H_
-

@@ -3,7 +3,7 @@
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxGazeGenerator.h"
@@ -40,7 +40,7 @@ void FxGazeGenerator::Initialize( FxPhonemeList* pPhonList, FxInt32 randomSeed )
 	if( pPhonList && pPhonList->GetNumPhonemes() > 0 )
 	{
 		// Find the first non-silence phoneme.
-		if( pPhonList->GetPhonemeEnum(0) == PHONEME_SIL )
+		if( pPhonList->GetPhonemeEnum(0) == PHON_SIL )
 		{
 			_startTime = pPhonList->GetPhonemeEndTime(0);
 		}
@@ -50,7 +50,7 @@ void FxGazeGenerator::Initialize( FxPhonemeList* pPhonList, FxInt32 randomSeed )
 		}
 		// Find the last non-silence phoneme.
 		FxSize lastPhonIndex = pPhonList->GetNumPhonemes() - 1;
-		if( pPhonList->GetPhonemeEnum(lastPhonIndex) == PHONEME_SIL )
+		if( pPhonList->GetPhonemeEnum(lastPhonIndex) == PHON_SIL )
 		{
 			_endTime = pPhonList->GetPhonemeStartTime(lastPhonIndex);
 		}
@@ -124,22 +124,22 @@ void FxGazeGenerator::GenerateRandomHeadPositions( const FxGestureConfig& config
 	FxReal currentTime = _startTime; 
 	headPositions.Clear();
 	// While we still have room for another transition.
-	while( currentTime + config.odHeadTransition.max * 2 < _endTime )
+	while( currentTime + config.odHeadTransition.rangeMax * 2 < _endTime )
 	{
 		FxGazePosition position;
-		position.transition.min = currentTime;
-		position.transition.max = position.transition.min + _random.RealInRange(config.odHeadTransition.min, config.odHeadTransition.max);
-		position.duration.min = position.transition.max;
-		if( _endTime - position.transition.max - config.odHeadTransition.max > config.odHeadDuration.max )
+		position.transition.rangeMin = currentTime;
+		position.transition.rangeMax = position.transition.rangeMin + _random.RealInRange(config.odHeadTransition.rangeMin, config.odHeadTransition.rangeMax);
+		position.duration.rangeMin = position.transition.rangeMax;
+		if( _endTime - position.transition.rangeMax - config.odHeadTransition.rangeMax > config.odHeadDuration.rangeMax )
 		{
 			// If there is enough time to randomize a orientation duration, do so.
-			position.duration.max = position.duration.min + _random.RealInRange(config.odHeadDuration.min, config.odHeadDuration.max);
+			position.duration.rangeMax = position.duration.rangeMin + _random.RealInRange(config.odHeadDuration.rangeMin, config.odHeadDuration.rangeMax);
 		}
 		else
 		{
 			// Otherwise, fill the rest of the available time with a orientation
 			// before returning to neutral.
-			position.duration.max = _endTime - config.odHeadTransition.max;
+			position.duration.rangeMax = _endTime - config.odHeadTransition.rangeMax;
 		}
 		// Fill each head drift track.
 		for( FxSize i = 0; i < config.odHeadProperties.Length(); ++i )
@@ -182,8 +182,8 @@ void FxGazeGenerator::GenerateRandomHeadPositions( const FxGestureConfig& config
 
 	// We don't have any more room.  Transition back to neutral.
 	FxGazePosition finalPosition;
-	finalPosition.transition.min = currentTime;
-	finalPosition.transition.max = finalPosition.transition.min + _random.RealInRange(config.odHeadTransition.min, config.odHeadTransition.max);
+	finalPosition.transition.rangeMin = currentTime;
+	finalPosition.transition.rangeMax = finalPosition.transition.rangeMin + _random.RealInRange(config.odHeadTransition.rangeMin, config.odHeadTransition.rangeMax);
 	headPositions.PushBack(finalPosition);
 }
 
@@ -198,18 +198,18 @@ void FxGazeGenerator::GenerateHeadPositionTracks( const FxGestureConfig& FxUnuse
 		{
 			if( headPositions[i].roll != lastPosition.roll )
 			{
-				_headRoll.InsertKey(FxAnimKey(headPositions[i].transition.min, lastPosition.roll));
-				_headRoll.InsertKey(FxAnimKey(headPositions[i].transition.max, headPositions[i].roll));
+				_headRoll.InsertKey(FxAnimKey(headPositions[i].transition.rangeMin, lastPosition.roll));
+				_headRoll.InsertKey(FxAnimKey(headPositions[i].transition.rangeMax, headPositions[i].roll));
 			}
 			if( headPositions[i].pitch != lastPosition.pitch )
 			{
-				_headPitch.InsertKey(FxAnimKey(headPositions[i].transition.min, lastPosition.pitch));
-				_headPitch.InsertKey(FxAnimKey(headPositions[i].transition.max, headPositions[i].pitch));
+				_headPitch.InsertKey(FxAnimKey(headPositions[i].transition.rangeMin, lastPosition.pitch));
+				_headPitch.InsertKey(FxAnimKey(headPositions[i].transition.rangeMax, headPositions[i].pitch));
 			}
 			if( headPositions[i].yaw != lastPosition.yaw )
 			{
-				_headYaw.InsertKey(FxAnimKey(headPositions[i].transition.min, lastPosition.yaw));
-				_headYaw.InsertKey(FxAnimKey(headPositions[i].transition.max, headPositions[i].yaw));
+				_headYaw.InsertKey(FxAnimKey(headPositions[i].transition.rangeMin, lastPosition.yaw));
+				_headYaw.InsertKey(FxAnimKey(headPositions[i].transition.rangeMax, headPositions[i].yaw));
 			}
 
 			lastPosition = headPositions[i];
@@ -221,13 +221,13 @@ void FxGazeGenerator::GenerateHeadPositionTracks( const FxGestureConfig& FxUnuse
 				{
 					// Increase
 					FxRange range(lastPosition.pitch + (lastPosition.pitch * 0.04f), lastPosition.pitch + (lastPosition.pitch * 0.07f));
-					lastPosition.pitch = _random.RealInRange(range.min, range.max);
+					lastPosition.pitch = _random.RealInRange(range.rangeMin, range.rangeMax);
 				}
 				else
 				{
 					// Decrease
 					FxRange range(lastPosition.pitch - (lastPosition.pitch * 0.04f), lastPosition.pitch - (lastPosition.pitch * 0.07f));
-					lastPosition.pitch = _random.RealInRange(range.min, range.max);
+					lastPosition.pitch = _random.RealInRange(range.rangeMin, range.rangeMax);
 				}
 			}
 			if( !FxRealEquality(lastPosition.roll, 0.0f) )
@@ -236,13 +236,13 @@ void FxGazeGenerator::GenerateHeadPositionTracks( const FxGestureConfig& FxUnuse
 				{
 					// Increase
 					FxRange range(lastPosition.roll + (lastPosition.roll * 0.04f), lastPosition.roll + (lastPosition.roll * 0.07f));
-					lastPosition.roll = _random.RealInRange(range.min, range.max);
+					lastPosition.roll = _random.RealInRange(range.rangeMin, range.rangeMax);
 				}
 				else
 				{
 					// Decrease
 					FxRange range(lastPosition.roll - (lastPosition.roll * 0.04f), lastPosition.roll - (lastPosition.roll * 0.07f));
-					lastPosition.roll = _random.RealInRange(range.min, range.max);
+					lastPosition.roll = _random.RealInRange(range.rangeMin, range.rangeMax);
 				}
 			}
 			if( !FxRealEquality(lastPosition.yaw, 0.0f) )
@@ -251,13 +251,13 @@ void FxGazeGenerator::GenerateHeadPositionTracks( const FxGestureConfig& FxUnuse
 				{
 					// Increase
 					FxRange range(lastPosition.yaw + (lastPosition.yaw * 0.04f), lastPosition.yaw + (lastPosition.yaw * 0.07f));
-					lastPosition.yaw = _random.RealInRange(range.min, range.max);
+					lastPosition.yaw = _random.RealInRange(range.rangeMin, range.rangeMax);
 				}
 				else
 				{
 					// Decrease
 					FxRange range(lastPosition.yaw - (lastPosition.yaw * 0.04f), lastPosition.yaw - (lastPosition.yaw * 0.07f));
-					lastPosition.yaw = _random.RealInRange(range.min, range.max);
+					lastPosition.yaw = _random.RealInRange(range.rangeMin, range.rangeMax);
 				}
 			}
 
@@ -277,13 +277,13 @@ void FxGazeGenerator::GenerateRandomGazePositions( const FxGestureConfig& config
 	}
 
 	FxReal currentTime = _startTime;
-	while( currentTime + config.odEyeDuration.max + config.odEyeTransition.max < _endTime )
+	while( currentTime + config.odEyeDuration.rangeMax + config.odEyeTransition.rangeMax < _endTime )
 	{
 		FxGazePosition position;
-		position.transition.min = currentTime;
-		position.transition.max = position.transition.min + _random.RealInRange(config.odEyeTransition.min, config.odEyeTransition.max);
-		position.duration.min = position.transition.max;
-		position.duration.max = position.duration.min + _random.RealInRange(config.odEyeDuration.min, config.odEyeDuration.max);
+		position.transition.rangeMin = currentTime;
+		position.transition.rangeMax = position.transition.rangeMin + _random.RealInRange(config.odEyeTransition.rangeMin, config.odEyeTransition.rangeMax);
+		position.duration.rangeMin = position.transition.rangeMax;
+		position.duration.rangeMax = position.duration.rangeMin + _random.RealInRange(config.odEyeDuration.rangeMin, config.odEyeDuration.rangeMax);
 
 		FxSize index = _random.Index(weights);
 		if( config.odEyeProperties[index].track == GT_GazeEyeYaw )
@@ -306,8 +306,8 @@ void FxGazeGenerator::GenerateRandomGazePositions( const FxGestureConfig& config
 
 	// We don't have any more room.  Transition back to neutral.
 	FxGazePosition finalPosition;
-	finalPosition.transition.min = currentTime;
-	finalPosition.transition.max = finalPosition.transition.min + _random.RealInRange(config.odEyeTransition.min, config.odEyeTransition.max);
+	finalPosition.transition.rangeMin = currentTime;
+	finalPosition.transition.rangeMax = finalPosition.transition.rangeMin + _random.RealInRange(config.odEyeTransition.rangeMin, config.odEyeTransition.rangeMax);
 	gazePositions.PushBack(finalPosition);
 }
 
@@ -322,13 +322,13 @@ void FxGazeGenerator::GenerateEyePositionTracks( const FxGestureConfig& FxUnused
 		{
 			if( gazePositions[i].pitch != lastPosition.pitch )
 			{
-				_gazeEyePitch.InsertKey(FxAnimKey(gazePositions[i].transition.min, lastPosition.pitch));
-				_gazeEyePitch.InsertKey(FxAnimKey(gazePositions[i].transition.max, gazePositions[i].pitch));
+				_gazeEyePitch.InsertKey(FxAnimKey(gazePositions[i].transition.rangeMin, lastPosition.pitch));
+				_gazeEyePitch.InsertKey(FxAnimKey(gazePositions[i].transition.rangeMax, gazePositions[i].pitch));
 			}
 			if( gazePositions[i].yaw != lastPosition.yaw )
 			{
-				_gazeEyeYaw.InsertKey(FxAnimKey(gazePositions[i].transition.min, lastPosition.yaw));
-				_gazeEyeYaw.InsertKey(FxAnimKey(gazePositions[i].transition.max, gazePositions[i].yaw));
+				_gazeEyeYaw.InsertKey(FxAnimKey(gazePositions[i].transition.rangeMin, lastPosition.yaw));
+				_gazeEyeYaw.InsertKey(FxAnimKey(gazePositions[i].transition.rangeMax, gazePositions[i].yaw));
 			}
 			lastPosition = gazePositions[i];
 		}

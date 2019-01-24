@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NX_COMPARTMENT
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -12,6 +12,7 @@
 */
 
 #include "NxCompartmentDesc.h"
+#include "NxSceneDesc.h"
 
 /**
 \brief A scene compartment is a portion of the scene that can
@@ -85,9 +86,10 @@ class NxCompartment
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setTimeScale() getTiming()
 	*/
@@ -103,9 +105,10 @@ class NxCompartment
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setTiming() setTimeScale()
 	*/
@@ -124,9 +127,10 @@ class NxCompartment
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	bool						checkResults(bool block = false)	= 0;
 
@@ -141,9 +145,10 @@ class NxCompartment
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	bool						fetchResults(bool block = false)	= 0;
 
@@ -163,9 +168,10 @@ class NxCompartment
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartmentDesc.flags NxCompartmentFlag getFlags()
 	*/
@@ -179,19 +185,24 @@ class NxCompartment
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartmentDesc.flags NxCompartmentFlag setFlags()
 	*/
 	virtual NxU32 getFlags() const = 0;
+
+	protected:
+	virtual ~NxCompartment(){};
 	};
 
+/** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

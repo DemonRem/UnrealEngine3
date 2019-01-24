@@ -2,15 +2,26 @@
 #define NX_UTIL_LIB
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
 #include "NxFoundation.h"
 #include "Nxp.h"
 class NxJointDesc;
+class NxTriangle;
+
+// For NxSweepBoxTriangles and NxSweepCapsuleTriangles
+enum NxTriangleCollisionFlag
+	{
+	// Must be the 3 first ones to be indexed by (flags & (1<<edge_index))
+	TCF_ACTIVE_EDGE01	= (1<<0),	//!< Enable collision with edge 0-1
+	TCF_ACTIVE_EDGE12	= (1<<1),	//!< Enable collision with edge 1-2
+	TCF_ACTIVE_EDGE20	= (1<<2),	//!< Enable collision with edge 2-0
+	TCF_DOUBLE_SIDED	= (1<<3)	//!< Triangle is double-sided
+	};
 
 /**
 \brief Abstract interface used to expose utility functions
@@ -36,9 +47,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox
 	*/
@@ -54,9 +66,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox NxBounds3
 	*/
@@ -73,9 +86,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox NxPlane
 	*/
@@ -92,9 +106,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox
 	*/
@@ -111,9 +126,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox
 	*/
@@ -126,9 +142,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxComputeBoxPoints
 	*/
@@ -141,9 +158,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxComputeBoxPoints
 	*/
@@ -156,9 +174,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxComputeBoxPoints
 	*/
@@ -171,9 +190,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual const NxVec3* NxGetBoxLocalEdgeNormals()=0;
 
@@ -194,9 +214,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxComputeBoxWorldEdgeNormal(const NxBox& box, NxU32 edge_index, NxVec3& world_normal)=0;
 
@@ -209,9 +230,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox NxCapsule NxComputeBoxAroundCapsule
 	*/
@@ -227,9 +249,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox
 	*/
@@ -242,9 +265,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxComputeBoxPoints()
 	*/
@@ -258,9 +282,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxComputeBoxPoints() NxGetBoxQuads()
 	*/
@@ -274,9 +299,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxComputeCapsuleAroundBox
 	*/
@@ -287,9 +313,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPUPrecision24()=0;
 
@@ -298,9 +325,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPUPrecision53()=0;
 
@@ -309,9 +337,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPUPrecision64()=0;
 
@@ -320,9 +349,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPURoundingChop()=0;
 
@@ -331,9 +361,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPURoundingUp()=0;
 
@@ -342,9 +373,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPURoundingDown()=0;
 
@@ -353,9 +385,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPURoundingNear()=0;
 
@@ -366,9 +399,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxSetFPUExceptions(bool b)=0;
 
@@ -381,9 +415,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual int NxIntChop(const NxF32& f)=0;
 
@@ -396,9 +431,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual int NxIntFloor(const NxF32& f)=0;
 
@@ -411,9 +447,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual int NxIntCeil(const NxF32& f)=0;
 
@@ -428,9 +465,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxRay
 	*/
@@ -447,9 +485,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSegment
 	*/
@@ -466,9 +505,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphere NxFastComputeSphere
 	*/
@@ -486,9 +526,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphere NxComputeSphere
 	*/
@@ -503,9 +544,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphere NxComputeSphere
 	*/
@@ -520,9 +562,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxNormalToTangents(const NxVec3 & n, NxVec3 & t1, NxVec3 & t2)=0;
 
@@ -541,9 +584,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 
 	virtual bool NxDiagonalizeInertiaTensor(const NxMat33 & denseInertia, NxVec3 & diagonalInertia, NxMat33 & rotation)=0;
@@ -563,9 +607,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxFindRotationMatrix(const NxVec3 & x, const NxVec3 & b, NxMat33 & M)=0;
 
@@ -579,9 +624,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3
 	*/
@@ -597,9 +643,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxU32 NxCrc32(const void* buffer, NxU32 nbBytes)=0;
 /*
@@ -616,9 +663,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeSphereMass			(NxReal radius, NxReal density)=0;
 
@@ -632,9 +680,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeSphereDensity		(NxReal radius, NxReal mass)=0;
 
@@ -650,9 +699,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeBoxMass			(const NxVec3& extents, NxReal density)=0;
 	
@@ -666,9 +716,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeBoxDensity			(const NxVec3& extents, NxReal mass)=0;
 
@@ -684,9 +735,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeEllipsoidMass		(const NxVec3& extents, NxReal density)=0;
 	
@@ -700,9 +752,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeEllipsoidDensity	(const NxVec3& extents, NxReal mass)=0;
 
@@ -719,9 +772,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeCylinderMass		(NxReal radius, NxReal length, NxReal density)=0;
 	
@@ -736,9 +790,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeCylinderDensity	(NxReal radius, NxReal length, NxReal mass)=0;
 
@@ -755,9 +810,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeConeMass			(NxReal radius, NxReal length, NxReal density)=0;
 	
@@ -772,9 +828,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal NxComputeConeDensity		(NxReal radius, NxReal length, NxReal mass)=0;
 
@@ -791,9 +848,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxComputeBoxInertiaTensor	(NxVec3& diagInertia, NxReal mass, NxReal xlength, NxReal ylength, NxReal zlength)=0;
 	
@@ -807,9 +865,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void NxComputeSphereInertiaTensor(NxVec3& diagInertia, NxReal mass, NxReal radius, bool hollow)=0;
 
@@ -825,9 +884,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.setGlobalAnchor()
 	*/
@@ -841,9 +901,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.setGlobalAxis()
 	*/
@@ -872,9 +933,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxBoxBoxIntersect(	const NxVec3& extents0, const NxVec3& center0, const NxMat33& rotation0,
 														const NxVec3& extents1, const NxVec3& center1, const NxMat33& rotation1,
@@ -895,9 +957,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxTriBoxIntersect(const NxVec3 & vertex0, const NxVec3 & vertex1, const NxVec3 & vertex2, const NxVec3 & center, const NxVec3& extents)=0;
 
@@ -916,9 +979,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSepAxis
 	*/
@@ -944,9 +1008,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	void NxSegmentPlaneIntersect(const NxVec3& v1, const NxVec3& v2, 
 		const NxPlane& plane, NxReal& dist, NxVec3& pointOnPlane)=0;
@@ -965,9 +1030,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	bool NxRayPlaneIntersect(const NxRay& ray, const NxPlane& plane, 
 		NxReal& dist, NxVec3& pointOnPlane)=0;
@@ -994,9 +1060,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxRaySphereIntersect(const NxVec3& origin, const NxVec3& dir, NxReal length, const NxVec3& center, NxReal radius, NxReal& hit_time, NxVec3& hit_pos) = 0;
 
@@ -1020,9 +1087,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxSegmentBoxIntersect(const NxVec3& p1, const NxVec3& p2,
 		const NxVec3& bbox_min,const NxVec3& bbox_max, NxVec3& intercept)=0;
@@ -1042,9 +1110,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxRayAABBIntersect(const NxVec3& min, const NxVec3& max, 
 		const NxVec3& origin, const NxVec3& dir, NxVec3& coord)=0;
@@ -1066,9 +1135,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxU32 NxRayAABBIntersect2(const NxVec3& min, const NxVec3& max, 
 		const NxVec3& origin, const NxVec3& dir, NxVec3& coord, NxReal & t)=0;
@@ -1088,9 +1158,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxSegmentOBBIntersect(const NxVec3& p0, const NxVec3& p1, 
 		const NxVec3& center, const NxVec3& extents, const NxMat33& rot)=0;
@@ -1109,9 +1180,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxSegmentAABBIntersect(const NxVec3& p0, const NxVec3& p1, 
 		const NxVec3& min, const NxVec3& max)=0;
@@ -1130,9 +1202,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxRayOBBIntersect(const NxRay& ray, const NxVec3& center, 
 		const NxVec3& extents, const NxMat33& rot)=0;
@@ -1159,9 +1232,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxRay NxCapsule
 	*/
@@ -1187,9 +1261,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphere
 	*/
@@ -1219,9 +1294,10 @@ class NxUtilLib
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxRayTriIntersect(const NxVec3& orig, const NxVec3& dir, const NxVec3& vert0, const NxVec3& vert1, const NxVec3& vert2, float& t, float& u, float& v, bool cull)=0;
 
@@ -1250,9 +1326,10 @@ class NxUtilLib
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool NxBuildSmoothNormals(
 		NxU32 nbTris,
@@ -1265,13 +1342,226 @@ class NxUtilLib
 		)=0;
 
 
+
+
+	/**
+	\brief Box-vs-capsule sweep test.
+
+	Sweeps a box against a capsule, returns true if box hit the capsule. Also returns contact information.
+
+	\param[in] box Box (source of the sweep)
+	\param[in] lss Capsule
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] min_dist Impact distance
+	\param[out] normal Normal at impact point
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepBoxCapsule(const NxBox& box, const NxCapsule& lss, const NxVec3& dir, float length, float& min_dist, NxVec3& normal) = 0;
+
+	/**
+	\brief Box-vs-sphere sweep test.
+
+	Sweeps a box against a sphere, returns true if box hit the sphere. Also returns contact information.
+
+	\param[in] box Box (source of the sweep)
+	\param[in] sphere Sphere
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] min_dist Impact distance
+	\param[out] normal Normal at impact point
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepBoxSphere(const NxBox& box, const NxSphere& sphere, const NxVec3& dir, float length, float& min_dist, NxVec3& normal) = 0;
+
+	/**
+	\brief Capsule-vs-capsule sweep test.
+
+	Sweeps a capsule against a capsule, returns true if capsule hit the other capsule. Also returns contact information.
+
+	\param[in] lss0 Capsule (source of the sweep)
+	\param[in] lss1 Capsule
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] min_dist Impact distance
+	\param[out] ip Impact point
+	\param[out] normal Normal at impact point
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepCapsuleCapsule(const NxCapsule& lss0, const NxCapsule& lss1, const NxVec3& dir, float length, float& min_dist, NxVec3& ip, NxVec3& normal) = 0;
+
+	/**
+	\brief Sphere-vs-capsule sweep test.
+
+	Sweeps a sphere against a capsule, returns true if sphere hit the capsule. Also returns contact information.
+
+	\param[in] sphere Sphere (source of the sweep)
+	\param[in] lss Capsule
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] min_dist Impact distance
+	\param[out] ip Impact point
+	\param[out] normal Normal at impact point
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepSphereCapsule(const NxSphere& sphere, const NxCapsule& lss, const NxVec3& dir, float length, float& min_dist, NxVec3& ip, NxVec3& normal) = 0;
+
+	/**
+	\brief Box-vs-box sweep test.
+
+	Sweeps a box against a box, returns true if box hit the other box. Also returns contact information.
+
+	\param[in] box0 Box (source of the sweep)
+	\param[in] box1 Box
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] ip Impact point
+	\param[out] normal Normal at impact point
+	\param[out] min_dist Impact distance
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepBoxBox(const NxBox& box0, const NxBox& box1, const NxVec3& dir, float length, NxVec3& ip, NxVec3& normal, float& min_dist) = 0;
+
+	/**
+	\brief Box-vs-triangles sweep test.
+
+	Sweeps a box against a set of triangles, returns true if box hit any triangle. Also returns contact information.
+
+	\param[in] nb_tris Number of triangles
+	\param[in] triangles Array of triangles
+	\param[in] edge_triangles Array of edge-triangles, whose "vertices" are the edge normals
+	\param[in] edge_flags Array of edge flags (NxTriangleCollisionFlag)
+	\param[in] box Box (source of the sweep)
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] hit Impact point
+	\param[out] normal Normal at impact point
+	\param[out] d Impact distance
+	\param[out] index Triangle index (closest hit triangle)
+	\param[in/out] cachedIndex Cached triangle index for subsequent calls. Cached triangle is tested first.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepBoxTriangles(NxU32 nb_tris, const NxTriangle* triangles, const NxTriangle* edge_triangles, const NxU32* edge_flags,
+									const NxBounds3& box,
+									const NxVec3& dir, float length,
+									NxVec3& hit, NxVec3& normal, float& d, NxU32& index, NxU32* cachedIndex=NULL) = 0;
+
+	/**
+	\brief Capsule-vs-triangles sweep test.
+
+	Sweeps a capsule against a set of triangles, returns true if capsule hit any triangle. Also returns contact information.
+
+	\param[in] nb_tris Number of triangles
+	\param[in] triangles Array of triangles
+	\param[in] edge_flags Array of edge flags (NxTriangleCollisionFlag)
+	\param[in] center Center of capsule
+	\param[in] radius Capsule radius
+	\param[in] height Capsule height
+	\param[in] dir Unit-length sweep direction
+	\param[in] length Length of sweep (i.e. total motion vectoir is dir*length)
+	\param[out] hit Impact point
+	\param[out] normal Normal at impact point
+	\param[out] d Impact distance
+	\param[out] index Triangle index (closest hit triangle)
+	\param[in/out] cachedIndex Cached triangle index for subsequent calls. Cached triangle is tested first.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual bool NxSweepCapsuleTriangles(NxU32 up_direction,
+									NxU32 nb_tris, const NxTriangle* triangles, const NxU32* edge_flags,
+									const NxVec3& center, const float radius, const float height,
+									const NxVec3& dir, float length,
+									NxVec3& hit, NxVec3& normal, float& d, NxU32& index, NxU32* cachedIndex=NULL) = 0;
+
+	/**
+	\brief Point-vs-OBB distance computation.
+
+	Returns distance between a point and an OBB.
+
+	\param[in] point The point
+	\param[in] center OBB center
+	\param[in] extents OBB extents
+	\param[in] rot OBB rotation
+	\param[out] params Closest point on the box, in box space
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual float NxPointOBBSqrDist(const NxVec3& point, const NxVec3& center, const NxVec3& extents, const NxMat33& rot, NxVec3* params) = 0;
+
+	/**
+	\brief Segment-vs-OBB distance computation.
+
+	Returns distance between a segment and an OBB.
+
+	\param[in] segment The segment
+	\param[in] c0 OBB center
+	\param[in] e0 OBB extents
+	\param[in] r0 OBB rotation
+	\param[out] t Parameter in [0,1] describing the closest point on the segment.
+	\param[out] params Closest point on the box, in box space
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual float NxSegmentOBBSqrDist(const NxSegment& segment, const NxVec3& c0, const NxVec3& e0, const NxMat33& r0, float* t, NxVec3* p) = 0;
+
 	protected:
 	virtual ~NxUtilLib(){};
 	};
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // Program:     wxWidgets Widgets Sample
-// Name:        widgets.cpp
+// Name:        samples/widgets/widgets.cpp
 // Purpose:     Sample showing most of the simple wxWidgets widgets
 // Author:      Vadim Zeitlin
 // Created:     27.03.01
-// Id:          $Id: widgets.cpp,v 1.36 2005/08/28 08:54:55 MBN Exp $
+// Id:          $Id: widgets.cpp 51519 2008-02-03 13:48:11Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -42,12 +42,17 @@
 
 #include "wx/sysopt.h"
 #include "wx/bookctrl.h"
+#include "wx/treebook.h"
 #include "wx/sizer.h"
 #include "wx/colordlg.h"
 #include "wx/fontdlg.h"
 #include "wx/textdlg.h"
+#include "wx/imaglist.h"
+#include "wx/wupdlock.h"
 
 #include "widgets.h"
+
+#include "../sample.xpm"
 
 // ----------------------------------------------------------------------------
 // constants
@@ -58,13 +63,45 @@ enum
 {
     Widgets_ClearLog = 100,
     Widgets_Quit,
+
+    Widgets_BookCtrl,
+
 #if wxUSE_TOOLTIPS
     Widgets_SetTooltip,
 #endif // wxUSE_TOOLTIPS
     Widgets_SetFgColour,
     Widgets_SetBgColour,
     Widgets_SetFont,
-    Widgets_Enable
+    Widgets_Enable,
+
+    Widgets_BorderNone,
+    Widgets_BorderStatic,
+    Widgets_BorderSimple,
+    Widgets_BorderRaised,
+    Widgets_BorderSunken,
+    Widgets_BorderDouble,
+    Widgets_BorderDefault,
+
+    Widgets_GlobalBusyCursor,
+    Widgets_BusyCursor,
+
+    Widgets_GoToPage,
+    Widgets_GoToPageLast = Widgets_GoToPage + 100
+};
+
+const wxChar *WidgetsCategories[MAX_PAGES] = {
+#if defined(__WXUNIVERSAL__)
+    wxT("Universal"),
+#else
+    wxT("Native"),
+#endif
+    wxT("Generic"),
+    wxT("Pickers"),
+    wxT("Comboboxes"),
+    wxT("With items"),
+    wxT("Editable"),
+    wxT("Books"),
+    wxT("All controls")
 };
 
 // ----------------------------------------------------------------------------
@@ -100,6 +137,10 @@ protected:
     void OnExit(wxCommandEvent& event);
 
 #if wxUSE_MENUS
+    void OnPageChanging(WidgetsBookCtrlEvent& event);
+    void OnPageChanged(WidgetsBookCtrlEvent& event);
+    void OnGoToPage(wxCommandEvent& event);
+
 #if wxUSE_TOOLTIPS
     void OnSetTooltip(wxCommandEvent& event);
 #endif // wxUSE_TOOLTIPS
@@ -107,10 +148,17 @@ protected:
     void OnSetBgCol(wxCommandEvent& event);
     void OnSetFont(wxCommandEvent& event);
     void OnEnable(wxCommandEvent& event);
+    void OnSetBorder(wxCommandEvent& event);
+
+    void OnToggleGlobalBusyCursor(wxCommandEvent& event);
+    void OnToggleBusyCursor(wxCommandEvent& event);
 #endif // wxUSE_MENUS
 
     // initialize the book: add all pages to it
     void InitBook();
+
+    // return the currently selected page (never NULL)
+    WidgetsPage *CurrentPage();
 
 private:
     // the panel containing everything
@@ -125,10 +173,7 @@ private:
 #endif // USE_LOG
 
     // the book containing the test pages
-    wxBookCtrlBase *m_book;
-
-    // and the image list for it
-    wxImageList *m_imaglist;
+    WidgetsBookCtrl *m_book;
 
 #if wxUSE_MENUS
     // last chosen fg/bg colours and font
@@ -223,12 +268,24 @@ BEGIN_EVENT_TABLE(WidgetsFrame, wxFrame)
     EVT_MENU(Widgets_SetTooltip, WidgetsFrame::OnSetTooltip)
 #endif // wxUSE_TOOLTIPS
 
+#if wxUSE_MENUS
+    EVT_WIDGETS_PAGE_CHANGING(wxID_ANY, WidgetsFrame::OnPageChanging)
+    EVT_MENU_RANGE(Widgets_GoToPage, Widgets_GoToPageLast,
+                   WidgetsFrame::OnGoToPage)
+
     EVT_MENU(Widgets_SetFgColour, WidgetsFrame::OnSetFgCol)
     EVT_MENU(Widgets_SetBgColour, WidgetsFrame::OnSetBgCol)
     EVT_MENU(Widgets_SetFont,     WidgetsFrame::OnSetFont)
     EVT_MENU(Widgets_Enable,      WidgetsFrame::OnEnable)
 
+    EVT_MENU_RANGE(Widgets_BorderNone, Widgets_BorderDefault,
+                   WidgetsFrame::OnSetBorder)
+
+    EVT_MENU(Widgets_GlobalBusyCursor,  WidgetsFrame::OnToggleGlobalBusyCursor)
+    EVT_MENU(Widgets_BusyCursor,        WidgetsFrame::OnToggleBusyCursor)
+
     EVT_MENU(wxID_EXIT, WidgetsFrame::OnExit)
+#endif // wxUSE_MENUS
 END_EVENT_TABLE()
 
 // ============================================================================
@@ -278,20 +335,17 @@ bool WidgetsApp::OnInit()
 // ----------------------------------------------------------------------------
 
 WidgetsFrame::WidgetsFrame(const wxString& title)
-            : wxFrame(NULL, wxID_ANY, title,
-                      wxPoint(0, 50), wxDefaultSize,
-                      wxDEFAULT_FRAME_STYLE |
-                      wxNO_FULL_REPAINT_ON_RESIZE |
-                      wxCLIP_CHILDREN |
-                      wxTAB_TRAVERSAL)
+            : wxFrame(NULL, wxID_ANY, title)
 {
+    // set the frame icon
+    SetIcon(wxICON(sample));
+
     // init everything
 #if USE_LOG
     m_lboxLog = (wxListBox *)NULL;
     m_logTarget = (wxLog *)NULL;
 #endif // USE_LOG
-    m_book = (wxBookCtrlBase *)NULL;
-    m_imaglist = (wxImageList *)NULL;
+    m_book = (WidgetsBookCtrl *)NULL;
 
 #if wxUSE_MENUS
     // create the menubar
@@ -305,6 +359,23 @@ WidgetsFrame::WidgetsFrame(const wxString& title)
     menuWidget->Append(Widgets_SetBgColour, _T("Set &background...\tCtrl-B"));
     menuWidget->Append(Widgets_SetFont,     _T("Set f&ont...\tCtrl-O"));
     menuWidget->AppendCheckItem(Widgets_Enable,  _T("&Enable/disable\tCtrl-E"));
+
+    wxMenu *menuBorders = new wxMenu;
+    menuBorders->AppendRadioItem(Widgets_BorderDefault, _T("De&fault\tCtrl-Shift-9"));
+    menuBorders->AppendRadioItem(Widgets_BorderNone,   _T("&None\tCtrl-Shift-0"));
+    menuBorders->AppendRadioItem(Widgets_BorderSimple, _T("&Simple\tCtrl-Shift-1"));
+    menuBorders->AppendRadioItem(Widgets_BorderDouble, _T("&Double\tCtrl-Shift-2"));
+    menuBorders->AppendRadioItem(Widgets_BorderStatic, _T("Stati&c\tCtrl-Shift-3"));
+    menuBorders->AppendRadioItem(Widgets_BorderRaised, _T("&Raised\tCtrl-Shift-4"));
+    menuBorders->AppendRadioItem(Widgets_BorderSunken, _T("S&unken\tCtrl-Shift-5"));
+    menuWidget->AppendSubMenu(menuBorders, _T("Set &border"));
+
+    menuWidget->AppendSeparator();
+    menuWidget->AppendCheckItem(Widgets_GlobalBusyCursor,
+                                _T("Toggle &global busy cursor\tCtrl-Shift-U"));
+    menuWidget->AppendCheckItem(Widgets_BusyCursor,
+                                _T("Toggle b&usy cursor\tCtrl-U"));
+
     menuWidget->AppendSeparator();
     menuWidget->Append(wxID_EXIT, _T("&Quit\tCtrl-Q"));
     mbar->Append(menuWidget, _T("&Widget"));
@@ -314,28 +385,27 @@ WidgetsFrame::WidgetsFrame(const wxString& title)
 #endif // wxUSE_MENUS
 
     // create controls
-    m_panel = new wxPanel(this, wxID_ANY,
-        wxDefaultPosition, wxDefaultSize, wxCLIP_CHILDREN);
+    m_panel = new wxPanel(this, wxID_ANY);
 
     wxSizer *sizerTop = new wxBoxSizer(wxVERTICAL);
 
     // we have 2 panes: book with pages demonstrating the controls in the
     // upper one and the log window with some buttons in the lower
 
-    int style = wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN|wxBC_DEFAULT;
+    int style = wxBK_DEFAULT;
     // Uncomment to suppress page theme (draw in solid colour)
     //style |= wxNB_NOPAGETHEME;
 
-    m_book = new wxBookCtrl(m_panel, wxID_ANY, wxDefaultPosition,
+    m_book = new WidgetsBookCtrl(m_panel, Widgets_BookCtrl, wxDefaultPosition,
 #ifdef __WXMOTIF__
-        wxSize(500, -1), // under Motif, height is a function of the width...
+        wxSize(500, wxDefaultCoord), // under Motif, height is a function of the width...
 #else
         wxDefaultSize,
 #endif
         style);
     InitBook();
 
-#ifndef __SMARTPHONE__
+#ifndef __WXHANDHELD__
     // the lower one only has the log listbox and a button to clear it
 #if USE_LOG
     wxSizer *sizerDown = new wxStaticBoxSizer(
@@ -365,11 +435,11 @@ WidgetsFrame::WidgetsFrame(const wxString& title)
     sizerTop->Add(0, 5, 0, wxGROW); // spacer in between
     sizerTop->Add(sizerDown, 0,  wxGROW | (wxALL & ~wxTOP), 10);
 
-#else // !__SMARTPHONE__/__SMARTPHONE__
+#else // !__WXHANDHELD__/__WXHANDHELD__
 
     sizerTop->Add(m_book, 1, wxGROW | wxALL );
 
-#endif // __SMARTPHONE__
+#endif // __WXHANDHELD__
 
     m_panel->SetSizer(sizerTop);
 
@@ -387,42 +457,153 @@ WidgetsFrame::WidgetsFrame(const wxString& title)
 
 void WidgetsFrame::InitBook()
 {
-    m_imaglist = new wxImageList(32, 32);
+#if USE_ICONS_IN_BOOK
+    wxImageList *imageList = new wxImageList(32, 32);
 
-    ArrayWidgetsPage pages;
-    wxArrayString labels;
+    imageList->Add(wxBitmap(sample_xpm));
+#else
+    wxImageList *imageList = NULL;
+#endif
+
+#if !USE_TREEBOOK
+    WidgetsBookCtrl *books[MAX_PAGES];
+#endif
+
+    ArrayWidgetsPage pages[MAX_PAGES];
+    wxArrayString labels[MAX_PAGES];
+
+    wxMenu *menuPages = new wxMenu;
+    unsigned int nPage = 0, nFKey = 0;
+    int cat, imageId = 1;
 
     // we need to first create all pages and only then add them to the book
     // as we need the image list first
-    WidgetsPageInfo *info = WidgetsPage::ms_widgetPages;
-    while ( info )
+    //
+    // we also construct the pages menu during this first iteration
+    for ( cat = 0; cat < MAX_PAGES; cat++ )
     {
-        WidgetsPage *page = (*info->GetCtor())(m_book, m_imaglist);
-        pages.Add(page);
+#if USE_TREEBOOK
+        nPage++; // increase for parent page
+#else
+        books[cat] = new WidgetsBookCtrl(m_book,
+                                         wxID_ANY,
+                                         wxDefaultPosition,
+                                         wxDefaultSize,
+                                         wxBK_DEFAULT);
+#endif
 
-        labels.Add(info->GetLabel());
+        for ( WidgetsPageInfo *info = WidgetsPage::ms_widgetPages;
+              info;
+              info = info->GetNext() )
+        {
+            if( (info->GetCategories() & ( 1 << cat )) == 0)
+                continue;
 
-        info = info->GetNext();
+            WidgetsPage *page = (*info->GetCtor())(
+#if USE_TREEBOOK
+                                 m_book
+#else
+                                 books[cat]
+#endif
+                                 , imageList);
+            pages[cat].Add(page);
+
+            labels[cat].Add(info->GetLabel());
+            if ( cat == ALL_PAGE )
+            {
+                wxString radioLabel(info->GetLabel());
+                nFKey++;
+                if ( nFKey <= 12 )
+                {
+                    radioLabel << wxT("\tF" ) << nFKey;
+                }
+
+                menuPages->AppendRadioItem(
+                            Widgets_GoToPage + nPage,
+                            radioLabel
+                           );
+#if !USE_TREEBOOK
+                // consider only for book in book architecture
+                nPage++;
+#endif
+            }
+
+#if USE_TREEBOOK
+            // consider only for treebook architecture (with subpages)
+            nPage++;
+#endif
+        }
     }
 
-    m_book->SetImageList(m_imaglist);
+    GetMenuBar()->Append(menuPages, _T("&Page"));
 
-    // now do add them
-    size_t count = pages.GetCount();
-    for ( size_t n = 0; n < count; n++ )
+#if USE_ICONS_IN_BOOK
+    m_book->AssignImageList(imageList);
+#endif
+
+    for ( cat = 0; cat < MAX_PAGES; cat++ )
     {
-        m_book->AddPage(
-                        pages[n],
-                        labels[n],
-                        false, // don't select
-                        n // image id
-                       );
+#if USE_TREEBOOK
+        m_book->AddPage(NULL,WidgetsCategories[cat],false,0);
+#else
+        m_book->AddPage(books[cat],WidgetsCategories[cat],false,0);
+#if USE_ICONS_IN_BOOK
+        books[cat]->SetImageList(imageList);
+#endif
+#endif
 
-/*
-        wxColour colour = m_book->MSWGetBgColourForChild(pages[n]);
-        pages[n]->SetBackgroundColour(colour);
-*/
+        // now do add them
+        size_t count = pages[cat].GetCount();
+        for ( size_t n = 0; n < count; n++ )
+        {
+#if USE_TREEBOOK
+            m_book->AddSubPage
+#else
+            books[cat]->AddPage
+#endif
+                           (
+                            pages[cat][n],
+                            labels[cat][n],
+                            false, // don't select
+                            imageId++
+                           );
+        }
     }
+
+    Connect( wxID_ANY,
+             wxEVT_COMMAND_WIDGETS_PAGE_CHANGED,
+             wxWidgetsbookEventHandler(WidgetsFrame::OnPageChanged) );
+
+#if USE_TREEBOOK
+    // for treebook page #0 is empty parent page only so select the first page
+    // with some contents
+    m_book->SetSelection(1);
+
+    // but ensure that the top of the tree is shown nevertheless
+    wxTreeCtrl * const tree = m_book->GetTreeCtrl();
+
+    wxTreeItemIdValue cookie;
+    tree->EnsureVisible(tree->GetFirstChild(tree->GetRootItem(), cookie));
+#else
+    // for other books set selection twice to force connected event handler
+    // to force lazy creation of initial visible content
+    m_book->SetSelection(1);
+    m_book->SetSelection(0);
+#endif // USE_TREEBOOK
+}
+
+WidgetsPage *WidgetsFrame::CurrentPage()
+{
+    wxWindow *page = m_book->GetCurrentPage();
+
+#if !USE_TREEBOOK
+    WidgetsBookCtrl *subBook = wxStaticCast(page, WidgetsBookCtrl);
+    wxCHECK_MSG( subBook, NULL, _T("no WidgetsBookCtrl?") );
+
+    page = subBook->GetCurrentPage();
+#endif // !USE_TREEBOOK
+
+    return wxStaticCast(page, WidgetsPage);
 }
 
 WidgetsFrame::~WidgetsFrame()
@@ -430,7 +611,6 @@ WidgetsFrame::~WidgetsFrame()
 #if USE_LOG
     delete m_logTarget;
 #endif // USE_LOG
-    delete m_imaglist;
 }
 
 // ----------------------------------------------------------------------------
@@ -451,40 +631,92 @@ void WidgetsFrame::OnButtonClearLog(wxCommandEvent& WXUNUSED(event))
 
 #if wxUSE_MENUS
 
+void WidgetsFrame::OnPageChanging(WidgetsBookCtrlEvent& event)
+{
+#if USE_TREEBOOK
+    // don't allow selection of entries without pages (categories)
+    if ( !m_book->GetPage(event.GetSelection()) )
+        event.Veto();
+#else
+    wxUnusedVar(event);
+#endif
+}
+
+void WidgetsFrame::OnPageChanged(WidgetsBookCtrlEvent& event)
+{
+    const int sel = event.GetSelection();
+
+    // adjust "Page" menu selection
+    wxMenuItem *item = GetMenuBar()->FindItem(Widgets_GoToPage + sel);
+    if ( item )
+        item->Check();
+
+    GetMenuBar()->Check(Widgets_BusyCursor, false);
+
+    // create the pages on demand, otherwise the sample startup is too slow as
+    // it creates hundreds of controls
+    WidgetsPage *page = CurrentPage();
+    if ( page->GetChildren().empty() )
+    {
+        wxWindowUpdateLocker noUpdates(page);
+        page->CreateContent();
+        //page->Layout();
+        page->GetSizer()->Fit(page);
+
+        WidgetsBookCtrl *book = wxStaticCast(page->GetParent(), WidgetsBookCtrl);
+        wxSize size;
+        for ( size_t i = 0; i < book->GetPageCount(); ++i )
+        {
+            wxWindow *page = book->GetPage(i);
+            if ( page )
+            {
+                size.IncTo(page->GetSize());
+            }
+        }
+        page->SetSize(size);
+    }
+
+    event.Skip();
+}
+
+void WidgetsFrame::OnGoToPage(wxCommandEvent& event)
+{
+#if USE_TREEBOOK
+    m_book->SetSelection(event.GetId() - Widgets_GoToPage);
+#else
+    m_book->SetSelection(m_book->GetPageCount()-1);
+    WidgetsBookCtrl *book = wxStaticCast(m_book->GetCurrentPage(), WidgetsBookCtrl);
+    book->SetSelection(event.GetId() - Widgets_GoToPage);
+#endif
+}
+
 #if wxUSE_TOOLTIPS
 
 void WidgetsFrame::OnSetTooltip(wxCommandEvent& WXUNUSED(event))
 {
     static wxString s_tip = _T("This is a tooltip");
 
-    wxString s = wxGetTextFromUser
-                 (
-                    _T("Tooltip text: "),
-                    _T("Widgets sample"),
-                    s_tip,
-                    this
-                 );
+    wxTextEntryDialog dialog
+                      (
+                        this,
+                        _T("Tooltip text (may use \\n, leave empty to remove): "),
+                        _T("Widgets sample"),
+                        s_tip
+                      );
 
-    if ( s.empty() )
+    if ( dialog.ShowModal() != wxID_OK )
         return;
 
-    s_tip = s;
+    s_tip = dialog.GetValue();
+    s_tip.Replace(_T("\\n"), _T("\n"));
 
-    if( wxMessageBox( _T("Test multiline tooltip text?"),
-                      _T("Widgets sample"),
-                      wxYES_NO,
-                      this
-                    ) == wxYES )
-    {
-        s = _T("#1 ") + s_tip + _T("\n") + _T("#2 ") + s_tip;
-    }
+    WidgetsPage *page = CurrentPage();
 
-    WidgetsPage *page = wxStaticCast(m_book->GetCurrentPage(), WidgetsPage);
-    page->GetWidget()->SetToolTip(s);
+    page->GetWidget()->SetToolTip(s_tip);
 
     wxControl *ctrl2 = page->GetWidget2();
     if ( ctrl2 )
-        ctrl2->SetToolTip(s);
+        ctrl2->SetToolTip(s_tip);
 }
 
 #endif // wxUSE_TOOLTIPS
@@ -493,7 +725,8 @@ void WidgetsFrame::OnSetFgCol(wxCommandEvent& WXUNUSED(event))
 {
 #if wxUSE_COLOURDLG
     // allow for debugging the default colour the first time this is called
-    WidgetsPage *page = wxStaticCast(m_book->GetCurrentPage(), WidgetsPage);
+    WidgetsPage *page = CurrentPage();
+
     if (!m_colFg.Ok())
         m_colFg = page->GetForegroundColour();
 
@@ -520,7 +753,8 @@ void WidgetsFrame::OnSetFgCol(wxCommandEvent& WXUNUSED(event))
 void WidgetsFrame::OnSetBgCol(wxCommandEvent& WXUNUSED(event))
 {
 #if wxUSE_COLOURDLG
-    WidgetsPage *page = wxStaticCast(m_book->GetCurrentPage(), WidgetsPage);
+    WidgetsPage *page = CurrentPage();
+
     if ( !m_colBg.Ok() )
         m_colBg = page->GetBackgroundColour();
 
@@ -547,7 +781,8 @@ void WidgetsFrame::OnSetBgCol(wxCommandEvent& WXUNUSED(event))
 void WidgetsFrame::OnSetFont(wxCommandEvent& WXUNUSED(event))
 {
 #if wxUSE_FONTDLG
-    WidgetsPage *page = wxStaticCast(m_book->GetCurrentPage(), WidgetsPage);
+    WidgetsPage *page = CurrentPage();
+
     if (!m_font.Ok())
         m_font = page->GetFont();
 
@@ -573,8 +808,49 @@ void WidgetsFrame::OnSetFont(wxCommandEvent& WXUNUSED(event))
 
 void WidgetsFrame::OnEnable(wxCommandEvent& event)
 {
-    WidgetsPage *page = wxStaticCast(m_book->GetCurrentPage(), WidgetsPage);
-    page->GetWidget()->Enable(event.IsChecked());
+    CurrentPage()->GetWidget()->Enable(event.IsChecked());
+}
+
+void WidgetsFrame::OnSetBorder(wxCommandEvent& event)
+{
+    int border;
+    switch ( event.GetId() )
+    {
+        case Widgets_BorderNone:   border = wxBORDER_NONE;   break;
+        case Widgets_BorderStatic: border = wxBORDER_STATIC; break;
+        case Widgets_BorderSimple: border = wxBORDER_SIMPLE; break;
+        case Widgets_BorderRaised: border = wxBORDER_RAISED; break;
+        case Widgets_BorderSunken: border = wxBORDER_SUNKEN; break;
+        case Widgets_BorderDouble: border = wxBORDER_DOUBLE; break;
+
+        default:
+            wxFAIL_MSG( _T("unknown border style") );
+            // fall through
+
+        case Widgets_BorderDefault: border = wxBORDER_DEFAULT; break;
+    }
+
+    WidgetsPage::ms_defaultFlags &= ~wxBORDER_MASK;
+    WidgetsPage::ms_defaultFlags |= border;
+
+    WidgetsPage *page = CurrentPage();
+
+    page->RecreateWidget();
+}
+
+void WidgetsFrame::OnToggleGlobalBusyCursor(wxCommandEvent& event)
+{
+    if ( event.IsChecked() )
+        wxBeginBusyCursor();
+    else
+        wxEndBusyCursor();
+}
+
+void WidgetsFrame::OnToggleBusyCursor(wxCommandEvent& event)
+{
+    CurrentPage()->GetWidget()->SetCursor(*(event.IsChecked()
+                                                ? wxHOURGLASS_CURSOR
+                                                : wxSTANDARD_CURSOR));
 }
 
 #endif // wxUSE_MENUS
@@ -583,21 +859,19 @@ void WidgetsFrame::OnEnable(wxCommandEvent& event)
 // WidgetsPageInfo
 // ----------------------------------------------------------------------------
 
-WidgetsPageInfo *WidgetsPage::ms_widgetPages = NULL;
-
-WidgetsPageInfo::WidgetsPageInfo(Constructor ctor, const wxChar *label)
+WidgetsPageInfo::WidgetsPageInfo(Constructor ctor, const wxChar *label, int categories)
                : m_label(label)
+               , m_categories(categories)
 {
     m_ctor = ctor;
 
     m_next = NULL;
 
-    // dummy sorting: add and immediately sort on list according to label
-
-    if(WidgetsPage::ms_widgetPages)
+    // dummy sorting: add and immediately sort in the list according to label
+    if ( WidgetsPage::ms_widgetPages )
     {
         WidgetsPageInfo *node_prev = WidgetsPage::ms_widgetPages;
-        if(wxStrcmp(label,node_prev->GetLabel().c_str())<0)
+        if ( wxStrcmp(label, node_prev->GetLabel().c_str()) < 0 )
         {
             // add as first
             m_next = node_prev;
@@ -609,10 +883,10 @@ WidgetsPageInfo::WidgetsPageInfo(Constructor ctor, const wxChar *label)
             do
             {
                 node_next = node_prev->GetNext();
-                if(node_next)
+                if ( node_next )
                 {
                     // add if between two
-                    if(wxStrcmp(label,node_next->GetLabel().c_str())<0)
+                    if ( wxStrcmp(label, node_next->GetLabel().c_str()) < 0 )
                     {
                         node_prev->SetNext(this);
                         m_next = node_next;
@@ -627,30 +901,39 @@ WidgetsPageInfo::WidgetsPageInfo(Constructor ctor, const wxChar *label)
                     m_next = node_next;
                 }
                 node_prev = node_next;
-            }while(node_next);
+            }
+            while ( node_next );
         }
     }
     else
     {
         // add when first
-
         WidgetsPage::ms_widgetPages = this;
-
     }
-
 }
 
 // ----------------------------------------------------------------------------
 // WidgetsPage
 // ----------------------------------------------------------------------------
 
-WidgetsPage::WidgetsPage(wxBookCtrlBase *book)
+int WidgetsPage::ms_defaultFlags = wxBORDER_DEFAULT;
+WidgetsPageInfo *WidgetsPage::ms_widgetPages = NULL;
+
+WidgetsPage::WidgetsPage(WidgetsBookCtrl *book,
+                         wxImageList *imaglist,
+                         const char* icon[])
            : wxPanel(book, wxID_ANY,
                      wxDefaultPosition, wxDefaultSize,
                      wxNO_FULL_REPAINT_ON_RESIZE |
                      wxCLIP_CHILDREN |
                      wxTAB_TRAVERSAL)
 {
+#if USE_ICONS_IN_BOOK
+    imaglist->Add(wxBitmap(icon));
+#else
+    wxUnusedVar(imaglist);
+    wxUnusedVar(icon);
+#endif
 }
 
 wxSizer *WidgetsPage::CreateSizerWithText(wxControl *control,
@@ -698,4 +981,3 @@ wxCheckBox *WidgetsPage::CreateCheckBoxAndAddToSizer(wxSizer *sizer,
 
     return checkbox;
 }
-

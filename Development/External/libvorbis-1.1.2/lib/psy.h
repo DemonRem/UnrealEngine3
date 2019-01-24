@@ -5,17 +5,14 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: random psychoacoustics (not including preecho)
- last mod: $Id: psy.h 7187 2004-07-20 07:24:27Z xiphmont $
 
  ********************************************************************/
-
-#define OPT_SORT
 
 #ifndef _V_PSY_H_
 #define _V_PSY_H_
@@ -31,7 +28,7 @@
 /* psychoacoustic setup ********************************************/
 #define P_BANDS 17      /* 62Hz to 16kHz */
 #define P_LEVELS 8      /* 30dB to 100dB */
-#define P_LEVEL_0 30.    /* 30 dB */
+#define P_LEVEL_0 30    /* 30 dB */
 #define P_NOISECURVES 3
 
 #define NOISE_COMPAND_LEVELS 40
@@ -69,23 +66,24 @@ typedef struct vorbis_info_psy{
   double normal_thresh;
 } vorbis_info_psy;
 
-typedef struct{
-  int   eighth_octave_lines;
+typedef struct
+{
+	int   eighth_octave_lines;
 
-  /* for block long/short tuning; encode only */
-  float preecho_thresh[VE_BANDS];
-  float postecho_thresh[VE_BANDS];
-  float stretch_penalty;
-  float preecho_minenergy;
+	/* for block long/short tuning; encode only */
+	float preecho_thresh[VE_BANDS];
+	float postecho_thresh[VE_BANDS];
+	float stretch_penalty;
+	float preecho_minenergy;
 
-  float ampmax_att_per_sec;
+	float ampmax_att_per_sec;
 
-  /* channel coupling config */
-  int   coupling_pkHz[PACKETBLOBS];  
-  int   coupling_pointlimit[2][PACKETBLOBS];  
-  int   coupling_prepointamp[PACKETBLOBS];  
-  int   coupling_postpointamp[PACKETBLOBS];  
-  int   sliding_lowpass[2][PACKETBLOBS];  
+	/* channel coupling config */
+	int   coupling_pkHz[PACKETBLOBS];  
+	int   coupling_pointlimit[2][PACKETBLOBS];  
+	int   coupling_prepointamp[PACKETBLOBS];  
+	int   coupling_postpointamp[PACKETBLOBS];  
+	int   sliding_lowpass[2][PACKETBLOBS];  
 
 } vorbis_info_psy_global;
 
@@ -186,7 +184,7 @@ extern void _vp_offset_and_mix(vorbis_look_psy *p,
 			       int lW_blocktype, int lW_modenumber, int lW_no);
 #endif														/* SSE Optimize */
 
-extern float _vp_ampmax_decay(float amp,vorbis_dsp_state *vd);
+extern float _vp_ampmax_decay( float amp, vorbis_dsp_state* vd );
 
 extern float **_vp_quantize_couple_memo(vorbis_block *vb,
 					vorbis_info_psy_global *g,

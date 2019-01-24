@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXTRIANGLEMESHDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -34,9 +34,10 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fall-back)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see materialIndices
 	*/
@@ -58,15 +59,21 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fall-back)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see materialIndexStride
 	*/
 	const void*				materialIndices;
 
 	/**
+	\brief Deprecated
+
+	\warning This member is deprecated and will no longer be supported. Use the specialized	#NxHeightField
+	class instead.
+
 	The mesh may represent either an arbitrary mesh or a height field. The advantage of a height field
 	is that it is assumed to be semi-infinite along one axis, and therefore it doesn't have the problem
 	of fast moving objects 'popping' through it due to temporal under sampling.
@@ -80,16 +87,21 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 	<b>Default:</b> NX_NOT_HEIGHTFIELD
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes (Software fall-back)
-	\li PS3  : Yes
-	\li XB360: Yes
+	\li PC SW: Deprecated
+	\li GPU  : Deprecated
+	\li PS3  : Deprecated
+	\li XB360: Deprecated
 
 	@see NxHeightFieldAxis heightFieldVerticalExtent
 	*/
 	NxHeightFieldAxis		heightFieldVerticalAxis;
 
 	/**
+	\brief Deprecated
+
+	\warning This member is deprecated and will no longer be supported. Use the specialized	#NxHeightField
+	class instead.
+
 	If this mesh is a height field, this sets how far 'below ground' the height volume extends.
 
 	In this way even objects which are under the surface of the height field but above
@@ -106,10 +118,10 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 	<b>Default:</b> 0
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes (Software fall-back)
-	\li PS3  : Yes
-	\li XB360: Yes
+	\li PC SW: Deprecated
+	\li GPU  : Deprecated
+	\li PS3  : Deprecated
+	\li XB360: Deprecated
 
 	@see heightFieldVerticalAxis
 	*/
@@ -129,9 +141,10 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh.loadPMap
 	*/
@@ -146,9 +159,10 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxReal					convexEdgeThreshold;
 
@@ -166,7 +180,11 @@ class NxTriangleMeshDesc : public NxSimpleTriangleMesh
 	\brief Returns true if the descriptor is valid.
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxTriangleMeshDesc::NxTriangleMeshDesc()	//constructor sets to default
@@ -185,23 +203,23 @@ NX_INLINE void NxTriangleMeshDesc::setToDefault()
 	pmap						= NULL;
 	}
 
-NX_INLINE bool NxTriangleMeshDesc::isValid() const
+NX_INLINE NxU32 NxTriangleMeshDesc::checkValid() const
 	{
 	if(numVertices < 3) 	//at least 1 trig's worth of points
-		return false;
+		return 1;
 	if ((!triangles) && (numVertices%3))		// Non-indexed mesh => we must ensure the geometry defines an implicit number of triangles // i.e. numVertices can't be divided by 3
-		return false;
+		return 2;
 	//add more validity checks here
 	if (materialIndices && materialIndexStride < sizeof(NxMaterialIndex))
-		return false;
-	return NxSimpleTriangleMesh::isValid();
+		return 3;
+	return 4*NxSimpleTriangleMesh::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

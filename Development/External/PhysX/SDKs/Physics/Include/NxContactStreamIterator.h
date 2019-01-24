@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXCONTACTSTREAMITERATOR
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -28,6 +28,8 @@ enum NxShapePairStreamFlags
 	{
 	NX_SF_HAS_MATS_PER_POINT		= (1<<0),	//!< not used
 	NX_SF_HAS_FEATURES_PER_POINT	= (1<<2),	//!< the stream includes per-point feature data
+	NX_SF_DELETED_SHAPE_0			= (1<<3),	//!< shape with index 0 has been deleted
+	NX_SF_DELETED_SHAPE_1			= (1<<4)	//!< shape with index 1 has been deleted
 	//note: bits 8-15 are reserved for internal use (static ccd pullback counter)
 	};
 
@@ -42,7 +44,7 @@ void MyUserContactInfo::onContactNotify(NxContactPair & pair, NxU32 events)
 	
 	while(i.goNextPair()) // user can call getNumPairs() here 
 		{
-		while(i.goNextPatch()) // user can also call getShape() and getNumPatches() here
+		while(i.goNextPatch()) // user can also call getShape(), isDeletedShape() and getNumPatches() here
 			{
 			while(i.goNextPoint()) //user can also call getPatchNormal() and getNumPoints() here
 				{
@@ -69,9 +71,10 @@ to re-organise, merge or move contact points as long as the overall physical sim
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxConstContactStream NxUserContactReport
 */
@@ -146,12 +149,33 @@ class NxContactStreamIterator
 	
 	May be called after goNextPair() returned true. ShapeIndex is 0 or 1.
 
+	\note The shape pointers might reference deleted shapes. Check through #isDeletedShape() to see
+	      whether that is the case. Do not dereference a pointer to a deleted shape. The pointer to a
+		  deleted shape is only provided such that user data structures which might depend on the pointer
+		  value can be updated.
+
 	\param[in] shapeIndex Used to choose which of the pair of shapes to retrieve(set to 0 or 1).
 	\return The shape specified by shapeIndex.
 
 	@see goNextPair() NxShape
 	*/
 	NX_INLINE NxShape * getShape(NxU32 shapeIndex);
+
+	/**
+	\brief Specifies for each shape of the pair if it has been deleted.
+	
+	May be called after goNextPair() returned true. ShapeIndex is 0 or 1.
+
+	Before dereferencing the shape pointers of the contact pair you might want to use this function
+	to check if the pointers reference deleted shapes. This will be the case if a shape gets deleted
+	whose actor requested NX_NOTIFY_ON_END_TOUCH or NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD events.
+
+	\param[in] shapeIndex Used to choose which of the shapes to check for deletion(set to 0 or 1).
+	\return True if the shape has been deleted, else false
+
+	@see goNextPair() NxShape
+	*/
+	NX_INLINE bool isDeletedShape(NxU32 shapeIndex);
 
 	/**
 	\brief Retrieves the shape flags for the current pair.
@@ -354,6 +378,15 @@ NX_INLINE NxShape * NxContactStreamIterator::getShape(NxU32 shapeIndex)
 	return shapes[shapeIndex];
 	}
 
+NX_INLINE bool NxContactStreamIterator::isDeletedShape(NxU32 shapeIndex)
+	{
+	NX_ASSERT(shapeIndex<=1);
+	if (shapeIndex == 0)
+		return ((shapeFlags & NX_SF_DELETED_SHAPE_0) != 0);
+	else
+		return ((shapeFlags & NX_SF_DELETED_SHAPE_1) != 0);
+	}
+
 NX_INLINE NxU16 NxContactStreamIterator::getShapeFlags()
 	{
 	return shapeFlags;
@@ -430,8 +463,9 @@ NX_INLINE bool NxContactStreamIterator::goNextPair()
 		shapes[1] = (NxShape*)bits;
 #endif
 		NxU32 t = *stream++;
-		numPatchesRemaining = numPatches = t & 0xffff;
-		shapeFlags = t >> 16;
+		numPatches = (NxU16) (t & 0xffff);
+		numPatchesRemaining = (NxU32) numPatches;
+		shapeFlags = (NxU16) (t >> 16);
 		return true;
 
 		}
@@ -464,7 +498,11 @@ NX_INLINE bool NxContactStreamIterator::goNextPoint()
 		NxU32 is32bits = binary & NX_SIGN_BITMASK;
 		binary |= NX_SIGN_BITMASK;	// PT: separation is always negative, but the sign bit is used
 									// for other purposes in the stream.
-		separation = NX_FR(binary);
+		// To avoid strict-aliasing warnings on gcc, unions are used to read from the stream.
+		// Note: You will still get a warning if gcc -Wstrict-aliasing=2 is used but this is a false positive.
+
+		// To avoid strict-aliasing warnings on gcc, unions are used to read from the stream.
+		NxU32F32 tmp; tmp.u = binary; separation = tmp.f;
 
 		if (shapeFlags & NX_SF_POINT_CONTACT_FORCE)
 			pointNormalForce = reinterpret_cast<const NxReal *>(stream++);
@@ -504,9 +542,9 @@ NX_INLINE bool NxContactStreamIterator::goNextPoint()
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

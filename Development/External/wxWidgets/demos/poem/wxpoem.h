@@ -9,14 +9,10 @@
 //              beware, inelegant code!
 // Author:      Julian Smart
 // Created:     12/12/98
-// RCS-ID:      $Id: wxpoem.h,v 1.5 2005/03/21 20:22:39 ABX Exp $
+// RCS-ID:      $Id: wxpoem.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "wxpoem.h"
-#endif
 
 // Define a new application
 class MyApp: public wxApp
@@ -33,7 +29,7 @@ class MyCanvas: public wxWindow
 {
 public:
     MyCanvas(wxFrame *frame);
-    ~MyCanvas();
+    virtual ~MyCanvas();
 
     void OnPaint(wxPaintEvent& event);
     void OnMouseEvent(wxMouseEvent& event);
@@ -51,7 +47,7 @@ class MainWindow: public wxFrame
 public:
     MyCanvas *canvas;
     MainWindow(wxFrame *frame, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style);
-    ~MainWindow();
+    virtual ~MainWindow();
 
     void OnCloseWindow(wxCloseEvent& event);
     void OnChar(wxKeyEvent& event);

@@ -4,7 +4,7 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: pile.cpp,v 1.8 2004/10/05 15:38:08 ABX Exp $
+// RCS-ID:      $Id: pile.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------
@@ -15,11 +15,6 @@
 //| The base class for holding piles of playing cards.          |
 //+-------------------------------------------------------------+
 
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
-
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -29,9 +24,6 @@
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
-#endif
-#ifdef __GNUG__
-#pragma implementation
 #endif
 
 #include <stdlib.h>

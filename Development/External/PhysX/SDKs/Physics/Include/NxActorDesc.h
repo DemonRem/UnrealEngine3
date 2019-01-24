@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXACTORDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -111,9 +111,10 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor::setGlobalPose()
 	*/
@@ -126,9 +127,10 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc
 	*/
@@ -146,9 +148,10 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorDesc
 	*/
@@ -161,9 +164,10 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor::raiseActorFlag()
 	*/
@@ -176,9 +180,10 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor::setGroup()
 	*/
@@ -196,15 +201,39 @@ class NxActorDescBase
 	NxDominanceGroup dominanceGroup;	
 
 	/**
+	\brief Combination of ::NxContactPairFlag flags
+
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxActor::setContactReportFlags()
+	*/
+	NxU32					contactReportFlags;
+	
+	/**
+	\brief Force Field Material Index, index != 0 has to be created.
+
+	<b>Default:</b> 0
+	*/
+	NxU16					forceFieldMaterial;
+
+	/**
 	\brief Will be copied to NxActor::userData
 
 	<b>Default:</b> NULL
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.userData
 	*/
@@ -215,9 +244,10 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	<b>Default:</b> NULL
 	*/
@@ -229,18 +259,15 @@ class NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	<b>Default:</b> NULL
 	*/
 	NxCompartment *			compartment;
 
-	/**
-	\brief constructor sets to default.
-	*/
-	NX_INLINE NxActorDescBase();	
 	/**
 	\brief (re)sets the structure to the default.	
 	*/
@@ -250,7 +277,11 @@ class NxActorDescBase
 
 	\return True if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Retrieve the actor type.
@@ -259,6 +290,11 @@ class NxActorDescBase
 	*/
 	NX_INLINE NxActorDescType getType() const;
 	protected:
+	/**
+	\brief constructor sets to default.
+	*/
+	NX_INLINE NxActorDescBase();	
+
 	NX_INLINE bool isValidInternal(bool hasSolidShape) const;
 
 	NxActorDescType			type;
@@ -285,9 +321,10 @@ class NxActorDesc : public NxActorDescBase
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes 
+	\li GPU  : Yes [SW] 
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxArray<NxShapeDesc*, NxAllocatorDefault>	shapes;
 
@@ -304,7 +341,11 @@ class NxActorDesc : public NxActorDescBase
 
 	\return True if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 /**
@@ -325,9 +366,10 @@ template<class AllocType = NxAllocatorDefault> class NxActorDesc_Template : publ
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes 
+	\li GPU  : Yes [SW] 
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxArray<NxShapeDesc*, AllocType>	shapes;
 
@@ -345,20 +387,22 @@ template<class AllocType = NxAllocatorDefault> class NxActorDesc_Template : publ
 		shapes.clear();
 		}
 
-	NX_INLINE bool isValid() const
+	NX_INLINE NxU32 checkValid() const
 		{
-		if (!NxActorDescBase::isValid())
-			return false;
+		NxU32 baseCheck = NxActorDescBase::checkValid();
+		if (baseCheck)
+			return 4*baseCheck;
 
 		unsigned int nNonTriggerShapes = 0;
 
 		// Static actors need nothing but a shape
 		if (!body && shapes.size() > 0)
-			return true;
+			return 0;
 		for (unsigned i = 0; i < shapes.size(); i++)
 			{
-			if (!shapes[i]->isValid())
-				return false;
+			NxU32 checkShape = shapes[i]->checkValid();
+			if (checkShape)
+				return checkShape + 0x100*i;
 			if ((shapes[i]->shapeFlags & NX_TRIGGER_ENABLE) == 0)
 				nNonTriggerShapes++;
 			}
@@ -366,12 +410,12 @@ template<class AllocType = NxAllocatorDefault> class NxActorDesc_Template : publ
 		// If Actor is dynamic (body && !(body->flags & NX_BF_KINEMATIC) but has no solid shapes,
 		// it has to have mass and massSpaceInertia, otherwise NxScene::createActor returns 0
 		if (nNonTriggerShapes == 0 && body && (!(body->flags & NX_BF_KINEMATIC)) && (body->mass < 0 || body->massSpaceInertia.isZero()))
-			return false;
+			return 2;
 
 		if (!NxActorDescBase::isValidInternal(nNonTriggerShapes > 0))
-			return false;
+			return 3;
 
-		return true;
+		return 0;
 		}
 
 
@@ -395,22 +439,24 @@ NX_INLINE void NxActorDescBase::setToDefault()
 	name		= NULL;
 	group		= 0;
 	dominanceGroup = 0;
+	contactReportFlags = 0;
+	forceFieldMaterial = 0;
 	compartment = NULL;
 	}
 
-NX_INLINE bool NxActorDescBase::isValid() const
+NX_INLINE NxU32 NxActorDescBase::checkValid() const
 	{
 	if (density < 0)
-		return false;
+		return 1;
 
 	if (body && !body->isValid())
-		return false;
+		return 2;
 	if(!globalPose.isFinite())
-		return false;
+		return 3;
 	if (!body && dominanceGroup)	//only dynamic actors may have a nonzero dominance group.
-		return false;
+		return 4;
 
-	return true;
+	return 0;
 	}
 
 NX_INLINE NxActorDescType NxActorDescBase::getType() const			
@@ -446,20 +492,22 @@ NX_INLINE void NxActorDesc::setToDefault()
 	shapes		.clear();
 	}
 
-NX_INLINE bool NxActorDesc::isValid() const
+NX_INLINE NxU32 NxActorDesc::checkValid() const
 	{
-	if (!NxActorDescBase::isValid())
-		return false;
+	NxU32 checkBase = NxActorDescBase::checkValid();
+	if(checkBase)
+		return 4*checkBase;
 
 	unsigned int nNonTriggerShapes = 0;
 
 	// Static actors need nothing but a shape
 	if (!body && shapes.size() > 0)
-		return true;
+		return 0;
 	for (unsigned i = 0; i < shapes.size(); i++)
 	{
-		if (!shapes[i]->isValid())
-			return false;
+		NxU32 checkShape = shapes[i]->checkValid();
+			if (checkShape)
+				return checkShape + 0x100*i;
 		if ((shapes[i]->shapeFlags & NX_TRIGGER_ENABLE) == 0)
 			nNonTriggerShapes++;
 	}
@@ -467,19 +515,19 @@ NX_INLINE bool NxActorDesc::isValid() const
 	// If Actor is dynamic (body && !(body->flags & NX_BF_KINEMATIC) but has no solid shapes,
 	// it has to have mass and massSpaceInertia, otherwise NxScene::createActor returns 0
 	if (nNonTriggerShapes == 0 && body && (!(body->flags & NX_BF_KINEMATIC)) && (body->mass < 0 || body->massSpaceInertia.isZero()))
-		return false;
+		return 2;
 
 	if (!NxActorDescBase::isValidInternal(nNonTriggerShapes > 0))
-		return false;
+		return 3;
 
-	return true;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND 
+//NVIDIACOPYRIGHTEND 

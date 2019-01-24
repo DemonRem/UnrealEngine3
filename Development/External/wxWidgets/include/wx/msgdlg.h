@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:
-// RCS-ID:      $Id: msgdlg.h,v 1.23 2005/05/04 18:52:00 JS Exp $
+// RCS-ID:      $Id: msgdlg.h 49765 2007-11-09 18:32:38Z DE $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -49,14 +49,16 @@ private:
 #include "wx/msw/msgdlg.h"
 #elif defined(__WXMOTIF__)
 #include "wx/motif/msgdlg.h"
-#elif defined(__WXGTK__) && defined(__WXGTK20__)
+#elif defined(__WXGTK20__)
 #include "wx/gtk/msgdlg.h"
+#elif defined(__WXGTK__)
+#include "wx/generic/msgdlgg.h"
 #elif defined(__WXGTK__)
 #include "wx/generic/msgdlgg.h"
 #elif defined(__WXMAC__)
 #include "wx/mac/msgdlg.h"
 #elif defined(__WXCOCOA__)
-#include "wx/generic/msgdlgg.h"
+#include "wx/cocoa/msgdlg.h"
 #elif defined(__WXPM__)
 #include "wx/os2/msgdlg.h"
 #endif

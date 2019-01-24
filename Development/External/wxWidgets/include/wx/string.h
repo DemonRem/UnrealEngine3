@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: string.h,v 1.206 2005/08/10 21:24:42 MW Exp $
+// RCS-ID:      $Id: string.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@
 #include "wx/buffer.h"      // for wxCharBuffer
 #include "wx/strconv.h"     // for wxConvertXXX() macros and wxMBConv classes
 
-class WXDLLIMPEXP_BASE wxString;
+class WXDLLIMPEXP_FWD_BASE wxString;
 
 // ---------------------------------------------------------------------------
 // macros
@@ -76,8 +76,14 @@ class WXDLLIMPEXP_BASE wxString;
 // constants
 // ----------------------------------------------------------------------------
 
+#if WXWIN_COMPATIBILITY_2_6
+
+// deprecated in favour of wxString::npos, don't use in new code
+//
 // maximum possible length for a string means "take all string" everywhere
 #define wxSTRING_MAXLEN wxStringBase::npos
+
+#endif // WXWIN_COMPATIBILITY_2_6
 
 // ----------------------------------------------------------------------------
 // global data
@@ -246,7 +252,7 @@ struct WXDLLIMPEXP_BASE wxStringData
 class WXDLLIMPEXP_BASE wxStringBase
 {
 #if !wxUSE_STL
-friend class WXDLLIMPEXP_BASE wxArrayString;
+friend class WXDLLIMPEXP_FWD_BASE wxArrayString;
 #endif
 public :
   // an 'invalid' value for string index, moved to this place due to a CW bug
@@ -262,7 +268,7 @@ protected:
     // initializes the string to the empty value (must be called only from
     // ctors, use Reinit() otherwise)
   void Init() { m_pchData = (wxChar *)wxEmptyString; }
-    // initializaes the string with (a part of) C-string
+    // initializes the string with (a part of) C-string
   void InitWith(const wxChar *psz, size_t nPos = 0, size_t nLen = npos);
     // as Init, but also frees old data
   void Reinit() { GetStringData()->Unlock(); Init(); }
@@ -299,6 +305,43 @@ public:
   typedef value_type *iterator;
   typedef const value_type *const_iterator;
 
+#define wxSTRING_REVERSE_ITERATOR(name, const_or_not)                         \
+  class name                                                                  \
+  {                                                                           \
+  public:                                                                     \
+      typedef wxChar value_type;                                              \
+      typedef const_or_not value_type& reference;                             \
+      typedef const_or_not value_type *pointer;                               \
+      typedef const_or_not value_type *iterator_type;                         \
+                                                                              \
+      name(iterator_type i) : m_cur(i) { }                                    \
+      name(const name& ri) : m_cur(ri.m_cur) { }                              \
+                                                                              \
+      iterator_type base() const { return m_cur; }                            \
+                                                                              \
+      reference operator*() const { return *(m_cur - 1); }                    \
+                                                                              \
+      name& operator++() { --m_cur; return *this; }                           \
+      name operator++(int) { name tmp = *this; --m_cur; return tmp; }         \
+      name& operator--() { ++m_cur; return *this; }                           \
+      name operator--(int) { name tmp = *this; ++m_cur; return tmp; }         \
+                                                                              \
+      bool operator==(name ri) const { return m_cur == ri.m_cur; }            \
+      bool operator!=(name ri) const { return !(*this == ri); }               \
+                                                                              \
+  private:                                                                    \
+      iterator_type m_cur;                                                    \
+  }
+
+  wxSTRING_REVERSE_ITERATOR(const_reverse_iterator, const);
+
+  #define wxSTRING_CONST
+  wxSTRING_REVERSE_ITERATOR(reverse_iterator, wxSTRING_CONST);
+  #undef wxSTRING_CONST
+
+  #undef wxSTRING_REVERSE_ITERATOR
+
+
   // constructors and destructor
     // ctor for an empty string
   wxStringBase() { Init(); }
@@ -325,7 +368,9 @@ public:
       { InitWith(psz, 0, npos); }
   wxStringBase(const wxChar *psz, size_t nLength)
       { InitWith(psz, 0, nLength); }
-  wxStringBase(const wxChar *psz, wxMBConv& WXUNUSED(conv), size_t nLength = npos)
+  wxStringBase(const wxChar *psz,
+               const wxMBConv& WXUNUSED(conv),
+               size_t nLength = npos)
       { InitWith(psz, 0, nLength); }
     // take nLen chars starting at nPos
   wxStringBase(const wxStringBase& str, size_t nPos, size_t nLen)
@@ -364,17 +409,17 @@ public:
   wxStringBase& operator=(const wxChar *psz);
 
     // return the length of the string
-  size_type size() const { return GetStringData()->nDataLength; }
+  size_type length() const { return GetStringData()->nDataLength; }
     // return the length of the string
-  size_type length() const { return size(); }
+  size_type size() const { return length(); }
     // return the maximum size of the string
-  size_type max_size() const { return wxSTRING_MAXLEN; }
+  size_type max_size() const { return npos; }
     // resize the string, filling the space with c if c != 0
   void resize(size_t nSize, wxChar ch = wxT('\0'));
     // delete the contents of the string
   void clear() { erase(0, npos); }
     // returns true if the string is empty
-  bool empty() const { return size() == 0; }
+  bool empty() const { return length() == 0; }
     // inform string about planned change in size
   void reserve(size_t sz) { Alloc(sz); }
   size_type capacity() const { return GetStringData()->nAllocLength; }
@@ -429,13 +474,17 @@ public:
 
     // first valid index position
   const_iterator begin() const { return m_pchData; }
+  iterator begin();
     // position one after the last valid one
   const_iterator end() const { return m_pchData + length(); }
-
-  // first valid index position
-  iterator begin();
-  // position one after the last valid one
   iterator end();
+
+    // first element of the reversed string
+  const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+    // one beyond the end of the reversed string
+  const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+  reverse_iterator rend() { return reverse_iterator(begin()); }
 
     // insert another string
   wxStringBase& insert(size_t nPos, const wxStringBase& str)
@@ -610,12 +659,12 @@ public:
 class WXDLLIMPEXP_BASE wxString : public wxStringBase
 {
 #if !wxUSE_STL
-friend class WXDLLIMPEXP_BASE wxArrayString;
+friend class WXDLLIMPEXP_FWD_BASE wxArrayString;
 #endif
 
   // NB: special care was taken in arranging the member functions in such order
   //     that all inline functions can be effectively inlined, verify that all
-  //     performace critical functions are still inlined if you change order!
+  //     performance critical functions are still inlined if you change order!
 private:
   // if we hadn't made these operators private, it would be possible to
   // compile "wxString s; s = 17;" without any warnings as 17 is implicitly
@@ -650,10 +699,12 @@ public:
       : wxStringBase(psz ? psz : wxT("")) { }
   wxString(const wxChar *psz, size_t nLength)
       : wxStringBase(psz, nLength) { }
-  wxString(const wxChar *psz, wxMBConv& WXUNUSED(conv), size_t nLength = npos)
+  wxString(const wxChar *psz,
+           const wxMBConv& WXUNUSED(conv),
+           size_t nLength = npos)
       : wxStringBase(psz, nLength == npos ? wxStrlen(psz) : nLength) { }
 
-  // even we're not build with wxUSE_STL == 1 it is very convenient to allow
+  // even if we're not built with wxUSE_STL == 1 it is very convenient to allow
   // implicit conversions from std::string to wxString as this allows to use
   // the same strings in non-GUI and GUI code, however we don't want to
   // unconditionally add this ctor as it would make wx lib dependent on
@@ -666,17 +717,22 @@ public:
 
 #if wxUSE_UNICODE
     // from multibyte string
-  wxString(const char *psz, wxMBConv& conv, size_t nLength = npos);
+  wxString(const char *psz, const wxMBConv& conv, size_t nLength = npos);
     // from wxWCharBuffer (i.e. return from wxGetString)
   wxString(const wxWCharBuffer& psz) : wxStringBase(psz.data()) { }
 #else // ANSI
     // from C string (for compilers using unsigned char)
-  wxString(const unsigned char* psz, size_t nLength = npos)
+  wxString(const unsigned char* psz)
+      : wxStringBase((const char*)psz) { }
+    // from part of C string (for compilers using unsigned char)
+  wxString(const unsigned char* psz, size_t nLength)
       : wxStringBase((const char*)psz, nLength) { }
 
 #if wxUSE_WCHAR_T
     // from wide (Unicode) string
-  wxString(const wchar_t *pwz, wxMBConv& conv = wxConvLibc, size_t nLength = npos);
+  wxString(const wchar_t *pwz,
+           const wxMBConv& conv = wxConvLibc,
+           size_t nLength = npos);
 #endif // !wxUSE_WCHAR_T
 
     // from wxCharBuffer
@@ -690,7 +746,7 @@ public:
     // string contains any characters?
   bool IsEmpty() const { return empty(); }
     // empty string is "false", so !str will return true
-  bool operator!() const { return IsEmpty(); }
+  bool operator!() const { return empty(); }
     // truncate the string to given length
   wxString& Truncate(size_t uiLen);
     // empty string contents
@@ -780,6 +836,17 @@ public:
     // identical to c_str(), for MFC compatibility
     const wxChar* GetData() const { return c_str(); }
 
+#if wxABI_VERSION >= 20804
+    // conversion to *non-const* multibyte or widestring buffer; modifying
+    // returned buffer won't affect the string, these methods are only useful
+    // for passing values to const-incorrect functions
+    wxWritableCharBuffer char_str(const wxMBConv& conv = wxConvLibc) const
+      { return mb_str(conv); }
+#if wxUSE_WCHAR_T
+    wxWritableWCharBuffer wchar_str() const { return wc_str(wxConvLibc); }
+#endif
+#endif // wxABI_VERSION >= 20804
+
     // conversion to/from plain (i.e. 7 bit) ASCII: this is useful for
     // converting numbers or strings which are certain not to contain special
     // chars (typically system functions, X atoms, environment variables etc.)
@@ -796,6 +863,49 @@ public:
     const char *ToAscii() const { return c_str(); }
 #endif // Unicode/!Unicode
 
+#if wxABI_VERSION >= 20804
+    // conversion to/from UTF-8:
+#if wxUSE_UNICODE
+    static wxString FromUTF8(const char *utf8)
+      { return wxString(utf8, wxConvUTF8); }
+    static wxString FromUTF8(const char *utf8, size_t len)
+      { return wxString(utf8, wxConvUTF8, len); }
+    const wxCharBuffer utf8_str() const { return mb_str(wxConvUTF8); }
+    const wxCharBuffer ToUTF8() const { return utf8_str(); }
+#elif wxUSE_WCHAR_T // ANSI
+    static wxString FromUTF8(const char *utf8)
+      { return wxString(wxConvUTF8.cMB2WC(utf8)); }
+    static wxString FromUTF8(const char *utf8, size_t len)
+    {
+      size_t wlen;
+      wxWCharBuffer buf(wxConvUTF8.cMB2WC(utf8, len == npos ? wxNO_LEN : len, &wlen));
+      return wxString(buf.data(), wxConvLibc, wlen);
+    }
+    const wxCharBuffer utf8_str() const
+      { return wxConvUTF8.cWC2MB(wc_str(wxConvLibc)); }
+    const wxCharBuffer ToUTF8() const { return utf8_str(); }
+#endif // Unicode/ANSI
+#endif // wxABI_VERSION >= 20804
+
+#if wxABI_VERSION >= 20804
+    // functions for storing binary data in wxString:
+#if wxUSE_UNICODE
+    static wxString From8BitData(const char *data, size_t len)
+      { return wxString(data, wxConvISO8859_1, len); }
+    // version for NUL-terminated data:
+    static wxString From8BitData(const char *data)
+      { return wxString(data, wxConvISO8859_1); }
+    const wxCharBuffer To8BitData() const { return mb_str(wxConvISO8859_1); }
+#else // ANSI
+    static wxString From8BitData(const char *data, size_t len)
+      { return wxString(data, len); }
+    // version for NUL-terminated data:
+    static wxString From8BitData(const char *data)
+      { return wxString(data); }
+    const char *To8BitData() const { return c_str(); }
+#endif // Unicode/ANSI
+#endif // wxABI_VERSION >= 20804
+
     // conversions with (possible) format conversions: have to return a
     // buffer with temporary data
     //
@@ -806,14 +916,14 @@ public:
     // type differs because a function may either return pointer to the buffer
     // directly or have to use intermediate buffer for translation.
 #if wxUSE_UNICODE
-    const wxCharBuffer mb_str(wxMBConv& conv = wxConvLibc) const;
+    const wxCharBuffer mb_str(const wxMBConv& conv = wxConvLibc) const;
 
     const wxWX2MBbuf mbc_str() const { return mb_str(*wxConvCurrent); }
 
     const wxChar* wc_str() const { return c_str(); }
 
     // for compatibility with !wxUSE_UNICODE version
-    const wxChar* wc_str(wxMBConv& WXUNUSED(conv)) const { return c_str(); }
+    const wxChar* wc_str(const wxMBConv& WXUNUSED(conv)) const { return c_str(); }
 
 #if wxMBFILES
     const wxCharBuffer fn_str() const { return mb_str(wxConvFile); }
@@ -824,12 +934,12 @@ public:
     const wxChar* mb_str() const { return c_str(); }
 
     // for compatibility with wxUSE_UNICODE version
-    const wxChar* mb_str(wxMBConv& WXUNUSED(conv)) const { return c_str(); }
+    const wxChar* mb_str(const wxMBConv& WXUNUSED(conv)) const { return c_str(); }
 
     const wxWX2MBbuf mbc_str() const { return mb_str(); }
 
 #if wxUSE_WCHAR_T
-    const wxWCharBuffer wc_str(wxMBConv& conv) const;
+    const wxWCharBuffer wc_str(const wxMBConv& conv) const;
 #endif // wxUSE_WCHAR_T
 #ifdef __WXOSX__
     const wxCharBuffer fn_str() const { return wxConvFile.cWC2WX( wc_str( wxConvLocal ) ); }
@@ -931,16 +1041,19 @@ public:
     { *this = str + *this; return *this; }
 
     // non-destructive concatenation
-      //
-  friend wxString WXDLLIMPEXP_BASE operator+(const wxString& string1,  const wxString& string2);
-      //
+      // two strings
+  friend wxString WXDLLIMPEXP_BASE operator+(const wxString& string1,
+                                             const wxString& string2);
+      // string with a single char
   friend wxString WXDLLIMPEXP_BASE operator+(const wxString& string, wxChar ch);
-      //
+      // char with a string
   friend wxString WXDLLIMPEXP_BASE operator+(wxChar ch, const wxString& string);
-      //
-  friend wxString WXDLLIMPEXP_BASE operator+(const wxString& string, const wxChar *psz);
-      //
-  friend wxString WXDLLIMPEXP_BASE operator+(const wxChar *psz, const wxString& string);
+      // string with C string
+  friend wxString WXDLLIMPEXP_BASE operator+(const wxString& string,
+                                             const wxChar *psz);
+      // C string with string
+  friend wxString WXDLLIMPEXP_BASE operator+(const wxChar *psz,
+                                             const wxString& string);
 
   // stream-like functions
       // insert an int into string
@@ -955,6 +1068,20 @@ public:
       // insert an unsigned long into string
   wxString& operator<<(unsigned long ul)
     { return (*this) << Format(_T("%lu"), ul); }
+#if defined wxLongLong_t && !defined wxLongLongIsLong
+      // insert a long long if they exist and aren't longs
+  wxString& operator<<(wxLongLong_t ll)
+    {
+      const wxChar *fmt = _T("%") wxLongLongFmtSpec _T("d");
+      return (*this) << Format(fmt, ll);
+    }
+      // insert an unsigned long long
+  wxString& operator<<(wxULongLong_t ull)
+    {
+      const wxChar *fmt = _T("%") wxLongLongFmtSpec _T("u");
+      return (*this) << Format(fmt , ull);
+    }
+#endif
       // insert a float into string
   wxString& operator<<(float f)
     { return (*this) << Format(_T("%f"), f); }
@@ -973,7 +1100,7 @@ public:
     // (if compareWithCase then the case matters)
   bool IsSameAs(const wxChar *psz, bool compareWithCase = true) const
     { return (compareWithCase ? Cmp(psz) : CmpNoCase(psz)) == 0; }
-    // comparison with a signle character: returns true if equal
+    // comparison with a single character: returns true if equal
   bool IsSameAs(wxChar c, bool compareWithCase = true) const
     {
       return (length() == 1) && (compareWithCase ? GetChar(0u) == c
@@ -989,10 +1116,14 @@ public:
   wxString  operator()(size_t start, size_t len) const
     { return Mid(start, len); }
 
-      // check that the string starts with prefix and return the rest of the
-      // string in the provided pointer if it is not NULL, otherwise return
-      // false
+      // check if the string starts with the given prefix and return the rest
+      // of the string in the provided pointer if it is not NULL; otherwise
+      // return false
   bool StartsWith(const wxChar *prefix, wxString *rest = NULL) const;
+      // check if the string ends with the given suffix and return the
+      // beginning of the string before the suffix in the provided pointer if
+      // it is not NULL; otherwise return false
+  bool EndsWith(const wxChar *suffix, wxString *rest = NULL) const;
 
       // get first nCount characters
   wxString Left(size_t nCount) const;
@@ -1055,10 +1186,18 @@ public:
     bool ToLong(long *val, int base = 10) const;
         // convert to an unsigned integer
     bool ToULong(unsigned long *val, int base = 10) const;
+        // convert to wxLongLong
+#if defined(wxLongLong_t)
+    bool ToLongLong(wxLongLong_t *val, int base = 10) const;
+        // convert to wxULongLong
+    bool ToULongLong(wxULongLong_t *val, int base = 10) const;
+#endif // wxLongLong_t
         // convert to a double
     bool ToDouble(double *val) const;
 
-  // formated input/output
+
+
+  // formatted input/output
     // as sprintf(), returns the number of characters written or < 0 on error
     // (take 'this' into account in attribute parameter count)
   int Printf(const wxChar *pszFormat, ...) ATTRIBUTE_PRINTF_2;
@@ -1275,16 +1414,16 @@ public:
     { return (wxString&)wxStringBase::operator+=(ch); }
 };
 
-// IBM xlC compiler needs these operators to be declared in global scope,
-// although this shouldn't be a problem for the other compilers we prefer to
-// only do it for it in stable 2.6 branch
-#ifdef __IBMCPP__
+// notice that even though for many compilers the friend declarations above are
+// enough, from the point of view of C++ standard we must have the declarations
+// here as friend ones are not injected in the enclosing namespace and without
+// them the code fails to compile with conforming compilers such as xlC or g++4
 wxString WXDLLIMPEXP_BASE operator+(const wxString& string1,  const wxString& string2);
 wxString WXDLLIMPEXP_BASE operator+(const wxString& string, wxChar ch);
 wxString WXDLLIMPEXP_BASE operator+(wxChar ch, const wxString& string);
 wxString WXDLLIMPEXP_BASE operator+(const wxString& string, const wxChar *psz);
 wxString WXDLLIMPEXP_BASE operator+(const wxChar *psz, const wxString& string);
-#endif // __IBMCPP__
+
 
 // define wxArrayString, for compatibility
 #if WXWIN_COMPATIBILITY_2_4 && !wxUSE_STL
@@ -1507,7 +1646,6 @@ inline bool operator!=(const wxString& s, wxChar c) { return !s.IsSameAs(c); }
 
 #include "wx/iosfwrap.h"
 
-WXDLLIMPEXP_BASE wxSTD istream& operator>>(wxSTD istream&, wxString&);
 WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxString&);
 
 #endif  // wxSTD_STRING_COMPATIBILITY

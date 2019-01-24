@@ -3,64 +3,33 @@
 // Purpose:     Generic list control
 // Author:      Robert Roebling
 // Created:     01/02/97
-// RCS-ID:      $Id: listctrl.h,v 1.100 2005/07/22 22:29:13 MW Exp $
+// RCS-ID:      $Id: listctrl.h 46432 2007-06-13 03:46:20Z SC $
 // Copyright:   (c) 1998 Robert Roebling and Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef __LISTCTRLH_G__
-#define __LISTCTRLH_G__
+#ifndef _WX_GENERIC_LISTCTRL_H_
+#define _WX_GENERIC_LISTCTRL_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "listctrl.h"
-#endif
+#include "wx/textctrl.h"
 
-#include "wx/defs.h"
-#include "wx/object.h"
-#ifdef __WXMAC__
-#include "wx/imaglist.h"
-#else
-#include "wx/generic/imaglist.h"
-#endif
-
-#include "wx/control.h"
-#include "wx/timer.h"
-#include "wx/dcclient.h"
-#include "wx/scrolwin.h"
-#include "wx/settings.h"
-#include "wx/listbase.h"
+class WXDLLIMPEXP_CORE wxImageList;
 
 #if wxUSE_DRAG_AND_DROP
 class WXDLLEXPORT wxDropTarget;
 #endif
 
-//-----------------------------------------------------------------------------
-// classes
-//-----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// constants
+// ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxListItem;
-class WXDLLEXPORT wxListEvent;
-
-#if !defined(__WXMSW__) || defined(__WXUNIVERSAL__)
-class WXDLLEXPORT wxListCtrl;
-#define wxImageListType wxImageList
-#else
-#define wxImageListType wxGenericImageList
-#endif
 
 //-----------------------------------------------------------------------------
 // internal classes
 //-----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxListHeaderData;
-class WXDLLEXPORT wxListItemData;
-class WXDLLEXPORT wxListLineData;
-
 class WXDLLEXPORT wxListHeaderWindow;
 class WXDLLEXPORT wxListMainWindow;
-
-class WXDLLEXPORT wxListRenameTimer;
-class WXDLLEXPORT wxListTextCtrl;
 
 //-----------------------------------------------------------------------------
 // wxListCtrl
@@ -69,6 +38,7 @@ class WXDLLEXPORT wxListTextCtrl;
 class WXDLLEXPORT wxGenericListCtrl: public wxControl
 {
 public:
+
     wxGenericListCtrl();
     wxGenericListCtrl( wxWindow *parent,
                 wxWindowID winid = wxID_ANY,
@@ -80,7 +50,7 @@ public:
     {
         Create(parent, winid, pos, size, style, validator, name);
     }
-    ~wxGenericListCtrl();
+    virtual ~wxGenericListCtrl();
 
     bool Create( wxWindow *parent,
                  wxWindowID winid = wxID_ANY,
@@ -103,10 +73,14 @@ public:
     int  GetItemState( long item, long stateMask ) const;
     bool SetItemState( long item, long state, long stateMask);
     bool SetItemImage( long item, int image, int selImage = -1 );
+    bool SetItemColumnImage( long item, long column, int image );
     wxString GetItemText( long item ) const;
     void SetItemText( long item, const wxString& str );
     wxUIntPtr GetItemData( long item ) const;
-    bool SetItemData( long item, long data );
+#if wxABI_VERSION >= 20804
+    bool SetItemPtrData(long item, wxUIntPtr data);
+#endif // wxABI 2.8.4+
+    bool SetItemData(long item, long data);
     bool GetItemRect( long item, wxRect& rect, int code = wxLIST_RECT_BOUNDS ) const;
     bool GetItemPosition( long item, wxPoint& pos ) const;
     bool SetItemPosition( long item, const wxPoint& pos ); // not supported in wxGLC
@@ -118,10 +92,8 @@ public:
     wxColour GetItemTextColour( long item ) const;
     void SetItemBackgroundColour( long item, const wxColour &col);
     wxColour GetItemBackgroundColour( long item ) const;
-#if wxABI_VERSION >= 20602
     void SetItemFont( long item, const wxFont &f);
     wxFont GetItemFont( long item ) const;
-#endif
     int GetSelectedItemCount() const;
     wxColour GetTextColour() const;
     void SetTextColour(const wxColour& col);
@@ -131,9 +103,9 @@ public:
     void SetWindowStyleFlag( long style );
     void RecreateWindow() {}
     long GetNextItem( long item, int geometry = wxLIST_NEXT_ALL, int state = wxLIST_STATE_DONTCARE ) const;
-    wxImageListType *GetImageList( int which ) const;
-    void SetImageList( wxImageListType *imageList, int which );
-    void AssignImageList( wxImageListType *imageList, int which );
+    wxImageList *GetImageList( int which ) const;
+    void SetImageList( wxImageList *imageList, int which );
+    void AssignImageList( wxImageList *imageList, int which );
     bool Arrange( int flag = wxLIST_ALIGN_DEFAULT ); // always wxLIST_ALIGN_LEFT in wxGLC
 
     void ClearAll();
@@ -144,14 +116,16 @@ public:
 
     void SetItemCount(long count);
 
-    void EditLabel( long item ) { Edit(item); }
-    void Edit( long item );
+    wxTextCtrl *EditLabel(long item,
+                          wxClassInfo* textControlClass = CLASSINFO(wxTextCtrl));
+    wxTextCtrl* GetEditControl() const;
+    void Edit( long item ) { EditLabel(item); }
 
     bool EnsureVisible( long item );
     long FindItem( long start, const wxString& str, bool partial = false );
     long FindItem( long start, wxUIntPtr data );
     long FindItem( long start, const wxPoint& pt, int direction ); // not supported in wxGLC
-    long HitTest( const wxPoint& point, int& flags);
+    long HitTest( const wxPoint& point, int& flags, long *pSubItem = NULL ) const;
     long InsertItem(wxListItem& info);
     long InsertItem( long index, const wxString& label );
     long InsertItem( long index, int imageIndex );
@@ -160,8 +134,10 @@ public:
     long InsertColumn( long col, const wxString& heading,
                        int format = wxLIST_FORMAT_LEFT, int width = -1 );
     bool ScrollList( int dx, int dy );
-    bool SortItems( wxListCtrlCompare fn, long data );
+    bool SortItems( wxListCtrlCompare fn, wxUIntPtr data );		// @UE3: 64-bit sorting fix
     bool Update( long item );
+    // Must provide overload to avoid hiding it (and warnings about it)
+    virtual void Update() { wxControl::Update(); }
 
     // are we in report mode?
     bool InReportView() const { return HasFlag(wxLC_REPORT); }
@@ -177,9 +153,10 @@ public:
     void RefreshItem(long item);
     void RefreshItems(long itemFrom, long itemTo);
 
+#if WXWIN_COMPATIBILITY_2_6
     // obsolete, don't use
     wxDEPRECATED( int GetItemSpacing( bool isSmall ) const );
-
+#endif // WXWIN_COMPATIBILITY_2_6
 
     virtual wxVisualAttributes GetDefaultAttributes() const
     {
@@ -209,24 +186,23 @@ public:
     virtual bool SetFont( const wxFont &font );
     virtual bool SetCursor( const wxCursor &cursor );
 
+    virtual int GetScrollPos(int orient) const;
+    virtual void SetScrollPos(int orient, int pos, bool refresh = true); 
+
 #if wxUSE_DRAG_AND_DROP
     virtual void SetDropTarget( wxDropTarget *dropTarget );
     virtual wxDropTarget *GetDropTarget() const;
 #endif
 
-    virtual bool DoPopupMenu( wxMenu *menu, int x, int y );
-
     virtual bool ShouldInheritColours() const { return false; }
     virtual void SetFocus();
-
-    virtual wxSize DoGetBestSize() const;
 
     // implementation
     // --------------
 
-    wxImageListType         *m_imageListNormal;
-    wxImageListType         *m_imageListSmall;
-    wxImageListType         *m_imageListState;  // what's that ?
+    wxImageList         *m_imageListNormal;
+    wxImageList         *m_imageListSmall;
+    wxImageList         *m_imageListState;  // what's that ?
     bool                 m_ownsImageListNormal,
                          m_ownsImageListSmall,
                          m_ownsImageListState;
@@ -235,11 +211,25 @@ public:
     wxCoord              m_headerHeight;
 
 protected:
+    virtual bool DoPopupMenu( wxMenu *menu, int x, int y );
+
+    // take into account the coordinates difference between the container
+    // window and the list control window itself here
+    virtual void DoClientToScreen( int *x, int *y ) const;
+    virtual void DoScreenToClient( int *x, int *y ) const;
+
+    virtual wxSize DoGetBestSize() const;
+
     // return the text for the given column of the given item
     virtual wxString OnGetItemText(long item, long column) const;
 
-    // return the icon for the given item
+    // return the icon for the given item. In report view, OnGetItemImage will
+    // only be called for the first column. See OnGetItemColumnImage for
+    // details.
     virtual int OnGetItemImage(long item) const;
+
+    // return the icon for the given item and column.
+    virtual int OnGetItemColumnImage(long item, long column) const;
 
     // return the attribute for the item (may return NULL if none)
     virtual wxListItemAttr *OnGetItemAttr(long item) const;
@@ -248,9 +238,6 @@ protected:
     friend class WXDLLEXPORT wxListMainWindow;
 
 private:
-    // Virtual function hiding supression
-    virtual void Update() { wxWindow::Update(); }
-
     // create the header window
     void CreateHeaderWindow();
 
@@ -265,7 +252,7 @@ private:
     DECLARE_DYNAMIC_CLASS(wxGenericListCtrl)
 };
 
-#if !defined(__WXMSW__) || defined(__WXUNIVERSAL__)
+#if (!defined(__WXMSW__) || defined(__WXUNIVERSAL__)) && (!defined(__WXMAC__) || defined(__WXUNIVERSAL__))
 /*
  * wxListCtrl has to be a real class or we have problems with
  * the run-time information.
@@ -287,7 +274,8 @@ public:
     : wxGenericListCtrl(parent, winid, pos, size, style, validator, name)
     {
     }
+    
 };
 #endif // !__WXMSW__ || __WXUNIVERSAL__
 
-#endif // __LISTCTRLH_G__
+#endif // _WX_GENERIC_LISTCTRL_H_

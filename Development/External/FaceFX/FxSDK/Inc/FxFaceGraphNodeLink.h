@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxFaceGraphNodeLink_H__
@@ -37,12 +37,12 @@ public:
 	/// \param inputName The name of the node to which to link.
 	/// \param inputNode The node to which to link.
 	/// \param linkFunctionName The name of the link function to use.
-	/// \param linkFunction A pointer to the function to execute on the value 
-	/// coming from \a inputNode.
+	/// \param linkFunctionType The type of link function to execute on the 
+	/// value coming from \a inputNode.
 	/// \param linkFunctionParams The parameters of the link function.
 	FxFaceGraphNodeLink( const FxName& inputName, FxFaceGraphNode* inputNode, 
 					     const FxName& linkFunctionName, 
-					     const FxLinkFn* linkFunction,
+					     FxLinkFnType linkFunctionType,
 					     const FxLinkFnParameters& linkFunctionParams );
 
 	/// Copy constructor.
@@ -51,12 +51,6 @@ public:
 	FxFaceGraphNodeLink& operator=( const FxFaceGraphNodeLink& other );
 	/// Destructor.
 	virtual ~FxFaceGraphNodeLink();
-
-	/// Takes the value from the linked node, transforms it by the link function
-	/// and returns it.
-	FxReal GetTransformedValue( void ) const;
-	/// Returns the value to use for correction.  Only valid if IsCorrective().
-	FxReal GetCorrectiveValue( FxReal formerCorrectiveValue ) const;
 
 	/// Returns the name of the linked node.
 	FX_INLINE const FxName& GetNodeName( void ) const { return _inputName; }
@@ -67,22 +61,22 @@ public:
 	void SetNode( FxFaceGraphNode* inputNode );
 
 	/// Returns the link function algorithm name.
-	FxName GetLinkFnName( void ) const;
+	FX_INLINE FxName GetLinkFnName( void ) const { return _linkFnName; }
 	/// Sets the link function algorithm name.
 	void SetLinkFnName( const FxName& linkFn );
 
-	/// Returns a pointer to the link function.
-	FX_INLINE const FxLinkFn* GetLinkFn( void ) const { return _linkFn; }
+	/// Returns the link function type.
+	FX_INLINE FxLinkFnType GetLinkFnType( void ) const { return _linkFnType; }
 	/// Sets the link function pointer.
 	void SetLinkFn( const FxLinkFn* linkFn );
 
 	/// Returns the link function parameters.
-	FxLinkFnParameters GetLinkFnParams( void ) const;
+	FX_INLINE const FxLinkFnParameters& GetLinkFnParams( void ) const { return _linkFnParams; }
 	/// Sets the link function parameters.
 	void SetLinkFnParams( const FxLinkFnParameters& linkFnParams );
 
 	/// Returns FxTrue if the link is corrective.
-	FxBool IsCorrective( void ) const;
+	FX_INLINE FxBool IsCorrective( void ) const { return (LFT_Corrective == _linkFnType); }
 
 	/// Returns the correction factor.
 	FxReal GetCorrectionFactor( void ) const;
@@ -100,26 +94,10 @@ private:
 	/// The function name.
 	FxName _linkFnName;
 	/// The function with which to transform this input's value.
-	const FxLinkFn* _linkFn;
+	FxLinkFnType _linkFnType;
 	/// The parameters to the link function.
 	FxLinkFnParameters _linkFnParams;
 };
-
-FX_INLINE FxBool FxFaceGraphNodeLink::IsCorrective( void ) const
-{
-	FxAssert(_linkFn);
-	return _linkFn->IsCorrective();
-}
-
-FX_INLINE FxReal FxFaceGraphNodeLink::GetCorrectionFactor( void ) const
-{
-	FxAssert(_linkFn);
-	if( _linkFnParams.parameters.Length() )
-	{
-		return _linkFnParams.parameters[0];
-	}
-	return _linkFn->GetParamDefaultValue(0);
-}
 
 } // namespace Face
 

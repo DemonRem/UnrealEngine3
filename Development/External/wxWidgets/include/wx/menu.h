@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     26.10.99
-// RCS-ID:      $Id: menu.h,v 1.43 2005/01/24 11:14:09 ABX Exp $
+// RCS-ID:      $Id: menu.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MENU_H_BASE_
 #define _WX_MENU_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "menubase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -31,10 +27,10 @@
 // included wx/menu.h
 #include "wx/menuitem.h"
 
-class WXDLLEXPORT wxMenu;
-class WXDLLEXPORT wxMenuBarBase;
-class WXDLLEXPORT wxMenuBar;
-class WXDLLEXPORT wxMenuItem;
+class WXDLLIMPEXP_FWD_CORE wxMenu;
+class WXDLLIMPEXP_FWD_CORE wxMenuBarBase;
+class WXDLLIMPEXP_FWD_CORE wxMenuBar;
+class WXDLLIMPEXP_FWD_CORE wxMenuItem;
 
 // pseudo template list classes
 WX_DECLARE_EXPORTED_LIST(wxMenu, wxMenuList);
@@ -64,7 +60,7 @@ public:
 
     // append any kind of item (normal/check/radio/separator)
     wxMenuItem* Append(int itemid,
-                       const wxString& text,
+                       const wxString& text = wxEmptyString,
                        const wxString& help = wxEmptyString,
                        wxItemKind kind = wxITEM_NORMAL)
     {
@@ -91,12 +87,11 @@ public:
     }
 
     // append a submenu
-    wxMenuItem* Append(int itemid,
-                       const wxString& text,
-                       wxMenu *submenu,
-                       const wxString& help = wxEmptyString)
+    wxMenuItem* AppendSubMenu(wxMenu *submenu,
+                              const wxString& text,
+                              const wxString& help = wxEmptyString)
     {
-        return DoAppend(wxMenuItem::New((wxMenu *)this, itemid, text, help,
+        return DoAppend(wxMenuItem::New((wxMenu *)this, wxID_ANY, text, help,
                                         wxITEM_NORMAL, submenu));
     }
 
@@ -113,7 +108,7 @@ public:
     // insert an item before given position
     wxMenuItem* Insert(size_t pos,
                        int itemid,
-                       const wxString& text,
+                       const wxString& text = wxEmptyString,
                        const wxString& help = wxEmptyString,
                        wxItemKind kind = wxITEM_NORMAL)
     {
@@ -163,7 +158,7 @@ public:
 
     // prepend any item to the menu
     wxMenuItem* Prepend(int itemid,
-                        const wxString& text,
+                        const wxString& text = wxEmptyString,
                         const wxString& help = wxEmptyString,
                         wxItemKind kind = wxITEM_NORMAL)
     {
@@ -313,6 +308,16 @@ public:
         Append(itemid, text, help, isCheckable ? wxITEM_CHECK : wxITEM_NORMAL);
     }
 
+    // use more readable and not requiring unused itemid AppendSubMenu() instead
+    wxMenuItem* Append(int itemid,
+                       const wxString& text,
+                       wxMenu *submenu,
+                       const wxString& help = wxEmptyString)
+    {
+        return DoAppend(wxMenuItem::New((wxMenu *)this, itemid, text, help,
+                                        wxITEM_NORMAL, submenu));
+    }
+
     void Insert(size_t pos,
                 int itemid,
                 const wxString& text,
@@ -370,6 +375,14 @@ protected:
     static bool      ms_locked;
 
     DECLARE_NO_COPY_CLASS(wxMenuBase)
+
+public:
+
+#if wxABI_VERSION >= 20805
+    //  Returns the stripped label
+    wxString GetLabelText(int itemid) const { return wxMenuItem::GetLabelFromText(GetLabel(itemid)); }
+#endif
+
 };
 
 // ----------------------------------------------------------------------------
@@ -480,6 +493,9 @@ public:
     // don't want menu bars to accept the focus by tabbing to them
     virtual bool AcceptsFocusFromKeyboard() const { return false; }
 
+    // update all menu item states in all menus
+    virtual void UpdateMenus();
+
 protected:
     // the list of all our menus
     wxMenuList m_menus;
@@ -488,6 +504,21 @@ protected:
     wxFrame *m_menuBarFrame;
 
     DECLARE_NO_COPY_CLASS(wxMenuBarBase)
+
+public:
+
+#if wxABI_VERSION >= 20805
+    // Replacement for SetLabelTop
+    void SetMenuLabel(size_t pos, const wxString& label) { SetLabelTop(pos, label); }
+
+    // Gets the original label at the top-level of the menubar
+    // Implemented per port, since we can't have virtual functions in the stable branch.
+    // wxString GetMenuLabel(size_t pos) const;
+
+    // Get the text only, from the label at the top-level of the menubar
+    wxString GetMenuLabelText(size_t pos) const;
+#endif
+
 };
 
 // ----------------------------------------------------------------------------
@@ -505,8 +536,10 @@ protected:
     #include "wx/msw/menu.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/menu.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/menu.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/menu.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/menu.h"
 #elif defined(__WXCOCOA__)

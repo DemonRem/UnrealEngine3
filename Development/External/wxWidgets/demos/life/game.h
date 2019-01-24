@@ -4,17 +4,13 @@
 // Author:      Guillermo Rodriguez Garcia, <guille@iies.es>
 // Modified by:
 // Created:     Jan/2000
-// RCS-ID:      $Id: game.h,v 1.11 2005/01/31 18:18:16 ABX Exp $
+// RCS-ID:      $Id: game.h 38363 2006-03-25 12:04:37Z JS $
 // Copyright:   (c) 2000, Guillermo Rodriguez Garcia
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LIFE_GAME_H_
 #define _LIFE_GAME_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "game.h"
-#endif
 
 // for compilers that support precompilation, includes "wx/wx.h"
 #include "wx/wxprec.h"
@@ -58,7 +54,12 @@ public:
         m_name        = name;
         m_description = description;
         m_rules       = wxEmptyString;
+        // TODO: add the positions later, since the formatting command
+        // causes a crash due to conversion objects not being available
+        // during initialisation.
+#ifndef __WXMAC__
         m_shape.Add( wxString::Format(_T("%i %i"), -width/2, -height/2) );
+#endif
         for(int j = 0; j < height; j++)
         {
             wxString tmp;

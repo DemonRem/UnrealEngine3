@@ -4,7 +4,7 @@
 // Author:      Jorgen Bodde
 // Modified by:
 // Created:     22/06/2004
-// RCS-ID:      $Id: doc_mainpage.h,v 1.2 2004/08/03 11:55:18 ABX Exp $
+// RCS-ID:      $Id: doc_mainpage.h 28600 2004-08-03 11:55:18Z ABX $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

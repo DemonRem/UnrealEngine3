@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NX_SCENE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -23,11 +23,6 @@
 #if NX_USE_FLUID_API
 #include "fluids/NxFluid.h"
 class NxUserFluidContactReport;
-#endif
-
-#if NX_USE_IMPLICIT_SCREEN_SURFACE_API
-class NxImplicitScreenMesh;
-class NxImplicitScreenMeshDesc;
 #endif
 
 #if NX_USE_CLOTH_API
@@ -62,6 +57,10 @@ class NxPhysicsSDK;
 
 class NxForceField;
 class NxForceFieldDesc;
+class NxForceFieldLinearKernel;
+class NxForceFieldLinearKernelDesc;
+class NxForceFieldShapeGroup;
+class NxForceFieldShapeGroupDesc;
 
 /**
 \brief Struct used by NxScene::getPairFlagArray().
@@ -88,7 +87,7 @@ enum NxStandardFences
 	{
 	NX_FENCE_RUN_FINISHED,
 	/*NX_SYNC_RAYCAST_FINISHED,*/
-	NX_NUM_STANDARD_FENCES,
+	NX_NUM_STANDARD_FENCES
 	};
 
 /**
@@ -109,7 +108,7 @@ enum NxSimulationStatus
 	/**
 	\brief Refers to the primary scene having finished.  The scene will still be locked for writing until you call fetchResults(NX_RIGID_BODY_FINISHED).
 	*/
-	NX_PRIMARY_FINISHED		= (1<<1),
+	NX_PRIMARY_FINISHED		= (1<<1)
 	};
 
 /**
@@ -142,7 +141,7 @@ enum NxThreadPollResult
 	*/
 	NX_THREAD_SHUTDOWN				= 3,
 
-	NX_THREAD_FORCE_DWORD = 0x7fffffff,
+	NX_THREAD_FORCE_DWORD = 0x7fffffff
 	};
 
 enum NxThreadWait
@@ -172,7 +171,7 @@ enum NxThreadWait
 	*/
 	NX_WAIT_SHUTDOWN			= 2,
 
-	NX_WAIT_FORCE_DWORD = 0x7fffffff,
+	NX_WAIT_FORCE_DWORD = 0x7fffffff
 	};
 
 #if NX_SUPPORT_SWEEP_API
@@ -184,7 +183,7 @@ enum NxSweepFlags
 	NX_SF_ALL_HITS		= (1<<3),	//!< Reports all hits rather than just closest hit
 
 	NX_SF_DEBUG_SM		= (1<<5),	//!< DEBUG - temp - don't use
-	NX_SF_DEBUG_ET		= (1<<6),	//!< DEBUG - temp - don't use
+	NX_SF_DEBUG_ET		= (1<<6)	//!< DEBUG - temp - don't use
 	};
 
 /**
@@ -196,7 +195,7 @@ enum NxSweepFlags
  */
 struct NxSweepQueryHit
 	{
-	NxF32		t;					//!< Distance to hit
+	NxF32		t;					//!< Distance to hit expressed as a percentage of the source motion vector ([0,1] coeff)
 	NxShape*	hitShape;			//!< Hit shape
 	NxShape*	sweepShape;			//!< Only nonzero when using NxActor::linearSweep. Shape from NxActor that hits the hitShape.
 	void*		userData;			//!< User-defined data
@@ -229,7 +228,7 @@ struct NxActiveTransform
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
 */
@@ -241,7 +240,7 @@ enum NxProfileZoneName
 	NX_PZ_PPU1_SIMULATE,
 	NX_PZ_PPU2_SIMULATE,
 	NX_PZ_PPU3_SIMULATE,
-	NX_PZ_TOTAL_SIMULATION = 0x10,	//!< Clock start is in client thread, just before scene thread was kicked off; clock end is when client calls fetchResults().
+	NX_PZ_TOTAL_SIMULATION = 0x10	//!< Clock start is in client thread, just before scene thread was kicked off; clock end is in simulation thread when it finishes.
 	};
 
 
@@ -303,9 +302,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneDesc
 	*/
@@ -318,9 +318,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneFlags
 	*/
@@ -333,7 +334,7 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
 
@@ -347,9 +348,10 @@ class NxScene
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void *						getInternal(void) = 0;
 
@@ -362,9 +364,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneDesc.gravity getGravity()
 	*/
@@ -377,9 +380,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGravity() NxSceneDesc.gravity
 	*/
@@ -403,9 +407,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Limits on numbers and types of actors)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor NxActorDesc NxActorDescBase releaseActor()
 	*/
@@ -435,9 +440,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createActor() NxActor
 	*/
@@ -455,9 +461,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Up to 64k per scene)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJoint NxJointDesc releaseJoint() NxJoint
 	@see NxRevoluteJoint NxSphericalJoint NxPrismaticJoint NxCylindricalJoint NxD6Joint NxDistanceJoint
@@ -478,9 +485,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void						releaseJoint(NxJoint &joint) = 0;
 
@@ -494,9 +502,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSpringAndDamperEffectorDesc NxSpringAndDamperEffector releaseEffector()
 	*/
@@ -510,9 +519,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSpringAndDamperEffectorDesc NxSpringAndDamperEffector releaseEffector()
 	*/
@@ -530,9 +540,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createSpringAndDamperEffector NxSpringAndDamperEffector
 	*/
@@ -546,9 +557,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see releaseForceField NxForceField NxForceFieldDesc
 	*/
@@ -564,13 +576,14 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createForceField NxForceField
 	*/
-	virtual void						releaseForceField(NxForceField& forceField) = 0;
+		virtual void						releaseForceField(NxForceField& forceField) = 0;
 
 	/**
 	\brief Gets the number of force fields in the scene.
@@ -579,11 +592,12 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
-	virtual	NxU32						getNbForceFields()		const	= 0;
+	virtual	NxU32					getNbForceFields()		const	= 0;
 
 	/**
 	\brief Gets the force fields in the scene.
@@ -592,12 +606,258 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
+	virtual	NxForceField**			getForceFields()				= 0;
 
-	virtual	NxForceField**				getForceFields()				= 0;
+	/**
+	\brief creates a forcefield kernel which uses the same linear function as pre 2.8 force fields
+
+	\param[in] kernelDesc The linear kernel desc to use to create a linear kernel for force fields. See #NxForceFieldLinearKernelDesc.
+	\return NxForceFieldLinearKernel. See #NxForceFieldLinearKernel
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	NxForceFieldLinearKernel*	createForceFieldLinearKernel(const NxForceFieldLinearKernelDesc& kernelDesc)	= 0;
+
+	/**
+	\brief releases a linear force field kernel
+	\param[in] kernel to be released.
+	\return NxForceFieldLinearKernel. See #NxForceFieldLinearKernel
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	void						releaseForceFieldLinearKernel(NxForceFieldLinearKernel& kernel)							= 0;
+
+	/**
+	\brief Returns the number of linear kernels in the scene. 
+
+	\return number of linear kernels in the scene.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxU32						getNbForceFieldLinearKernels() const													= 0; 
+
+	/**
+	\brief Restarts the linear kernels iterator so that the next call to getNextForceFieldLinearKernel(). 
+
+	\return The first shape group in the force scene.  
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						resetForceFieldLinearKernelsIterator()													= 0; 
+
+	/**
+	\brief Retrieves the next linear kernel when iterating. 
+
+	\return NxForceFieldLinearKernel  
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldLinearKernel*	getNextForceFieldLinearKernel()															= 0; 
+
+	/**
+	\brief Creates a new force field shape group.  
+
+	\param[in] desc The force field group descriptor. See #NxForceFieldShapeGroupDesc.
+	\return NxForceFieldShapeGroup. See #NxForceFieldShapeGroup
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldShapeGroup*		createForceFieldShapeGroup(const NxForceFieldShapeGroupDesc& desc)						= 0;
+	
+	/**
+	\brief Releases a force field shape group.
+
+	\param[in] group The group which is to be relased. See #NxForceFieldShapeGroup.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						releaseForceFieldShapeGroup(NxForceFieldShapeGroup& group)									= 0;
+
+	/**
+	\brief Returns the number of shape groups in the scene.
+
+	\return The number of shape groups in the scene.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxU32						getNbForceFieldShapeGroups() const														= 0; 
+
+	/**
+	\brief Restarts the shape groups iterator so that the next call to getNextForceFieldShapeGroup() returns the first shape group in the force scene. 
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						resetForceFieldShapeGroupsIterator()													= 0; 
+
+	/**
+	\brief Retrieves the next shape group when iterating.
+	\return NxForceFieldShapeGroup. See #NxForceFieldShapeGroup
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldShapeGroup*		getNextForceFieldShapeGroup()															= 0; 
+
+	/**
+	\brief Creates a new variety index for force fields to access the scaling table, creates a new row in the scaling table.
+	\return NxForceFieldVariety. See #NxForceFieldVariety & #setForceFieldScale 
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldVariety			createForceFieldVariety()																= 0;
+	
+	/**
+	\brief Returns the highest allocated force field variety.
+	\return Highest variety index See #NxForceFieldVariety
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldVariety			getHighestForceFieldVariety() const														= 0;
+
+	/**
+	\brief Releases a forcefield variety index and the related row in the scaling table.
+	\param[in] mat The variery index to release.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						releaseForceFieldVariety(NxForceFieldVariety var)										= 0;
+
+	/**
+	\brief Creates a new index for objects(actor, fluid, cloth, softbody) to access the scaling table, creates a new column in the scaling table.
+	\return NxForceFieldMaterial See #NxForceFieldMaterial
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldMaterial		createForceFieldMaterial()																= 0;
+
+	/**
+	\brief Returns the highest allocated force field material.
+	\return The highest allocated force field material. See #NxForceFieldMaterial
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldMaterial		getHighestForceFieldMaterial() const													= 0;
+
+	/**
+	\brief Releases a forcefield material index and the related column in the scaling table.
+	\param[in] mat The material index to release.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						releaseForceFieldMaterial(NxForceFieldMaterial mat)										= 0;
+
+	/**
+	\brief Get the scaling value for a given variety/material pair.
+	\return The scaling value for a given variety/material pair.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	NxReal						getForceFieldScale(NxForceFieldVariety var, NxForceFieldMaterial mat)					= 0;
+
+	/**
+	\brief Set the scaling value for a given variety/material pair.
+	\param[in] var A Variety index.
+	\param[in] mat A Material index.
+	\param[in] val The value to set at the variety/material coordinate in the table. Setting the value to big or to low may cause invalid floats in the kernel output.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	void						setForceFieldScale(NxForceFieldVariety var, NxForceFieldMaterial mat, NxReal val)		= 0;
+
 	/**
 	\brief Creates a new NxMaterial.
 
@@ -611,9 +871,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterial NxMaterialDesc releaseMaterial()
 	*/
@@ -632,9 +893,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createMaterial() NxMaterial
 	*/
@@ -653,9 +915,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartment
 	*/
@@ -666,9 +929,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartment, getCompartmentArray()
 	*/
@@ -694,9 +958,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbCompartments() NxCompartment
 	*/
@@ -727,9 +992,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getActorPairFlags() NxContactPairFlag
 	*/
@@ -748,9 +1014,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see setActorPairFlags() NxContactPairFlag
 	*/
@@ -759,8 +1026,9 @@ class NxScene
 	/**
 	\brief Similar to #setActorPairFlags(), but for a pair of shapes.
 	
-	NX_IGNORE_PAIR is the only thing allowed
-	as a shape pair flag.  All of the NX_NOTIFY flags should be used at the actor level.
+	NX_IGNORE_PAIR is the only non-zero value allowed as a shape pair flag.  
+	Passing zero stops ignoring the shape pair flag again.
+	All of the NX_NOTIFY flags should be used at the actor level.
 	The two shape references must not reference the same shape.
 
 	<b>Sleeping:</b> Does <b>NOT</b> wake the associated actors up automatically.
@@ -771,9 +1039,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getShapePairFlags() NxContactPairFlag
 	*/
@@ -790,9 +1059,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setShapePairFlags() NxContactPairFlag
 	*/
@@ -808,9 +1078,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxContactPairFlag setShapePairFlags() setActorPairFlags() getPairFlagArray()
 	*/
@@ -830,9 +1101,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxContactPairFlag setShapePairFlags() setActorPairFlags() getNbPairs()
 	*/
@@ -848,7 +1120,9 @@ class NxScene
 	Collision detection between two shapes a and b occurs if: 
 	getGroupCollisionFlag(a->getGroup(), b->getGroup()) && isEnabledPair(a,b) is true.
 
-	Fluids can be assigned to collision groups as well.
+	Fluids can be assigned to collision groups as well. However, collision groups are 
+	only tested during the first contact with a shape, and updates to the collision 
+	group are ignored afterwards.
 
 	NxCollisionGroup is an integer between 0 and 31.
 
@@ -860,9 +1134,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCollisionGroup getGroupCollisionFlag() NxShape.setGroup() NxShape.getGroup()
 	*/
@@ -879,9 +1154,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroupCollisionFlag() NxCollisionGroup NxShape.setGroup() NxShape.getGroup()
 	*/
@@ -958,7 +1234,10 @@ class NxScene
 
 	NX_NOTIFY_ON_START_TOUCH
 	NX_NOTIFY_ON_END_TOUCH	
-	NX_NOTIFY_ON_TOUCH		
+	NX_NOTIFY_ON_TOUCH
+	NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD
+	NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD
+	NX_NOTIFY_ON_TOUCH_FORCE_THRESHOLD
 	NX_NOTIFY_ON_IMPACT		
 	NX_NOTIFY_ON_ROLL		
 	NX_NOTIFY_ON_SLIDE	
@@ -976,9 +1255,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getActorGroupPairFlags() NxActorGroup NxActor.getGroup() NxActor.setGroup()
 	*/
@@ -993,9 +1273,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setActorPairFlags() NxActorGroup NxActor.getGroup() NxActor.setGroup()
 	*/
@@ -1006,9 +1287,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorGroupPair, getActorGroupPairFlags(), getActorGroupPairArray()
 	*/
@@ -1034,9 +1316,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbActorGroupPairs() NxActorGroupPair
 	*/
@@ -1054,9 +1337,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterBool() setFilterConstant0() setFilterConstant1()
 	*/
@@ -1071,9 +1355,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterOps() setFilterConstant0() setFilterConstant1()
 	*/
@@ -1088,9 +1373,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterOps() setFilterBool() setFilterConstant1()
 	*/
@@ -1105,9 +1391,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterOps() setFilterBool() setFilterConstant0()
 	*/
@@ -1126,9 +1413,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterOps() setFilterBool() setFilterConstant0() setFilterConstant1()
 	*/
@@ -1141,9 +1429,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterBool() setFilterConstant0() setFilterConstant1()
 	*/
@@ -1156,9 +1445,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterOps() setFilterBool() setFilterConstant0() setFilterConstant1() getFilterConstant1()
 	*/
@@ -1171,9 +1461,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setFilterOps() setFilterBool() setFilterConstant0() setFilterConstant1() getFilterConstant0()
 	*/
@@ -1192,9 +1483,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getActors()
 	*/
@@ -1207,9 +1499,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbActors()
 	*/
@@ -1227,9 +1520,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActiveTransform
 	*/
@@ -1244,9 +1538,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbDynamicShapes();
 	@see getTotalNbShapes()
@@ -1261,9 +1556,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbStaticShapes()
 	@see getTotalNbShapes()
@@ -1278,9 +1574,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbStaticShapes()
 	@see getNbDynamicShapes()
@@ -1295,9 +1592,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNextJoint()
 	*/
@@ -1311,9 +1609,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetJointIterator() getNbJoints()
 	*/
@@ -1333,9 +1632,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetJointIterator() getNbJoints()
 	*/
@@ -1348,9 +1648,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNextEffector()
 	*/
@@ -1363,9 +1664,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNextEffector() getNbEffectors()
 	*/
@@ -1385,9 +1687,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetEffectorIterator() getNbEffectors()
 	*/
@@ -1405,9 +1708,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getIslandArrayFromActor()
 	*/
@@ -1448,9 +1752,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getBoundForIslandSize() NxActor
 	*/
@@ -1474,9 +1779,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getMaterialArray()
 	*/
@@ -1512,9 +1818,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbMaterials() NxMaterial
 	*/
@@ -1530,9 +1837,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterial NxMaterialIndex NxScene.createMaterial()
 	*/
@@ -1557,9 +1865,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterial NxMaterialIndex NxScene.createMaterial() getHighestMaterialIndex()
 	*/
@@ -1576,9 +1885,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setTiming() simulate() fetchResults() checkResults()
 	*/
@@ -1607,9 +1917,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flushStream() simulate() fetchResults() checkResults()
 	*/
@@ -1625,9 +1936,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setTiming()
 	*/
@@ -1641,9 +1953,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxDebugRenderable
 	*/
@@ -1656,9 +1969,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPhysicsSDK
 	*/
@@ -1671,9 +1985,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneStats getLimits()
 	*/
@@ -1688,9 +2003,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	const NxSceneStats2 *				getStats2() const = 0;
 #endif
@@ -1702,9 +2018,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneLimits getStats() NxSceneStats
 	*/
@@ -1726,17 +2043,20 @@ class NxScene
 	core on a dual-core CPU.
 	
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : Yes
-	\li XB360: Yes
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
 
 	@see NxDeviceCode getMaxCPUForLoadBalancing()
 	*/
 	virtual	void						setMaxCPUForLoadBalancing(NxReal cpuFraction) = 0;
 
 	/**
-	\brief Call to get the maximum CPU for use when load-balancing.
+	\brief Not yet implemented!
+	
+	Call to get the maximum CPU for use when load-balancing.
 
 	@see setMaxCPUForLoadBalancing()
 	*/
@@ -1756,9 +2076,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserNotify getUserNotify
 	*/
@@ -1771,9 +2092,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserNotify setUserNotify()
 	*/
@@ -1786,10 +2108,11 @@ class NxScene
 	\param[in] callback User fluid notification callback. See #NxFluidUserNotify.
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes
+	\li PC SW: No
+	\li GPU  : No
 	\li PS3  : No
 	\li XB360: No
+	\li WII	 : No
 
 	@see NxFluidUserNotify getFluidUserNotify
 	*/
@@ -1802,16 +2125,87 @@ class NxScene
 	\return The current user fluid notify pointer. See #NxFluidUserNotify.
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes
+	\li PC SW: No
+	\li GPU  : No
 	\li PS3  : No
 	\li XB360: No
+	\li WII	 : No
 
 	@see NxFluidUserNotify setFluidUserNotify()
 	*/
 	virtual NxFluidUserNotify*			getFluidUserNotify() const = 0;
 
 #endif //NX_USE_FLUID_API
+
+#if NX_USE_CLOTH_API
+	/**
+	\brief Sets a user notify object which receives special simulation events when they occur.
+
+	\param[in] callback User cloth notification callback. See #NxClothUserNotify.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothUserNotify getClothUserNotify
+	*/
+	virtual void						setClothUserNotify(NxClothUserNotify* callback) = 0;
+
+
+	/**
+	\brief Retrieves the NxClothUserNotify pointer set with setClothUserNotify().
+
+	\return The current user cloth notify pointer. See #NxClothUserNotify.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothUserNotify setClothUserNotify()
+	*/
+	virtual NxClothUserNotify*			getClothUserNotify() const = 0;
+#endif //NX_USE_CLOTH_API
+
+#if NX_USE_SOFTBODY_API
+	/**
+	\brief Sets a user notify object which receives special simulation events when they occur.
+
+	\param[in] callback User softbody notification callback. See #NxSoftBodyUserNotify.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxSoftBodyUserNotify getSoftBodyUserNotify
+	*/
+	virtual void						setSoftBodyUserNotify(NxSoftBodyUserNotify* callback) = 0;
+
+
+	/**
+	\brief Retrieves the NxSoftBodyUserNotify pointer set with setSoftBodyUserNotify().
+
+	\return The current user softbody notify pointer. See #NxSoftBodyUserNotify.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxSoftBodyUserNotify setSoftBodyUserNotify()
+	*/
+	virtual NxSoftBodyUserNotify*		getSoftBodyUserNotify() const = 0;
+#endif //NX_USE_SOFTBODY_API
 
 	/**
 	\brief Sets a user callback object, which receives callbacks on all contacts generated for specified actors.
@@ -1820,9 +2214,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void						setUserContactModify(NxUserContactModify* callback) = 0;
 
@@ -1833,9 +2228,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserContactModify setUserContactModify()
 	*/
@@ -1848,9 +2244,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserTriggerReport getUserTriggerReport()
 	*/
@@ -1863,9 +2260,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserTriggerReport setUserTriggerReport()
 	*/
@@ -1878,9 +2276,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserContactReport getUserContactReport()
 	*/
@@ -1893,9 +2292,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserContactReport setUserContactReport()
 	*/
@@ -1944,9 +2344,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapesType NxRay NxShape.setGroup()  raycastAnyShape()
 	*/
@@ -1971,9 +2372,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapesType NxRay NxShape.setGroup()  raycastAnyBounds()
 	*/
@@ -2003,9 +2405,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see raycastAnyBounds() raycastAllShapes() NxRay NxUserRaycastReport NxShapesType NxShape.setGroup() NxRaycastHit
 	*/
@@ -2039,9 +2442,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see raycastAnyShape() raycastAllBounds() NxRay NxUserRaycastReport NxShapesType NxShape.setGroup() NxRaycastHit
 	*/
@@ -2070,9 +2474,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see raycastAllBounds() NxRay NxShapesType NxRaycastHit NxShape.setGroup() NxRaycastBit
 	*/
@@ -2102,9 +2507,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see raycastAllShapes() NxRay NxShapesType NxRaycastHit NxShape.setGroup() NxRaycastBit
 	*/
@@ -2142,9 +2548,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphere NxShapesType overlapAABBShapes NxUserEntityReport NxShape.checkOverlapSphere()
 	*/
@@ -2175,9 +2582,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxShapesType overlapAABBShapes NxUserEntityReport NxShape.checkOverlapAABB()
 	*/
@@ -2208,9 +2616,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxShapesType overlapOBBShapes NxUserEntityReport NxShape.checkOverlapOBB()
 	*/
@@ -2241,9 +2650,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxShapesType overlapCapsuleShapes NxUserEntityReport NxShape.checkOverlapCapsule()
 	*/
@@ -2290,9 +2700,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBox NxShape NxSweepQueryHit NxSweepFlags NxUserEntityReport NxScene
 	*/
@@ -2323,9 +2734,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsule NxShape NxSweepQueryHit NxSweepFlags NxUserEntityReport NxScene
 	*/
@@ -2367,9 +2779,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPlane overlapAABBShapes() overlapSphereShapes() NxShapesType NxUserEntityReport NxShape.setGroup()
 	*/
@@ -2391,9 +2804,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphere NxShapesType overlapSphereShapes NxShape.checkOverlapSphere()
 	*/
@@ -2414,9 +2828,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxShapesType overlapAABBShapes NxShape.checkOverlapAABB()
 	*/
@@ -2437,9 +2852,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxShapesType overlapOBBShapes NxShape.checkOverlapOBB()
 	*/
@@ -2460,9 +2876,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsule NxShapesType NxShape.setGroup NxShape.setGroupsMask
 	*/
@@ -2493,10 +2910,11 @@ class NxScene
 	\return The new fluid.
 	
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see releaseFluid()
 	*/
@@ -2513,10 +2931,11 @@ class NxScene
 	\param[in] fluid Fluid to release.
 
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createFluid()
 	*/
@@ -2528,10 +2947,11 @@ class NxScene
 	\return the number of fluids.
 
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getFluids()
 	*/
@@ -2545,10 +2965,11 @@ class NxScene
 	\return An array of fluid objects belonging to this scene.
 
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbFluids()
 	*/
@@ -2557,9 +2978,9 @@ class NxScene
 
 	/**
 	\brief Pre-cooks all triangles from static NxTriangleMeshShapes of the scene which are intersecting with the given bounds.
-
+	
 	The pre-cooking will only be valid for Fluids which share the specified parameters (see NxFluidDesc)
-
+	
 	\param[in] bounds The volume whose contents should be pre-cooked
 	\param[in] packetSizeMultiplier
 	\param[in] restParticlesPerMeter 
@@ -2567,92 +2988,24 @@ class NxScene
 	\param[in] motionLimitMultiplier
 	\param[in] collisionDistanceMultiplier
 	\param[in] compartment The specific compartment to perform the pre-cooking for.
+	\param[in] forceStrictCookingFormat Forces specified cooking parameters. Otherwise they might internaly be reinterpreted depending on created fluids. Not implemented yet.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
 
 	\return Operation succeeded.
 	@see NxFluidDesc
 	*/
-	virtual bool						cookFluidMeshHotspot(const NxBounds3& bounds, NxU32 packetSizeMultiplier, NxReal restParticlesPerMeter, NxReal kernelRadiusMultiplier, NxReal motionLimitMultiplier, NxReal collisionDistanceMultiplier, NxCompartment* compartment = NULL) = 0;
+	virtual bool						cookFluidMeshHotspot(const NxBounds3& bounds, NxU32 packetSizeMultiplier, NxReal restParticlesPerMeter, NxReal kernelRadiusMultiplier, NxReal motionLimitMultiplier, NxReal collisionDistanceMultiplier, NxCompartment* compartment = NULL, bool forceStrictCookingFormat = false) = 0;
 
 #endif
 //@}
 /************************************************************************************************/
 	
-/** @name Implicit Screen Surface, Deprecated
-*/
-//@{
-
-#if NX_USE_IMPLICIT_SCREEN_SURFACE_API 
-	
-	/**
-	\brief Deprecated: Creates an implicit screen surface for user-defined particles in this scene. 
-	
-	NxImplicitScreenMeshDesc::isValid() must return true.
-
-	\param[in] surfaceDesc Description of the implicit screen surface object to create. See #NxImplicitScreenMeshDesc.
-	\return The new implicit screen surface.
-	
-	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
-
-	@see releaseImplicitScreenMesh()
-	*/
-	virtual NxImplicitScreenMesh*					createImplicitScreenMesh(const NxImplicitScreenMeshDesc& surfaceDesc) = 0;
-
-	/**
-	\brief Deprecated: Deletes the specified implicit screen surface. 
-	
-	The implicit screen surface must be in this scene.
-	Do not keep a reference to the deleted instance.
-	Avoid release calls while the scene is simulating (in between simulate() and fetchResults() calls).
-
-	\param[in] implicitScreenMesh implicit screen surface ImplicitScreenMesh to release.
-
-	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
-
-	@see createImplicitScreenMesh()
-	*/
-	virtual void						releaseImplicitScreenMesh(NxImplicitScreenMesh& implicitScreenMesh)			= 0;
-
-	/**
-	\brief Deprecated: Get the number of implicit screen surfaces belonging to the scene.
-
-	\return the number of implicit screen surfaces.
-
-	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
-
-	@see getImplicitScreenMeshes()
-	*/
-	virtual	NxU32						getNbImplicitScreenMeshes()		const		= 0;
-
-	/**
-	\brief Deprecated: Get an array of implicit screen surfaces belonging to the scene.
-
-	\return an array of implicit screen surface pointers with size getNbImplicitScreenMeshes().
-
-	\return An array of implicit screen surface objects belonging to this scene.
-
-	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
-
-	@see getNbImplicitScreenMeshes()
-	*/
-	virtual	NxImplicitScreenMesh**					getImplicitScreenMeshes()						= 0;
-#endif
-
 //@}
 /************************************************************************************************/
 /** @name Cloth
@@ -2669,9 +3022,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc NxCloth
 	*/
@@ -2686,9 +3040,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCloth
 	*/
@@ -2699,9 +3054,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCloths()
 	*/
@@ -2714,9 +3070,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbCloths()
 	*/
@@ -2740,9 +3097,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc NxSoftBody
 	*/
@@ -2757,9 +3115,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBody
 	*/
@@ -2770,9 +3129,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSoftBodies()
 	*/
@@ -2785,9 +3145,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbSoftBodies()
 	*/
@@ -2805,9 +3166,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	bool						isWritable()	= 0;
 
@@ -2839,9 +3201,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see fetchResults() checkResults()
 	*/
@@ -2861,9 +3224,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see simulate() fetchResults()
 	*/
@@ -2893,9 +3257,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see simulate() checkResults()
 	*/
@@ -2906,9 +3271,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	void						flushCaches()	= 0;
 
@@ -2919,9 +3285,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual const NxProfileData *		readProfileData(bool clearData)	= 0;
 
@@ -2942,9 +3309,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetPollForWork() NxThreadWait NxThreadPollResult
 	*/
@@ -2959,9 +3327,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 
 	@see pollForWork() NxThreadPollResult NxThreadWait
@@ -2986,9 +3355,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see resetPollForWork() NxThreadWait NxThreadPollResult
 	*/
@@ -3008,9 +3378,10 @@ class NxScene
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see pollForBackgroundWork()
 	*/
@@ -3024,9 +3395,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see unlockQueries()
 	*/
@@ -3039,9 +3411,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see lockQueries()
 	*/
@@ -3057,9 +3430,10 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (software)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see releaseSceneQuery() NxSceneQueryDesc NxSceneQuery
 	*/
@@ -3074,14 +3448,141 @@ class NxScene
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (software)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createSceneQuery() NxSceneQuery 
 	*/
 	virtual	bool			releaseSceneQuery(NxSceneQuery& query)			= 0;
 	//~ BATCHED_RAYCASTS
+
+	/**
+	\brief Sets the rebuild rate of the dynamic tree pruning structure.
+
+	\param[in] dynamicTreeRebuildRateHint Rebuild rate of the dynamic tree pruning structure.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.dynamicTreeRebuildRateHint getDynamicTreeRebuildRateHint()
+	*/
+	virtual	void			setDynamicTreeRebuildRateHint(NxU32 dynamicTreeRebuildRateHint) = 0;
+
+	/**
+	\brief Retrieves the rebuild rate of the dynamic tree pruning structure.
+
+	\return The rebuild rate of the dyamic tree pruning structure.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.dynamicTreeRebuildRateHint setDynamicTreeRebuildRateHint()
+	*/
+	virtual NxU32			getDynamicTreeRebuildRateHint() const = 0;
+
+	/**
+	\brief Sets the number of actors required to spawn a separate rigid body solver thread.
+
+	\note If internal multi threading is disabled (see #NX_SF_ENABLE_MULTITHREAD) this call will
+	have no effect.
+
+	\param[in] solverBatchSize Number of actors required to spawn a separate rigid body solver thread.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Not applicable
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.solverBatchSize getSolverBatchSize()
+	*/
+	virtual	void			setSolverBatchSize(NxU32 solverBatchSize) = 0;
+
+	/**
+	\brief Retrieves the number of actors required to spawn a separate rigid body solver thread.
+
+	\return Current number of actors required to spawn a separate rigid body solver thread.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Not applicable
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.solverBatchSize setSolverBatchSize()
+	*/
+	virtual NxU32			getSolverBatchSize() const = 0;
+
+	/**
+	\brief Unsupported customer specific extension.  May be removed in future releases.
+	*/
+	virtual void earlyUpdateBroadphase() = 0;
+
+	/**
+ 	\brief Advance specified set of compartments by an elapsedTime time.
+	
+	\note This is an experimental feature. We advise to use the default #simulate() method
+	instead unless specific issues with the compartment simulation order arise.
+
+	This method can be used to explicitly specify the order in which compartments and the primary scene
+	get simulated. It allows to read out results from some compartments before simulating others.
+	Please note that there are some points to consider when using this method:
+
+	\li Modifying physics object between simulateCompartments() and fetchResults() is not allowed even if the objects
+	belong to the primary scene or compartments which get not simulated.
+	\li Running two simulateCompartments() calls in parallel even if the compartments are different is not valid
+	\li It is the applications responsibility to keep the simulated time of different compartments in sync.
+	For example, if compartment A gets simulated by dt, all the other compartments and the primary scene
+	should be simulated by dt as well before compartment A does another timestep.
+	\li There is an overhead in using this method compared to the default simulate() call where everything gets
+	simulated at once.
+
+	If elapsedTime is large, it is internally subdivided according to parameters provided with the 
+	#setTiming() method. See #setTiming() for a more detailed discussion of the elapsedTime parameter 
+	and time stepping behavior.
+ 
+ 	Calls to simulateCompartments() should pair with calls to fetchResults():
+ 	Each fetchResults() invocation corresponds to exactly one simulateCompartments()
+ 	invocation; calling simulateCompartments() twice without an intervening fetchResults()
+ 	or fetchResults() twice without an intervening simulateCompartments() causes an error
+ 	condition.
+ 
+ 	scene->simulateCompartments();
+ 	...do some processing until physics is computed...
+ 	scene->fetchResults();
+ 	...now results of run may be retrieved.
+ 
+ 	Applications should not modify physics objects between calls to
+ 	simulateCompartments() and fetchResults();
+	
+
+	\param[in] elapsedTime Amount of time to advance simulation by. <b>Range:</b> (0,inf)
+	\param[in] compartments Array of NxCompartment pointers, specifying the compartments which should get simulated.
+	\param[in] nbCompartments Number of compartments passed in.
+	\param[in] simulatePrimary Simulate the primary scene along with the specified compartments.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see fetchResults() checkResults()
+	*/
+	virtual void simulateCompartments(NxReal elapsedTime, NxCompartment** compartments, NxU32 nbCompartments, bool simulatePrimary = false) = 0;
 
 	void*	userData;	//!< user can assign this to whatever, usually to create a 1:1 relationship with a user object.
 	void*	extLink;	//!< reserved for linkage with other Ageia components. Applications and SDK should not modify
@@ -3089,9 +3590,9 @@ class NxScene
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

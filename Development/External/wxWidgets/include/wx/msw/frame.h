@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: frame.h,v 1.75 2005/03/18 14:26:48 JS Exp $
+// RCS-ID:      $Id: frame.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,22 +12,18 @@
 #ifndef _WX_FRAME_H_
 #define _WX_FRAME_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "frame.h"
-#endif
-
 class WXDLLEXPORT wxFrame : public wxFrameBase
 {
 public:
     // construction
     wxFrame() { Init(); }
     wxFrame(wxWindow *parent,
-               wxWindowID id,
-               const wxString& title,
-               const wxPoint& pos = wxDefaultPosition,
-               const wxSize& size = wxDefaultSize,
-               long style = wxDEFAULT_FRAME_STYLE,
-               const wxString& name = wxFrameNameStr)
+            wxWindowID id,
+            const wxString& title,
+            const wxPoint& pos = wxDefaultPosition,
+            const wxSize& size = wxDefaultSize,
+            long style = wxDEFAULT_FRAME_STYLE,
+            const wxString& name = wxFrameNameStr)
     {
         Init();
 
@@ -59,8 +55,6 @@ public:
     virtual wxToolBar* CreateToolBar(long style = -1,
                                      wxWindowID id = wxID_ANY,
                                      const wxString& name = wxToolBarNameStr);
-
-    virtual void PositionToolBar();
 #endif // wxUSE_TOOLBAR
 
     // Status bar
@@ -70,17 +64,15 @@ public:
                                            wxWindowID id = 0,
                                            const wxString& name = wxStatusLineNameStr);
 
-    virtual void PositionStatusBar();
-
     // Hint to tell framework which status bar to use: the default is to use
     // native one for the platforms which support it (Win32), the generic one
     // otherwise
 
     // TODO: should this go into a wxFrameworkSettings class perhaps?
     static void UseNativeStatusBar(bool useNative)
-        { m_useNativeStatusBar = useNative; };
+        { m_useNativeStatusBar = useNative; }
     static bool UsesNativeStatusBar()
-        { return m_useNativeStatusBar; };
+        { return m_useNativeStatusBar; }
 #endif // wxUSE_STATUSBAR
 
 #if wxUSE_MENUS
@@ -106,6 +98,17 @@ public:
 
     virtual wxPoint GetClientAreaOrigin() const;
 
+    // override base class version to add menu bar accel processing
+    virtual bool MSWTranslateMessage(WXMSG *msg)
+    {
+        return MSWDoTranslateMessage(this, msg);
+    }
+
+    // window proc for the frames
+    virtual WXLRESULT MSWWindowProc(WXUINT message,
+                                    WXWPARAM wParam,
+                                    WXLPARAM lParam);
+
 protected:
     // common part of all ctors
     void Init();
@@ -126,13 +129,11 @@ protected:
     // propagate our state change to all child frames
     void IconizeChildFrames(bool bIconize);
 
-    // we add menu bar accel processing
-    bool MSWTranslateMessage(WXMSG* pMsg);
+    // the real implementation of MSWTranslateMessage(), also used by
+    // wxMDIChildFrame
+    bool MSWDoTranslateMessage(wxFrame *frame, WXMSG *msg);
 
-    // window proc for the frames
-    WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
-
-    // handle WM_INITMENUPOPUP message
+    // handle WM_INITMENUPOPUP message to generate wxEVT_MENU_OPEN
     bool HandleInitMenuPopup(WXHMENU hMenu);
 
     virtual bool IsMDIChild() const { return false; }
@@ -140,7 +141,13 @@ protected:
     // get default (wxWidgets) icon for the frame
     virtual WXHICON GetDefaultIcon() const;
 
+#if wxUSE_TOOLBAR
+    virtual void PositionToolBar();
+#endif // wxUSE_TOOLBAR
+
 #if wxUSE_STATUSBAR
+    virtual void PositionStatusBar();
+
     static bool           m_useNativeStatusBar;
 #endif // wxUSE_STATUSBAR
 
@@ -153,9 +160,6 @@ private:
 #if wxUSE_TOOLTIPS
     WXHWND                m_hwndToolTip;
 #endif // tooltips
-#if defined(__SMARTPHONE__) || defined(__POCKETPC__)
-    void* m_activateInfo;
-#endif
 
     // used by IconizeChildFrames(), see comments there
     bool m_wasMinimized;

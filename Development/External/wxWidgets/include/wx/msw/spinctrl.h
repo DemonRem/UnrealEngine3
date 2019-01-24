@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     22.07.99
-// RCS-ID:      $Id: spinctrl.h,v 1.24 2005/02/28 01:23:01 VZ Exp $
+// RCS-ID:      $Id: spinctrl.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,17 +12,13 @@
 #ifndef _WX_MSW_SPINCTRL_H_
 #define _WX_MSW_SPINCTRL_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "spinctrl.h"
-#endif
-
 #include "wx/spinbutt.h"    // the base class
 
 #if wxUSE_SPINCTRL
 
 #include "wx/dynarray.h"
 
-class WXDLLEXPORT wxSpinCtrl;
+class WXDLLIMPEXP_FWD_CORE wxSpinCtrl;
 WX_DEFINE_EXPORTED_ARRAY_PTR(wxSpinCtrl *, wxArraySpins);
 
 // ----------------------------------------------------------------------------
@@ -69,13 +65,15 @@ public:
 
     virtual ~wxSpinCtrl();
 
-    virtual void SetValue(int val) { wxSpinButton::SetValue(val); }
+    virtual void SetValue(int val);
     virtual int  GetValue() const;
     virtual bool SetFont(const wxFont &font);
     virtual void SetFocus();
 
     virtual bool Enable(bool enable = true);
     virtual bool Show(bool show = true);
+
+    virtual bool Reparent(wxWindowBase *newParent);
 
     // wxSpinButton doesn't accept focus, but we do
     virtual bool AcceptsFocus() const { return wxWindow::AcceptsFocus(); }
@@ -96,6 +94,10 @@ protected:
     virtual void DoMoveWindow(int x, int y, int width, int height);
     virtual wxSize DoGetBestSize() const;
     virtual void DoGetSize(int *width, int *height) const;
+#if wxABI_VERSION >= 20808
+    virtual void DoGetClientSize(int *x, int *y) const;
+#endif
+
 #if wxUSE_TOOLTIPS
     virtual void DoSetToolTip( wxToolTip *tip );
 #endif // wxUSE_TOOLTIPS
@@ -103,9 +105,21 @@ protected:
     // the handler for wxSpinButton events
     void OnSpinChange(wxSpinEvent& event);
 
-    // Handle processing of special keys
+    // handle processing of special keys
     void OnChar(wxKeyEvent& event);
     void OnSetFocus(wxFocusEvent& event);
+    void OnKillFocus(wxFocusEvent& event);
+
+    // generate spin control update event with the given value
+    void SendSpinUpdate(int value);
+
+    // called to ensure that the value is in the correct range
+    virtual void NormalizeValue();
+
+
+    // the value of the control before the latest change (which might not have
+    // changed anything in fact -- this is why we need this field)
+    int m_oldValue;
 
     // the data for the "buddy" text ctrl
     WXHWND     m_hwndBuddy;

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dragimgg.cpp
+// Name:        src/generic/dragimgg.cpp
 // Purpose:     Generic wxDragImage implementation
 // Author:      Julian Smart
 // Modified by:
 // Created:     29/2/2000
-// RCS-ID:      $Id: dragimgg.cpp,v 1.17 2005/02/10 21:33:54 ABX Exp $
+// RCS-ID:      $Id: dragimgg.cpp 42397 2006-10-25 12:12:56Z VS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,38 +17,29 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dragimgg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_DRAGIMAGE
 
 #ifndef WX_PRECOMP
-#include <stdio.h>
-#include "wx/setup.h"
-#include "wx/window.h"
-#include "wx/frame.h"
-#include "wx/dcclient.h"
-#include "wx/dcscreen.h"
-#include "wx/dcmemory.h"
-#include "wx/settings.h"
+    #include <stdio.h>
+    #include "wx/window.h"
+    #include "wx/frame.h"
+    #include "wx/dcclient.h"
+    #include "wx/dcscreen.h"
+    #include "wx/dcmemory.h"
+    #include "wx/settings.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/image.h"
 #endif
-
-#include "wx/log.h"
-#include "wx/intl.h"
 
 #define wxUSE_IMAGE_IN_DRAGIMAGE 1
-
-#if wxUSE_IMAGE_IN_DRAGIMAGE
-#include "wx/image.h"
-#endif
 
 #include "wx/generic/dragimgg.h"
 
@@ -81,8 +72,61 @@ void wxGenericDragImage::Init()
     m_windowDC = (wxDC*) NULL;
     m_window = (wxWindow*) NULL;
     m_fullScreen = false;
+#ifdef wxHAS_NATIVE_OVERLAY
+    m_dcOverlay = NULL;
+#else
     m_pBackingBitmap = (wxBitmap*) NULL;
+#endif
 }
+
+#if WXWIN_COMPATIBILITY_2_6
+wxGenericDragImage::wxGenericDragImage(const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    Init();
+    Create(cursor);
+}
+
+wxGenericDragImage::wxGenericDragImage(const wxBitmap& image, const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    Init();
+
+    Create(image, cursor);
+}
+
+wxGenericDragImage::wxGenericDragImage(const wxIcon& image, const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    Init();
+
+    Create(image, cursor);
+}
+
+wxGenericDragImage::wxGenericDragImage(const wxString& str, const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    Init();
+
+    Create(str, cursor);
+}
+
+bool wxGenericDragImage::Create(const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    return Create(cursor);
+}
+
+bool wxGenericDragImage::Create(const wxBitmap& image, const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    return Create(image, cursor);
+}
+
+bool wxGenericDragImage::Create(const wxIcon& image, const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    return Create(image, cursor);
+}
+
+bool wxGenericDragImage::Create(const wxString& str, const wxCursor& cursor, const wxPoint& WXUNUSED(cursorHotspot))
+{
+    return Create(str, cursor);
+}
+#endif // WXWIN_COMPATIBILITY_2_6
 
 // Attributes
 ////////////////////////////////////////////////////////////////////////////
@@ -128,7 +172,7 @@ bool wxGenericDragImage::Create(const wxString& str, const wxCursor& cursor)
 {
     wxFont font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
-    long w, h;
+    long w = 0, h = 0;
     wxScreenDC dc;
     dc.SetFont(font);
     dc.GetTextExtent(str, & w, & h);
@@ -158,7 +202,7 @@ bool wxGenericDragImage::Create(const wxString& str, const wxCursor& cursor)
 
     dc2.SelectObject(wxNullBitmap);
 
-#if wxUSE_IMAGE_IN_DRAGIMAGE
+#if wxUSE_IMAGE_IN_DRAGIMAGE && (!defined(__WXMSW__) || wxUSE_WXDIB)
     // Make the bitmap masked
     wxImage image = bitmap.ConvertToImage();
     image.SetMaskColour(255, 255, 255);
@@ -244,10 +288,12 @@ bool wxGenericDragImage::BeginDrag(const wxPoint& hotspot,
         }
     }
 
+#ifndef wxHAS_NATIVE_OVERLAY
     wxBitmap* backing = (m_pBackingBitmap ? m_pBackingBitmap : (wxBitmap*) & m_backingBitmap);
 
     if (!backing->Ok() || (backing->GetWidth() < clientSize.x || backing->GetHeight() < clientSize.y))
         (*backing) = wxBitmap(clientSize.x, clientSize.y);
+#endif // !wxHAS_NATIVE_OVERLAY
 
     if (!m_fullScreen)
     {
@@ -310,12 +356,18 @@ bool wxGenericDragImage::EndDrag()
 
     if (m_windowDC)
     {
+#ifdef wxHAS_NATIVE_OVERLAY
+        m_overlay.Reset();
+#else
         m_windowDC->DestroyClippingRegion();
+#endif
         delete m_windowDC;
         m_windowDC = (wxDC*) NULL;
     }
 
+#ifndef wxHAS_NATIVE_OVERLAY
     m_repairBitmap = wxNullBitmap;
+#endif
 
     return true;
 }
@@ -357,6 +409,7 @@ bool wxGenericDragImage::Show()
         // This is where we restore the backing bitmap, in case
         // something has changed on the window.
 
+#ifndef wxHAS_NATIVE_OVERLAY
         wxBitmap* backing = (m_pBackingBitmap ? m_pBackingBitmap : (wxBitmap*) & m_backingBitmap);
         wxMemoryDC memDC;
         memDC.SelectObject(* backing);
@@ -365,6 +418,7 @@ bool wxGenericDragImage::Show()
 
         //memDC.Blit(0, 0, m_boundingRect.width, m_boundingRect.height, m_windowDC, m_boundingRect.x, m_boundingRect.y);
         memDC.SelectObject(wxNullBitmap);
+#endif // !wxHAS_NATIVE_OVERLAY
 
         RedrawImage(m_position - m_offset, m_position - m_offset, false, true);
     }
@@ -406,6 +460,13 @@ bool wxGenericDragImage::RedrawImage(const wxPoint& oldPos, const wxPoint& newPo
     if (!m_windowDC)
         return false;
 
+#ifdef wxHAS_NATIVE_OVERLAY
+    wxDCOverlay dcoverlay( m_overlay, (wxWindowDC*) m_windowDC ) ;
+    if ( eraseOld )
+        dcoverlay.Clear() ;
+    if (drawNew)
+        DoDrawImage(*m_windowDC, newPos);
+#else // !wxHAS_NATIVE_OVERLAY
     wxBitmap* backing = (m_pBackingBitmap ? m_pBackingBitmap : (wxBitmap*) & m_backingBitmap);
     if (!backing->Ok())
         return false;
@@ -471,6 +532,7 @@ bool wxGenericDragImage::RedrawImage(const wxPoint& oldPos, const wxPoint& newPo
 
     memDCTemp.SelectObject(wxNullBitmap);
     memDC.SelectObject(wxNullBitmap);
+#endif // wxHAS_NATIVE_OVERLAY/!wxHAS_NATIVE_OVERLAY
 
     return true;
 }

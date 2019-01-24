@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -37,9 +37,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc
 	*/
@@ -52,9 +53,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.softBodyMesh
 	*/
@@ -67,9 +69,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.volumeStiffness getVolumeStiffness()
 	*/
@@ -82,9 +85,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.volumeStiffness setVolumeStiffness()
 	*/
@@ -99,9 +103,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.stretchingStiffness getStretchingStiffness()
 	*/
@@ -114,13 +119,32 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.stretchingStiffness setStretchingStiffness()
 	*/
 	virtual NxReal getStretchingStiffness() const = 0;
+
+	/**
+	\brief Sets the soft body hard stretch elongation limit
+
+	\param[in] factor Hard stretch elongation limit.
+
+	@see NxSoftBodyDesc.hardStretchLimitationFactor NxSoftBody.setHardStretchLimitationFactor()
+	*/
+	virtual void setHardStretchLimitationFactor(NxReal factor) = 0;
+
+	/**
+	\brief Retrieves the soft body hard stretch elongation limit.
+
+	\return Hard stretch elongation limit.
+
+	@see NxSoftBodyDesc.hardStretchLimitationFactor NxSoftBody.getHardStretchLimitationFactor()
+	*/
+	virtual NxReal getHardStretchLimitationFactor() const = 0;
 
 	/**
 	\brief Sets the damping coefficient in the range from 0 to 1.
@@ -129,9 +153,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.dampingCoefficient getDampingCoefficient()
 	*/
@@ -144,9 +169,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxSoftBodyDesc.dampingCoefficient setDampingCoefficient()
 	*/
@@ -159,9 +185,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.friction getFriction()
 	*/
@@ -174,9 +201,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxSoftBodyDesc.friction setFriction()
 	*/
@@ -189,9 +217,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.tearFactor getTearFactor()
 	*/
@@ -204,9 +233,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.tearFactor setTearFactor()
 	*/
@@ -219,9 +249,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.attachmentTearFactor getAttachmentTearFactor()
 	*/
@@ -234,9 +265,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.attachmentTearFactor setAttachmentTearFactor()
 	*/
@@ -249,9 +281,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.particleRadius getParticleRadius()
 	*/
@@ -264,13 +297,45 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.particleRadius setParticleRadius()
 	*/
 	virtual NxReal getParticleRadius() const = 0;
+
+	/**
+	\brief Sets the soft body self collision thickness (must be positive).
+
+	\param[in] selfCollisionThickness The particle diameter to use for self collision.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+
+	@see NxSoftBodyDesc.selfCollisionThickness getSelfCollisionThickness()
+	*/
+	virtual void setSelfCollisionThickness(NxReal selfCollisionThickness) = 0;
+
+	/**
+	\brief Gets the soft body self collision thickness.
+
+	\return The particle diameter used for self collision.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Maybe
+	\li XB360: Maybe
+
+	@see NxSoftBodyDesc.selfCollisionThickness setSelfCollisionThickness()
+	*/
+	virtual NxReal getSelfCollisionThickness() const = 0;
 
 	/**
 	\brief Gets the soft body density.
@@ -279,9 +344,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.density
 	*/
@@ -297,9 +363,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.relativeGridSpacing
 	*/
@@ -312,9 +379,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.solverIterations setSolverIterations()
 	*/
@@ -327,9 +395,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.solverIterations getSolverIterations()
 	*/
@@ -342,9 +411,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3
 	*/
@@ -362,9 +432,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyAttachmentFlag freeVertex() attachToCollidingShapes()
 	*/
@@ -381,9 +452,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyAttachmentFlag NxSoftBodyDesc.attachmentTearFactor NxSoftBodyDesc.attachmentResponseCoefficient freeVertex()
 	*/
@@ -398,9 +470,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyAttachmentFlag NxSoftBodyDesc.attachmentTearFactor NxSoftBodyDesc.attachmentResponseCoefficient freeVertex() attachToShape()
 	*/
@@ -416,9 +489,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape freeVertex() NxSoftBodyAttachmentFlag attachToShape()
 	*/
@@ -432,9 +506,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyAttachmentFlag NxSoftBodyDesc.attachmentTearFactor NxSoftBodyDesc.attachmentResponseCoefficient freeVertex() attachToShape()
 	*/
@@ -447,19 +522,20 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see attachVertexToGlobalPosition() attachVertexToShape() detachFromShape()
 	*/
 	virtual void freeVertex(const NxU32 vertexId) = 0;
 
 	/**
-	Not supported in current release.
+	\note Experimental feature, not yet fully supported.
 
-	\brief Tears the soft body at a given vertex. 
-	
+	\brief [Experimental] Tears the soft body at a given vertex. 
+
 	First the vertex is duplicated. The tetrahedra on one side of the split plane keep 
 	the original vertex. For all tetrahedra on the opposite side the original vertex is 
 	replaced by the new one. The split plane is defined by the world location of the 
@@ -480,9 +556,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool tearVertex(const NxU32 vertexId, const NxVec3 &normal) = 0;
 
@@ -497,9 +574,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool raycast(const NxRay& worldRay, NxVec3 &hit, NxU32 &vertexId) = 0;
 
@@ -510,9 +588,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCollisionGroup
 	*/
@@ -525,9 +604,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCollisionGroup
 	*/
@@ -540,9 +620,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroupsMask() NxGroupsMask
 	*/
@@ -555,9 +636,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroupsMask() NxGroupsMask
 	*/
@@ -570,9 +652,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshData NxSoftBodyDesc.meshData
 	*/
@@ -585,16 +668,50 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshData setMeshData() NxSoftBodyDesc.meshData
 	*/
 	virtual NxMeshData getMeshData() = 0;
 
 	/**
-	Not supported in current release.
+	\brief Sets the user buffer wrapper for the soft body split pairs.
+
+	\param[in,out] splitPairData User buffer wrapper.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSoftBodySplitPairData NxSoftBodyDesc.splitPairData
+	*/
+	virtual	void setSplitPairData(NxSoftBodySplitPairData& splitPairData) = 0;
+
+	/**
+	\brief Returns a copy of the user buffer wrapper for the soft body split pairs.
+
+	\return User buffer wrapper.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSoftBodySplitPairData setSplitPairData() NxSoftBodyDesc.splitPairData
+	*/
+	virtual	NxSoftBodySplitPairData	getSplitPairData() = 0;
+
+	/**
+	Note: Valid bounds do not have an effect on soft bodies in the current version.
+
 	\brief Sets the valid bounds of the soft body in world space.
 
 	If the flag NX_SBF_VALIDBOUNDS is set, these bounds defines the volume
@@ -604,29 +721,49 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.validBounds getValidBounds() NxBounds3
 	*/
 	virtual void setValidBounds(const NxBounds3& validBounds) = 0;
 
 	/**
-	Not supported in current release.
+	Note: Valid bounds do not have an effect on soft bodies in the current version.
+
 	\brief Returns the valid bounds of the soft body in world space.
 
 	\param[out] validBounds The valid bounds.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.validBounds setValidBounds() NxBounds3
 	*/
 	virtual void getValidBounds(NxBounds3& validBounds) const = 0;
+
+	/**
+	\brief Sets the position of a particular vertex of the soft body.
+
+	\param[in] position New position of the vertex.
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getPosition() setPositions() getPositions() setVelocity() getVelocity() getNumberOfParticles()
+	*/
+	virtual void setPosition(const NxVec3& position, NxU32 vertexId) = 0;
 
 	/**
 	\brief Sets the positions of the soft body.
@@ -638,13 +775,30 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getPositions() setVelocities() getVelocities() getNumberOfParticles()
 	*/
 	virtual void setPositions(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+	/**
+	\brief Gets the position of a particular vertex of the soft body.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setPosition() setPositions() getPositions() setVelocity() getVelocity() getNumberOfParticles()
+	*/
+	virtual NxVec3 getPosition(NxU32 vertexId) const = 0;
 
 	/**
 	\brief Gets the positions of the soft body.
@@ -656,13 +810,31 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setPositions() setVelocities() getVelocities() getNumberOfParticles()
 	*/
 	virtual void getPositions(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+	/**
+	\brief Sets the velocity of a particular vertex of the soft body.
+
+	\param[in] position New velocity of the vertex.
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setPosition() getPosition() getVelocity() setVelocities() getVelocities()  getNumberOfParticles()
+	*/
+	virtual void setVelocity(const NxVec3& velocity, NxU32 vertexId) = 0;
 
 	/**
 	\brief Sets the velocities of the soft body.
@@ -674,13 +846,30 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getVelocities() setPositions() getPositions() getNumberOfParticles()
 	*/
 	virtual void setVelocities(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+	/**
+	\brief Gets the velocity of a particular vertex of the soft body.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setPosition() getPosition() setVelocity() setVelocities() getVelocities()  getNumberOfParticles()
+	*/
+	virtual NxVec3 getVelocity(NxU32 vertexId) const = 0;
 
 	/**
 	\brief Gets the velocities of the soft body.
@@ -692,22 +881,90 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setVelocities() setPositions() getPositions() getNumberOfParticles()
 	*/
 	virtual void getVelocities(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
 
 	/**
+	\brief Sets the buffer of constrain positions.
+
+	The user can supply a buffer of positions and normals coming from an animation of the soft body
+	for instance. The simulated vertices are then corrected via the constrain positions, normals
+	and the constrain coefficiens.
+
+	\param[in] buffer The user supplied buffer containing all constrain positions for the soft body.
+	The number of positions provided must correspond to the number returned by getNumberOfParticles().
+	\param[in] byteStride The stride in bytes between the position vectors in the buffer. Default is size of NxVec3.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see setConstrainCoefficients() setConstrainNormals()
+	*/
+	virtual void setConstrainPositions(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+		/**
+	\brief Sets the buffer of constrain normals.
+
+	The user can supply a buffer of positions and normals coming from an animation of the soft body
+	for instance. The simulated vertices are then corrected via the constrain positions, normals
+	and the constrain coefficiens set by setConstrainCoefficients.
+
+	\param[in] buffer The user supplied buffer containing all constrain normals for the soft body.
+	The number of normals provided must correspond to the number returned by getNumberOfParticles().
+	\param[in] byteStride The stride in bytes between the normal vectors in the buffer. Default is size of NxVec3.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see setConstrainCoefficients() setConstrainPositions()
+	*/
+	virtual void setConstrainNormals(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+	/**
+	\brief Sets the buffer of constrain coefficients of the type NxReal.
+
+	The user can supply a buffer of positions and normals coming from an animation of the soft body
+	for instance. The simulated vertices are then corrected via the constrain positions, normals
+	and the constrain coefficiens set by setConstrainCoefficients.
+
+	\param[in] buffer The user supplied buffer containing all constrain coefficients for the soft body.
+	The number of coefficients provided must correspond to the number returned by getNumberOfParticles().
+	\param[in] byteStride The stride in bytes between the position vectors in the buffer. Default is size of NxReal.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see setConstrainPositions() setConstrainNormals()
+	*/
+	virtual void setConstrainCoefficients(const NxSoftBodyConstrainCoefficients *coefficients, NxU32 byteStride = sizeof(NxSoftBodyConstrainCoefficients)) = 0;
+
+	/**
 	\brief Gets the number of soft body particles.
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setVelocities() getVelocities() setPositions() getPositions() 
 	*/
@@ -718,9 +975,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getShapePointers() setShapePointers() saveStateToStream() loadStateFromStream()
 	*/
@@ -731,9 +989,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNumberOfParticles()
 	*/
@@ -747,9 +1006,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see queryShapePointers() setShapePointers() saveStateToStream() loadStateFromStream()
 	*/
@@ -763,9 +1023,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see queryShapePointers() getShapePointers() saveStateToStream() loadStateFromStream()
 	*/
@@ -780,14 +1041,15 @@ public:
 
 	\param[in] stream The user supplied stream to hold the soft body state.
 	\param[in] permute If true, the order of the vertices output will correspond to that of the associated
-	NxClothMesh's saveToDesc mehod; if false (the default), it will correspond to the original NxClothMesh descriptor
-	used to create the mesh.
+	NxSoftBodyMesh's saveToDesc mehod; if false (the default), it will correspond to the original NxSoftBodyMesh descriptor
+	used to create the mesh. These may differ due to cooking.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see loadStateFromStream() queryShapePointers() getShapePointers() setShapePointers() 
 	*/
@@ -804,9 +1066,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see saveStateToStream() queryShapePointers() getShapePointers() setShapePointers() 
 	*/
@@ -819,9 +1082,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.collisionResponseCoefficient getCollisionResponseCoefficient()
 	*/
@@ -834,9 +1098,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.collisionResponseCoefficient setCollisionResponseCoefficient()
 	*/
@@ -849,9 +1114,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.attachmentResponseCoefficient getAttachmentResponseCoefficient()
 	*/
@@ -864,9 +1130,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.attachmentResponseCoefficient setAttachmentResponseCoefficient()
 	*/
@@ -879,9 +1146,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.fromFluidResponseCoefficient getFromFluidResponseCoefficient()
 	*/
@@ -894,9 +1162,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.fromFluidResponseCoefficient setFromFluidResponseCoefficient()
 	*/
@@ -909,9 +1178,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.toFluidResponseCoefficient getToFluidResponseCoefficient()
 	*/
@@ -924,9 +1194,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.toFluidResponseCoefficient setToFluidResponseCoefficient()
 	*/
@@ -939,9 +1210,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.externalAcceleration getExternalAcceleration()
 	*/
@@ -954,13 +1226,56 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.externalAcceleration setExternalAcceleration()
 	*/
 	virtual NxVec3 getExternalAcceleration() const = 0;
+
+	/**
+	\brief If the NX_SBF_ADHERE flag is set the soft body moves partially in the frame 
+	of the attached actor. 
+
+	This feature is useful when the soft body is attached to a fast moving shape.
+	In that case the soft body adheres to the shape it is attached to while only 
+	velocities below the parameter minAdhereVelocity are used for secondary effects.
+
+	\param[in] velocity The minimal velocity for the soft body to adhere (unit length / s)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSoftBodyDesc.minAdhereVelocity getMinAdhereVelocity()
+	*/
+	virtual void setMinAdhereVelocity(NxReal velocity) = 0;
+
+	/**
+	\brief If the NX_SBF_ADHERE flag is set the soft body moves partially in the frame 
+	of the attached actor. 
+
+	This feature is useful when the soft body is attached to a fast moving shape.
+	In that case the soft body adheres to the shape it is attached to while only 
+	velocities below the parameter minAdhereVelocity are used for secondary effects.
+
+	\return Returns the minimal velocity for the soft body to adhere (unit length / s)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSoftBodyDesc.minAdhereVelocity setMinAdhereVelocity()
+	*/
+	virtual NxReal getMinAdhereVelocity() const = 0;
 
 	/**
 	\brief Returns true if this soft body is sleeping.
@@ -976,9 +1291,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp() putToSleep()
 	*/
@@ -995,9 +1311,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp() putToSleep() setSleepLinearVelocity()
 	*/
@@ -1015,9 +1332,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp() putToSleep()
 	*/
@@ -1033,9 +1351,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() putToSleep()
 	*/
@@ -1048,9 +1367,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp()
 	*/
@@ -1063,9 +1383,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.flags NxSoftBodyFlag getFlags()
 	*/
@@ -1078,9 +1399,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.flags NxSoftBodyFlag setFlags()
 	*/
@@ -1096,9 +1418,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
@@ -1120,9 +1443,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	*/
@@ -1140,18 +1464,45 @@ public:
 	\param[in] position Position to apply force at.
 	\param[in] magnitude Magnitude of the force/impulse to apply.
 	\param[in] radius The sphere radius in which particles will be affected. <b>Range:</b> position vector
-	\param[in] mode The mode to use when applying the force/impulse
+	\param[in] mode The mode to use when applying the force/impulse 
 	(see #NxForceMode, supported modes are NX_FORCE, NX_IMPULSE, NX_ACCELERATION, NX_VELOCITY_CHANGE).
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	*/
 	virtual	void addForceAtPos(const NxVec3& position, NxReal magnitude, NxReal radius, NxForceMode mode = NX_FORCE) = 0;
+
+	/**
+	\brief Applies a directed force (or impulse) at a particular position. All vertices
+	within radius will be affected with a quadratic drop-off. 
+
+	Because forces are reset at the end of every timestep, 
+	you can maintain a total external force on an object by calling this once every frame.
+
+    ::NxForceMode determines if the force is to be conventional or impulsive.
+
+	\param[in] position Position to apply force at.
+	\param[in] force Force to apply.
+	\param[in] radius The sphere radius in which particles will be affected. <b>Range:</b> position vector
+	\param[in] mode The mode to use when applying the force/impulse 
+	(see #NxForceMode, supported modes are NX_FORCE, NX_IMPULSE, NX_ACCELERATION, NX_VELOCITY_CHANGE).
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxForceMode 
+	*/
+	virtual	void addDirectedForceAtPos(const NxVec3& position, const NxVec3& force, NxReal radius, NxForceMode mode = NX_FORCE) = 0;
 
 	/**
 	\brief Finds tetrahedra touching the input bounds.
@@ -1168,9 +1519,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxSoftBodyDesc NxMeshData
 	*/
@@ -1183,9 +1535,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene
 	*/
@@ -1198,26 +1551,54 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
 	virtual const char* getName() const = 0;
 
 	/**
-	\brief Retrieves the soft body's simulation compartment, if any.
+	\brief Retrieves the soft body's simulation compartment, as specified by the user at creation time.
+	\return NULL if the soft body is not simulated in a compartment or if it was specified to run in 
+	the default soft body compartment, otherwise the simulation compartment.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartment
 	*/
 	virtual NxCompartment *			getCompartment() const = 0;
+
+	/**
+	\brief Retrieves the actor's force field material index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldMaterial	getForceFieldMaterial() const = 0;
+
+	/**
+	\brief Sets the actor's force field material index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void					setForceFieldMaterial(NxForceFieldMaterial)  = 0;
 
 	//public variables:
 public:
@@ -1226,9 +1607,9 @@ public:
 /** @} */
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2006 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -3,7 +3,7 @@
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxCoarticulationGeneric_H__
@@ -11,18 +11,16 @@
 
 #include "FxPlatform.h"
 #include "FxPhonemeEnum.h"
-#include "FxSimplePhonemeList.h"
 #include "FxAnimCurve.h"
 #include "FxCoarticulationConfig.h"
+#include "FxFaceGraph.h"
+#include "FxCompiledFaceGraph.h"
 
 namespace OC3Ent
 {
 
 namespace Face
 {
-
-class FxFaceGraph;
-class FxFaceGraphNode;
 
 class FxCoarticulationGeneric
 {
@@ -83,15 +81,14 @@ protected:
 private:
 	struct FxCGPhonemeData
 	{
-		FxCGPhonemeData( FxPhoneme phon = PHONEME_SIL, FxReal start = 0.0f )
+		FxCGPhonemeData( FxPhoneme phon = PHON_SIL, FxReal start = 0.0f )
 			: phoneme(phon)
 			, startTime(start)
 			, suppression(FxInvalidValue)
 			, leadIn(FxAnimKey(0.0f, 0.0f))
 			, peak(FxAnimKey(0.0f, 1.0f))
-			, leadOut(FxAnimKey(0.0f, 0.0f))
-		{
-		}
+			, leadOut(FxAnimKey(0.0f, 0.0f)) {}
+		
 		FxPhoneme phoneme;
 		FxReal startTime;
 		FxReal suppression;
@@ -107,14 +104,19 @@ private:
 	// The end time of the last phoneme.
 	FxReal _lastPhonEndTime;
 
+	//@todo compiled
+	FxCompiledFaceGraph _cg;
+	FxArray<FxRegister> _registers;
+	FxBool _hasBeenTicked;
+
 	// The face graph used to process the phoneme to track mapping.
-	FxFaceGraph* _mappingGraph;
+	FxFaceGraph _mappingGraph;
 	// The phoneme nodes.
-	FxArray<FxFaceGraphNode*> _phonNodeMap;
+	FxArray<FxSize> _phonNodeMap;
 	// The delta nodes.
-	FxArray<FxFaceGraphNode*> _deltaNodeMap;
+	FxArray<FxSize> _deltaNodeMap;
 	// The target nodes.
-	FxArray<FxFaceGraphNode*> _targetNodeMap;
+	FxArray<FxSize> _targetNodeMap;
 	// The track names.
 	FxArray<FxName> _trackNames;
 

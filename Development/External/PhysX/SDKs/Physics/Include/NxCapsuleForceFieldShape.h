@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXCAPSULEFORCEFIELDSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -21,9 +21,10 @@ class NxCapsuleForceFieldShapeDesc;
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxForceFieldShape
 */
@@ -38,9 +39,10 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setRadius() setHeight()
 	*/
@@ -53,9 +55,10 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDimensions() NxCapsuleForceFieldShapeDesc.radius getRadius()
 	*/
@@ -68,9 +71,10 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see setRadius() setDimensions() NxCapsuleForceFieldShapeDesc.radius
 	*/
@@ -83,9 +87,10 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see getHeight() NxCapsuleForceFieldShapeDesc.height getRadius() setDimensions()
 	*/
@@ -98,9 +103,10 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see setHeight() setRadius() NxCapsuleForceFieldShapeDesc.height
 	*/
@@ -113,9 +119,10 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleForceFieldShapeDesc
 	*/
@@ -126,9 +133,9 @@ class NxCapsuleForceFieldShape : public NxForceFieldShape
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

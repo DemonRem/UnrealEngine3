@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: log.h,v 1.106 2005/07/17 13:00:08 MW Exp $
+// RCS-ID:      $Id: log.h 50993 2008-01-02 21:18:15Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_LOG_H_
 #define _WX_LOG_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "log.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -73,10 +69,10 @@ typedef unsigned long wxLogLevel;
 // ----------------------------------------------------------------------------
 
 #if wxUSE_GUI
-    class WXDLLIMPEXP_CORE wxTextCtrl;
-    class WXDLLIMPEXP_CORE wxLogFrame;
-    class WXDLLIMPEXP_CORE wxFrame;
-    class WXDLLIMPEXP_CORE wxWindow;
+    class WXDLLIMPEXP_FWD_CORE wxTextCtrl;
+    class WXDLLIMPEXP_FWD_CORE wxLogFrame;
+    class WXDLLIMPEXP_FWD_CORE wxFrame;
+    class WXDLLIMPEXP_FWD_CORE wxWindow;
 #endif // wxUSE_GUI
 
 // ----------------------------------------------------------------------------
@@ -125,13 +121,6 @@ public:
     // ctor
     wxLog(){}
 
-    // Internal buffer.
-
-    // Allow replacement of the fixed size static buffer with
-    // a user allocated one.  Pass in NULL to restore the
-    // built in static buffer.
-    static wxChar *SetLogBuffer( wxChar *buf, size_t size = 0 );
-
     // these functions allow to completely disable all log messages
 
     // is logging disabled now?
@@ -139,19 +128,11 @@ public:
 
     // change the flag state, return the previous one
     static bool EnableLogging(bool doIt = true)
-    { bool doLogOld = ms_doLog; ms_doLog = doIt; return doLogOld; }
+        { bool doLogOld = ms_doLog; ms_doLog = doIt; return doLogOld; }
 
     // static sink function - see DoLog() for function to overload in the
     // derived classes
-    static void OnLog(wxLogLevel level, const wxChar *szString, time_t t)
-    {
-        if ( IsEnabled() && ms_logLevel >= level )
-        {
-            wxLog *pLogger = GetActiveTarget();
-            if ( pLogger )
-                pLogger->DoLog(level, szString, t);
-        }
-    }
+    static void OnLog(wxLogLevel level, const wxChar *szString, time_t t);
 
     // message buffering
 
@@ -195,16 +176,29 @@ public:
     // Set log level.  Log messages with level > logLevel will not be logged.
     static void SetLogLevel(wxLogLevel logLevel) { ms_logLevel = logLevel; }
 
+#if wxABI_VERSION >= 20805 /* 2.8.5+ only */
     // should GetActiveTarget() try to create a new log object if the
     // current is NULL?
     static void DontCreateOnDemand();
+#endif
+
+    // Make GetActiveTarget() create a new log object again.
+    static void DoCreateOnDemand();
+
+    // log the count of repeating messages instead of logging the messages
+    // multiple times
+    static void SetRepetitionCounting(bool bRepetCounting = true)
+        { ms_bRepetCounting = bRepetCounting; }
+
+    // gets duplicate counting status
+    static bool GetRepetitionCounting() { return ms_bRepetCounting; }
 
     // trace mask (see wxTraceXXX constants for details)
     static void SetTraceMask(wxTraceMask ulMask) { ms_ulTraceMask = ulMask; }
 
     // add string trace mask
     static void AddTraceMask(const wxString& str)
-    { ms_aTraceMasks.push_back(str); }
+        { ms_aTraceMasks.push_back(str); }
 
     // add string trace mask
     static void RemoveTraceMask(const wxString& str);
@@ -246,11 +240,16 @@ public:
     static void TimeStamp(wxString *str);
 
     // make dtor virtual for all derived classes
-    virtual ~wxLog() { }
+    virtual ~wxLog();
 
 
     // this method exists for backwards compatibility only, don't use
     bool HasPendingMessages() const { return true; }
+
+#if WXWIN_COMPATIBILITY_2_6
+    // this function doesn't do anything any more, don't call it
+    wxDEPRECATED( static wxChar *SetLogBuffer(wxChar *buf, size_t size = 0) );
+#endif
 
 protected:
     // the logging functions that can be overriden
@@ -263,9 +262,21 @@ protected:
     // you override DoLog() you might not need it at all
     virtual void DoLogString(const wxChar *szString, time_t t);
 
+    // log a line containing the number of times the previous message was
+    // repeated and returns this number (which can be 0)
+    static unsigned DoLogNumberOfRepeats();
+
 private:
     // static variables
     // ----------------
+
+    // traditional behaviour or counting repetitions
+    static bool        ms_bRepetCounting;
+    static wxString    ms_prevString;   // previous message that was logged
+    // how many times the previous message was logged
+    static unsigned    ms_prevCounter;
+    static time_t      ms_prevTimeStamp;// timestamp of the previous message
+    static wxLogLevel  ms_prevLevel;    // level of the previous message
 
     static wxLog      *ms_pLogger;      // currently active log sink
     static bool        ms_doLog;        // false => all logging disabled
@@ -282,13 +293,20 @@ private:
 
     static wxTraceMask ms_ulTraceMask;   // controls wxLogTrace behaviour
     static wxArrayString ms_aTraceMasks; // more powerful filter for wxLogTrace
+
+
+    // this is the replacement of DoLogNumberOfRepeats() (which has to be kept
+    // to avoid breaking ABI in this version)
+    unsigned LogLastRepeatIfNeeded();
+
+    // implementation of the function above which supposes that the caller had
+    // already locked gs_prevCS
+    unsigned LogLastRepeatIfNeededUnlocked();
 };
 
 // ----------------------------------------------------------------------------
 // "trivial" derivations of wxLog
 // ----------------------------------------------------------------------------
-
-#if wxABI_VERSION > 20601
 
 // log everything to a buffer
 class WXDLLIMPEXP_BASE wxLogBuffer : public wxLog
@@ -313,7 +331,6 @@ private:
     DECLARE_NO_COPY_CLASS(wxLogBuffer)
 };
 
-#endif // wxABI_VERSION
 
 // log everything to a "FILE *", stderr by default
 class WXDLLIMPEXP_BASE wxLogStderr : public wxLog
@@ -410,6 +427,11 @@ public:
 
     // override base class version to flush the old logger as well
     virtual void Flush();
+
+    // call to avoid destroying the old log target
+#if wxABI_VERSION >= 20805 /* 2.8.5+ only */
+    void DetachOldLog() { m_logOld = NULL; }
+#endif
 
 protected:
     // pass the chain to the old logger if needed
@@ -509,6 +531,7 @@ public:
 #define wxTRACE_OleCalls wxEmptyString // OLE interface calls
 
 #endif // wxUSE_LOG/!wxUSE_LOG
+
 #define DECLARE_LOG_FUNCTION2(level, argclass, arg)                         \
     DECLARE_LOG_FUNCTION2_EXP(level, argclass, arg, WXDLLIMPEXP_BASE)
 
@@ -530,7 +553,7 @@ DECLARE_LOG_FUNCTION(Status);
 
 #if wxUSE_GUI
     // this one is the same as previous except that it allows to explicitly
-    class WXDLLEXPORT wxFrame;
+    class WXDLLIMPEXP_FWD_CORE wxFrame;
     // specify the frame to which the output should go
     DECLARE_LOG_FUNCTION2_EXP(Status, wxFrame *, pFrame, WXDLLIMPEXP_CORE);
 #endif // wxUSE_GUI
@@ -544,7 +567,7 @@ DECLARE_LOG_FUNCTION(SysError);
 DECLARE_LOG_FUNCTION2(SysError, long, lErrCode);
 
 // debug functions do nothing in release mode
-#if wxUSE_LOG_DEBUG
+#if wxUSE_LOG && wxUSE_LOG_DEBUG
     DECLARE_LOG_FUNCTION(Debug);
 
     // there is no more unconditional LogTrace: it is not different from
@@ -559,14 +582,34 @@ DECLARE_LOG_FUNCTION2(SysError, long, lErrCode);
     // wxLog::GetActive()->GetTraceMask() -- it's deprecated in favour of
     // string identifiers
     DECLARE_LOG_FUNCTION2(Trace, wxTraceMask, mask);
-#else   //!debug
-    // these functions do nothing in release builds
-    inline void wxVLogDebug(const wxChar *, va_list) { }
-    inline void wxLogDebug(const wxChar *, ...) { }
-    inline void wxVLogTrace(wxTraceMask, const wxChar *, va_list) { }
-    inline void wxLogTrace(wxTraceMask, const wxChar *, ...) { }
-    inline void wxVLogTrace(const wxChar *, const wxChar *, va_list) { }
-    inline void wxLogTrace(const wxChar *, const wxChar *, ...) { }
+#else   //!debug || !wxUSE_LOG
+    // these functions do nothing in release builds, but don't define them as
+    // nothing as it could result in different code structure in debug and
+    // release and this could result in trouble when these macros are used
+    // inside if/else
+    //
+    // note that making wxVLogDebug/Trace() themselves (empty inline) functions
+    // is a bad idea as some compilers are stupid enough to not inline even
+    // empty functions if their parameters are complicated enough, but by
+    // defining them as an empty inline function we ensure that even dumbest
+    // compilers optimise them away
+    inline void wxLogNop() { }
+
+    #define wxVLogDebug(fmt, valist) wxLogNop()
+    #define wxVLogTrace(mask, fmt, valist) wxLogNop()
+
+    #ifdef HAVE_VARIADIC_MACROS
+        // unlike the inline functions below, this completely removes the
+        // wxLogXXX calls from the object file:
+        #define wxLogDebug(fmt, ...) wxLogNop()
+        #define wxLogTrace(mask, fmt, ...) wxLogNop()
+    #else // !HAVE_VARIADIC_MACROS
+        // note that leaving out "fmt" in the vararg functions provokes a warning
+        // from SGI CC: "the last argument of the varargs function is unnamed"
+        inline void wxLogDebug(const wxChar *fmt, ...) { wxUnusedVar(fmt); }
+        inline void wxLogTrace(wxTraceMask, const wxChar *fmt, ...) { wxUnusedVar(fmt); }
+        inline void wxLogTrace(const wxChar *, const wxChar *fmt, ...) { wxUnusedVar(fmt); }
+    #endif // HAVE_VARIADIC_MACROS/!HAVE_VARIADIC_MACROS
 #endif // debug/!debug
 
 // wxLogFatalError helper: show the (fatal) error to the user in a safe way,
@@ -597,8 +640,8 @@ wxSafeShowMessage(const wxString& title, const wxString& text);
     #define wxLogLastError(api) wxLogApiError(api, wxSysErrorCode())
 
 #else   //!debug
-    inline void wxLogApiError(const wxChar *, long) { }
-    inline void wxLogLastError(const wxChar *) { }
+    #define wxLogApiError(api, err) wxLogNop()
+    #define wxLogLastError(api) wxLogNop()
 #endif  //debug/!debug
 
 // wxCocoa has additiional trace masks

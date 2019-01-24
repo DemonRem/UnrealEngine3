@@ -3,7 +3,7 @@
 // Purpose:     wxPostScriptDC class
 // Author:      Julian Smart and others
 // Modified by:
-// RCS-ID:      $Id: dcpsg.h,v 1.33 2005/09/15 15:26:19 ABX Exp $
+// RCS-ID:      $Id: dcpsg.h 41751 2006-10-08 21:56:55Z VZ $
 // Copyright:   (c) Julian Smart and Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -11,19 +11,18 @@
 #ifndef _WX_DCPSG_H_
 #define _WX_DCPSG_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dcpsg.h"
-#endif
-
-#include "wx/dc.h"
+#include "wx/defs.h"
 
 #if wxUSE_PRINTING_ARCHITECTURE
 
 #if wxUSE_POSTSCRIPT
 
+#include "wx/dc.h"
 #include "wx/dialog.h"
 #include "wx/module.h"
 #include "wx/cmndata.h"
+
+extern WXDLLIMPEXP_DATA_CORE(int) wxPageNumber;
 
 //-----------------------------------------------------------------------------
 // classes
@@ -44,41 +43,12 @@ public:
     wxPostScriptDC(const wxPrintData& printData);
 
     // Recommended destructor :-)
-    ~wxPostScriptDC();
+    virtual ~wxPostScriptDC();
 
-  virtual bool Ok() const;
+  virtual bool Ok() const { return IsOk(); }
+  virtual bool IsOk() const;
 
-  virtual void BeginDrawing() {}
-  virtual void EndDrawing() {}
-
-  bool DoFloodFill(wxCoord x1, wxCoord y1, const wxColour &col, int style=wxFLOOD_SURFACE );
-  bool DoGetPixel(wxCoord x1, wxCoord y1, wxColour *col) const;
-
-  void DoDrawLine(wxCoord x1, wxCoord y1, wxCoord x2, wxCoord y2);
-  void DoCrossHair(wxCoord x, wxCoord y) ;
-  void DoDrawArc(wxCoord x1,wxCoord y1,wxCoord x2,wxCoord y2,wxCoord xc,wxCoord yc);
-  void DoDrawEllipticArc(wxCoord x,wxCoord y,wxCoord w,wxCoord h,double sa,double ea);
-  void DoDrawPoint(wxCoord x, wxCoord y);
-  void DoDrawLines(int n, wxPoint points[], wxCoord xoffset = 0, wxCoord yoffset = 0);
-  void DoDrawPolygon(int n, wxPoint points[], wxCoord xoffset = 0, wxCoord yoffset = 0, int fillStyle=wxODDEVEN_RULE);
-  void DoDrawPolyPolygon(int n, int count[], wxPoint points[], wxCoord xoffset = 0, wxCoord yoffset = 0, int fillStyle=wxODDEVEN_RULE);
-  void DoDrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
-  void DoDrawRoundedRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord height, double radius = 20);
-  void DoDrawEllipse(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
-
-#if wxUSE_SPLINES
-  void DoDrawSpline(wxList *points);
-#endif // wxUSE_SPLINES
-  bool DoBlit(wxCoord xdest, wxCoord ydest, wxCoord width, wxCoord height,
-            wxDC *source, wxCoord xsrc, wxCoord ysrc, int rop = wxCOPY, bool useMask = false,
-            wxCoord xsrcMask = wxDefaultCoord, wxCoord ysrcMask = wxDefaultCoord);
   bool CanDrawBitmap() const { return true; }
-
-  void DoDrawIcon( const wxIcon& icon, wxCoord x, wxCoord y );
-  void DoDrawBitmap( const wxBitmap& bitmap, wxCoord x, wxCoord y, bool useMask = false );
-
-  void DoDrawText(const wxString& text, wxCoord x, wxCoord y );
-  void DoDrawRotatedText(const wxString& text, wxCoord x, wxCoord y, double angle);
 
   void Clear();
   void SetFont( const wxFont& font );
@@ -87,10 +57,7 @@ public:
   void SetLogicalFunction( int function );
   void SetBackground( const wxBrush& brush );
 
-  void DoSetClippingRegion(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
   void DestroyClippingRegion();
-
-  void DoSetClippingRegionAsRegion( const wxRegion &WXUNUSED(clip) ) { }
 
   bool StartDoc(const wxString& message);
   void EndDoc();
@@ -100,13 +67,6 @@ public:
   wxCoord GetCharHeight() const;
   wxCoord GetCharWidth() const;
   bool CanGetTextExtent() const { return true; }
-  void DoGetTextExtent(const wxString& string, wxCoord *x, wxCoord *y,
-                     wxCoord *descent = (wxCoord *) NULL,
-                     wxCoord *externalLeading = (wxCoord *) NULL,
-                     wxFont *theFont = (wxFont *) NULL ) const;
-
-  void DoGetSize(int* width, int* height) const;
-  void DoGetSizeMM(int *width, int *height) const;
 
   // Resolution in pixels per logical inch
   wxSize GetPPI() const;
@@ -137,6 +97,37 @@ private:
     static float ms_PSScaleFactor;
 
 protected:
+    bool DoFloodFill(wxCoord x1, wxCoord y1, const wxColour &col, int style = wxFLOOD_SURFACE);
+    bool DoGetPixel(wxCoord x1, wxCoord y1, wxColour *col) const;
+    void DoDrawLine(wxCoord x1, wxCoord y1, wxCoord x2, wxCoord y2);
+    void DoCrossHair(wxCoord x, wxCoord y) ;
+    void DoDrawArc(wxCoord x1,wxCoord y1,wxCoord x2,wxCoord y2,wxCoord xc,wxCoord yc);
+    void DoDrawEllipticArc(wxCoord x,wxCoord y,wxCoord w,wxCoord h,double sa,double ea);
+    void DoDrawPoint(wxCoord x, wxCoord y);
+    void DoDrawLines(int n, wxPoint points[], wxCoord xoffset = 0, wxCoord yoffset = 0);
+    void DoDrawPolygon(int n, wxPoint points[], wxCoord xoffset = 0, wxCoord yoffset = 0, int fillStyle = wxODDEVEN_RULE);
+    void DoDrawPolyPolygon(int n, int count[], wxPoint points[], wxCoord xoffset = 0, wxCoord yoffset = 0, int fillStyle = wxODDEVEN_RULE);
+    void DoDrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
+    void DoDrawRoundedRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord height, double radius = 20);
+    void DoDrawEllipse(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
+#if wxUSE_SPLINES
+    void DoDrawSpline(wxList *points);
+#endif // wxUSE_SPLINES
+    bool DoBlit(wxCoord xdest, wxCoord ydest, wxCoord width, wxCoord height,
+                wxDC *source, wxCoord xsrc, wxCoord ysrc, int rop = wxCOPY, bool useMask = false,
+                wxCoord xsrcMask = wxDefaultCoord, wxCoord ysrcMask = wxDefaultCoord);
+    void DoDrawIcon(const wxIcon& icon, wxCoord x, wxCoord y);
+    void DoDrawBitmap(const wxBitmap& bitmap, wxCoord x, wxCoord y, bool useMask = false);
+    void DoDrawText(const wxString& text, wxCoord x, wxCoord y);
+    void DoDrawRotatedText(const wxString& text, wxCoord x, wxCoord y, double angle);
+    void DoSetClippingRegion(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
+    void DoSetClippingRegionAsRegion( const wxRegion &WXUNUSED(clip)) { }
+    void DoGetTextExtent(const wxString& string, wxCoord *x, wxCoord *y,
+                         wxCoord *descent = NULL,
+                         wxCoord *externalLeading = NULL,
+                         wxFont *theFont = NULL) const;
+    void DoGetSize(int* width, int* height) const;
+    void DoGetSizeMM(int *width, int *height) const;
 
     FILE*             m_pstream;    // PostScript output stream
     wxString          m_title;

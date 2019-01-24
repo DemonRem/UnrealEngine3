@@ -4,17 +4,17 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     11/6/98
-// RCS-ID:      $Id: automtn.h,v 1.11 2004/08/16 12:45:40 ABX Exp $
+// RCS-ID:      $Id: automtn.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) 1998, Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "automtn.h"
-#endif
-
 #ifndef _WX_AUTOMTN_H_
 #define _WX_AUTOMTN_H_
+
+#include "wx/defs.h"
+
+#if wxUSE_OLE_AUTOMATION
 
 #include "wx/object.h"
 #include "wx/variant.h"
@@ -35,10 +35,10 @@ class WXDLLEXPORT wxAutomationObject: public wxObject
 {
 public:
     wxAutomationObject(WXIDISPATCH* dispatchPtr = NULL);
-    ~wxAutomationObject();
+    virtual ~wxAutomationObject();
 
     // Set/get dispatch pointer
-    inline void SetDispatchPtr(WXIDISPATCH* dispatchPtr) { m_dispatchPtr = dispatchPtr; };
+    inline void SetDispatchPtr(WXIDISPATCH* dispatchPtr) { m_dispatchPtr = dispatchPtr; }
     inline WXIDISPATCH* GetDispatchPtr() const { return m_dispatchPtr; }
 
     // Get a dispatch pointer from the current object associated
@@ -96,6 +96,6 @@ public:
     DECLARE_NO_COPY_CLASS(wxAutomationObject)
 };
 
+#endif // wxUSE_OLE_AUTOMATION
 
-#endif
-    // _WX_AUTOMTN_H_
+#endif // _WX_AUTOMTN_H_

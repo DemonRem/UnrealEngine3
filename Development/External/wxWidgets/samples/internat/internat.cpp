@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin/Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: internat.cpp,v 1.45 2005/07/31 09:42:11 MBN Exp $
+// RCS-ID:      $Id: internat.cpp 41147 2006-09-10 23:28:20Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -57,8 +57,10 @@ public:
     MyFrame(wxLocale& m_locale);
 
 public:
-    void OnQuit(wxCommandEvent& event);
+    void OnTestLocaleAvail(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
+    void OnQuit(wxCommandEvent& event);
+
     void OnPlay(wxCommandEvent& event);
     void OnOpen(wxCommandEvent& event);
     void OnTest1(wxCommandEvent& event);
@@ -77,23 +79,75 @@ public:
 // ID for the menu commands
 enum
 {
-    INTERNAT_TEXT = wxID_HIGHEST + 1,
-    INTERNAT_TEST,
+    INTERNAT_TEST = wxID_HIGHEST + 1,
+    INTERNAT_PLAY,
     INTERNAT_TEST_1,
     INTERNAT_TEST_2,
-    INTERNAT_TEST_3,
-    INTERNAT_OPEN
+    INTERNAT_TEST_3
 };
+
+// language data
+static const wxLanguage langIds[] =
+{
+    wxLANGUAGE_DEFAULT,
+    wxLANGUAGE_FRENCH,
+    wxLANGUAGE_GERMAN,
+    wxLANGUAGE_RUSSIAN,
+    wxLANGUAGE_BULGARIAN,
+    wxLANGUAGE_CZECH,
+    wxLANGUAGE_POLISH,
+    wxLANGUAGE_SWEDISH,
+#if wxUSE_UNICODE || defined(__WXMOTIF__)
+    wxLANGUAGE_JAPANESE,
+#endif
+#if wxUSE_UNICODE
+    wxLANGUAGE_GEORGIAN,
+    wxLANGUAGE_ENGLISH,
+    wxLANGUAGE_ENGLISH_US,
+    wxLANGUAGE_ARABIC,
+    wxLANGUAGE_ARABIC_EGYPT
+#endif
+};
+
+// note that it makes no sense to translate these strings, they are
+// shown before we set the locale anyhow
+const wxString langNames[] =
+{
+    _T("System default"),
+    _T("French"),
+    _T("German"),
+    _T("Russian"),
+    _T("Bulgarian"),
+    _T("Czech"),
+    _T("Polish"),
+    _T("Swedish"),
+#if wxUSE_UNICODE || defined(__WXMOTIF__)
+    _T("Japanese"),
+#endif
+#if wxUSE_UNICODE
+    _T("Georgian"),
+    _T("English"),
+    _T("English (U.S.)"),
+    _T("Arabic"),
+    _T("Arabic (Egypt)")
+#endif
+};
+
+// the arrays must be in sync
+wxCOMPILE_TIME_ASSERT( WXSIZEOF(langNames) == WXSIZEOF(langIds),
+                       LangArraysMismatch );
 
 // ----------------------------------------------------------------------------
 // wxWidgets macros
 // ----------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-    EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
+    EVT_MENU(INTERNAT_TEST, MyFrame::OnTestLocaleAvail)
     EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
-    EVT_MENU(INTERNAT_TEST, MyFrame::OnPlay)
-    EVT_MENU(INTERNAT_OPEN, MyFrame::OnOpen)
+    EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
+
+    EVT_MENU(INTERNAT_PLAY, MyFrame::OnPlay)
+    EVT_MENU(wxID_OPEN, MyFrame::OnOpen)
     EVT_MENU(INTERNAT_TEST_1, MyFrame::OnTest1)
     EVT_MENU(INTERNAT_TEST_2, MyFrame::OnTest2)
     EVT_MENU(INTERNAT_TEST_3, MyFrame::OnTest3)
@@ -121,54 +175,8 @@ bool MyApp::OnInit()
         tmp.ToLong(&lng);
     }
 
-    static const wxLanguage langIds[] =
-    {
-        wxLANGUAGE_DEFAULT,
-        wxLANGUAGE_FRENCH,
-        wxLANGUAGE_GERMAN,
-        wxLANGUAGE_RUSSIAN,
-        wxLANGUAGE_BULGARIAN,
-        wxLANGUAGE_CZECH,
-        wxLANGUAGE_POLISH,
-        wxLANGUAGE_SWEDISH,
-#if wxUSE_UNICODE || defined(__WXMOTIF__)
-        wxLANGUAGE_JAPANESE,
-#endif
-#if wxUSE_UNICODE
-        wxLANGUAGE_GEORGIAN,
-#endif
-        wxLANGUAGE_ENGLISH,
-        wxLANGUAGE_ENGLISH_US
-    };
-
     if ( lng == -1 )
     {
-        // note that it makes no sense to translate these strings, they are
-        // shown before we set the locale anyhow
-        const wxString langNames[] =
-        {
-            _T("System default"),
-            _T("French"),
-            _T("German"),
-            _T("Russian"),
-            _T("Bulgarian"),
-            _T("Czech"),
-            _T("Polish"),
-            _T("Swedish"),
-#if wxUSE_UNICODE || defined(__WXMOTIF__)
-            _T("Japanese"),
-#endif
-#if wxUSE_UNICODE
-            _T("Georgian"),
-#endif
-            _T("English"),
-            _T("English (U.S.)")
-        };
-
-        // the arrays should be in sync
-        wxCOMPILE_TIME_ASSERT( WXSIZEOF(langNames) == WXSIZEOF(langIds),
-                               LangArraysMismatch );
-
         lng = wxGetSingleChoiceIndex
               (
                 _T("Please choose language:"),
@@ -179,15 +187,21 @@ bool MyApp::OnInit()
     }
 
     if ( lng != -1 )
-        m_locale.Init(langIds[lng]);
+    {
+        // don't use wxLOCALE_LOAD_DEFAULT flag so that Init() doesn't return
+        // false just because it failed to load wxstd catalog
+        if ( !m_locale.Init(langIds[lng], wxLOCALE_CONV_ENCODING) )
+        {
+            wxLogError(_T("This language is not supported by the system."));
+            return false;
+        }
+    }
 
     // normally this wouldn't be necessary as the catalog files would be found
-    // in the default locations, but under Windows then the program is not
-    // installed the catalogs are in the parent directory (because the binary
-    // is in a subdirectory of samples/internat) where we wouldn't find them by
+    // in the default locations, but when the program is not installed the
+    // catalogs are in the build directory where we wouldn't find them by
     // default
     wxLocale::AddCatalogLookupPathPrefix(wxT("."));
-    wxLocale::AddCatalogLookupPathPrefix(wxT(".."));
 
     // Initialize the catalogs we'll be using
     m_locale.AddCatalog(wxT("internat"));
@@ -211,13 +225,15 @@ bool MyApp::OnInit()
 
     // Make a menubar
     wxMenu *file_menu = new wxMenu;
+    file_menu->Append(INTERNAT_TEST, _("&Test locale availability...\tCtrl-T"));
+    file_menu->AppendSeparator();
     file_menu->Append(wxID_ABOUT, _("&About..."));
     file_menu->AppendSeparator();
     file_menu->Append(wxID_EXIT, _("E&xit"));
 
     wxMenu *test_menu = new wxMenu;
-    test_menu->Append(INTERNAT_OPEN, _("&Open bogus file"));
-    test_menu->Append(INTERNAT_TEST, _("&Play a game"));
+    test_menu->Append(wxID_OPEN, _("&Open bogus file"));
+    test_menu->Append(INTERNAT_PLAY, _("&Play a game"));
     test_menu->AppendSeparator();
     test_menu->Append(INTERNAT_TEST_1, _("&1 _() (gettext)"));
     test_menu->Append(INTERNAT_TEST_2, _("&2 _N() (ngettext)"));
@@ -246,7 +262,13 @@ MyFrame::MyFrame(wxLocale& locale)
                  _("International wxWidgets App")),
          m_locale(locale)
 {
-    // Empty
+    // this demonstrates RTL layout mirroring for Arabic locales
+    wxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(new wxStaticText(this, wxID_ANY, _("First")),
+                wxSizerFlags().Border());
+    sizer->Add(new wxStaticText(this, wxID_ANY, _("Second")),
+                wxSizerFlags().Border());
+    SetSizer(sizer);
 }
 
 void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event) )
@@ -323,7 +345,34 @@ void MyFrame::OnPlay(wxCommandEvent& WXUNUSED(event))
     wxMessageBox(str, _("Result"), wxOK | wxICON_INFORMATION);
 }
 
-void MyFrame::OnOpen(wxCommandEvent&)
+void MyFrame::OnTestLocaleAvail(wxCommandEvent& WXUNUSED(event))
+{
+    static wxString s_locale;
+    wxString locale = wxGetTextFromUser
+                      (
+                        _("Enter the locale to test"),
+                        wxGetTextFromUserPromptStr,
+                        s_locale,
+                        this
+                      );
+    if ( locale.empty() )
+        return;
+
+    s_locale = locale;
+    const wxLanguageInfo * const info = wxLocale::FindLanguageInfo(s_locale);
+    if ( !info )
+    {
+        wxLogError(_("Locale \"%s\" is unknown."), s_locale.c_str());
+        return;
+    }
+
+    if ( wxLocale::IsAvailable(info->Language) )
+        wxLogMessage(_("Locale \"%s\" is available."), s_locale.c_str());
+    else
+        wxLogWarning(_("Locale \"%s\" is not available."), s_locale.c_str());
+}
+
+void MyFrame::OnOpen(wxCommandEvent& WXUNUSED(event))
 {
     // open a bogus file -- the error message should be also translated if
     // you've got wxstd.mo somewhere in the search path

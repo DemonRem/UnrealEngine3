@@ -3,7 +3,7 @@
 // Purpose:     Implementation of a uri parser
 // Author:      Ryan Norton
 // Created:     10/26/04
-// RCS-ID:      $Id: uri.cpp,v 1.26 2005/07/28 21:52:50 VZ Exp $
+// RCS-ID:      $Id: uri.cpp 37403 2006-02-09 03:09:36Z VZ $
 // Copyright:   (c) 2004 Ryan Norton
 // Licence:     wxWindows
 /////////////////////////////////////////////////////////////////////////////
@@ -15,10 +15,6 @@
 // ---------------------------------------------------------------------------
 // headers
 // ---------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "uri.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -33,7 +29,7 @@
 // definitions
 // ---------------------------------------------------------------------------
 
-IMPLEMENT_CLASS(wxURI, wxObject);
+IMPLEMENT_CLASS(wxURI, wxObject)
 
 // ===========================================================================
 // implementation
@@ -117,7 +113,7 @@ wxChar wxURI::TranslateEscape(const wxChar* s)
 {
     wxASSERT_MSG( IsHex(s[0]) && IsHex(s[1]), wxT("Invalid escape sequence!"));
 
-    return (wxChar)( CharToHex(s[0]) << 4 ) | CharToHex(s[1]);
+    return wx_truncate_cast(wxChar, (CharToHex(s[0]) << 4 ) | CharToHex(s[1]));
 }
 
 wxString wxURI::Unescape(const wxString& uri)
@@ -436,11 +432,18 @@ const wxChar* wxURI::ParseAuthority(const wxChar* uri)
     // authority     = [ userinfo "@" ] host [ ":" port ]
     if (*uri == wxT('/') && *(uri+1) == wxT('/'))
     {
+        //skip past the two slashes
         uri += 2;
 
+        // ############# DEVIATION FROM RFC #########################
+        // Don't parse the server component for file URIs
+        if(m_scheme != wxT("file"))
+        {
+            //normal way
         uri = ParseUserInfo(uri);
         uri = ParseServer(uri);
         return ParsePort(uri);
+        }
     }
 
     return uri;

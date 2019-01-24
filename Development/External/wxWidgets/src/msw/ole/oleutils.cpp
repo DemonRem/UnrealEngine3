@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        ole/oleutils.cpp
+// Name:        src/msw/ole/oleutils.cpp
 // Purpose:     implementation of OLE helper functions
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     19.02.98
-// RCS-ID:      $Id: oleutils.cpp,v 1.24 2005/04/14 15:07:17 ABX Exp $
+// RCS-ID:      $Id: oleutils.cpp 51557 2008-02-05 07:24:59Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,21 +17,18 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "oleutils.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #if defined(__BORLANDC__)
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
-#include  "wx/setup.h"
-#include  "wx/log.h"
-
 #if wxUSE_OLE
+
+#ifndef WX_PRECOMP
+    #include "wx/log.h"
+#endif
 
 #ifndef __CYGWIN10__
 
@@ -69,6 +66,94 @@ bool IsIidFromList(REFIID riid, const IID *aIids[], size_t nCount)
   }
 
   return false;
+}
+
+WXDLLEXPORT BSTR wxConvertStringToOle(const wxString& str)
+{
+/*
+    unsigned int len = strlen((const char*) str);
+    unsigned short* s = new unsigned short[len*2+2];
+    unsigned int i;
+    memset(s, 0, len*2+2);
+    for (i=0; i < len; i++)
+        s[i*2] = str[i];
+*/
+    wxBasicString bstr(str.mb_str());
+    return bstr.Get();
+}
+
+WXDLLEXPORT wxString wxConvertStringFromOle(BSTR bStr)
+{
+    // NULL BSTR is equivalent to an empty string (this is the convention used
+    // by VB and hence we must follow it)
+    if ( !bStr )
+        return wxString();
+
+    const int len = SysStringLen(bStr);
+
+#if wxUSE_UNICODE
+    wxString str(bStr, len);
+#else
+    wxString str;
+    if ( !::WideCharToMultiByte(CP_ACP, 0 /* no flags */,
+                                bStr, len /* not necessary NUL-terminated */,
+                                wxStringBuffer(str, len + 1), len + 1,
+                                NULL, NULL /* no default char */) )
+    {
+        str.clear();
+    }
+#endif
+
+    return str;
+}
+
+// ----------------------------------------------------------------------------
+// wxBasicString
+// ----------------------------------------------------------------------------
+
+// ctor takes an ANSI string and transforms it to Unicode
+wxBasicString::wxBasicString(const char *sz)
+{
+    Init(sz);
+}
+
+// ctor takes an ANSI or Unicode string and transforms it to Unicode
+wxBasicString::wxBasicString(const wxString& str)
+{
+#if wxUSE_UNICODE
+    m_wzBuf = new OLECHAR[str.length() + 1];
+    memcpy(m_wzBuf, str.c_str(), str.length()*2);
+    m_wzBuf[str.length()] = L'\0';
+#else
+    Init(str.c_str());
+#endif
+}
+
+// Takes an ANSI string and transforms it to Unicode
+void wxBasicString::Init(const char *sz)
+{
+    // get the size of required buffer
+    UINT lenAnsi = strlen(sz);
+#ifdef __MWERKS__
+    UINT lenWide = lenAnsi * 2 ;
+#else
+    UINT lenWide = mbstowcs(NULL, sz, lenAnsi);
+#endif
+
+    if ( lenWide > 0 ) {
+        m_wzBuf = new OLECHAR[lenWide + 1];
+        mbstowcs(m_wzBuf, sz, lenAnsi);
+        m_wzBuf[lenWide] = L'\0';
+    }
+    else {
+        m_wzBuf = NULL;
+    }
+}
+
+// dtor frees memory
+wxBasicString::~wxBasicString()
+{
+  delete [] m_wzBuf;
 }
 
 #if wxUSE_DATAOBJ
@@ -233,4 +318,3 @@ void wxLogRelease(const char *szInterface, ULONG cRef)
 
 #endif
   // wxUSE_OLE
-

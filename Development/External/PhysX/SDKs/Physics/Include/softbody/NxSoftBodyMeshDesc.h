@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -23,10 +23,10 @@ enum NxSoftBodyMeshFlags
 	/**
 	Not supported in current release.
 
-	\brief Specifies whether extra space is allocated for tearing on the PPU.
-	If this flag is not set, less memory is needed on the PPU but tearing is not possible.
+	\brief Specifies whether extra space is allocated for tearing on the GPU.
+	If this flag is not set, less memory is needed on the GPU but tearing is not possible.
 	*/
-	NX_SOFTBODY_MESH_TEARABLE	=	(1<<2),
+	NX_SOFTBODY_MESH_TEARABLE	=	(1<<2)
 	};
 
 /**
@@ -40,6 +40,15 @@ enum NxSoftBodyVertexFlags
 	\brief Specifies whether a soft body vertex can be torn.
 	*/
 	NX_SOFTBODY_VERTEX_TEARABLE	=	(1<<7),
+
+	/**
+	\brief A secondary soft body vertex does not influence regular vertices.
+	Interactions between vertices of the same type are treated normally.
+	In an interaction between vertices of different types, the regular
+	vertex temporarily gets infinite mass (does not move)
+	*/
+	NX_SOFTBODY_VERTEX_SECONDARY =	(1<<13)
+
 	};
 
 /*----------------------------------------------------------------------------*/
@@ -120,7 +129,11 @@ public:
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -150,45 +163,45 @@ NX_INLINE void NxSoftBodyMeshDesc::setToDefault()
 
 /*----------------------------------------------------------------------------*/
 
-NX_INLINE bool NxSoftBodyMeshDesc::isValid() const
+NX_INLINE NxU32 NxSoftBodyMeshDesc::checkValid() const
 {
 	// Check geometry
 	if(numVertices > 0xffff && flags & NX_SOFTBODY_MESH_16_BIT_INDICES)
-		return false;
+		return 1;
 	if(!vertices)
-		return false;
+		return 2;
 	if(vertexStrideBytes < sizeof(NxPoint))	//should be at least one point's worth of data
-		return false;
+		return 3;
 
 	if(!tetrahedra) 
-		return false;
+		return 4;
 
 	if(flags & NX_SOFTBODY_MESH_16_BIT_INDICES)
 		{
 		if((tetrahedronStrideBytes < sizeof(NxU16)*3))
-			return false;
+			return 5;
 		}
 	else
 		{
 		if((tetrahedronStrideBytes < sizeof(NxU32)*3))
-			return false;
+			return 6;
 		}
 		
 	if(vertexMasses && (vertexMassStrideBytes < sizeof(NxReal)))
-		return false;
+		return 7;
 	if(vertexFlags && (vertexFlagStrideBytes < sizeof(NxU32)))
-		return false;
+		return 8;
 
-	return true;
+	return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 /** @} */
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2006 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

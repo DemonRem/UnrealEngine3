@@ -4,17 +4,12 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: game.cpp,v 1.12 2004/10/05 15:38:07 ABX Exp $
+// RCS-ID:      $Id: game.cpp 44498 2007-02-13 23:20:12Z VZ $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------
 // Last modified: 22nd July 1998 - ported to wxWidgets 2.0
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -829,7 +824,7 @@ Pack::~Pack()
     {
         delete m_cards[m_topCard];
     }
-};
+}
 
 
 //------------------------------------------------------//

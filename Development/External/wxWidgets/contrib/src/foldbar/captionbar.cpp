@@ -5,14 +5,10 @@
 // Modified by: ABX - 19/12/2004 : possibility of horizontal orientation
 //                               : wxWidgets coding standards
 // Created:     18/06/2004
-// RCS-ID:      $Id: captionbar.cpp,v 1.5 2004/12/10 12:01:04 ABX Exp $
+// RCS-ID:      $Id: captionbar.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "foldpanelbar.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"

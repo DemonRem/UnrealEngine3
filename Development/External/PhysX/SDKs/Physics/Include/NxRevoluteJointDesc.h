@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXHINGEJOINTDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -22,9 +22,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxRevoluteJoint
 */
@@ -123,7 +124,11 @@ class NxRevoluteJointDesc : public NxJointDesc
 	
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	};
 
@@ -149,25 +154,25 @@ NX_INLINE void NxRevoluteJointDesc::setToDefault(bool fromCtor)
 	projectionMode = NX_JPM_NONE;
 	}
 
-NX_INLINE bool NxRevoluteJointDesc::isValid() const
+NX_INLINE NxU32 NxRevoluteJointDesc::checkValid() const
 	{
-	if (projectionDistance < 0.0f) return false;
-	if (projectionAngle < 0.02f) return false;	//if its smaller then current algo gets too close to a singularity.
+	if (projectionDistance < 0.0f) return 1;
+	if (projectionAngle < 0.02f) return 2;	//if its smaller then current algo gets too close to a singularity.
 	
 
-	if (!limit.isValid()) return false;
-	if (!motor.isValid()) return false;
-	if (!spring.isValid()) return false;
+	if (!limit.isValid()) return 3;
+	if (!motor.isValid()) return 4;
+	if (!spring.isValid()) return 5;
 
 
-	return NxJointDesc::isValid();
+	return 6*NxJointDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

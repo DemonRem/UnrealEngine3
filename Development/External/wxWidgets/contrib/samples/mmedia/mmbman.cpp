@@ -4,14 +4,10 @@
 // Author:      Guilhem Lavaux, <guilhem.lavaux@libertysurf.fr>
 // Modified by:
 // Created:     13/02/2000
-// RCS-ID:      $Id: mmbman.cpp,v 1.9 2005/06/10 14:45:39 MW Exp $
+// RCS-ID:      $Id: mmbman.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2000, Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-  #pragma implementation "mmbman.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers

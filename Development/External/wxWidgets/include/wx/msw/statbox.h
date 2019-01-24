@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: statbox.h,v 1.34 2005/05/21 07:05:02 RR Exp $
+// RCS-ID:      $Id: statbox.h 37393 2006-02-08 21:47:09Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MSW_STATBOX_H_
 #define _WX_MSW_STATBOX_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "statbox.h"
-#endif
 
 // Group box
 class WXDLLEXPORT wxStaticBox : public wxStaticBoxBase
@@ -42,17 +38,19 @@ public:
     /// Implementation only
     virtual void GetBordersForSizer(int *borderTop, int *borderOther) const;
 
+    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
+
 protected:
     virtual wxSize DoGetBestSize() const;
 
     // choose the default border for this window
     virtual wxBorder GetDefaultBorder() const;
 
-    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
-
 #ifndef __WXWINCE__
+public:
     virtual WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 
+protected:
     // return the region with all the windows inside this static box excluded
     virtual WXHRGN MSWGetRegionWithoutChildren();
 

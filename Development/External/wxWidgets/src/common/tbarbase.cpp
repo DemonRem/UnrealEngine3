@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/tbarbase.cpp
+// Name:        src/common/tbarbase.cpp
 // Purpose:     wxToolBarBase implementation
 // Author:      Julian Smart
 // Modified by: VZ at 11.12.99 (wxScrollableToolBar split off)
 // Created:     04/01/98
-// RCS-ID:      $Id: tbarbase.cpp,v 1.78 2005/05/31 09:19:53 JS Exp $
+// RCS-ID:      $Id: tbarbase.cpp 42840 2006-10-31 13:09:08Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "tbarbase.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,18 +26,14 @@
 
 #if wxUSE_TOOLBAR
 
+#include "wx/toolbar.h"
+
 #ifndef WX_PRECOMP
     #include "wx/control.h"
-#endif
-
-#include "wx/frame.h"
-
-#if wxUSE_IMAGE
-    #include "wx/image.h"
+    #include "wx/frame.h"
     #include "wx/settings.h"
-#endif // wxUSE_IMAGE
-
-#include "wx/toolbar.h"
+    #include "wx/image.h"
+#endif
 
 // ----------------------------------------------------------------------------
 // wxWidgets macros
@@ -52,7 +44,7 @@ END_EVENT_TABLE()
 
 #include "wx/listimpl.cpp"
 
-WX_DEFINE_LIST(wxToolBarToolsList);
+WX_DEFINE_LIST(wxToolBarToolsList)
 
 // ============================================================================
 // implementation
@@ -117,30 +109,6 @@ bool wxToolBarToolBase::SetLongHelp(const wxString& help)
     return true;
 }
 
-#if WXWIN_COMPATIBILITY_2_2
-
-const wxBitmap& wxToolBarToolBase::GetBitmap1() const
-{
-    return GetNormalBitmap();
-}
-
-const wxBitmap& wxToolBarToolBase::GetBitmap2() const
-{
-    return GetDisabledBitmap();
-}
-
-void wxToolBarToolBase::SetBitmap1(const wxBitmap& bmp)
-{
-    SetNormalBitmap(bmp);
-}
-
-void wxToolBarToolBase::SetBitmap2(const wxBitmap& bmp)
-{
-    SetDisabledBitmap(bmp);
-}
-
-#endif // WXWIN_COMPATIBILITY_2_2
-
 // ----------------------------------------------------------------------------
 // wxToolBarBase adding/deleting items
 // ----------------------------------------------------------------------------
@@ -153,6 +121,15 @@ wxToolBarBase::wxToolBarBase()
     m_toolPacking = m_toolSeparation = 0;
     m_defaultWidth = 16;
     m_defaultHeight = 15;
+}
+
+void wxToolBarBase::FixupStyle()
+{
+    if ( !HasFlag(wxTB_TOP | wxTB_LEFT | wxTB_RIGHT | wxTB_BOTTOM) )
+    {
+        // this is the default
+        m_windowStyle |= wxTB_TOP;
+    }
 }
 
 wxToolBarToolBase *wxToolBarBase::DoAddTool(int id,
@@ -405,14 +382,14 @@ void wxToolBarBase::UnToggleRadioGroup(wxToolBarToolBase *tool)
     wxToolBarToolsList::compatibility_iterator nodeNext = node->GetNext();
     while ( nodeNext )
     {
-        wxToolBarToolBase *tool = nodeNext->GetData();
+        wxToolBarToolBase *toolNext = nodeNext->GetData();
 
-        if ( !tool->IsButton() || tool->GetKind() != wxITEM_RADIO )
+        if ( !toolNext->IsButton() || toolNext->GetKind() != wxITEM_RADIO )
             break;
 
-        if ( tool->Toggle(false) )
+        if ( toolNext->Toggle(false) )
         {
-            DoToggleTool(tool, false);
+            DoToggleTool(toolNext, false);
         }
 
         nodeNext = nodeNext->GetNext();
@@ -421,14 +398,14 @@ void wxToolBarBase::UnToggleRadioGroup(wxToolBarToolBase *tool)
     wxToolBarToolsList::compatibility_iterator nodePrev = node->GetPrevious();
     while ( nodePrev )
     {
-        wxToolBarToolBase *tool = nodePrev->GetData();
+        wxToolBarToolBase *toolNext = nodePrev->GetData();
 
-        if ( !tool->IsButton() || tool->GetKind() != wxITEM_RADIO )
+        if ( !toolNext->IsButton() || toolNext->GetKind() != wxITEM_RADIO )
             break;
 
-        if ( tool->Toggle(false) )
+        if ( toolNext->Toggle(false) )
         {
-            DoToggleTool(tool, false);
+            DoToggleTool(toolNext, false);
         }
 
         nodePrev = nodePrev->GetPrevious();
@@ -437,7 +414,10 @@ void wxToolBarBase::UnToggleRadioGroup(wxToolBarToolBase *tool)
 
 void wxToolBarBase::ClearTools()
 {
-    WX_CLEAR_LIST(wxToolBarToolsList, m_tools);
+    while ( GetToolsCount() )
+    {
+        DeleteToolByPos(0);
+    }
 }
 
 bool wxToolBarBase::Realize()

@@ -3,7 +3,7 @@
 // Purpose:     declaration of wxDebugReport class
 // Author:      Vadim Zeitlin
 // Created:     2005-01-17
-// RCS-ID:      $Id: debugrpt.h,v 1.7 2005/04/16 21:42:16 RN Exp $
+// RCS-ID:      $Id: debugrpt.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 2005 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,10 @@
 
 #if wxUSE_DEBUGREPORT && wxUSE_XML
 
-class WXDLLIMPEXP_XML wxXmlNode;
+#include "wx/string.h"
+#include "wx/arrstr.h"
+
+class WXDLLIMPEXP_FWD_XML wxXmlNode;
 
 // ----------------------------------------------------------------------------
 // wxDebugReport: generate a debug report, processing is done in derived class
@@ -227,7 +230,6 @@ public:
 
 #endif // wxUSE_GUI
 
-#endif // wxUSE_DEBUGREPORT
+#endif // wxUSE_DEBUGREPORT && wxUSE_XML
 
 #endif // _WX_DEBUGRPT_H_
-

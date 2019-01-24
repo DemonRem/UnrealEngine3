@@ -1,10 +1,10 @@
 /*-*- c++ -*-********************************************************
  * helpext.h - an external help controller for wxWidgets            *
  *                                                                  *
- * (C) 1998 by Karsten Ballüder (Ballueder@usa.net)                 *
+ * (C) 1998 by Karsten Ballueder (Ballueder@usa.net)                 *
  * License: wxWindows licence                                       *
  *                                                                  *
- * $Id: helpext.h,v 1.18 2004/11/22 20:28:28 JS Exp $
+ * $Id: helpext.h 50711 2007-12-15 02:57:58Z VZ $
  *******************************************************************/
 
 #ifndef __WX_HELPEXT_H_
@@ -12,29 +12,7 @@
 
 #if wxUSE_HELP
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#   pragma interface "wxexthlp.h"
-#endif
-
 #include "wx/helpbase.h"
-
-/// Path separator.
-#ifdef __WXMSW__
-#define WXEXTHELP_SEPARATOR _T('\\')
-#elif defined(__WXMAC__)
-#define WXEXTHELP_SEPARATOR _T(':')
-#else
-#define WXEXTHELP_SEPARATOR _T('/')
-#endif
-
-class WXDLLIMPEXP_ADV wxExtHelpMapList;
-
-#ifndef WXEXTHELP_DEFAULTBROWSER
-/// Default browser name.
-#   define WXEXTHELP_DEFAULTBROWSER _T("netscape")
-/// Is default browse a variant of netscape?
-#   define WXEXTHELP_DEFAULTBROWSER_IS_NETSCAPE true
-#endif
 
 /**
    This class implements help via an external browser.
@@ -57,10 +35,9 @@ class WXDLLIMPEXP_ADV wxExtHelpMapList;
 
 class WXDLLIMPEXP_ADV wxExtHelpController : public wxHelpControllerBase
 {
-DECLARE_CLASS(wxExtHelpController)
-   public:
-   wxExtHelpController();
-   ~wxExtHelpController();
+public:
+   wxExtHelpController(wxWindow* parentWindow = NULL);
+   virtual ~wxExtHelpController();
 
    /** Tell it which browser to use.
        The Netscape support will check whether Netscape is already
@@ -70,12 +47,12 @@ DECLARE_CLASS(wxExtHelpController)
        @param browsername The command to call a browser/html viewer.
        @param isNetscape Set this to true if the browser is some variant of Netscape.
    */
-   // Obsolete form
-   void SetBrowser(const wxString & browsername = WXEXTHELP_DEFAULTBROWSER,
-                   bool isNetscape = WXEXTHELP_DEFAULTBROWSER_IS_NETSCAPE);
+   void SetBrowser(const wxString& browsername = wxEmptyString,
+                   bool isNetscape = false);
 
   // Set viewer: new name for SetBrowser
-  virtual void SetViewer(const wxString& viewer = WXEXTHELP_DEFAULTBROWSER, long flags = wxHELP_NETSCAPE);
+  virtual void SetViewer(const wxString& viewer = wxEmptyString,
+                         long flags = wxHELP_NETSCAPE);
 
    /** This must be called to tell the controller where to find the
        documentation.
@@ -158,21 +135,30 @@ DECLARE_CLASS(wxExtHelpController)
          return (wxFrame*) NULL;// does nothing by default
       }
 
- protected:
+protected:
    /// Filename of currently active map file.
-   wxString         m_MapFile;
+   wxString         m_helpDir;
    /// How many entries do we have in the map file?
    int              m_NumOfEntries;
    /// A list containing all id,url,documentation triples.
    wxList          *m_MapList;
+
+private:
+   // parse a single line of the map file (called by LoadFile())
+   //
+   // return true if the line was valid or false otherwise
+   bool ParseMapFileLine(const wxString& line);
+
    /// Deletes the list and all objects.
    void DeleteList(void);
 
- private:
+
    /// How to call the html viewer.
    wxString         m_BrowserName;
    /// Is the viewer a variant of netscape?
    bool             m_BrowserIsNetscape;
+
+    DECLARE_CLASS(wxExtHelpController)
 };
 
 #endif // wxUSE_HELP

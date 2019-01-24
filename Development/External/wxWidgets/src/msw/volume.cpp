@@ -4,7 +4,7 @@
 // Author:      George Policello
 // Modified by:
 // Created:     28 Jan 02
-// RCS-ID:      $Id: volume.cpp,v 1.28 2005/09/13 16:04:22 ABX Exp $
+// RCS-ID:      $Id: volume.cpp 41903 2006-10-10 17:37:02Z PC $
 // Copyright:   (c) 2002 George Policello
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "fsvolume.h"
-#endif
-
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
@@ -29,19 +25,19 @@
 
 #if wxUSE_FSVOLUME
 
+#include "wx/volume.h"
+
 #ifndef WX_PRECOMP
     #if wxUSE_GUI
         #include "wx/icon.h"
     #endif
     #include "wx/intl.h"
+    #include "wx/hashmap.h"
 #endif // WX_PRECOMP
 
 #include "wx/dir.h"
-#include "wx/hashmap.h"
 #include "wx/dynlib.h"
 #include "wx/arrimpl.cpp"
-
-#include "wx/volume.h"
 
 #include <shellapi.h>
 #include <shlobj.h>
@@ -53,7 +49,9 @@
 // Dynamic library function defs.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#if wxUSE_DYNLIB_CLASS
 static wxDynamicLibrary s_mprLib;
+#endif
 
 typedef DWORD (WINAPI* WNetOpenEnumPtr)(DWORD, DWORD, DWORD, LPNETRESOURCE, LPHANDLE);
 typedef DWORD (WINAPI* WNetEnumResourcePtr)(HANDLE, LPDWORD, LPVOID, LPDWORD);
@@ -147,7 +145,7 @@ static unsigned GetBasicFlags(const wxChar* filename)
     }
 
     //-----------------------------------------------------------------------
-    // The following will most likely will not modify anything not set above,
+    // The following most likely will not modify anything not set above,
     // and will not work at all for network shares or empty CD ROM drives.
     // But it is a good check if the Win API ever gets better about reporting
     // this information.
@@ -264,7 +262,7 @@ static void BuildListFromNN(wxArrayString& list, NETRESOURCE* pResSrc,
                 {
                     wxString filename(pRes->lpRemoteName);
 
-                    if (filename.Len())
+                    if (!filename.empty())
                     {
                         if (filename.Last() != '\\')
                             filename.Append('\\');
@@ -382,6 +380,7 @@ wxArrayString wxFSVolumeBase::GetVolumes(int flagsSet, int flagsUnset)
 {
     ::InterlockedExchange(&s_cancelSearch, FALSE);     // reset
 
+#if wxUSE_DYNLIB_CLASS
     if (!s_mprLib.IsLoaded() && s_mprLib.Load(_T("mpr.dll")))
     {
 #ifdef UNICODE
@@ -393,6 +392,7 @@ wxArrayString wxFSVolumeBase::GetVolumes(int flagsSet, int flagsUnset)
 #endif
         s_pWNetCloseEnum = (WNetCloseEnumPtr)s_mprLib.GetSymbol(_T("WNetCloseEnum"));
     }
+#endif
 
     wxArrayString list;
 

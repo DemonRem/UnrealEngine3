@@ -4,7 +4,7 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: forty.h,v 1.13 2005/01/31 18:14:12 ABX Exp $
+// RCS-ID:      $Id: forty.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------
@@ -16,8 +16,8 @@
 class FortyApp: public wxApp
 {
 public:
-    FortyApp(){};
-    ~FortyApp();
+    FortyApp(){}
+    virtual ~FortyApp();
     bool OnInit();
 
     static const wxColour& BackgroundColour();
@@ -85,9 +85,6 @@ public:
         long style = wxDEFAULT_DIALOG_STYLE );
 
     bool AddControls(wxWindow* parent);
-
-private:
-    DECLARE_EVENT_TABLE()
 };
 
 #define ID_ABOUT_HTML_WINDOW    1000

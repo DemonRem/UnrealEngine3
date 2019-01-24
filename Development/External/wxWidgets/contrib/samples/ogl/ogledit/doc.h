@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        doc.h
+// Name:        contrib/samples/ogl/ogledit/doc.h
 // Purpose:     Document classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: doc.h,v 1.9 2005/03/31 19:18:15 ABX Exp $
+// RCS-ID:      $Id: doc.h 38810 2006-04-18 22:26:26Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,21 +12,17 @@
 #ifndef _OGLSAMPLE_DOC_H_
 #define _OGLSAMPLE_DOC_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface
-#endif
+#include "wx/docview.h"
+#include "wx/cmdproc.h"
+#include "wx/string.h"
 
-#include <wx/docview.h>
-#include <wx/cmdproc.h>
-#include <wx/string.h>
-
-#include <wx/ogl/ogl.h> // base header of OGL, includes and adjusts wx/deprecated/setup.h
+#include "wx/ogl/ogl.h" // base header of OGL, includes and adjusts wx/deprecated/setup.h
 
 #if wxUSE_PROLOGIO
-#include <wx/deprecated/wxexpr.h>
+#include "wx/deprecated/wxexpr.h"
 #endif
 
-#include <wx/ogl/ogl.h>
+#include "wx/ogl/ogl.h"
 
 #if wxUSE_STD_IOSTREAM
  #include <iosfwd>
@@ -158,7 +154,7 @@ class DiagramCommand: public wxCommand
   bool deleteShape;
 
   // Storage for property commands
-  wxBrush *shapeBrush;
+  const wxBrush *shapeBrush;
   wxPen *shapePen;
   wxString shapeLabel;
  public:

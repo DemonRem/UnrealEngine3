@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXTRIANGLE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -70,9 +70,9 @@
 
 		\param[out] center Retrieve center (average) point of triangle.
 		*/
-		NX_INLINE	void	center(NxVec3& center) const
+		NX_INLINE	void	center(NxVec3& _center) const
 			{
-				center = (verts[0] + verts[1] + verts[2])*NX_INV3;
+				_center = (verts[0] + verts[1] + verts[2])*NX_INV3;
 			}
 
 		/**
@@ -114,9 +114,9 @@
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

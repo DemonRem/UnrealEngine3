@@ -2,7 +2,7 @@
 // Name:        custclas.h
 // Purpose:     XML resources sample: A custom class to insert into a XRC file
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: custclas.h,v 1.5 2004/10/06 20:54:57 ABX Exp $
+// RCS-ID:      $Id: custclas.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
@@ -13,14 +13,6 @@
 
 #ifndef _CUSTCLAS_H_
 #define _CUSTCLAS_H_
-
-//----------------------------------------------------------------------------------------
-// GCC interface
-//----------------------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "custclas.h"
-#endif
 
 //----------------------------------------------------------------------------------------
 // Headers

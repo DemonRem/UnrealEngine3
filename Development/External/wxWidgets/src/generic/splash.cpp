@@ -1,23 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        splash.cpp
+// Name:        src/generic/splash.cpp
 // Purpose:     wxSplashScreen class
 // Author:      Julian Smart
 // Modified by:
 // Created:     28/6/2000
-// RCS-ID:      $Id: splash.cpp,v 1.27 2005/02/16 20:34:21 ABX Exp $
+// RCS-ID:      $Id: splash.cpp 42755 2006-10-30 19:41:46Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "splash.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_SPLASH
@@ -26,13 +22,12 @@
     #include <gtk/gtk.h>
 #endif
 
-#ifndef WX_PRECOMP
-#include "wx/dcmemory.h"
-#include "wx/dcclient.h"
-#endif
-
 #include "wx/splash.h"
 
+#ifndef WX_PRECOMP
+    #include "wx/dcmemory.h"
+    #include "wx/dcclient.h"
+#endif
 
 /*
  * wxSplashScreen
@@ -40,7 +35,7 @@
 
 #define wxSPLASH_TIMER_ID 9999
 
-IMPLEMENT_DYNAMIC_CLASS(wxSplashScreen, wxFrame);
+IMPLEMENT_DYNAMIC_CLASS(wxSplashScreen, wxFrame)
 
 BEGIN_EVENT_TABLE(wxSplashScreen, wxFrame)
     EVT_TIMER(wxSPLASH_TIMER_ID, wxSplashScreen::OnNotify)
@@ -154,7 +149,7 @@ static void wxDrawSplashBitmap(wxDC& dc, const wxBitmap& bitmap, int WXUNUSED(x)
     }
 #endif // USE_PALETTE_IN_SPLASH
 
-    dcMem.SelectObject(bitmap);
+    dcMem.SelectObjectAsSource(bitmap);
     dc.Blit(0, 0, bitmap.GetWidth(), bitmap.GetHeight(), & dcMem, 0, 0);
     dcMem.SelectObject(wxNullBitmap);
 

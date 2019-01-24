@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: cube.h,v 1.7 2005/03/27 18:08:08 VZ Exp $
+// RCS-ID:      $Id: cube.h 33105 2005-03-27 18:08:08Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

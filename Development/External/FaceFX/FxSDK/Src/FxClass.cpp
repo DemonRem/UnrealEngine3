@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxClass.h"
@@ -18,13 +18,14 @@ FxArray<FxClass*>* FxClass::_classTable = NULL;
 
 FxClass::FxClass( const FxChar* className, FxUInt16 currentVersion, 
 		          const FxClass* pBaseClassDesc, FxSize classSize, 
-		          FxObject* (FX_CALL *constructObjectFn)() )
-	: _name(className)
-	, _currentVersion(currentVersion)
-	, _pBaseClassDesc(pBaseClassDesc)
+		          FxConstructObjectFunc constructObjectFn )
+	: _pBaseClassDesc(pBaseClassDesc)
+	, _constructObjectFn(constructObjectFn)
+	, _name(className)
 	, _numChildren(0)
 	, _size(classSize)
-	, _constructObjectFn(constructObjectFn)
+	, _currentVersion(currentVersion)
+	
 {
 	if( !_classTable )
 	{
@@ -45,8 +46,7 @@ FxClass::FxClass( const FxChar* className, FxUInt16 currentVersion,
 }
 
 FxClass::~FxClass()
-{
-}
+{}
 
 // This is the number of entries to reserve in the class table.  Currently there
 // are only 36 base FaceFX SDK classes, but 64 should give us a good cushion
@@ -60,7 +60,7 @@ void FX_CALL FxClass::Startup( void )
 {
 	if( !_classTable )
 	{
-		_classTable = static_cast<FxArray<FxClass*>*>(FxAlloc(sizeof(FxArray<FxClass*>), "Class Table"));
+		_classTable = static_cast<FxArray<FxClass*>*>(FxAlloc(sizeof(FxArray<FxClass*>), "ClassTable"));
 		FxDefaultConstruct(_classTable);
 		_classTable->Reserve(FX_NUM_CLASSES_TO_RESERVE);
 	}
@@ -86,7 +86,7 @@ const FxName& FxClass::GetName( void ) const
 	return _name; 
 }
 
-const FxUInt16 FxClass::GetCurrentVersion( void ) const
+FxUInt16 FxClass::GetCurrentVersion( void ) const
 { 
 	return _currentVersion; 
 }
@@ -96,12 +96,12 @@ const FxClass* FxClass::GetBaseClassDesc( void ) const
 	return _pBaseClassDesc; 
 }
 
-const FxSize FxClass::GetSize( void ) const
+FxSize FxClass::GetSize( void ) const
 { 
 	return _size; 
 }
 
-const FxSize FxClass::GetNumChildren( void ) const
+FxSize FxClass::GetNumChildren( void ) const
 {
 	return _numChildren;
 }

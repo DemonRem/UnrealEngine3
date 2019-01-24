@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     15.08.00
-// RCS-ID:      $Id: statbox.h,v 1.13 2005/01/07 16:54:07 VZ Exp $
+// RCS-ID:      $Id: statbox.h 37393 2006-02-08 21:47:09Z VZ $
 // Copyright:   (c) 2000 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_STATBOX_H_
 #define _WX_UNIV_STATBOX_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "univstatbox.h"
-#endif
 
 class WXDLLEXPORT wxStaticBox : public wxStaticBoxBase
 {
@@ -51,16 +47,16 @@ public:
     // take account of this
     virtual wxPoint GetBoxAreaOrigin() const;
 
+    // returning true from here ensures that we act as a container window for
+    // our children
+    virtual bool IsStaticBox() const { return true; }
+
 protected:
     // draw the control
     virtual void DoDraw(wxControlRenderer *renderer);
 
     // get the size of the border
     wxRect GetBorderGeometry() const;
-
-    // returning true from here ensures that we act as a container window for
-    // our children
-    virtual bool IsStaticBox() const { return true; }
 
 private:
     DECLARE_DYNAMIC_CLASS(wxStaticBox)

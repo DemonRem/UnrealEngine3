@@ -4,17 +4,13 @@
 // Author:      Guilhem Lavaux
 // Modified by: Ryan Norton
 // Created:     20/07/1997
-// RCS-ID:      $Id: url.h,v 1.30 2005/03/19 23:09:30 MBN Exp $
+// RCS-ID:      $Id: url.h 41263 2006-09-17 10:59:18Z RR $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_URL_H
 #define _WX_URL_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "url.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -51,7 +47,7 @@ public:
 class WXDLLIMPEXP_NET wxURL : public wxURI
 {
 public:
-    wxURL(const wxString& sUrl);
+    wxURL(const wxString& sUrl = wxEmptyString);
     wxURL(const wxURI& url);
     virtual ~wxURL();
 
@@ -61,6 +57,12 @@ public:
     wxProtocol& GetProtocol()        { return *m_protocol; }
     wxURLError GetError() const      { return m_error; }
     wxString GetURL() const          { return m_url; }
+
+    wxURLError SetURL(const wxString &url)
+        { *this = url; return m_error; }
+
+    bool IsOk() const
+        { return m_error == wxURL_NOERR; }
 
     wxInputStream *GetInputStream();
 

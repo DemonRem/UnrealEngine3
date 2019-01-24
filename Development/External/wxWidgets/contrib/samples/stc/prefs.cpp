@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
-// File:        prefs.cpp
+// File:        contrib/samples/stc/prefs.cpp
 // Purpose:     STC test Preferences initialization
 // Maintainer:  Wyo
 // Created:     2003-09-01
-// RCS-ID:      $Id: prefs.cpp,v 1.4 2005/09/16 18:25:44 ABX Exp $
+// RCS-ID:      $Id: prefs.cpp 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) wxGuide
 // Licence:     wxWindows licence
 //////////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@
 // headers
 //----------------------------------------------------------------------------
 
-// For compilers that support precompilation, includes <wx/wx.h>.
+// For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__

@@ -9,9 +9,8 @@
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "genericfdrepdlg.h"
-#endif
+#ifndef _WX_GENERIC_FDREPDLG_H_
+#define _WX_GENERIC_FDREPDLG_H_
 
 class WXDLLEXPORT wxCheckBox;
 class WXDLLEXPORT wxRadioBox;
@@ -69,3 +68,4 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
+#endif // _WX_GENERIC_FDREPDLG_H_

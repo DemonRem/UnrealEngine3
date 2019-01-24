@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxList_H__
@@ -21,7 +21,7 @@ namespace Face
 
 #define kCurrentFxListVersion 0
 
-/// A templated, doubly-linked list.
+/// A templated doubly-linked list.
 /// \ingroup support
 template<typename FxListElem> class FxList
 {
@@ -31,6 +31,8 @@ private:
 public:
 	// Forward declare Iterator.
 	class Iterator;
+	// Forward declare ConstIterator.
+	class ConstIterator;
 	// Forward declare ReverseIterator.
 	class ReverseIterator;
 
@@ -44,12 +46,19 @@ public:
 	~FxList();
 
 	/// Returns an iterator to the start of the list.
-	Iterator Begin( void ) const;
+	Iterator Begin( void );
+	/// Returns a const iterator to the start of the list.
+	ConstIterator Begin( void ) const;
 	/// Returns an iterator to the end of the list.
-	Iterator End( void ) const;
-	/// Returns an iterator to the item that equals \a toFind, or End() if it was 
+	Iterator End( void );
+	/// Returns a const iterator to the end of the list.
+	ConstIterator End( void ) const;
+	/// Returns an iterator to the item that equals \a toFind, or End() if it was
+	/// not found.
+	Iterator Find( const FxListElem& toFind );
+	/// Returns a const iterator to the item that equals \a toFind, or End() if it was 
 	// not found.
-	Iterator Find( const FxListElem& toFind ) const;
+	ConstIterator Find( const FxListElem& toFind ) const;
 
 	/// Returns the start of reverse iteration.
 	ReverseIterator ReverseBegin( void ) const;
@@ -66,13 +75,17 @@ public:
 	FxSize Allocated( void ) const;
 
 	/// Returns the element at the back of the list.
-	FxListElem& Back( void ) const;
+	FxListElem& Back( void );
+	/// Returns a const reference to the element at the back of the list.
+	const FxListElem& Back( void ) const;
 	/// Adds element to the back of the list.
 	void PushBack( const FxListElem& element );
 	/// Removes the element from the back of the list.
 	void PopBack( void );
 	/// Returns the element at the front of the list.
-	FxListElem& Front( void ) const;
+	FxListElem& Front( void );
+	/// Returns a const reference to the element at the front of the list.
+	const FxListElem& Front( void ) const;
 	/// Adds element to the front of the list.
 	void PushFront( const FxListElem& element );
 	/// Removes element from the front of the list.
@@ -80,8 +93,10 @@ public:
 
 	/// Inserts the element before the iterator
 	Iterator Insert( const FxListElem& element, Iterator iter );
-	/// Removes the element at the iterator
+	/// Removes the element at the iterator.
 	void Remove( Iterator iter );
+	/// Removes the element at the iterator
+	void RemoveIterator( Iterator iter );
 
 	/// Removes all elements equal to a given value.
 	void RemoveIfEqual( const FxListElem& element );
@@ -91,7 +106,7 @@ public:
 	/// doesn't supply that definition.
 	void Sort( void );
 
-	/// A list iterator
+	/// A list iterator.
 	/// \ingroup support
 	class Iterator
 	{
@@ -159,7 +174,75 @@ public:
 		FxListNode* _pNode;
 	};
 
-	/// A list reverse iterator
+	/// A const list iterator.
+	/// \ingroup support
+	class ConstIterator
+	{
+	public:
+		/// Constructor.
+		ConstIterator( FxListNode* pNode = NULL )
+			: _pNode(pNode)
+		{
+		}
+
+		/// Advance the iterator.
+		ConstIterator& operator++( void )
+		{
+			_pNode = _pNode->next;
+			return *this;
+		}
+
+		/// Move the iterator backwards.
+		ConstIterator& operator--( void )
+		{
+			_pNode = _pNode->prev;
+			return *this;
+		}
+
+		/// Dereference the iterator.
+		const FxListElem& operator*( void )
+		{
+			FxAssert( _pNode );
+			return _pNode->element;
+		}
+
+		/// Return a pointer to the element.
+		const FxListElem* operator->( void )
+		{
+			FxAssert( _pNode );
+			return &(_pNode->element);
+		}
+
+		/// Tests for iterator equality.
+		FxBool operator==( const ConstIterator& other )
+		{
+			return _pNode == other._pNode;
+		}
+
+		/// Tests for iterator inequality.
+		FxBool operator!=( const ConstIterator& other )
+		{
+			return _pNode != other._pNode;
+		}
+
+		/// Advances the iterator \a num times.
+		ConstIterator& Advance( FxSize num )
+		{
+			while( num-- )
+			{
+				_pNode = _pNode->next;
+			}
+			return* this;
+		}
+
+		/// Returns the node that the iterator corresponds to.
+		const FxListNode* GetNode( void ) { return _pNode; }
+
+	private:
+		const FxListNode* _pNode;
+	};
+
+	/// A list reverse iterator.
 	/// \ingroup support
 	class ReverseIterator
 	{
@@ -230,20 +313,28 @@ public:
 	/// Serializes the list to an archive.
 	FxArchive& Serialize( FxArchive& arc )
 	{
-		FxUInt16 version = kCurrentFxListVersion;
-		arc << version;
+		// As of version 1.7, container classes have the same version as the 
+		// SDK itself so there is no need to explicitly serialize it.  This eats
+		// the version when loading pre-1.7 archives.
+		if( arc.GetSDKVersion() < 1700 && arc.IsLoading() )
+		{
+			FxUInt16 version = 0;
+			arc << version;
+		}
 
 		FxSize length = Length();
 		arc << length;
 
 		if( arc.IsSaving() )
 		{
+#ifndef NO_SAVE_VERSION
 			Iterator curr = Begin();
 			Iterator end  = End();
 			for( ; curr != end; ++curr )
 			{
 				arc << *curr;
 			}
+#endif
 		}
 		else
 		{
@@ -282,7 +373,7 @@ private:
 	};
 
 	mutable FxListNode* _head;
-	FxSize		_size;
+	FxSize _size;
 };
 
 template<typename FxListElem>

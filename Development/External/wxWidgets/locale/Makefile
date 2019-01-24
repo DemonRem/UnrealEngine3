@@ -7,8 +7,8 @@
 # being called with this dir as the cwd, but if we generate this file
 # with configure an explicit path should be specified -- RL.
 
-WX_LINGUAS := `ls *.po */*.po 2> /dev/null | sed -n 's/\(wxstd\)\?\.po//p'`
-WX_LINGUAS_UPDATE := `ls *.po 2> /dev/null | sed -n 's/\(wxstd\)\?\.po//p'`
+WX_LINGUAS := $(shell ls *.po */*.po 2> /dev/null | sed 's/wxstd.po//g' | sed 's/.po//g')
+WX_LINGUAS_UPDATE := $(shell ls *.po 2> /dev/null | sed 's/wxstd.po//g' | sed 's/.po//g')
 
 # the programs we use (TODO: use configure to detect them)
 MSGFMT=msgfmt --verbose
@@ -24,7 +24,10 @@ XGETTEXT_ARGS=-C -k_ -kwxPLURAL:1,2 -kwxTRANSLATE -s -j
 	$(MSGFMT) -c -o $@ $<
 
 # a PO file must be updated from wxstd.po to include new translations
-%.po: wxstd.po
+# (but not manually maintained platform-specific files like msw/it.po)
+$(foreach lang,$(WX_LINGUAS_UPDATE),$(lang).po): wxstd.po
+
+%.po:
 	if [ -f $@ ]; then $(MSGMERGE) $@ wxstd.po > $@.new && mv $@.new $@; else cp wxstd.po $@; fi
 
 wxstd.po:
@@ -60,4 +63,4 @@ FORCE:
 
 .PHONY: allpo allmo force-update percentage FORCE
 
-# $Id: Makefile,v 1.14 2005/08/21 16:02:07 MBN Exp $
+# $Id: Makefile 53332 2008-04-24 07:56:14Z VS $

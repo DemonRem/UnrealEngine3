@@ -1,18 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        No names yet.
+// Name:        fl_demo1.cpp
 // Purpose:     Contrib. demo
 // Author:      Aleksandras Gluchovas
 // Modified by: Sebastian Haase (June 21, 2001)
 // Created:     04/11/98
-// RCS-ID:      $Id: fl_demo1.cpp,v 1.8 2005/07/22 16:43:04 MR Exp $
+// RCS-ID:      $Id: fl_demo1.cpp 38477 2006-03-31 18:07:22Z ABX $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-
-#ifdef __GNUG__
-#pragma implementation "fl_demo1.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -129,7 +124,7 @@ MyFrame::MyFrame(wxFrame *frame)
     : wxFrame( frame, wxID_ANY, _("wxWidgets 2.0 wxFrameLayout Test Application"), wxDefaultPosition,
           wxSize( 700, 500 ),
           wxCLIP_CHILDREN | wxMINIMIZE_BOX | wxMAXIMIZE_BOX |
-          wxTHICK_FRAME   | wxSYSTEM_MENU  | wxCAPTION | wxCLOSE_BOX,
+          wxRESIZE_BORDER   | wxSYSTEM_MENU  | wxCAPTION | wxCLOSE_BOX,
           wxT("freimas") )
 {
     mpClientWnd = CreateTextCtrl( _("Client window") );

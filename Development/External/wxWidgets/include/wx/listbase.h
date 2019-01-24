@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        wx/listctrl.h
+// Name:        wx/listbase.h
 // Purpose:     wxListCtrl class
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.12.99
-// RCS-ID:      $Id: listbase.h,v 1.20 2005/05/22 12:10:47 JS Exp $
+// RCS-ID:      $Id: listbase.h 46313 2007-06-03 22:38:28Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,18 +12,9 @@
 #ifndef _WX_LISTBASE_H_BASE_
 #define _WX_LISTBASE_H_BASE_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-//    #pragma interface "listctrlbase.h"
-#endif
-
-#include "wx/defs.h"
-
-#if wxUSE_LISTCTRL
-
 #include "wx/colour.h"
 #include "wx/font.h"
 #include "wx/gdicmn.h"
-
 #include "wx/event.h"
 
 // ----------------------------------------------------------------------------
@@ -31,7 +22,8 @@
 // ----------------------------------------------------------------------------
 
 // type of compare function for wxListCtrl sort operation
-typedef int (wxCALLBACK *wxListCtrlCompare)(long item1, long item2, long sortData);
+// @UE3: 64-bit sorting fix
+typedef int (wxCALLBACK *wxListCtrlCompare)(wxUIntPtr item1, wxUIntPtr item2, wxUIntPtr sortData);
 
 // ----------------------------------------------------------------------------
 // wxListCtrl constants
@@ -108,6 +100,9 @@ typedef int (wxCALLBACK *wxListCtrlCompare)(long item1, long item2, long sortDat
 
 #define wxLIST_HITTEST_ONITEM (wxLIST_HITTEST_ONITEMICON | wxLIST_HITTEST_ONITEMLABEL | wxLIST_HITTEST_ONITEMSTATEICON)
 
+// GetSubItemRect constants
+#define wxLIST_GETSUBITEMRECT_WHOLEITEM -1l
+
 // Flags for GetNextItem (MSW only except wxLIST_NEXT_ALL)
 enum
 {
@@ -164,6 +159,9 @@ enum
 // wxListItemAttr: a structure containing the visual attributes of an item
 // ----------------------------------------------------------------------------
 
+// TODO: this should be renamed to wxItemAttr or something general like this
+//       and used as base class for wxTextAttr which duplicates this class
+//       entirely currently
 class WXDLLEXPORT wxListItemAttr
 {
 public:
@@ -172,7 +170,12 @@ public:
     wxListItemAttr(const wxColour& colText,
                    const wxColour& colBack,
                    const wxFont& font)
-        : m_colText(colText), m_colBack(colBack), m_font(font) { }
+        : m_colText(colText), m_colBack(colBack), m_font(font)
+    {
+    }
+
+    // default copy ctor, assignment operator and dtor are ok
+
 
     // setters
     void SetTextColour(const wxColour& colText) { m_colText = colText; }
@@ -187,6 +190,19 @@ public:
     const wxColour& GetTextColour() const { return m_colText; }
     const wxColour& GetBackgroundColour() const { return m_colBack; }
     const wxFont& GetFont() const { return m_font; }
+
+
+    // this is almost like assignment operator except it doesn't overwrite the
+    // fields unset in the source attribute
+    void AssignFrom(const wxListItemAttr& source)
+    {
+        if ( source.HasTextColour() )
+            SetTextColour(source.GetTextColour());
+        if ( source.HasBackgroundColour() )
+            SetBackgroundColour(source.GetBackgroundColour());
+        if ( source.HasFont() )
+            SetFont(source.GetFont());
+    }
 
 private:
     wxColour m_colText,
@@ -217,7 +233,7 @@ public:
           m_attr(NULL)
     {
         // copy list item attributes
-        if( item.HasAttributes() )
+        if ( item.HasAttributes() )
             m_attr = new wxListItemAttr(*item.GetAttributes());
     }
     virtual ~wxListItem() { delete m_attr; }
@@ -321,7 +337,7 @@ protected:
         m_col = 0;
         m_state = 0;
         m_stateMask = 0;
-        m_image = 0;
+        m_image = -1;
         m_data = 0;
 
         m_format = wxLIST_FORMAT_CENTRE;
@@ -373,7 +389,7 @@ public:
     const wxString& GetLabel() const { return m_item.m_text; }
     const wxString& GetText() const { return m_item.m_text; }
     int GetImage() const { return m_item.m_image; }
-    long GetData() const { return wx_static_cast(long, m_item.m_data); }
+    wxUIntPtr GetData() const { return m_item.m_data; }
     long GetMask() const { return m_item.m_mask; }
     const wxListItem& GetItem() const { return m_item; }
 
@@ -384,15 +400,6 @@ public:
     // was label editing canceled? (for wxEVT_COMMAND_LIST_END_LABEL_EDIT only)
     bool IsEditCancelled() const { return m_editCancelled; }
     void SetEditCanceled(bool editCancelled) { m_editCancelled = editCancelled; }
-
-#if WXWIN_COMPATIBILITY_2_2
-    // these methods don't do anything at all
-    long GetOldIndex() const { return 0; }
-    long GetOldItem() const { return 0; }
-
-    // this one is superseded by GetKeyCode()
-    int GetCode() const { return GetKeyCode(); }
-#endif // WXWIN_COMPATIBILITY_2_2
 
     virtual wxEvent *Clone() const { return new wxListEvent(*this); }
 
@@ -480,8 +487,6 @@ typedef void (wxEvtHandler::*wxListEventFunction)(wxListEvent&);
 #define EVT_LIST_GET_INFO(id, fn) wx__DECLARE_LISTEVT(GET_INFO, id, fn)
 #define EVT_LIST_SET_INFO(id, fn) wx__DECLARE_LISTEVT(SET_INFO, id, fn)
 #endif
-
-#endif // wxUSE_LISTCTRL
 
 #endif
     // _WX_LISTCTRL_H_BASE_

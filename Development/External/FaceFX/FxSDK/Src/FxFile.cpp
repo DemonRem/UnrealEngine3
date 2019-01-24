@@ -4,7 +4,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2004 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 // Note that on PS3 FxFile does not perform any file I/O as most of its
@@ -72,7 +72,11 @@ FxBool FxFile::Open( const FxChar* filename, FxInt32 mode )
 	filemode[0] = (mode & FM_Write)  ? 'w' : 'r';
 	filemode[1] = (mode & FM_Binary) ? 'b' : 't';
 	
+#if _MSC_VER >= 1400
+	fopen_s(reinterpret_cast<FILE**>(&_file), filename, filemode);
+#else
 	_file = static_cast<void*>(fx_std(fopen)(filename, filemode));
+#endif
 	
 	// If we're reading, cache the length and reset the file pointer.
 	if( IsValid() && mode & FM_Read )

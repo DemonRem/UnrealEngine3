@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     14.10.01
-// RCS-ID:      $Id: statusbr.h,v 1.9 2004/08/10 13:08:34 ABX Exp $
+// RCS-ID:      $Id: statusbr.h 37393 2006-02-08 21:47:09Z VZ $
 // Copyright:   (c) 2001 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_STATUSBR_H_
 #define _WX_UNIV_STATUSBR_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "univstatusbr.h"
-#endif
 
 #include "wx/univ/inpcons.h"
 #include "wx/arrstr.h"
@@ -62,16 +58,16 @@ public:
     virtual int GetBorderX() const;
     virtual int GetBorderY() const;
 
+    // wxInputConsumer pure virtual
+    virtual wxWindow *GetInputWindow() const
+        { return wx_const_cast(wxStatusBar*, this); }
+
 protected:
     // recalculate the field widths
     void OnSize(wxSizeEvent& event);
 
     // draw the statusbar
     virtual void DoDraw(wxControlRenderer *renderer);
-
-    // wxInputConsumer pure virtual
-    virtual wxWindow *GetInputWindow() const
-        { return wxConstCast(this, wxStatusBar); }
 
     // tell them about our preferred height
     virtual wxSize DoGetBestSize() const;

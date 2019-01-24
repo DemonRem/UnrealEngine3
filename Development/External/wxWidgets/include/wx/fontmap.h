@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.11.99
-// RCS-ID:      $Id: fontmap.h,v 1.27 2005/09/18 14:01:09 VZ Exp $
+// RCS-ID:      $Id: fontmap.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -25,13 +25,13 @@
 #endif // wxUSE_GUI
 
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
-    class WXDLLIMPEXP_BASE wxConfigBase;
+    class WXDLLIMPEXP_FWD_BASE wxConfigBase;
 #endif // wxUSE_CONFIG
 
-class WXDLLIMPEXP_CORE wxFontMapper;
+class WXDLLIMPEXP_FWD_CORE wxFontMapper;
 
 #if wxUSE_GUI
-    class WXDLLIMPEXP_CORE wxWindow;
+    class WXDLLIMPEXP_FWD_CORE wxWindow;
 #endif // wxUSE_GUI
 
 // ============================================================================
@@ -49,8 +49,6 @@ class WXDLLIMPEXP_CORE wxFontMapper;
 
 class WXDLLIMPEXP_BASE wxFontMapperBase
 {
-    // For IsWxFontMapper()
-    friend class WXDLLIMPEXP_CORE wxFontMapper;
 public:
     // constructtor and such
     // ---------------------
@@ -69,6 +67,10 @@ public:
 
     // set the singleton to 'mapper' instance and return previous one
     static wxFontMapper *Set(wxFontMapper *mapper);
+
+    // delete the existing font mapper if any
+    static void Reset();
+
 
     // translates charset strings to encoding
     // --------------------------------------
@@ -116,9 +118,6 @@ public:
     // ----------------------------------------------------------------------
 
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
-    // set the config object to use (may be NULL to use default)
-    void SetConfig(wxConfigBase *config) { m_config = config; }
-
     // set the root config path to use (should be an absolute path)
     void SetConfigPath(const wxString& prefix);
 
@@ -127,10 +126,14 @@ public:
 #endif // wxUSE_CONFIG
 
 
+    // returns true for the base class and false for a "real" font mapper object
+    // (implementation-only)
+    virtual bool IsDummy() { return true; }
+
 protected:
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
-    // get the config object we're using -- if it wasn't set explicitly, this
-    // function will use wxConfig::Get() to get the global one
+    // get the config object we're using -- either the global config object
+    // or a wxMemoryConfig object created by this class otherwise
     wxConfigBase *GetConfig();
 
     // gets the root path for our settings -- if it wasn't set explicitly, use
@@ -149,8 +152,7 @@ protected:
     void RestorePath(const wxString& pathOld);
 
     // config object and path (in it) to use
-    wxConfigBase *m_config;
-    bool m_configIsDummy;
+    wxConfigBase *m_configDummy;
 
     wxString m_configRootPath;
 #endif // wxUSE_CONFIG
@@ -163,9 +165,6 @@ protected:
     int NonInteractiveCharsetToEncoding(const wxString& charset);
 
 private:
-    // pseudo-RTTI since we aren't a wxObject.
-    virtual bool IsWxFontMapper();
-
     // the global fontmapper object or NULL
     static wxFontMapper *sm_instance;
 
@@ -243,6 +242,9 @@ public:
     // are additional methods in the subclass.
     static wxFontMapper *Get();
 
+    // pseudo-RTTI since we aren't a wxObject.
+    virtual bool IsDummy() { return false; }
+
 protected:
     // GetAltForEncoding() helper: tests for the existence of the given
     // encoding and saves the result in config if ok - this results in the
@@ -262,9 +264,6 @@ protected:
     wxWindow *m_windowParent;
 
 private:
-    // pseudo-RTTI since we aren't a wxObject.
-    virtual bool IsWxFontMapper();
-
     DECLARE_NO_COPY_CLASS(wxFontMapper)
 };
 

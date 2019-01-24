@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
-// File:        edit.cpp
+// File:        contrib/samples/stc/edit.cpp
 // Purpose:     STC test module
 // Maintainer:  Wyo
 // Created:     2003-09-01
-// RCS-ID:      $Id: edit.cpp,v 1.10 2005/09/16 18:25:44 ABX Exp $
+// RCS-ID:      $Id: edit.cpp 39402 2006-05-28 23:32:12Z VZ $
 // Copyright:   (c) wxGuide
 // Licence:     wxWindows licence
 //////////////////////////////////////////////////////////////////////////////
@@ -17,7 +17,7 @@
 // headers
 //----------------------------------------------------------------------------
 
-// For compilers that support precompilation, includes <wx/wx.h>.
+// For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
@@ -508,7 +508,7 @@ bool Edit::LoadFile ()
     // get filname
     if (!m_filename) {
         wxFileDialog dlg (this, _T("Open file"), wxEmptyString, wxEmptyString,
-                          _T("Any file (*)|*"), wxOPEN | wxFILE_MUST_EXIST | wxCHANGE_DIR);
+                          _T("Any file (*)|*"), wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_CHANGE_DIR);
         if (dlg.ShowModal() != wxID_OK) return false;
         m_filename = dlg.GetPath();
     }
@@ -557,7 +557,7 @@ bool Edit::SaveFile ()
     // get filname
     if (!m_filename) {
         wxFileDialog dlg (this, _T("Save file"), wxEmptyString, wxEmptyString, _T("Any file (*)|*"),
-                          wxSAVE | wxOVERWRITE_PROMPT);
+                          wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dlg.ShowModal() != wxID_OK) return false;
         m_filename = dlg.GetPath();
     }

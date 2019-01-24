@@ -6,9 +6,9 @@
 
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@ Particle update flags are used specify flags which can be updated on the particl
 */
 enum NxParticleDataFlag
 {
-	NX_FP_DELETE		= (1<<0),	
+	NX_FP_DELETE		= (1<<0)	
 };
 
 /**
@@ -75,7 +75,7 @@ class NxParticleUpdateData
 	\brief The pointer to the user-allocated buffer for particle update flags.
 
 	Particle update flags are represented as a 32-bit unsigned integer. If set the NULL, flags are not read from.
-	Use NxParticleUpdateFlag to set the information.
+	Use NxParticleDataFlag to set the information.
 	*/
 	NxU32*					bufferFlag;
 
@@ -122,7 +122,11 @@ class NxParticleUpdateData
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -151,24 +155,24 @@ NX_INLINE void NxParticleUpdateData::setToDefault()
 	bufferIdByteStride		= 0;
 	}
 
-NX_INLINE bool NxParticleUpdateData::isValid() const
+NX_INLINE NxU32 NxParticleUpdateData::checkValid() const
 	{
-	if (!(bufferForce || bufferFlag)) return false;
-	if (bufferForce && !bufferForceByteStride) return false;
-	if (bufferFlag && !bufferFlagByteStride) return false;
-	if (bufferId && !bufferIdByteStride) return false;
-	if (bufferId && !numUpdates) return false;
-	return true;
+	if (!(bufferForce || bufferFlag)) return 1;
+	if (bufferForce && !bufferForceByteStride) return 2;
+	if (bufferFlag && !bufferFlagByteStride) return 3;
+	if (bufferId && !bufferIdByteStride) return 4;
+	if (bufferId && !numUpdates) return 5;
+	return 0;
 	}
 
 /** @} */
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

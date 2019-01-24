@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        utils.h
+// Name:        wx/utils.h
 // Purpose:     Miscellaneous utilities
 // Author:      Julian Smart
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: utils.h,v 1.118 2005/08/02 18:16:32 MW Exp $
+// RCS-ID:      $Id: utils.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,28 +16,26 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA) && !defined(__EMX__)
-// Some older compilers (such as EMX) cannot handle
-// #pragma interface/implementation correctly, iff
-// #pragma implementation is used in _two_ translation
-// units (as created by e.g. event.cpp compiled for
-// libwx_base and event.cpp compiled for libwx_gui_core).
-// So we must not use those pragmas for those compilers in
-// such files.
-    #pragma interface "utils.h"
-#endif
-
 #include "wx/object.h"
 #include "wx/list.h"
 #include "wx/filefn.h"
+#if wxUSE_GUI
+    #include "wx/gdicmn.h"
+#endif
 
-class WXDLLIMPEXP_BASE wxArrayString;
+class WXDLLIMPEXP_FWD_BASE wxArrayString;
+class WXDLLIMPEXP_FWD_BASE wxArrayInt;
 
 // need this for wxGetDiskSpace() as we can't, unfortunately, forward declare
 // wxLongLong
 #include "wx/longlong.h"
 
-#ifdef __X__
+// need for wxOperatingSystemId
+#include "wx/platinfo.h"
+
+#ifdef __WATCOMC__
+    #include <direct.h>
+#elif defined(__X__)
     #include <dirent.h>
     #include <unistd.h>
 #endif
@@ -48,11 +46,10 @@ class WXDLLIMPEXP_BASE wxArrayString;
 // Forward declaration
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_CORE wxProcess;
-class WXDLLIMPEXP_CORE wxFrame;
-class WXDLLIMPEXP_CORE wxWindow;
-class WXDLLIMPEXP_CORE wxWindowList;
-class WXDLLIMPEXP_CORE wxPoint;
+class WXDLLIMPEXP_FWD_BASE wxProcess;
+class WXDLLIMPEXP_FWD_CORE wxFrame;
+class WXDLLIMPEXP_FWD_CORE wxWindow;
+class WXDLLIMPEXP_FWD_CORE wxWindowList;
 
 // ----------------------------------------------------------------------------
 // Macros
@@ -60,17 +57,15 @@ class WXDLLIMPEXP_CORE wxPoint;
 
 #define wxMax(a,b)            (((a) > (b)) ? (a) : (b))
 #define wxMin(a,b)            (((a) < (b)) ? (a) : (b))
+#define wxClip(a,b,c)         (((a) < (b)) ? (b) : (((a) > (c)) ? (c) : (a)))
 
-// wxGetFreeMemory can return huge amount of memory on 64-bit platforms
-// define wxMemorySize according to the type which best fits your platform
-#if wxUSE_LONGLONG && defined(__WIN64__)
-    // 64 bit Windowses have sizeof(long) only 32 bit long
-    // we need to use wxLongLong to express memory sizes
-    #define wxMemorySize wxLongLong
+// wxGetFreeMemory can return huge amount of memory on 32-bit platforms as well
+// so to always use long long for its result type on all platforms which
+// support it
+#if wxUSE_LONGLONG
+    typedef wxLongLong wxMemorySize;
 #else
-    // 64 bit UNIX has sizeof(long) = 64
-    // assume 32 bit platforms cannnot return more than 32bits of
-    #define wxMemorySize long
+    typedef long wxMemorySize;
 #endif
 
 // ----------------------------------------------------------------------------
@@ -101,8 +96,14 @@ WXDLLIMPEXP_BASE void wxBell();
 WXDLLIMPEXP_BASE wxString wxGetOsDescription();
 
 // Get OS version
-WXDLLIMPEXP_BASE int wxGetOsVersion(int *majorVsn = (int *) NULL,
-                               int *minorVsn = (int *) NULL);
+WXDLLIMPEXP_BASE wxOperatingSystemId wxGetOsVersion(int *majorVsn = (int *) NULL,
+                                                    int *minorVsn = (int *) NULL);
+
+// Get platform endianness
+WXDLLIMPEXP_BASE bool wxIsPlatformLittleEndian();
+
+// Get platform architecture
+WXDLLIMPEXP_BASE bool wxIsPlatform64Bit();
 
 // Return a string with the current date/time
 WXDLLIMPEXP_BASE wxString wxNow();
@@ -112,6 +113,88 @@ WXDLLIMPEXP_BASE const wxChar *wxGetInstallPrefix();
 // Return path to wxWin data (/usr/share/wx/%{version}) (Unices)
 WXDLLIMPEXP_BASE wxString wxGetDataDir();
 
+/*
+ * Class to make it easier to specify platform-dependent values
+ *
+ * Examples:
+ *  long val = wxPlatform::If(wxMac, 1).ElseIf(wxGTK, 2).ElseIf(stPDA, 5).Else(3);
+ *  wxString strVal = wxPlatform::If(wxMac, wxT("Mac")).ElseIf(wxMSW, wxT("MSW")).Else(wxT("Other"));
+ *
+ * A custom platform symbol:
+ *
+ *  #define stPDA 100
+ *  #ifdef __WXWINCE__
+ *      wxPlatform::AddPlatform(stPDA);
+ *  #endif
+ *
+ *  long windowStyle = wxCAPTION | (long) wxPlatform::IfNot(stPDA, wxRESIZE_BORDER);
+ *
+ */
+
+class WXDLLIMPEXP_BASE wxPlatform
+{
+public:
+    wxPlatform() { Init(); }
+    wxPlatform(const wxPlatform& platform) { Copy(platform); }
+    void operator = (const wxPlatform& platform) { Copy(platform); }
+    void Copy(const wxPlatform& platform);
+
+    // Specify an optional default value
+    wxPlatform(int defValue) { Init(); m_longValue = (long)defValue; }
+    wxPlatform(long defValue) { Init(); m_longValue = defValue; }
+    wxPlatform(const wxString& defValue) { Init(); m_stringValue = defValue; }
+    wxPlatform(double defValue) { Init(); m_doubleValue = defValue; }
+
+    static wxPlatform If(int platform, long value);
+    static wxPlatform IfNot(int platform, long value);
+    wxPlatform& ElseIf(int platform, long value);
+    wxPlatform& ElseIfNot(int platform, long value);
+    wxPlatform& Else(long value);
+
+    static wxPlatform If(int platform, int value) { return If(platform, (long)value); }
+    static wxPlatform IfNot(int platform, int value) { return IfNot(platform, (long)value); }
+    wxPlatform& ElseIf(int platform, int value) { return ElseIf(platform, (long) value); }
+    wxPlatform& ElseIfNot(int platform, int value) { return ElseIfNot(platform, (long) value); }
+    wxPlatform& Else(int value) { return Else((long) value); }
+
+    static wxPlatform If(int platform, double value);
+    static wxPlatform IfNot(int platform, double value);
+    wxPlatform& ElseIf(int platform, double value);
+    wxPlatform& ElseIfNot(int platform, double value);
+    wxPlatform& Else(double value);
+
+    static wxPlatform If(int platform, const wxString& value);
+    static wxPlatform IfNot(int platform, const wxString& value);
+    wxPlatform& ElseIf(int platform, const wxString& value);
+    wxPlatform& ElseIfNot(int platform, const wxString& value);
+    wxPlatform& Else(const wxString& value);
+
+    long GetInteger() const { return m_longValue; }
+    const wxString& GetString() const { return m_stringValue; }
+    double GetDouble() const { return m_doubleValue; }
+
+    operator int() const { return (int) GetInteger(); }
+    operator long() const { return GetInteger(); }
+    operator double() const { return GetDouble(); }
+    operator const wxString() const { return GetString(); }
+    operator const wxChar*() const { return (const wxChar*) GetString(); }
+
+    static void AddPlatform(int platform);
+    static bool Is(int platform);
+    static void ClearPlatforms();
+
+private:
+
+    void Init() { m_longValue = 0; m_doubleValue = 0.0; }
+
+    long                m_longValue;
+    double              m_doubleValue;
+    wxString            m_stringValue;
+    static wxArrayInt*  sm_customPlatforms;
+};
+
+/// Function for testing current platform
+inline bool wxPlatformIs(int platform) { return wxPlatform::Is(platform); }
 
 #if wxUSE_GUI
 
@@ -125,6 +208,70 @@ WXDLLEXPORT bool wxGetKeyState(wxKeyCode key);
 // KeyDown events with autorepeat. On by default and always on
 // in wxMSW.
 WXDLLEXPORT bool wxSetDetectableAutoRepeat( bool flag );
+
+
+// wxMouseState is used to hold information about button and modifier state
+// and is what is returned from wxGetMouseState.
+class WXDLLEXPORT wxMouseState
+{
+public:
+    wxMouseState()
+        : m_x(0), m_y(0),
+          m_leftDown(false), m_middleDown(false), m_rightDown(false),
+          m_controlDown(false), m_shiftDown(false), m_altDown(false),
+          m_metaDown(false)
+    {}
+
+    wxCoord     GetX() { return m_x; }
+    wxCoord     GetY() { return m_y; }
+
+    bool        LeftDown()    { return m_leftDown; }
+    bool        MiddleDown()  { return m_middleDown; }
+    bool        RightDown()   { return m_rightDown; }
+
+    bool        ControlDown() { return m_controlDown; }
+    bool        ShiftDown()   { return m_shiftDown; }
+    bool        AltDown()     { return m_altDown; }
+    bool        MetaDown()    { return m_metaDown; }
+    bool        CmdDown()
+    {
+#if defined(__WXMAC__) || defined(__WXCOCOA__)
+        return MetaDown();
+#else
+        return ControlDown();
+#endif
+    }
+
+    void        SetX(wxCoord x) { m_x = x; }
+    void        SetY(wxCoord y) { m_y = y; }
+
+    void        SetLeftDown(bool down)   { m_leftDown = down; }
+    void        SetMiddleDown(bool down) { m_middleDown = down; }
+    void        SetRightDown(bool down)  { m_rightDown = down; }
+
+    void        SetControlDown(bool down) { m_controlDown = down; }
+    void        SetShiftDown(bool down)   { m_shiftDown = down; }
+    void        SetAltDown(bool down)     { m_altDown = down; }
+    void        SetMetaDown(bool down)    { m_metaDown = down; }
+
+private:
+    wxCoord     m_x;
+    wxCoord     m_y;
+
+    bool        m_leftDown : 1;
+    bool        m_middleDown : 1;
+    bool        m_rightDown : 1;
+
+    bool        m_controlDown : 1;
+    bool        m_shiftDown : 1;
+    bool        m_altDown : 1;
+    bool        m_metaDown : 1;
+};
+
+
+// Returns the current state of the mouse position, buttons and modifers
+WXDLLEXPORT wxMouseState wxGetMouseState();
+
 
 // ----------------------------------------------------------------------------
 // Window ID management
@@ -220,6 +367,13 @@ WXDLLIMPEXP_BASE long wxExecute(const wxString& command,
                                 wxArrayString& error,
                                 int flags = 0);
 
+#if defined(__WXMSW__) && wxUSE_IPC
+// ask a DDE server to execute the DDE request with given parameters
+WXDLLIMPEXP_BASE bool wxExecuteDDE(const wxString& ddeServer,
+                                   const wxString& ddeTopic,
+                                   const wxString& ddeCommand);
+#endif // __WXMSW__ && wxUSE_IPC
+
 enum wxSignal
 {
     wxSIGNONE = 0,  // verify if the process exists under Unix
@@ -267,26 +421,6 @@ enum wxShutdownFlags
 // Shutdown or reboot the PC
 WXDLLIMPEXP_BASE bool wxShutdown(wxShutdownFlags wFlags);
 
-enum wxPowerType
-{
-    wxPOWER_SOCKET,
-    wxPOWER_BATTERY,
-    wxPOWER_UNKNOWN
-};
-
-WXDLLIMPEXP_BASE wxPowerType wxGetPowerType();
-
-enum wxBatteryState
-{
-    wxBATTERY_NORMAL_STATE,    // system is fully usable
-    wxBATTERY_LOW_STATE,       // start to worry
-    wxBATTERY_CRITICAL_STATE,  // save quickly
-    wxBATTERY_SHUTDOWN_STATE,  // too late
-    wxBATTERY_UNKNOWN_STATE
-};
-
-WXDLLIMPEXP_BASE wxBatteryState wxGetBatteryState();
-
 // send the given signal to the process (only NONE and KILL are supported under
 // Windows, all others mean TERM), return 0 if ok and -1 on error
 //
@@ -329,10 +463,14 @@ WXDLLIMPEXP_BASE bool wxHandleFatalExceptions(bool doit = true);
 
 #endif // wxUSE_ON_FATAL_EXCEPTION
 
-#if wxABI_VERSION >= 20601
+// flags for wxLaunchDefaultBrowser
+enum
+{
+    wxBROWSER_NEW_WINDOW = 1
+};
+
 // Launch url in the user's default internet browser
-WXDLLIMPEXP_BASE bool wxLaunchDefaultBrowser(const wxString& url);
-#endif
+WXDLLIMPEXP_BASE bool wxLaunchDefaultBrowser(const wxString& url, int flags = 0);
 
 // ----------------------------------------------------------------------------
 // Environment variables
@@ -380,16 +518,22 @@ WXDLLIMPEXP_BASE const wxChar* wxGetHomeDir(wxString *pstr);
 
 // Get the user's home dir (caller must copy --- volatile)
 // returns NULL is no HOME dir is known
-#if defined(__UNIX__) && wxUSE_UNICODE
+#if defined(__UNIX__) && wxUSE_UNICODE && !defined(__WINE__)
 WXDLLIMPEXP_BASE const wxMB2WXbuf wxGetUserHome(const wxString& user = wxEmptyString);
 #else
 WXDLLIMPEXP_BASE wxChar* wxGetUserHome(const wxString& user = wxEmptyString);
 #endif
 
+#if wxUSE_LONGLONG
+    typedef wxLongLong wxDiskspaceSize_t;
+#else
+    typedef long wxDiskspaceSize_t;
+#endif
+
 // get number of total/free bytes on the disk where path belongs
 WXDLLIMPEXP_BASE bool wxGetDiskSpace(const wxString& path,
-                                wxLongLong *pTotal = NULL,
-                                wxLongLong *pFree = NULL);
+                                     wxDiskspaceSize_t *pTotal = NULL,
+                                     wxDiskspaceSize_t *pFree = NULL);
 
 #if wxUSE_GUI // GUI only things from now on
 
@@ -397,13 +541,39 @@ WXDLLIMPEXP_BASE bool wxGetDiskSpace(const wxString& path,
 // Menu accelerators related things
 // ----------------------------------------------------------------------------
 
-WXDLLEXPORT wxChar* wxStripMenuCodes(const wxChar *in, wxChar *out = (wxChar *) NULL);
-WXDLLEXPORT wxString wxStripMenuCodes(const wxString& str);
+// flags for wxStripMenuCodes
+enum
+{
+    // strip '&' characters
+    wxStrip_Mnemonics = 1,
+
+    // strip everything after '\t'
+    wxStrip_Accel = 2,
+
+    // strip everything (this is the default)
+    wxStrip_All = wxStrip_Mnemonics | wxStrip_Accel
+};
+
+// strip mnemonics and/or accelerators from the label
+WXDLLEXPORT wxString
+wxStripMenuCodes(const wxString& str, int flags = wxStrip_All);
+
+#if WXWIN_COMPATIBILITY_2_6
+// obsolete and deprecated version, do not use, use the above overload instead
+wxDEPRECATED(
+    WXDLLEXPORT wxChar* wxStripMenuCodes(const wxChar *in, wxChar *out = NULL)
+);
 
 #if wxUSE_ACCEL
-class WXDLLEXPORT wxAcceleratorEntry;
-WXDLLEXPORT wxAcceleratorEntry *wxGetAccelFromString(const wxString& label);
+class WXDLLIMPEXP_FWD_CORE wxAcceleratorEntry;
+
+// use wxAcceleratorEntry::Create() or FromString() methods instead
+wxDEPRECATED(
+    WXDLLEXPORT wxAcceleratorEntry *wxGetAccelFromString(const wxString& label)
+);
 #endif // wxUSE_ACCEL
+
+#endif // WXWIN_COMPATIBILITY_2_6
 
 // ----------------------------------------------------------------------------
 // Window search
@@ -465,9 +635,7 @@ private:
 // ----------------------------------------------------------------------------
 
 // Set the cursor to the busy cursor for all windows
-class WXDLLEXPORT wxCursor;
-extern WXDLLEXPORT_DATA(wxCursor*) wxHOURGLASS_CURSOR;
-WXDLLEXPORT void wxBeginBusyCursor(wxCursor *cursor = wxHOURGLASS_CURSOR);
+WXDLLIMPEXP_CORE void wxBeginBusyCursor(const wxCursor *cursor = wxHOURGLASS_CURSOR);
 
 // Restore cursor to normal
 WXDLLEXPORT void wxEndBusyCursor();
@@ -479,7 +647,7 @@ WXDLLEXPORT bool wxIsBusy();
 class WXDLLEXPORT wxBusyCursor
 {
 public:
-    wxBusyCursor(wxCursor* cursor = wxHOURGLASS_CURSOR)
+    wxBusyCursor(const wxCursor* cursor = wxHOURGLASS_CURSOR)
         { wxBeginBusyCursor(cursor); }
     ~wxBusyCursor()
         { wxEndBusyCursor(); }
@@ -552,8 +720,15 @@ void WXDLLEXPORT wxGetMousePosition( int* x, int* y );
 // wxYield(): these functions are obsolete, please use wxApp methods instead!
 // ----------------------------------------------------------------------------
 
+// avoid redeclaring this function here if it had been already declated by
+// wx/app.h, this results in warnings from g++ with -Wredundant-decls
+#ifndef wx_YIELD_DECLARED
+#define wx_YIELD_DECLARED
+
 // Yield to other apps/messages
 WXDLLIMPEXP_BASE bool wxYield();
+
+#endif // wx_YIELD_DECLARED
 
 // Like wxYield, but fails silently if the yield is recursive.
 WXDLLIMPEXP_BASE bool wxYieldIfNeeded();
@@ -561,22 +736,6 @@ WXDLLIMPEXP_BASE bool wxYieldIfNeeded();
 // ----------------------------------------------------------------------------
 // Error message functions used by wxWidgets (deprecated, use wxLog)
 // ----------------------------------------------------------------------------
-
-#if WXWIN_COMPATIBILITY_2_2
-
-// Format a message on the standard error (UNIX) or the debugging
-// stream (Windows)
-wxDEPRECATED( WXDLLIMPEXP_BASE void wxDebugMsg(const wxChar *fmt ...) ATTRIBUTE_PRINTF_1 );
-
-// Non-fatal error (continues)
-extern WXDLLIMPEXP_DATA_BASE(const wxChar*) wxInternalErrorStr;
-wxDEPRECATED( WXDLLIMPEXP_BASE void wxError(const wxString& msg, const wxString& title = wxInternalErrorStr) );
-
-// Fatal error (exits)
-extern WXDLLIMPEXP_DATA_BASE(const wxChar*) wxFatalErrorStr;
-wxDEPRECATED( WXDLLIMPEXP_BASE void wxFatalError(const wxString& msg, const wxString& title = wxFatalErrorStr) );
-
-#endif // WXWIN_COMPATIBILITY_2_2
 
 #endif
     // _WX_UTILSH__

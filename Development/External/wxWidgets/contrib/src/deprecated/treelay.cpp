@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     7/4/98
-// RCS-ID:      $Id: treelay.cpp,v 1.3 2004/09/27 19:24:45 ABX Exp $
+// RCS-ID:      $Id: treelay.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation "wxtree.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"

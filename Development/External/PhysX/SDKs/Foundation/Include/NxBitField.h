@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXBitField
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -53,6 +53,8 @@ class NxBitField
 
 		NxBitField & bitField;
 		NxU32 bitIndex;
+
+		FlagRef& operator=( const FlagRef& ) { return *this;};
 		};
 
 
@@ -220,9 +222,9 @@ NX_INLINE const NxBitField & NxBitField::operator=(IntType x)
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

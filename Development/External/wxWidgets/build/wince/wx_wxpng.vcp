@@ -106,8 +106,8 @@ CFG=wxpng - Win32 (WCE ARM) Debug
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_emulator_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_emulator_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_emulator_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_emulator_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_emulator_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_emulator_dll\wxpng.lib"
@@ -132,8 +132,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_emulator_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_emulator_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_emulator_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_emulator_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_emulator_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_emulator_dll\wxpngd.lib"
@@ -158,8 +158,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_emulator_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_emulator_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_emulator_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_emulator_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_emulator_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_emulator_lib\wxpng.lib"
@@ -184,8 +184,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_emulator_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_emulator_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_emulator_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_emulator_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_emulator_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_emulator_lib\wxpngd.lib"
@@ -210,8 +210,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_x86_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_x86_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_x86_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_x86_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_x86_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_x86_dll\wxpng.lib"
@@ -236,8 +236,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_x86_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_x86_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_x86_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_x86_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_x86_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_x86_dll\wxpngd.lib"
@@ -262,8 +262,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_x86_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /Fd..\..\lib\evc_x86_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_x86_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_x86_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_x86_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_x86_lib\wxpng.lib"
@@ -288,8 +288,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_x86_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Zi /Fd..\..\lib\evc_x86_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_x86_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /Gs8192 /GF /W1 /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_x86_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_x86_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_x86_lib\wxpngd.lib"
@@ -314,8 +314,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh4_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh4_dll\wxpng.lib"
@@ -340,8 +340,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh4_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh4_dll\wxpngd.lib"
@@ -366,8 +366,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh4_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh4_lib\wxpng.lib"
@@ -392,8 +392,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "SHx" /D "SH4" /D "_SH4_" /Qsh4 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh4_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh4_lib\wxpngd.lib"
@@ -418,8 +418,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh3_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh3_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh3_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh3_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh3_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh3_dll\wxpng.lib"
@@ -444,8 +444,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh3_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh3_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh3_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh3_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh3_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh3_dll\wxpngd.lib"
@@ -470,8 +470,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh3_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_sh3_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh3_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_sh3_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh3_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh3_lib\wxpng.lib"
@@ -496,8 +496,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh3_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_sh3_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh3_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "SHx" /D "SH3" /D "_SH3_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_sh3_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_sh3_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_sh3_lib\wxpngd.lib"
@@ -522,8 +522,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_dll\wxpng.lib"
@@ -548,8 +548,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_dll\wxpngd.lib"
@@ -574,8 +574,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_lib\wxpng.lib"
@@ -600,8 +600,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /D "MIPSIV_FP" /QMmips4 /QMn32 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_fp_lib\wxpngd.lib"
@@ -626,8 +626,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_dll\wxpng.lib"
@@ -652,8 +652,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_dll\wxpngd.lib"
@@ -678,8 +678,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsiv_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsiv_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_lib\wxpng.lib"
@@ -704,8 +704,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsiv_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "_MIPS64" /D "R4000" /D "MIPSIV" /QMmips4 /QMn32 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsiv_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsiv_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsiv_lib\wxpngd.lib"
@@ -730,8 +730,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_fp_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_dll\wxpng.lib"
@@ -756,8 +756,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_fp_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_dll\wxpngd.lib"
@@ -782,8 +782,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_fp_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_lib\wxpng.lib"
@@ -808,8 +808,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPSII_FP" /QMmips2 /QMFPE- /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_fp_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_fp_lib\wxpngd.lib"
@@ -834,8 +834,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_dll\wxpng.lib"
@@ -860,8 +860,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_dll\wxpngd.lib"
@@ -886,8 +886,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mipsii_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mipsii_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_lib\wxpng.lib"
@@ -912,8 +912,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mipsii_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /QMmips2 /QMFPE /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mipsii_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mipsii_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mipsii_lib\wxpngd.lib"
@@ -938,8 +938,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mips16_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mips16_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mips16_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mips16_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mips16_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mips16_dll\wxpng.lib"
@@ -964,8 +964,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mips16_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mips16_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mips16_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mips16_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mips16_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mips16_dll\wxpngd.lib"
@@ -990,8 +990,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mips16_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_mips16_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mips16_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_mips16_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mips16_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mips16_lib\wxpng.lib"
@@ -1016,8 +1016,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mips16_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_mips16_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mips16_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "MIPS" /D "_MIPS_" /D "R4000" /D "MIPSII" /D "MIPS16" /D "_MIPS16_" /D "MIPS16SUPPORT" /QMmips16 /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_mips16_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_mips16_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_mips16_lib\wxpngd.lib"
@@ -1042,8 +1042,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clthumb.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4t_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4t_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4t_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4t_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4t_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4t_dll\wxpng.lib"
@@ -1068,8 +1068,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clthumb.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4t_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4t_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4t_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4t_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4t_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4t_dll\wxpngd.lib"
@@ -1094,8 +1094,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clthumb.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4t_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4t_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4t_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4t_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4t_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4t_lib\wxpng.lib"
@@ -1120,8 +1120,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clthumb.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4t_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4t_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4t_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "THUMB" /D "_THUMB_" /D "ARMV4T" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4t_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4t_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4t_lib\wxpngd.lib"
@@ -1146,8 +1146,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4i_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4i_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4i_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4i_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4i_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4i_dll\wxpng.lib"
@@ -1172,8 +1172,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4i_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4i_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4i_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4i_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4i_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4i_dll\wxpngd.lib"
@@ -1198,8 +1198,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4i_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4i_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4i_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4i_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4i_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4i_lib\wxpng.lib"
@@ -1224,8 +1224,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4i_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4i_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4i_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4I" /QRarch4T /QRinterwork-return /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4i_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4i_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4i_lib\wxpngd.lib"
@@ -1250,8 +1250,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4_dll\wxpng.lib"
@@ -1276,8 +1276,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4_dll\wxpngd.lib"
@@ -1302,8 +1302,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_armv4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_armv4_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4_lib\wxpng.lib"
@@ -1328,8 +1328,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_armv4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /D "ARMV4" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_armv4_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_armv4_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_armv4_lib\wxpngd.lib"
@@ -1354,8 +1354,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_arm_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_arm_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_arm_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_arm_dll\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_arm_dll\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_arm_dll\wxpng.lib"
@@ -1380,8 +1380,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_arm_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_arm_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_arm_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_arm_dll\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_arm_dll\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_arm_dll\wxpngd.lib"
@@ -1406,8 +1406,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_arm_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /Fd..\..\lib\evc_arm_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_arm_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMT) /O2 /I "..\..\build\wince\missing" /Fd..\..\lib\evc_arm_lib\wxpng.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_arm_lib\wxpng.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_arm_lib\wxpng.lib"
@@ -1432,8 +1432,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_arm_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
-# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Zi /Fd..\..\lib\evc_arm_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD BASE CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_arm_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
+# ADD CPP /nologo /D "ARM" /D "_ARM_" /W1 /M$(CECrtMTDebug) /Od /Gm /I "..\..\build\wince\missing" /Zi /Fd..\..\lib\evc_arm_lib\wxpngd.pdb /I "..\..\src\zlib" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "$(CePlatform)" /D "_LIB" /D "DEBUG" /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\lib\evc_arm_lib\wxpngd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\evc_arm_lib\wxpngd.lib"

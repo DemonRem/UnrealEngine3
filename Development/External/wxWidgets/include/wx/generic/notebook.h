@@ -3,17 +3,13 @@
 // Purpose:     wxNotebook class (a.k.a. property sheet, tabbed dialog)
 // Author:      Julian Smart
 // Modified by:
-// RCS-ID:      $Id: notebook.h,v 1.20 2005/08/28 08:00:20 MBN Exp $
+// RCS-ID:      $Id: notebook.h 41738 2006-10-08 17:37:23Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_NOTEBOOK_H_
 #define _WX_NOTEBOOK_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "notebook.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -56,7 +52,7 @@ public:
               long style = 0,
               const wxString& name = wxNotebookNameStr);
     // dtor
-  ~wxNotebook();
+  virtual ~wxNotebook();
 
   // accessors
   // ---------
@@ -71,6 +67,9 @@ public:
   //  void AdvanceSelection(bool bForward = true);
     // get the currently selected page
   int GetSelection() const { return m_nSelection; }
+
+    // changes selected page without sending events
+  int ChangeSelection(size_t nPage);
 
     // set/get the title of a page
   bool SetPageText(size_t nPage, const wxString& strText);

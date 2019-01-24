@@ -4,17 +4,13 @@
 // Author:      Guilhem Lavaux, Guillermo Rodriguez Garcia, Vadim Zeitlin
 // Modified by:
 // Created:     11/07/98
-// RCS-ID:      $Id: stream.h,v 1.71 2005/06/26 15:46:08 RR Exp $
+// RCS-ID:      $Id: stream.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_WXSTREAM_H__
 #define _WX_WXSTREAM_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "stream.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -25,9 +21,9 @@
 #include "wx/string.h"
 #include "wx/filefn.h"  // for wxFileOffset, wxInvalidOffset and wxSeekMode
 
-class WXDLLIMPEXP_BASE wxStreamBase;
-class WXDLLIMPEXP_BASE wxInputStream;
-class WXDLLIMPEXP_BASE wxOutputStream;
+class WXDLLIMPEXP_FWD_BASE wxStreamBase;
+class WXDLLIMPEXP_FWD_BASE wxInputStream;
+class WXDLLIMPEXP_FWD_BASE wxOutputStream;
 
 typedef wxInputStream& (*__wxInputManip)(wxInputStream&);
 typedef wxOutputStream& (*__wxOutputManip)(wxOutputStream&);
@@ -46,18 +42,7 @@ enum wxStreamError
     wxSTREAM_READ_ERROR         // generic read error
 };
 
-// compatibility
-#if WXWIN_COMPATIBILITY_2_2
-    #define wxStream_NOERROR    wxSTREAM_NOERROR
-    #define wxStream_EOF        wxSTREAM_EOF
-    #define wxStream_WRITE_ERR  wxSTREAM_WRITE_ERROR
-    #define wxStream_READ_ERR   wxSTREAM_READ_ERROR
-
-    #define wxSTREAM_NO_ERR     wxSTREAM_NO_ERROR
-    #define wxSTREAM_NOERROR    wxSTREAM_NO_ERROR
-    #define wxSTREAM_WRITE_ERR  wxSTREAM_WRITE_ERROR
-    #define wxSTREAM_READ_ERR   wxSTREAM_READ_ERROR
-#endif // WXWIN_COMPATIBILITY_2_2
+const int wxEOF = -1;
 
 // ============================================================================
 // base stream classes: wxInputStream and wxOutputStream
@@ -75,7 +60,7 @@ public:
 
     // error testing
     wxStreamError GetLastError() const { return m_lasterror; }
-    bool IsOk() const { return GetLastError() == wxSTREAM_NO_ERROR; }
+    virtual bool IsOk() const { return GetLastError() == wxSTREAM_NO_ERROR; }
     bool operator!() const { return !IsOk(); }
 
     // reset the stream state
@@ -87,24 +72,6 @@ public:
 
     // returns true if the streams supports seeking to arbitrary offsets
     virtual bool IsSeekable() const { return false; }
-
-#if WXWIN_COMPATIBILITY_2_2
-    // deprecated, for compatibility only
-    wxDEPRECATED( wxStreamError LastError() const );
-    wxDEPRECATED( size_t StreamSize() const );
-#endif // WXWIN_COMPATIBILITY_2_2
-
-
-    // Reserved for future use
-    virtual void ReservedStreamFunc1() {}
-    virtual void ReservedStreamFunc2() {}
-    virtual void ReservedStreamFunc3() {}
-    virtual void ReservedStreamFunc4() {}
-    virtual void ReservedStreamFunc5() {}
-    virtual void ReservedStreamFunc6() {}
-    virtual void ReservedStreamFunc7() {}
-    virtual void ReservedStreamFunc8() {}
-    virtual void ReservedStreamFunc9() {}
 
 protected:
     virtual wxFileOffset OnSysSeek(wxFileOffset seek, wxSeekMode mode);
@@ -141,11 +108,11 @@ public:
     // undefined), otherwise 1
     virtual char Peek();
 
-    // return one character from the stream, blocking until it appears if
+    // return one byte from the stream, blocking until it appears if
     // necessary
     //
-    // if EOF, return value is undefined and LastRead() will return 0 and not 1
-    char GetC();
+    // on success returns a value between 0 - 255, or wxEOF on EOF or error.
+    int GetC();
 
     // read at most the given number of bytes from the stream
     //
@@ -301,7 +268,8 @@ public:
     wxCountingOutputStream();
 
     wxFileOffset GetLength() const;
-    bool Ok() const { return true; }
+    bool Ok() const { return IsOk(); }
+    bool IsOk() const { return true; }
 
 protected:
     virtual size_t OnSysWrite(const void *buffer, size_t size);
@@ -322,6 +290,7 @@ class WXDLLIMPEXP_BASE wxFilterInputStream : public wxInputStream
 public:
     wxFilterInputStream();
     wxFilterInputStream(wxInputStream& stream);
+    wxFilterInputStream(wxInputStream *stream);
     virtual ~wxFilterInputStream();
 
     char Peek() { return m_parent_i_stream->Peek(); }
@@ -332,6 +301,7 @@ public:
 
 protected:
     wxInputStream *m_parent_i_stream;
+    bool m_owns;
 
     DECLARE_NO_COPY_CLASS(wxFilterInputStream)
 };
@@ -341,16 +311,84 @@ class WXDLLIMPEXP_BASE wxFilterOutputStream : public wxOutputStream
 public:
     wxFilterOutputStream();
     wxFilterOutputStream(wxOutputStream& stream);
+    wxFilterOutputStream(wxOutputStream *stream);
     virtual ~wxFilterOutputStream();
 
     wxFileOffset GetLength() const { return m_parent_o_stream->GetLength(); }
 
     wxOutputStream *GetFilterOutputStream() const { return m_parent_o_stream; }
 
+    bool Close();
+
 protected:
     wxOutputStream *m_parent_o_stream;
+    bool m_owns;
 
     DECLARE_NO_COPY_CLASS(wxFilterOutputStream)
+};
+
+enum wxStreamProtocolType
+{
+    wxSTREAM_PROTOCOL,  // wxFileSystem protocol (should be only one)
+    wxSTREAM_MIMETYPE,  // MIME types the stream handles
+    wxSTREAM_ENCODING,  // The HTTP Content-Encodings the stream handles
+    wxSTREAM_FILEEXT    // File extensions the stream handles
+};
+
+void WXDLLIMPEXP_BASE wxUseFilterClasses();
+
+class WXDLLIMPEXP_BASE wxFilterClassFactoryBase : public wxObject
+{
+public:
+    virtual ~wxFilterClassFactoryBase() { }
+
+    wxString GetProtocol() const { return wxString(*GetProtocols()); }
+    wxString PopExtension(const wxString& location) const;
+
+    virtual const wxChar * const *GetProtocols(wxStreamProtocolType type
+                                               = wxSTREAM_PROTOCOL) const = 0;
+
+    bool CanHandle(const wxChar *protocol,
+                   wxStreamProtocolType type
+                   = wxSTREAM_PROTOCOL) const;
+
+protected:
+    wxString::size_type FindExtension(const wxChar *location) const;
+
+    DECLARE_ABSTRACT_CLASS(wxFilterClassFactoryBase)
+};
+
+class WXDLLIMPEXP_BASE wxFilterClassFactory : public wxFilterClassFactoryBase
+{
+public:
+    virtual ~wxFilterClassFactory() { }
+
+    virtual wxFilterInputStream  *NewStream(wxInputStream& stream)  const = 0;
+    virtual wxFilterOutputStream *NewStream(wxOutputStream& stream) const = 0;
+    virtual wxFilterInputStream  *NewStream(wxInputStream *stream)  const = 0;
+    virtual wxFilterOutputStream *NewStream(wxOutputStream *stream) const = 0;
+
+    static const wxFilterClassFactory *Find(const wxChar *protocol,
+                                            wxStreamProtocolType type
+                                            = wxSTREAM_PROTOCOL);
+
+    static const wxFilterClassFactory *GetFirst();
+    const wxFilterClassFactory *GetNext() const { return m_next; }
+
+    void PushFront() { Remove(); m_next = sm_first; sm_first = this; }
+    void Remove();
+
+protected:
+    wxFilterClassFactory() : m_next(this) { }
+
+    wxFilterClassFactory& operator=(const wxFilterClassFactory&)
+        { return *this; }
+
+private:
+    static wxFilterClassFactory *sm_first;
+    wxFilterClassFactory *m_next;
+
+    DECLARE_ABSTRACT_CLASS(wxFilterClassFactory)
 };
 
 // ============================================================================
@@ -423,8 +461,10 @@ public:
     wxInputStream *GetInputStream() const;
     wxOutputStream *GetOutputStream() const;
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated, for compatibility only
-    wxStreamBase *Stream() { return m_stream; }
+    wxDEPRECATED( wxStreamBase *Stream() );
+#endif // WXWIN_COMPATIBILITY_2_6
 
     // this constructs a dummy wxStreamBuffer, used by (and exists for)
     // wxMemoryStreams only, don't use!
@@ -500,8 +540,10 @@ public:
     void SetInputStreamBuffer(wxStreamBuffer *buffer);
     wxStreamBuffer *GetInputStreamBuffer() const { return m_i_streambuf; }
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated, for compatibility only
-    wxStreamBuffer *InputStreamBuffer() const { return m_i_streambuf; }
+    wxDEPRECATED( wxStreamBuffer *InputStreamBuffer() const );
+#endif // WXWIN_COMPATIBILITY_2_6
 
 protected:
     virtual size_t OnSysRead(void *buffer, size_t bufsize);
@@ -541,8 +583,10 @@ public:
     void SetOutputStreamBuffer(wxStreamBuffer *buffer);
     wxStreamBuffer *GetOutputStreamBuffer() const { return m_o_streambuf; }
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated, for compatibility only
-    wxStreamBuffer *OutputStreamBuffer() const { return m_o_streambuf; }
+    wxDEPRECATED( wxStreamBuffer *OutputStreamBuffer() const );
+#endif // WXWIN_COMPATIBILITY_2_6
 
 protected:
     virtual size_t OnSysWrite(const void *buffer, size_t bufsize);
@@ -554,7 +598,12 @@ protected:
     DECLARE_NO_COPY_CLASS(wxBufferedOutputStream)
 };
 
+#if WXWIN_COMPATIBILITY_2_6
+    inline wxStreamBase *wxStreamBuffer::Stream() { return m_stream; }
+    inline wxStreamBuffer *wxBufferedInputStream::InputStreamBuffer() const { return m_i_streambuf; }
+    inline wxStreamBuffer *wxBufferedOutputStream::OutputStreamBuffer() const { return m_o_streambuf; }
+#endif // WXWIN_COMPATIBILITY_2_6
+
 #endif // wxUSE_STREAMS
 
 #endif // _WX_WXSTREAM_H__
-

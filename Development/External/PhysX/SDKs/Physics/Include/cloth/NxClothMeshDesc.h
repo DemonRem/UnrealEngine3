@@ -5,13 +5,15 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
 #include "NxSimpleTriangleMesh.h"
+
+#define NX_CLOTH_MAX_HIERARCHY_LEVELS 10
 
 /**
 \brief Cloth mesh flags.
@@ -27,6 +29,17 @@ enum NxClothMeshFlags
 	These flags for clothMeshes extend the set of flags defined in NxMeshFlags.
 	*/
 	NX_CLOTH_MESH_TEARABLE	=	(1<<8),
+	/**
+	\brief Welds close vertices.
+
+	If this flag is set, the cooker maps close vertices (i.e. vertices closer than
+	NxClothMeshDesc.weldingDistance) to a single internal vertex.
+	This is useful when more than one vertex at the same location is used for handling
+	multiple texture coordinates. With welding, the mesh does not fall apart when simulated.
+
+	@see NxClothMeshDesc.weldingDistance
+	*/
+	NX_CLOTH_MESH_WELD_VERTICES = (1<<9)
 	};
 
 /**
@@ -45,7 +58,7 @@ enum NxClothVertexFlags
 	/**
 	\brief Specifies whether a cloth vertex can be torn.
 	*/
-	NX_CLOTH_VERTEX_TEARABLE	=	(1<<7),
+	NX_CLOTH_VERTEX_TEARABLE	=	(1<<7)
 	
 	};
 
@@ -83,6 +96,28 @@ public:
 	const void* vertexFlags;
 
 	/**
+	\brief Specifies the number of additional meshes in the hierarchy.
+	If this parameter is greater than zero, the cooker generates a hierarchy of 
+	smaller and smaller cloth meshes in addition to the base mesh. 
+	With this hierarchy, the cloth solver can be sped up substanially.
+
+	@see NxClothDesc.hierarchicalSolverIterations NxCloth.getHierarchicalSolverIterations() NxCloth.setHierarchicalSolverIterations()
+	*/
+	NxU32 numHierarchyLevels;
+
+	/**
+	\brief For welding close vertices.
+
+	If the NX_CLOTH_MESH_WELD_VERTICES flag is set, the cooker maps close vertices 
+	(i.e. vertices closer than NxClothMeshDesc.weldingDistance) to a single internal vertex.
+	This is useful when more than one vertex at the same location is used for handling
+	multiple texture coordinates. With welding, the mesh does not fall apart when simulated.
+
+	@see NxClothMeshFlags
+	*/
+	NxReal weldingDistance;
+
+	/**
 	\brief Constructor sets to default.
 	*/
 	NX_INLINE NxClothMeshDesc();
@@ -95,7 +130,11 @@ public:
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -114,27 +153,32 @@ NX_INLINE void NxClothMeshDesc::setToDefault()
 	vertexFlagStrideBytes	= sizeof(NxU32);
 	vertexMasses			= NULL;
 	vertexFlags				= NULL;
+	numHierarchyLevels      = 0;
+	weldingDistance			= 0.0f;
 }
 
 /*----------------------------------------------------------------------------*/
 
-NX_INLINE bool NxClothMeshDesc::isValid() const
+NX_INLINE NxU32 NxClothMeshDesc::checkValid() const
 {
 	if(vertexMasses && (vertexMassStrideBytes < sizeof(NxReal)))
-		return false;
+		return 1;
 	if(vertexFlags && (vertexFlagStrideBytes < sizeof(NxU32)))
-		return false;
-
-	return NxSimpleTriangleMesh::isValid();
+		return 2;
+	if (numHierarchyLevels > NX_CLOTH_MAX_HIERARCHY_LEVELS)
+		return 3;
+	if(weldingDistance < 0.0f)
+		return 4;
+	return 5*NxSimpleTriangleMesh::checkValid();
 }
 
 /*----------------------------------------------------------------------------*/
 /** @} */
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        tipdlg.cpp
+// Name:        src/generic/tipdlg.cpp
 // Purpose:     implementation of wxTipDialog
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     28.06.99
-// RCS-ID:      $Id: tipdlg.cpp,v 1.40 2005/04/05 21:46:37 VZ Exp $
+// RCS-ID:      $Id: tipdlg.cpp 52000 2008-02-22 18:37:18Z VS $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "tipdlg.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -41,11 +37,11 @@
     #include "wx/statbmp.h"
     #include "wx/stattext.h"
     #include "wx/sizer.h"
+    #include "wx/settings.h"
 #endif // WX_PRECOMP
 
 #include "wx/statline.h"
 #include "wx/artprov.h"
-#include "wx/settings.h"
 
 #include "wx/tipdlg.h"
 
@@ -200,6 +196,9 @@ wxString wxFileTipProvider::GetTip()
         tip = tip.BeforeLast(wxT('\"'));
         // ...and replace escaped quotes
         tip.Replace(wxT("\\\""), wxT("\""));
+
+        // and translate it as requested
+        tip = wxGetTranslation(tip);
     }
 
     return tip;
@@ -211,7 +210,6 @@ wxString wxFileTipProvider::GetTip()
 
 BEGIN_EVENT_TABLE(wxTipDialog, wxDialog)
     EVT_BUTTON(wxID_NEXT_TIP, wxTipDialog::OnNextTip)
-    EVT_BUTTON(wxID_CLOSE, wxTipDialog::OnCancel)
 END_EVENT_TABLE()
 
 wxTipDialog::wxTipDialog(wxWindow *parent,
@@ -219,29 +217,13 @@ wxTipDialog::wxTipDialog(wxWindow *parent,
                          bool showAtStartup)
            : wxDialog(parent, wxID_ANY, _("Tip of the Day"),
                       wxDefaultPosition, wxDefaultSize,
-                      wxDEFAULT_DIALOG_STYLE
-#if !defined(__SMARTPHONE__) && !defined(__POCKETPC__)
-                      | wxRESIZE_BORDER
-#endif                      
+                      wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER
                       )
 {
     m_tipProvider = tipProvider;
     bool isPda = (wxSystemSettings::GetScreenType() <= wxSYS_SCREEN_PDA);
 
     // 1) create all controls in tab order
-
-    // smart phones does not support or do not waste space for wxButtons
-#ifndef __SMARTPHONE__
-    wxButton *btnClose = new wxButton(this, wxID_CLOSE);
-#endif
-
-    m_checkbox = new wxCheckBox(this, wxID_ANY, _("&Show tips at startup"));
-    m_checkbox->SetValue(showAtStartup);
-
-    // smart phones does not support or do not waste space for wxButtons
-#ifndef __SMARTPHONE__
-    wxButton *btnNext = new wxButton(this, wxID_NEXT_TIP, _("&Next Tip"));
-#endif
 
     wxStaticText *text = new wxStaticText(this, wxID_ANY, _("Did you know..."));
 
@@ -283,6 +265,22 @@ wxTipDialog::wxTipDialog(wxWindow *parent,
 
 //#endif
 
+    m_checkbox = new wxCheckBox(this, wxID_ANY, _("&Show tips at startup"));
+    m_checkbox->SetValue(showAtStartup);
+    m_checkbox->SetFocus();
+
+    // smart phones does not support or do not waste space for wxButtons
+#ifndef __SMARTPHONE__
+    wxButton *btnNext = new wxButton(this, wxID_NEXT_TIP, _("&Next Tip"));
+#endif
+
+    // smart phones does not support or do not waste space for wxButtons
+#ifndef __SMARTPHONE__
+    wxButton *btnClose = new wxButton(this, wxID_CLOSE);
+    SetAffirmativeId(wxID_CLOSE);
+#endif
+
+
     // 2) put them in boxes
 
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
@@ -320,12 +318,10 @@ wxTipDialog::wxTipDialog(wxWindow *parent,
 
     SetSizer( topsizer );
 
-#if !defined(__SMARTPHONE__) && !defined(__POCKETPC__)
     topsizer->SetSizeHints( this );
     topsizer->Fit( this );
 
     Centre(wxBOTH | wxCENTER_FRAME);
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -349,4 +345,3 @@ bool wxShowTip(wxWindow *parent,
 }
 
 #endif // wxUSE_STARTUP_TIPS
-

@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: event.h,v 1.244 2005/08/03 23:44:05 VZ Exp $
+// RCS-ID:      $Id: event.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,18 +12,8 @@
 #ifndef _WX_EVENT_H__
 #define _WX_EVENT_H__
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA) && !defined(__EMX__)
-// Some older compilers (such as EMX) cannot handle
-// #pragma interface/implementation correctly, iff
-// #pragma implementation is used in _two_ translation
-// units (as created by e.g. event.cpp compiled for
-// libwx_base and event.cpp compiled for libwx_gui_core).
-// So we must not use those pragmas for those compilers in
-// such files.
-    #pragma interface "event.h"
-#endif
-
 #include "wx/defs.h"
+#include "wx/cpp.h"
 #include "wx/object.h"
 #include "wx/clntdata.h"
 
@@ -40,16 +30,16 @@
 // forward declarations
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_BASE wxList;
+class WXDLLIMPEXP_FWD_BASE wxList;
 
 #if wxUSE_GUI
-    class WXDLLIMPEXP_CORE wxDC;
-    class WXDLLIMPEXP_CORE wxMenu;
-    class WXDLLIMPEXP_CORE wxWindow;
-    class WXDLLIMPEXP_CORE wxWindowBase;
+    class WXDLLIMPEXP_FWD_CORE wxDC;
+    class WXDLLIMPEXP_FWD_CORE wxMenu;
+    class WXDLLIMPEXP_FWD_CORE wxWindow;
+    class WXDLLIMPEXP_FWD_CORE wxWindowBase;
 #endif // wxUSE_GUI
 
-class WXDLLIMPEXP_BASE wxEvtHandler;
+class WXDLLIMPEXP_FWD_BASE wxEvtHandler;
 
 // ----------------------------------------------------------------------------
 // Event types
@@ -105,8 +95,6 @@ typedef int wxEventType;
 #define DECLARE_EVENT_TABLE_ENTRY(type, winid, idLast, fn, obj) \
     wxEventTableEntry(type, winid, idLast, fn, obj)
 
-#define EMPTY_PARAMETER_VALUE /* Fake macro parameter value */
-
 #define BEGIN_DECLARE_EVENT_TYPES()
 #define END_DECLARE_EVENT_TYPES()
 #define DECLARE_EXPORTED_EVENT_TYPE(expdecl, name, value) \
@@ -114,7 +102,7 @@ typedef int wxEventType;
 #define DECLARE_EVENT_TYPE(name, value) \
     DECLARE_EXPORTED_EVENT_TYPE(WXDLLIMPEXP_CORE, name, value)
 #define DECLARE_LOCAL_EVENT_TYPE(name, value) \
-    DECLARE_EXPORTED_EVENT_TYPE(EMPTY_PARAMETER_VALUE, name, value)
+    DECLARE_EXPORTED_EVENT_TYPE(wxEMPTY_PARAMETER_VALUE, name, value)
 #define DEFINE_EVENT_TYPE(name) const wxEventType name = wxNewEventType();
 #define DEFINE_LOCAL_EVENT_TYPE(name) DEFINE_EVENT_TYPE(name)
 
@@ -222,9 +210,7 @@ BEGIN_DECLARE_EVENT_TYPES()
     DECLARE_EVENT_TYPE(wxEVT_SCROLL_PAGEDOWN, 305)
     DECLARE_EVENT_TYPE(wxEVT_SCROLL_THUMBTRACK, 306)
     DECLARE_EVENT_TYPE(wxEVT_SCROLL_THUMBRELEASE, 307)
-#if wxABI_VERSION >= 20601
     DECLARE_EVENT_TYPE(wxEVT_SCROLL_CHANGED, 308)
-#endif
 
         // Scroll events from wxWindow
     DECLARE_EVENT_TYPE(wxEVT_SCROLLWIN_TOP, 320)
@@ -243,7 +229,7 @@ BEGIN_DECLARE_EVENT_TYPES()
     DECLARE_EVENT_TYPE(wxEVT_END_SESSION, 403)
     DECLARE_EVENT_TYPE(wxEVT_QUERY_END_SESSION, 404)
     DECLARE_EVENT_TYPE(wxEVT_ACTIVATE_APP, 405)
-    DECLARE_EVENT_TYPE(wxEVT_POWER, 406)
+    // 406..408 are power events
     DECLARE_EVENT_TYPE(wxEVT_ACTIVATE, 409)
     DECLARE_EVENT_TYPE(wxEVT_CREATE, 410)
     DECLARE_EVENT_TYPE(wxEVT_DESTROY, 411)
@@ -251,14 +237,14 @@ BEGIN_DECLARE_EVENT_TYPES()
     DECLARE_EVENT_TYPE(wxEVT_ICONIZE, 413)
     DECLARE_EVENT_TYPE(wxEVT_MAXIMIZE, 414)
     DECLARE_EVENT_TYPE(wxEVT_MOUSE_CAPTURE_CHANGED, 415)
-    DECLARE_EVENT_TYPE(wxEVT_PAINT, 416)
-    DECLARE_EVENT_TYPE(wxEVT_ERASE_BACKGROUND, 417)
-    DECLARE_EVENT_TYPE(wxEVT_NC_PAINT, 418)
-    DECLARE_EVENT_TYPE(wxEVT_PAINT_ICON, 419)
-    DECLARE_EVENT_TYPE(wxEVT_MENU_OPEN, 420)
-    DECLARE_EVENT_TYPE(wxEVT_MENU_CLOSE, 421)
-    DECLARE_EVENT_TYPE(wxEVT_MENU_HIGHLIGHT, 422)
-    // DECLARE_EVENT_TYPE(wxEVT_POPUP_MENU_INIT, 423) -- free slot
+    DECLARE_EVENT_TYPE(wxEVT_MOUSE_CAPTURE_LOST, 416)
+    DECLARE_EVENT_TYPE(wxEVT_PAINT, 417)
+    DECLARE_EVENT_TYPE(wxEVT_ERASE_BACKGROUND, 418)
+    DECLARE_EVENT_TYPE(wxEVT_NC_PAINT, 419)
+    DECLARE_EVENT_TYPE(wxEVT_PAINT_ICON, 420)
+    DECLARE_EVENT_TYPE(wxEVT_MENU_OPEN, 421)
+    DECLARE_EVENT_TYPE(wxEVT_MENU_CLOSE, 422)
+    DECLARE_EVENT_TYPE(wxEVT_MENU_HIGHLIGHT, 423)
     DECLARE_EVENT_TYPE(wxEVT_CONTEXT_MENU, 424)
     DECLARE_EVENT_TYPE(wxEVT_SYS_COLOUR_CHANGED, 425)
     DECLARE_EVENT_TYPE(wxEVT_DISPLAY_CHANGED, 426)
@@ -279,6 +265,12 @@ BEGIN_DECLARE_EVENT_TYPES()
     DECLARE_EVENT_TYPE(wxEVT_SIZING, 441)
     DECLARE_EVENT_TYPE(wxEVT_MOVING, 442)
     DECLARE_EVENT_TYPE(wxEVT_HIBERNATE, 443)
+    // more power events follow -- see wx/power.h
+
+        // Clipboard events
+    DECLARE_EVENT_TYPE(wxEVT_COMMAND_TEXT_COPY, 444)
+    DECLARE_EVENT_TYPE(wxEVT_COMMAND_TEXT_CUT, 445)
+    DECLARE_EVENT_TYPE(wxEVT_COMMAND_TEXT_PASTE, 446)
 
         // Generic command events
         // Note: a click is a higher-level event than button down/up
@@ -359,7 +351,7 @@ public:
     // to allow the event processing by the base classes (calling event.Skip()
     // is the analog of calling the base class version of a virtual function)
     void Skip(bool skip = true) { m_skipped = skip; }
-    bool GetSkipped() const { return m_skipped; };
+    bool GetSkipped() const { return m_skipped; }
 
     // this function is used to create a copy of the event polymorphically and
     // all derived classes must implement it because otherwise wxPostEvent()
@@ -422,7 +414,7 @@ protected:
 
 private:
     // it needs to access our m_propagationLevel
-    friend class WXDLLIMPEXP_BASE wxPropagateOnce;
+    friend class WXDLLIMPEXP_FWD_BASE wxPropagateOnce;
 
     DECLARE_ABSTRACT_CLASS(wxEvent)
 };
@@ -517,14 +509,6 @@ private:
 };
 #endif
 
-#ifdef __VISUALC__
-    // 'this' : used in base member initializer list (for m_commandString)
-    #if _MSC_VER > 1100
-        #pragma warning(push)
-    #endif
-    #pragma warning(disable:4355)
-#endif
-
 class WXDLLIMPEXP_CORE wxCommandEvent : public wxEvent
 {
 public:
@@ -567,7 +551,7 @@ public:
     long GetExtraLong() const { return m_extraLong; }
 
     void SetInt(int i) { m_commandInt = i; }
-    long GetInt() const { return m_commandInt; }
+    int GetInt() const { return m_commandInt; }
 
     virtual wxEvent *Clone() const { return new wxCommandEvent(*this); }
 
@@ -586,10 +570,6 @@ protected:
 private:
     DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxCommandEvent)
 };
-
-#if defined(__VISUALC__) && (_MSC_VER > 1100)
-    #pragma warning(pop)
-#endif
 
 #if WXWIN_COMPATIBILITY_2_4
 inline void wxCommandEventStringHelper::operator=(const wxString &str)
@@ -960,11 +940,22 @@ public:
     wxKeyEvent(wxEventType keyType = wxEVT_NULL);
     wxKeyEvent(const wxKeyEvent& evt);
 
+    // can be used check if the key event has exactly the given modifiers:
+    // "GetModifiers() = wxMOD_CONTROL" is easier to write than "ControlDown()
+    // && !MetaDown() && !AltDown() && !ShiftDown()"
+    int GetModifiers() const
+    {
+        return (m_controlDown ? wxMOD_CONTROL : 0) |
+               (m_shiftDown ? wxMOD_SHIFT : 0) |
+               (m_metaDown ? wxMOD_META : 0) |
+               (m_altDown ? wxMOD_ALT : 0);
+    }
+
     // Find state of shift/control keys
     bool ControlDown() const { return m_controlDown; }
+    bool ShiftDown() const { return m_shiftDown; }
     bool MetaDown() const { return m_metaDown; }
     bool AltDown() const { return m_altDown; }
-    bool ShiftDown() const { return m_shiftDown; }
 
     // "Cmd" is a pseudo key which is Control for PC and Unix platforms but
     // Apple ("Command") key under Macs: it makes often sense to use it instead
@@ -1021,8 +1012,10 @@ public:
     // Get Y position
     wxCoord GetY() const { return m_y; }
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated, Use GetKeyCode instead.
     wxDEPRECATED( long KeyCode() const );
+#endif // WXWIN_COMPATIBILITY_2_6
 
     virtual wxEvent *Clone() const { return new wxKeyEvent(*this); }
 
@@ -1054,10 +1047,13 @@ public:
 
     long          m_keyCode;
 
+    // TODO: replace those with a single m_modifiers bitmask of wxMOD_XXX?
     bool          m_controlDown;
     bool          m_shiftDown;
     bool          m_altDown;
     bool          m_metaDown;
+
+    // FIXME: what is this for? relation to m_rawXXX?
     bool          m_scanCode;
 
 #if wxUSE_UNICODE
@@ -1099,7 +1095,7 @@ public:
 
     wxSize GetSize() const { return m_size; }
     wxRect GetRect() const { return m_rect; }
-    void SetRect(wxRect rect) { m_rect = rect; }
+    void SetRect(const wxRect& rect) { m_rect = rect; }
 
     virtual wxEvent *Clone() const { return new wxSizeEvent(*this); }
 
@@ -1139,7 +1135,7 @@ public:
     wxPoint GetPosition() const { return m_pos; }
     void SetPosition(const wxPoint& pos) { m_pos = pos; }
     wxRect GetRect() const { return m_rect; }
-    void SetRect(wxRect rect) { m_rect = rect; }
+    void SetRect(const wxRect& rect) { m_rect = rect; }
 
     virtual wxEvent *Clone() const { return new wxMoveEvent(*this); }
 
@@ -1188,7 +1184,7 @@ public:
         g_isPainting++;
     }
 
-    ~wxPaintEvent()
+    virtual ~wxPaintEvent()
     {
         g_isPainting--;
     }
@@ -1678,7 +1674,9 @@ public:
     {
         m_checked =
         m_enabled =
+        m_shown =
         m_setEnabled =
+        m_setShown =
         m_setText =
         m_setChecked = false;
     }
@@ -1686,7 +1684,9 @@ public:
         : wxCommandEvent(event),
           m_checked(event.m_checked),
           m_enabled(event.m_enabled),
+          m_shown(event.m_shown),
           m_setEnabled(event.m_setEnabled),
+          m_setShown(event.m_setShown),
           m_setText(event.m_setText),
           m_setChecked(event.m_setChecked),
           m_text(event.m_text)
@@ -1694,13 +1694,16 @@ public:
 
     bool GetChecked() const { return m_checked; }
     bool GetEnabled() const { return m_enabled; }
+    bool GetShown() const { return m_shown; }
     wxString GetText() const { return m_text; }
     bool GetSetText() const { return m_setText; }
     bool GetSetChecked() const { return m_setChecked; }
     bool GetSetEnabled() const { return m_setEnabled; }
+    bool GetSetShown() const { return m_setShown; }
 
     void Check(bool check) { m_checked = check; m_setChecked = true; }
     void Enable(bool enable) { m_enabled = enable; m_setEnabled = true; }
+    void Show(bool show) { m_shown = show; m_setShown = true; }
     void SetText(const wxString& text) { m_text = text; m_setText = true; }
 
     // Sets the interval between updates in milliseconds.
@@ -1730,7 +1733,9 @@ public:
 protected:
     bool          m_checked;
     bool          m_enabled;
+    bool          m_shown;
     bool          m_setEnabled;
+    bool          m_setShown;
     bool          m_setText;
     bool          m_setChecked;
     wxString      m_text;
@@ -1783,12 +1788,35 @@ public:
 
     virtual wxEvent *Clone() const { return new wxMouseCaptureChangedEvent(*this); }
 
-    wxWindow* GetCapturedWindow() const { return m_gainedCapture; };
+    wxWindow* GetCapturedWindow() const { return m_gainedCapture; }
 
 private:
     wxWindow* m_gainedCapture;
 
     DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxMouseCaptureChangedEvent)
+};
+
+/*
+ wxEVT_MOUSE_CAPTURE_LOST
+ The window losing the capture receives this message, unless it released it
+ it itself or unless wxWindow::CaptureMouse was called on another window
+ (and so capture will be restored when the new capturer releases it).
+ */
+
+class WXDLLIMPEXP_CORE wxMouseCaptureLostEvent : public wxEvent
+{
+public:
+    wxMouseCaptureLostEvent(wxWindowID winid = 0)
+        : wxEvent(winid, wxEVT_MOUSE_CAPTURE_LOST)
+    {}
+
+    wxMouseCaptureLostEvent(const wxMouseCaptureLostEvent& event)
+        : wxEvent(event)
+    {}
+
+    virtual wxEvent *Clone() const { return new wxMouseCaptureLostEvent(*this); }
+
+    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxMouseCaptureLostEvent)
 };
 
 /*
@@ -1978,17 +2006,28 @@ private:
 class WXDLLIMPEXP_CORE wxHelpEvent : public wxCommandEvent
 {
 public:
+    // how was this help event generated?
+    enum Origin
+    {
+        Origin_Unknown,    // unrecognized event source
+        Origin_Keyboard,   // event generated from F1 key press
+        Origin_HelpButton  // event from [?] button on the title bar (Windows)
+    };
+
     wxHelpEvent(wxEventType type = wxEVT_NULL,
                 wxWindowID winid = 0,
-                const wxPoint& pt = wxDefaultPosition)
+                const wxPoint& pt = wxDefaultPosition,
+                Origin origin = Origin_Unknown)
         : wxCommandEvent(type, winid),
-          m_pos(pt), m_target(), m_link()
+          m_pos(pt),
+          m_origin(GuessOrigin(origin))
     { }
     wxHelpEvent(const wxHelpEvent & event)
         : wxCommandEvent(event),
           m_pos(event.m_pos),
           m_target(event.m_target),
-          m_link(event.m_link)
+          m_link(event.m_link),
+          m_origin(event.m_origin)
     { }
 
     // Position of event (in screen coordinates)
@@ -2005,13 +2044,50 @@ public:
 
     virtual wxEvent *Clone() const { return new wxHelpEvent(*this); }
 
+    // optional indication of the event source
+    Origin GetOrigin() const { return m_origin; }
+    void SetOrigin(Origin origin) { m_origin = origin; }
+
 protected:
     wxPoint   m_pos;
     wxString  m_target;
     wxString  m_link;
+    Origin    m_origin;
+
+    // we can try to guess the event origin ourselves, even if none is
+    // specified in the ctor
+    static Origin GuessOrigin(Origin origin);
 
 private:
     DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxHelpEvent)
+};
+
+// A Clipboard Text event is sent when a window intercepts text copy/cut/paste
+// message, i.e. the user has cut/copied/pasted data from/into a text control
+// via ctrl-C/X/V, ctrl/shift-del/insert, a popup menu command, etc.
+// NOTE : under windows these events are *NOT* generated automatically
+// for a Rich Edit text control.
+/*
+wxEVT_COMMAND_TEXT_COPY
+wxEVT_COMMAND_TEXT_CUT
+wxEVT_COMMAND_TEXT_PASTE
+*/
+
+class WXDLLIMPEXP_CORE wxClipboardTextEvent : public wxCommandEvent
+{
+public:
+    wxClipboardTextEvent(wxEventType type = wxEVT_NULL,
+                     wxWindowID winid = 0)
+        : wxCommandEvent(type, winid)
+    { }
+    wxClipboardTextEvent(const wxClipboardTextEvent & event)
+        : wxCommandEvent(event)
+    { }
+
+    virtual wxEvent *Clone() const { return new wxClipboardTextEvent(*this); }
+
+private:
+    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxClipboardTextEvent)
 };
 
 // A Context event is sent when the user right clicks on a window or
@@ -2107,7 +2183,6 @@ private:
 #endif // wxUSE_GUI
 
 /* TODO
- wxEVT_POWER,
  wxEVT_MOUSE_CAPTURE_CHANGED,
  wxEVT_SETTING_CHANGED, // WM_WININICHANGE (NT) / WM_SETTINGCHANGE (Win95)
 // wxEVT_FONT_CHANGED,  // WM_FONTCHANGE: roll into wxEVT_SETTING_CHANGED, but remember to propagate
@@ -2272,6 +2347,8 @@ public:
 
     // Clear all tables
     static void ClearAll();
+    // Rebuild all tables
+    static void ReconstructAll();
 
 protected:
     // Init the hash table with the entries of the static event table.
@@ -2322,7 +2399,6 @@ public:
     // add an event to be processed later
     void AddPendingEvent(wxEvent& event);
 
-    // process all pending events
     void ProcessPendingEvents();
 
 #if wxUSE_THREADS
@@ -2531,6 +2607,8 @@ typedef void (wxEvtHandler::*wxNotifyEventFunction)(wxNotifyEvent&);
 typedef void (wxEvtHandler::*wxHelpEventFunction)(wxHelpEvent&);
 typedef void (wxEvtHandler::*wxContextMenuEventFunction)(wxContextMenuEvent&);
 typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureChangedEvent&);
+typedef void (wxEvtHandler::*wxMouseCaptureLostEventFunction)(wxMouseCaptureLostEvent&);
+typedef void (wxEvtHandler::*wxClipboardTextEventFunction)(wxClipboardTextEvent&);
 
 // these typedefs don't have the same name structure as the others, keep for
 // backwards compatibility only
@@ -2611,6 +2689,10 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
     (wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(wxContextMenuEventFunction, &func)
 #define wxMouseCaptureChangedEventHandler(func) \
     (wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(wxMouseCaptureChangedEventFunction, &func)
+#define wxMouseCaptureLostEventHandler(func) \
+    (wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(wxMouseCaptureLostEventFunction, &func)
+#define wxClipboardTextEventHandler(func) \
+    (wxObjectEventFunction)(wxEventFunction)wxStaticCastEvent(wxClipboardTextEventFunction, &func)
 
 #endif // wxUSE_GUI
 
@@ -2639,6 +2721,111 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
     wxEventHashTable &theClass::GetEventHashTable() const \
         { return theClass::sm_eventHashTable; } \
     const wxEventTableEntry theClass::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE1(theClass, baseClass, T1) \
+    template<typename T1> \
+    const wxEventTable theClass<T1>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1>::sm_eventTableEntries[0] }; \
+    template<typename T1> \
+    const wxEventTable *theClass<T1>::GetEventTable() const \
+        { return &theClass<T1>::sm_eventTable; } \
+    template<typename T1> \
+    wxEventHashTable theClass<T1>::sm_eventHashTable(theClass<T1>::sm_eventTable); \
+    template<typename T1> \
+    wxEventHashTable &theClass<T1>::GetEventHashTable() const \
+        { return theClass<T1>::sm_eventHashTable; } \
+    template<typename T1> \
+    const wxEventTableEntry theClass<T1>::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE2(theClass, baseClass, T1, T2) \
+    template<typename T1, typename T2> \
+    const wxEventTable theClass<T1, T2>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1, T2>::sm_eventTableEntries[0] }; \
+    template<typename T1, typename T2> \
+    const wxEventTable *theClass<T1, T2>::GetEventTable() const \
+        { return &theClass<T1, T2>::sm_eventTable; } \
+    template<typename T1, typename T2> \
+    wxEventHashTable theClass<T1, T2>::sm_eventHashTable(theClass<T1, T2>::sm_eventTable); \
+    template<typename T1, typename T2> \
+    wxEventHashTable &theClass<T1, T2>::GetEventHashTable() const \
+        { return theClass<T1, T2>::sm_eventHashTable; } \
+    template<typename T1, typename T2> \
+    const wxEventTableEntry theClass<T1, T2>::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE3(theClass, baseClass, T1, T2, T3) \
+    template<typename T1, typename T2, typename T3> \
+    const wxEventTable theClass<T1, T2, T3>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1, T2, T3>::sm_eventTableEntries[0] }; \
+    template<typename T1, typename T2, typename T3> \
+    const wxEventTable *theClass<T1, T2, T3>::GetEventTable() const \
+        { return &theClass<T1, T2, T3>::sm_eventTable; } \
+    template<typename T1, typename T2, typename T3> \
+    wxEventHashTable theClass<T1, T2, T3>::sm_eventHashTable(theClass<T1, T2, T3>::sm_eventTable); \
+    template<typename T1, typename T2, typename T3> \
+    wxEventHashTable &theClass<T1, T2, T3>::GetEventHashTable() const \
+        { return theClass<T1, T2, T3>::sm_eventHashTable; } \
+    template<typename T1, typename T2, typename T3> \
+    const wxEventTableEntry theClass<T1, T2, T3>::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE4(theClass, baseClass, T1, T2, T3, T4) \
+    template<typename T1, typename T2, typename T3, typename T4> \
+    const wxEventTable theClass<T1, T2, T3, T4>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1, T2, T3, T4>::sm_eventTableEntries[0] }; \
+    template<typename T1, typename T2, typename T3, typename T4> \
+    const wxEventTable *theClass<T1, T2, T3, T4>::GetEventTable() const \
+        { return &theClass<T1, T2, T3, T4>::sm_eventTable; } \
+    template<typename T1, typename T2, typename T3, typename T4> \
+    wxEventHashTable theClass<T1, T2, T3, T4>::sm_eventHashTable(theClass<T1, T2, T3, T4>::sm_eventTable); \
+    template<typename T1, typename T2, typename T3, typename T4> \
+    wxEventHashTable &theClass<T1, T2, T3, T4>::GetEventHashTable() const \
+        { return theClass<T1, T2, T3, T4>::sm_eventHashTable; } \
+    template<typename T1, typename T2, typename T3, typename T4> \
+    const wxEventTableEntry theClass<T1, T2, T3, T4>::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE5(theClass, baseClass, T1, T2, T3, T4, T5) \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5> \
+    const wxEventTable theClass<T1, T2, T3, T4, T5>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1, T2, T3, T4, T5>::sm_eventTableEntries[0] }; \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5> \
+    const wxEventTable *theClass<T1, T2, T3, T4, T5>::GetEventTable() const \
+        { return &theClass<T1, T2, T3, T4, T5>::sm_eventTable; } \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5> \
+    wxEventHashTable theClass<T1, T2, T3, T4, T5>::sm_eventHashTable(theClass<T1, T2, T3, T4, T5>::sm_eventTable); \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5> \
+    wxEventHashTable &theClass<T1, T2, T3, T4, T5>::GetEventHashTable() const \
+        { return theClass<T1, T2, T3, T4, T5>::sm_eventHashTable; } \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5> \
+    const wxEventTableEntry theClass<T1, T2, T3, T4, T5>::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE7(theClass, baseClass, T1, T2, T3, T4, T5, T6, T7) \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> \
+    const wxEventTable theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventTableEntries[0] }; \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> \
+    const wxEventTable *theClass<T1, T2, T3, T4, T5, T6, T7>::GetEventTable() const \
+        { return &theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventTable; } \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> \
+    wxEventHashTable theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventHashTable(theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventTable); \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> \
+    wxEventHashTable &theClass<T1, T2, T3, T4, T5, T6, T7>::GetEventHashTable() const \
+        { return theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventHashTable; } \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> \
+    const wxEventTableEntry theClass<T1, T2, T3, T4, T5, T6, T7>::sm_eventTableEntries[] = { \
+
+#define BEGIN_EVENT_TABLE_TEMPLATE8(theClass, baseClass, T1, T2, T3, T4, T5, T6, T7, T8) \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> \
+    const wxEventTable theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventTable = \
+        { &baseClass::sm_eventTable, &theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventTableEntries[0] }; \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> \
+    const wxEventTable *theClass<T1, T2, T3, T4, T5, T6, T7, T8>::GetEventTable() const \
+        { return &theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventTable; } \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> \
+    wxEventHashTable theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventHashTable(theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventTable); \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> \
+    wxEventHashTable &theClass<T1, T2, T3, T4, T5, T6, T7, T8>::GetEventHashTable() const \
+        { return theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventHashTable; } \
+    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> \
+    const wxEventTableEntry theClass<T1, T2, T3, T4, T5, T6, T7, T8>::sm_eventTableEntries[] = { \
 
 #define END_EVENT_TABLE() DECLARE_EVENT_TABLE_ENTRY( wxEVT_NULL, 0, 0, 0, 0 ) };
 
@@ -2722,6 +2909,7 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
 #define EVT_WINDOW_DESTROY(func) wx__DECLARE_EVT0(wxEVT_DESTROY, wxWindowDestroyEventHandler(func))
 #define EVT_SET_CURSOR(func) wx__DECLARE_EVT0(wxEVT_SET_CURSOR, wxSetCursorEventHandler(func))
 #define EVT_MOUSE_CAPTURE_CHANGED(func) wx__DECLARE_EVT0(wxEVT_MOUSE_CAPTURE_CHANGED, wxMouseCaptureChangedEventHandler(func))
+#define EVT_MOUSE_CAPTURE_LOST(func) wx__DECLARE_EVT0(wxEVT_MOUSE_CAPTURE_LOST, wxMouseCaptureLostEventHandler(func))
 
 // Mouse events
 #define EVT_LEFT_DOWN(func) wx__DECLARE_EVT0(wxEVT_LEFT_DOWN, wxMouseEventHandler(func))
@@ -2783,12 +2971,7 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
 #define EVT_SCROLL_PAGEDOWN(func) wx__DECLARE_EVT0(wxEVT_SCROLL_PAGEDOWN, wxScrollEventHandler(func))
 #define EVT_SCROLL_THUMBTRACK(func) wx__DECLARE_EVT0(wxEVT_SCROLL_THUMBTRACK, wxScrollEventHandler(func))
 #define EVT_SCROLL_THUMBRELEASE(func) wx__DECLARE_EVT0(wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler(func))
-#if wxABI_VERSION >= 20601
 #define EVT_SCROLL_CHANGED(func) wx__DECLARE_EVT0(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(func))
-#define wx__EVT_SCROLL_CHANGED(func) EVT_SCROLL_CHANGED(func)
-#else
-#define wx__EVT_SCROLL_CHANGED(func)
-#endif
 
 #define EVT_SCROLL(func) \
     EVT_SCROLL_TOP(func) \
@@ -2799,7 +2982,7 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
     EVT_SCROLL_PAGEDOWN(func) \
     EVT_SCROLL_THUMBTRACK(func) \
     EVT_SCROLL_THUMBRELEASE(func) \
-    wx__EVT_SCROLL_CHANGED(func)
+    EVT_SCROLL_CHANGED(func)
 
 // Scrolling from wxSlider and wxScrollBar, with an id
 #define EVT_COMMAND_SCROLL_TOP(winid, func) wx__DECLARE_EVT1(wxEVT_SCROLL_TOP, winid, wxScrollEventHandler(func))
@@ -2810,12 +2993,7 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
 #define EVT_COMMAND_SCROLL_PAGEDOWN(winid, func) wx__DECLARE_EVT1(wxEVT_SCROLL_PAGEDOWN, winid, wxScrollEventHandler(func))
 #define EVT_COMMAND_SCROLL_THUMBTRACK(winid, func) wx__DECLARE_EVT1(wxEVT_SCROLL_THUMBTRACK, winid, wxScrollEventHandler(func))
 #define EVT_COMMAND_SCROLL_THUMBRELEASE(winid, func) wx__DECLARE_EVT1(wxEVT_SCROLL_THUMBRELEASE, winid, wxScrollEventHandler(func))
-#if wxABI_VERSION >= 20601
 #define EVT_COMMAND_SCROLL_CHANGED(winid, func) wx__DECLARE_EVT1(wxEVT_SCROLL_CHANGED, winid, wxScrollEventHandler(func))
-#define wx__EVT_COMMAND_SCROLL_CHANGED(winid, func) EVT_COMMAND_SCROLL_CHANGED(winid, func)
-#else
-#define wx__EVT_COMMAND_SCROLL_CHANGED(winid, func)
-#endif
 
 #define EVT_COMMAND_SCROLL(winid, func) \
     EVT_COMMAND_SCROLL_TOP(winid, func) \
@@ -2826,20 +3004,14 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
     EVT_COMMAND_SCROLL_PAGEDOWN(winid, func) \
     EVT_COMMAND_SCROLL_THUMBTRACK(winid, func) \
     EVT_COMMAND_SCROLL_THUMBRELEASE(winid, func) \
-    wx__EVT_COMMAND_SCROLL_CHANGED(winid, func)
+    EVT_COMMAND_SCROLL_CHANGED(winid, func)
 
-// compatibility macros for the old name, to be deprecated in 2.8
-//
-// note that simply #defines suffice for the macro names as they're only
-// present in the source code and macros are enough to maintain source
-// backwards compatibility, but that we have to ensure that we also have
-// wxEVT_SCROLL_ENDSCROLL inside the library for binary backwards compatibility
-// and this is done in event.cpp
-#if wxABI_VERSION >= 20601
-#define wxEVT_SCROLL_ENDSCROLL wxEVT_SCROLL_CHANGED
-#define EVT_COMMAND_SCROLL_ENDSCROLL EVT_COMMAND_SCROLL_CHANGED
-#define EVT_SCROLL_ENDSCROLL EVT_SCROLL_CHANGED
-#endif
+#if WXWIN_COMPATIBILITY_2_6
+    // compatibility macros for the old name, deprecated in 2.8
+    #define wxEVT_SCROLL_ENDSCROLL wxEVT_SCROLL_CHANGED
+    #define EVT_COMMAND_SCROLL_ENDSCROLL EVT_COMMAND_SCROLL_CHANGED
+    #define EVT_SCROLL_ENDSCROLL EVT_SCROLL_CHANGED
+#endif // WXWIN_COMPATIBILITY_2_6
 
 // Convenience macros for commonly-used commands
 #define EVT_CHECKBOX(winid, func) wx__DECLARE_EVT1(wxEVT_COMMAND_CHECKBOX_CLICKED, winid, wxCommandEventHandler(func))
@@ -2913,6 +3085,11 @@ typedef void (wxEvtHandler::*wxMouseCaptureChangedEventFunction)(wxMouseCaptureC
 #define EVT_CONTEXT_MENU(func) wx__DECLARE_EVT0(wxEVT_CONTEXT_MENU, wxContextMenuEventHandler(func))
 #define EVT_COMMAND_CONTEXT_MENU(winid, func) wx__DECLARE_EVT1(wxEVT_CONTEXT_MENU, winid, wxContextMenuEventHandler(func))
 
+// Clipboard text Events
+#define EVT_TEXT_CUT(winid, func) wx__DECLARE_EVT1(wxEVT_COMMAND_TEXT_CUT, winid, wxClipboardTextEventHandler(func))
+#define EVT_TEXT_COPY(winid, func) wx__DECLARE_EVT1(wxEVT_COMMAND_TEXT_COPY, winid, wxClipboardTextEventHandler(func))
+#define EVT_TEXT_PASTE(winid, func) wx__DECLARE_EVT1(wxEVT_COMMAND_TEXT_PASTE, winid, wxClipboardTextEventHandler(func))
+
 // ----------------------------------------------------------------------------
 // Global data
 // ----------------------------------------------------------------------------
@@ -2932,9 +3109,8 @@ extern WXDLLIMPEXP_BASE wxList *wxPendingEvents;
 
 // Find a window with the focus, that is also a descendant of the given window.
 // This is used to determine the window to initially send commands to.
-wxWindow* wxFindFocusDescendant(wxWindow* ancestor);
+WXDLLIMPEXP_CORE wxWindow* wxFindFocusDescendant(wxWindow* ancestor);
 
 #endif // wxUSE_GUI
 
 #endif // _WX_EVENT_H__
-

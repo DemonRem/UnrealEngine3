@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by: VZ 07.01.00: implemented wxMetaFileDataObject
 // Created:     01/02/97
-// RCS-ID:      $Id: metafile.h,v 1.14 2005/08/19 13:48:21 MW Exp $
+// RCS-ID:      $Id: metafile.h 46103 2007-05-18 15:14:44Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_METAFIILE_H_
 #define _WX_METAFIILE_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "metafile.h"
-#endif
 
 #include "wx/dc.h"
 #include "wx/gdiobj.h"
@@ -34,7 +30,7 @@ class WXDLLEXPORT wxMetafileRefData: public wxGDIRefData
     friend class WXDLLEXPORT wxMetafile;
 public:
     wxMetafileRefData();
-    ~wxMetafileRefData();
+    virtual ~wxMetafileRefData();
 
 public:
     WXHANDLE m_metafile;
@@ -48,7 +44,6 @@ class WXDLLEXPORT wxMetafile: public wxGDIObject
 {
 public:
     wxMetafile(const wxString& file = wxEmptyString);
-    wxMetafile(const wxMetafile& metafile) { Ref(metafile); }
     virtual ~wxMetafile();
 
     // After this is called, the metafile cannot be used for anything
@@ -56,7 +51,8 @@ public:
     virtual bool SetClipboard(int width = 0, int height = 0);
 
     virtual bool Play(wxDC *dc);
-    bool Ok() const { return (M_METAFILEDATA && (M_METAFILEDATA->m_metafile != 0)); };
+    bool Ok() const { return IsOk(); }
+    bool IsOk() const { return (M_METAFILEDATA && (M_METAFILEDATA->m_metafile != 0)); };
 
     // set/get the size of metafile for clipboard operations
     wxSize GetSize() const { return wxSize(GetWidth(), GetHeight()); }
@@ -71,14 +67,6 @@ public:
     void SetHMETAFILE(WXHANDLE mf) ;
     int GetWindowsMappingMode() const { return M_METAFILEDATA->m_windowsMappingMode; }
     void SetWindowsMappingMode(int mm);
-
-    // Operators
-    wxMetafile& operator=(const wxMetafile& metafile)
-        { if (*this != metafile) Ref(metafile); return *this; }
-    bool operator==(const wxMetafile& metafile) const
-        { return m_refData == metafile.m_refData; }
-    bool operator!=(const wxMetafile& metafile) const
-        { return m_refData != metafile.m_refData; }
 
 private:
     DECLARE_DYNAMIC_CLASS(wxMetafile)
@@ -100,6 +88,18 @@ public:
     // Should be called at end of drawing
     virtual wxMetafile *Close();
     virtual void SetMapMode(int mode);
+
+#if wxABI_VERSION >= 20805
+    virtual void DoGetTextExtent(const wxString& string,
+                                 wxCoord *x, wxCoord *y,
+                                 wxCoord *descent = NULL,
+                                 wxCoord *externalLeading = NULL,
+                                 const wxFont *theFont = NULL) const;
+#endif // wx ABI 2.8.5+
+
+    // this method shouldn't have been defined here (DoGetTextExtent() is the
+    // correct one) but keep it to avoid breaking binary backwards
+    // compatibility
     virtual void GetTextExtent(const wxString& string, long *x, long *y,
             long *descent = NULL, long *externalLeading = NULL,
             wxFont *theFont = NULL, bool use16bit = false) const;
@@ -111,6 +111,8 @@ public:
     void SetWindowsMappingMode(int mm) { m_windowsMappingMode = mm; }
 
 protected:
+    virtual void DoGetSize(int *width, int *height) const;
+
     int           m_windowsMappingMode;
     wxMetafile*   m_metaFile;
 

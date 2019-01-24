@@ -6,9 +6,9 @@
 
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@ struct NxFluidPacket
 	NxBounds3	aabb; 
 
 	/**
-	\brief Index of first particle for a given packet. This index corresponds directly to the fields stored in NxParticleData.
+	\brief Index of first particle for a given packet.  This index can be used to index into each of the buffers in NxParticleData.
 
 	@see NxParticleData
 	*/
@@ -72,7 +72,11 @@ class NxFluidPacketData
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -95,20 +99,20 @@ NX_INLINE void NxFluidPacketData::setToDefault()
 	numFluidPacketsPtr		= NULL;
 	}
 
-NX_INLINE bool NxFluidPacketData::isValid() const
+NX_INLINE NxU32 NxFluidPacketData::checkValid() const
 	{
-	if (numFluidPacketsPtr && !bufferFluidPackets) return false;
-	return true;
+	if (numFluidPacketsPtr && !bufferFluidPackets) return 1;
+	return 0;
 	}
 
 /** @} */
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

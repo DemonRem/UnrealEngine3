@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        nativdlg.cpp
+// Name:        src/msw/nativdlg.cpp
 // Purpose:     Native dialog loading code (part of wxWindow)
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: nativdlg.cpp,v 1.30 2004/08/31 12:38:46 ABX Exp $
+// RCS-ID:      $Id: nativdlg.cpp 39720 2006-06-14 15:55:43Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ---------------------------------------------------------------------------
 // headers
 // ---------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -34,9 +30,7 @@
     #include "wx/wx.h"
 #endif
 
-#if defined(__WIN95__)
 #include "wx/spinbutt.h"
-#endif
 #include "wx/msw/private.h"
 
 // ---------------------------------------------------------------------------
@@ -152,20 +146,14 @@ wxWindow* wxWindow::GetWindowChild(wxWindowID id)
     wxWindow* win = GetWindowChild1(id);
     if ( !win )
     {
-        HWND hWnd = ::GetDlgItem((HWND) GetHWND(), id);
-
-        if (hWnd)
+        HWND hwnd = ::GetDlgItem(GetHwnd(), id);
+        if ( hwnd )
         {
-            wxWindow* child = CreateWindowFromHWND(this, (WXHWND) hWnd);
-            if (child)
-            {
-                child->AddChild(this);
-                return child;
-            }
+            win = CreateWindowFromHWND(this, (WXHWND) hwnd);
         }
     }
 
-    return NULL;
+    return win;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,7 +259,7 @@ wxWindow* wxWindow::CreateWindowFromHWND(wxWindow* parent, WXHWND hWnd)
         win = new wxScrollBar;
     }
 #endif
-#if defined(__WIN95__) && wxUSE_SPINBTN
+#if wxUSE_SPINBTN
     else if (str == wxT("MSCTLS_UPDOWN32"))
     {
         win = new wxSpinButton;
@@ -340,4 +328,3 @@ void wxWindow::AdoptAttributesFromHWND(void)
     if (style & WS_HSCROLL)
         m_windowStyle |= wxHSCROLL;
 }
-

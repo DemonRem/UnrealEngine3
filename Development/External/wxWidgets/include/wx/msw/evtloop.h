@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2004-07-31
-// RCS-ID:      $Id: evtloop.h,v 1.3 2005/07/18 13:36:28 ABX Exp $
+// RCS-ID:      $Id: evtloop.h 36881 2006-01-15 10:13:40Z ABX $
 // Copyright:   (c) 2003-2004 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,29 +12,28 @@
 #ifndef _WX_MSW_EVTLOOP_H_
 #define _WX_MSW_EVTLOOP_H_
 
+#include "wx/window.h"
+
 // ----------------------------------------------------------------------------
 // wxEventLoop
 // ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxEventLoop : public wxEventLoopBase
+class WXDLLEXPORT wxEventLoop : public wxEventLoopManual
 {
 public:
     wxEventLoop();
 
     // implement base class pure virtuals
-    virtual int Run();
-    virtual void Exit(int rc = 0);
     virtual bool Pending() const;
     virtual bool Dispatch();
-    virtual bool IsRunning() const;
 
     // MSW-specific methods
     // --------------------
 
-	//@UE3: Unreal Engine integration of main loop.
+	// @UE3 2007-16-11: Unreal Engine integration.
 	virtual int MainRun();
 
-    // preprocess a message, return true if processed (i.e. no further
+	// preprocess a message, return true if processed (i.e. no further
     // dispatching required)
     virtual bool PreProcessMessage(WXMSG *msg);
 
@@ -57,6 +56,10 @@ public:
     }
 
 protected:
+    // override/implement base class virtuals
+    virtual void WakeUp();
+    virtual void OnNextIteration();
+
     // check if the given window is a child of ms_winCritical (which must be
     // non NULL)
     static bool IsChildOfCriticalWindow(wxWindowMSW *win);
@@ -64,13 +67,6 @@ protected:
 
     // critical window or NULL
     static wxWindowMSW *ms_winCritical;
-
-    // the loop exit code
-    int m_exitcode;
-
-    // should we exit the loop?
-    bool m_shouldExit;
 };
 
 #endif // _WX_MSW_EVTLOOP_H_
-

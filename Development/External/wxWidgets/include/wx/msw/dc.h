@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dc.h,v 1.51 2005/09/16 12:55:04 ABX Exp $
+// RCS-ID:      $Id: dc.h 42612 2006-10-29 10:46:49Z SC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WX_DC_H_
-#define _WX_DC_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "dc.h"
-#endif
+#ifndef _WX_MSW_DC_H_
+#define _WX_MSW_DC_H_
 
 #include "wx/defs.h"
 
@@ -34,7 +30,7 @@ class wxDCCacheEntry: public wxObject
 public:
     wxDCCacheEntry(WXHBITMAP hBitmap, int w, int h, int depth);
     wxDCCacheEntry(WXHDC hDC, int depth);
-    ~wxDCCacheEntry();
+    virtual ~wxDCCacheEntry();
 
     WXHBITMAP   m_bitmap;
     WXHDC       m_dc;
@@ -44,11 +40,13 @@ public:
 };
 #endif
 
+// this is an ABC: use one of the derived classes to create a DC associated
+// with a window, screen, printer and so on
 class WXDLLEXPORT wxDC : public wxDCBase
 {
 public:
-    wxDC();
-    ~wxDC();
+    wxDC(WXHDC hDC) { Init(); m_hDC = hDC; }
+    virtual ~wxDC();
 
     // implement base class pure virtuals
     // ----------------------------------
@@ -74,12 +72,6 @@ public:
 
     virtual wxCoord GetCharHeight() const;
     virtual wxCoord GetCharWidth() const;
-    virtual void DoGetTextExtent(const wxString& string,
-                                 wxCoord *x, wxCoord *y,
-                                 wxCoord *descent = NULL,
-                                 wxCoord *externalLeading = NULL,
-                                 wxFont *theFont = NULL) const;
-    virtual bool DoGetPartialTextExtents(const wxString& text, wxArrayInt& widths) const;
 
     virtual bool CanDrawBitmap() const;
     virtual bool CanGetTextExtent() const;
@@ -141,9 +133,49 @@ public:
     static void ClearCache();
 #endif
 
+    // RTL related functions
+    // ---------------------
+
+    // get or change the layout direction (LTR or RTL) for this dc,
+    // wxLayout_Default is returned if layout direction is not supported
+    virtual wxLayoutDirection GetLayoutDirection() const;
+    virtual void SetLayoutDirection(wxLayoutDirection dir);
+
 protected:
+    void Init()
+    {
+        m_canvas = NULL;
+        m_bOwnsDC = false;
+        m_hDC = NULL;
+
+        m_oldBitmap = NULL;
+        m_oldPen = NULL;
+        m_oldBrush = NULL;
+        m_oldFont = NULL;
+
+#if wxUSE_PALETTE
+        m_oldPalette = NULL;
+#endif // wxUSE_PALETTE
+    }
+
+    // create an uninitialized DC: this should be only used by the derived
+    // classes
+    wxDC() { Init(); }
+
+    virtual void DoGetTextExtent(const wxString& string,
+                                 wxCoord *x, wxCoord *y,
+                                 wxCoord *descent = NULL,
+                                 wxCoord *externalLeading = NULL,
+                                 wxFont *theFont = NULL) const;
+    virtual bool DoGetPartialTextExtents(const wxString& text, wxArrayInt& widths) const;
+
     virtual bool DoFloodFill(wxCoord x, wxCoord y, const wxColour& col,
                              int style = wxFLOOD_SURFACE);
+
+    virtual void DoGradientFillLinear(const wxRect& rect,
+                                      const wxColour& initialColour,
+                                      const wxColour& destColour,
+                                      wxDirection nDirection = wxEAST);
 
     virtual bool DoGetPixel(wxCoord x, wxCoord y, wxColour *col) const;
 
@@ -190,7 +222,6 @@ protected:
     virtual void DoGetClippingBox(wxCoord *x, wxCoord *y,
                                   wxCoord *w, wxCoord *h) const;
 
-    virtual void DoGetSize(int *width, int *height) const;
     virtual void DoGetSizeMM(int* width, int* height) const;
 
     virtual void DoDrawLines(int n, wxPoint points[],
@@ -201,6 +232,8 @@ protected:
     virtual void DoDrawPolyPolygon(int n, int count[], wxPoint points[],
                                    wxCoord xoffset, wxCoord yoffset,
                                    int fillStyle = wxODDEVEN_RULE);
+    virtual wxBitmap DoGetAsBitmap(const wxRect *subrect) const 
+    { return subrect == NULL ? GetSelectedBitmap() : GetSelectedBitmap().GetSubBitmap(*subrect); }
 
 
 #if wxUSE_PALETTE
@@ -219,6 +252,17 @@ protected:
 
     // common part of DoSetClippingRegion() and DoSetClippingRegionAsRegion()
     void SetClippingHrgn(WXHRGN hrgn);
+
+    // implementation of DoGetSize() for wxScreen/PrinterDC: this simply
+    // returns the size of the entire device this DC is associated with
+    //
+    // notice that we intentionally put it in a separate function instead of
+    // DoGetSize() itself because we want it to remain pure virtual both
+    // because each derived class should take care to define it as needed (this
+    // implementation is not at all always appropriate) and because we want
+    // wxDC to be an ABC to prevent it from being created directly
+    void GetDeviceSize(int *width, int *height) const;
+
 
     // MSW-specific member variables
     // -----------------------------
@@ -263,12 +307,39 @@ protected:
 class WXDLLEXPORT wxDCTemp : public wxDC
 {
 public:
-    wxDCTemp(WXHDC hdc) { SetHDC(hdc); }
-    virtual ~wxDCTemp() { SetHDC((WXHDC)NULL); }
+    // construct a temporary DC with the specified HDC and size (it should be
+    // specified whenever we know it for this HDC)
+    wxDCTemp(WXHDC hdc, const wxSize& size = wxDefaultSize)
+        : wxDC(hdc),
+          m_size(size)
+    {
+    }
+
+    virtual ~wxDCTemp()
+    {
+        // prevent base class dtor from freeing it
+        SetHDC((WXHDC)NULL);
+    }
+
+protected:
+    virtual void DoGetSize(int *w, int *h) const
+    {
+        wxASSERT_MSG( m_size.IsFullySpecified(),
+                      _T("size of this DC hadn't been set and is unknown") );
+
+        if ( w )
+            *w = m_size.x;
+        if ( h )
+            *h = m_size.y;
+    }
 
 private:
+    // size of this DC must be explicitly set by SetSize() as we have no way to
+    // find it ourselves
+    const wxSize m_size;
+
     DECLARE_NO_COPY_CLASS(wxDCTemp)
 };
 
-#endif
-    // _WX_DC_H_
+#endif // _WX_MSW_DC_H_
+

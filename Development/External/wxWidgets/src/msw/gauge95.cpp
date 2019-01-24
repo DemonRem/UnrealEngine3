@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: gauge95.cpp,v 1.47 2004/08/26 08:46:18 ABX Exp $
+// RCS-ID:      $Id: gauge95.cpp 41126 2006-09-10 12:23:44Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "gauge95.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,18 +24,17 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/defs.h"
-#endif
-
 #if wxUSE_GAUGE
 
 #include "wx/gauge.h"
-#include "wx/msw/private.h"
 
-#if !(defined(__GNUWIN32_OLD__) && !defined(__CYGWIN10__))
-    #include <commctrl.h>
+#ifndef WX_PRECOMP
+    #include "wx/app.h"
+
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
 #endif
+
+#include "wx/msw/private.h"
 
 // ----------------------------------------------------------------------------
 // constants
@@ -60,6 +55,14 @@
 
 #ifndef PBM_SETBKCOLOR
     #define PBM_SETBKCOLOR          0x2001
+#endif
+
+#ifndef PBS_MARQUEE
+    #define PBS_MARQUEE             0x08
+#endif
+
+#ifndef PBM_SETMARQUEE
+    #define PBM_SETMARQUEE          (WM_USER+10)
 #endif
 
 // ----------------------------------------------------------------------------
@@ -99,7 +102,9 @@ wxBEGIN_FLAGS( wxGaugeStyle )
 
     wxFLAGS_MEMBER(wxGA_HORIZONTAL)
     wxFLAGS_MEMBER(wxGA_VERTICAL)
+#if WXWIN_COMPATIBILITY_2_6
     wxFLAGS_MEMBER(wxGA_PROGRESSBAR)
+#endif // WXWIN_COMPATIBILITY_2_6
     wxFLAGS_MEMBER(wxGA_SMOOTH)
 
 wxEND_FLAGS( wxGaugeStyle )
@@ -147,6 +152,9 @@ bool wxGauge95::Create(wxWindow *parent,
 
     SetRange(range);
 
+    // in case we need to emulate indeterminate mode...
+    m_nDirection = wxRIGHT;
+
     return true;
 }
 
@@ -183,6 +191,9 @@ wxSize wxGauge95::DoGetBestSize() const
 
 void wxGauge95::SetRange(int r)
 {
+    // switch to determinate mode if required
+    SetDeterminateMode();
+
     m_rangeMax = r;
 
 #ifdef PBM_SETRANGE32
@@ -195,6 +206,9 @@ void wxGauge95::SetRange(int r)
 
 void wxGauge95::SetValue(int pos)
 {
+    // switch to determinate mode if required
+    SetDeterminateMode();
+
     m_gaugePos = pos;
 
     ::SendMessage(GetHwnd(), PBM_SETPOS, pos, 0);
@@ -220,5 +234,43 @@ bool wxGauge95::SetBackgroundColour(const wxColour& col)
     return true;
 }
 
-#endif // wxUSE_GAUGE
+void wxGauge95::SetIndeterminateMode()
+{
+    // add the PBS_MARQUEE style to the progress bar
+    LONG style = ::GetWindowLong(GetHwnd(), GWL_STYLE);
+    if ((style & PBS_MARQUEE) == 0)
+        ::SetWindowLong(GetHwnd(), GWL_STYLE, style|PBS_MARQUEE);
 
+    // now the control can only run in indeterminate mode
+}
+
+void wxGauge95::SetDeterminateMode()
+{
+    // remove the PBS_MARQUEE style to the progress bar
+    LONG style = ::GetWindowLong(GetHwnd(), GWL_STYLE);
+    if ((style & PBS_MARQUEE) != 0)
+        ::SetWindowLong(GetHwnd(), GWL_STYLE, style & ~PBS_MARQUEE);
+
+    // now the control can only run in determinate mode
+}
+
+void wxGauge95::Pulse()
+{
+    if (wxApp::GetComCtl32Version() >= 600)
+    {
+        // switch to indeterminate mode if required
+        SetIndeterminateMode();
+
+        // NOTE: when in indeterminate mode, the PBM_SETPOS message will just make
+        //       the bar's blocks move a bit and the WPARAM value is just ignored
+        //       so that we can safely use zero
+        SendMessage(GetHwnd(), (UINT) PBM_SETPOS, (WPARAM)0, (LPARAM)0);
+    }
+    else
+    {
+        // emulate indeterminate mode
+        wxGaugeBase::Pulse();
+    }
+}
+
+#endif // wxUSE_GAUGE

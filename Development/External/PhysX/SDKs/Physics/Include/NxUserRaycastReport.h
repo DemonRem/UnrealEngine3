@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXRAYCAST
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -47,7 +47,7 @@ enum NxRaycastBit
 	NX_RAYCAST_DISTANCE		= (1<<4),								//!< "distance" member of #NxRaycastHit is valid
 	NX_RAYCAST_UV			= (1<<5),								//!< "u" and "v" members of #NxRaycastHit are valid
 	NX_RAYCAST_FACE_NORMAL	= (1<<6),								//!< Same as NX_RAYCAST_NORMAL but computes a non-smoothed normal
-	NX_RAYCAST_MATERIAL		= (1<<7),								//!< "material" member of #NxRaycastHit is valid
+	NX_RAYCAST_MATERIAL		= (1<<7)								//!< "material" member of #NxRaycastHit is valid
 	};
 
 /**
@@ -57,7 +57,7 @@ All members of the NxRaycastHit structure are not always available. For example 
 the faceID member is not computed. Also, when raycasting against bounds (AABBs) instead of actual shapes,
 some members are not available either. 
 
-Some members like barycentric coordinates are currently only computed for triangle meshes, but next versions
+Some members like barycentric coordinates are currently only computed for triangle meshes and convexes, but next versions
 might provide them in other cases. The client code should check #flags to make sure returned values are
 relevant.
 
@@ -180,9 +180,10 @@ class NxUserRaycastReport
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	}{
 
 	@see NxScene.raycastAllBounds
@@ -196,9 +197,9 @@ class NxUserRaycastReport
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

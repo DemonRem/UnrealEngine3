@@ -4,21 +4,22 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     16/11/98
-// RCS-ID:      $Id: listimpl.cpp,v 1.8 2005/02/27 15:40:37 VZ Exp $
+// RCS-ID:      $Id: listimpl.cpp 38893 2006-04-24 17:59:10Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #if wxUSE_STL
 
-    #undef  WX_DEFINE_LIST
-    #define WX_DEFINE_LIST(name)                                        \
-        void name::DeleteFunction( const _WX_LIST_ITEM_TYPE_##name X )  \
-        {                                                               \
-            delete X;                                                   \
-        }
+#undef  WX_DEFINE_LIST
+#define WX_DEFINE_LIST(name)                                                  \
+    void _WX_LIST_HELPER_##name::DeleteFunction( _WX_LIST_ITEM_TYPE_##name X )\
+    {                                                                         \
+        delete X;                                                             \
+    }                                                                         \
+    name::BaseListType name::EmptyList;
 
-#else // if !wxUSE_STL
+#else // !wxUSE_STL
 
     #define _DEFINE_LIST(T, name)         \
         void wx##name##Node::DeleteData() \
@@ -34,5 +35,5 @@
     // don't pollute preprocessor's name space
     //#undef  _DEFINE_LIST
 
-#endif
+#endif // wxUSE_STL/!wxUSE_STL
 

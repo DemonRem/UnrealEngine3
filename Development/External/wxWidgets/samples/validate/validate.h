@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: validate.h,v 1.9 2004/05/25 11:19:29 JS Exp $
+// RCS-ID:      $Id: validate.h 40198 2006-07-20 11:57:15Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#   pragma interface
-#endif
 
 #include "wx/app.h"
 #include "wx/combobox.h"
@@ -75,14 +71,15 @@ public:
     int m_radiobox_choice;
 };
 
-#define VALIDATE_DIALOG_ID      200
+enum {
+    VALIDATE_DIALOG_ID = wxID_HIGHEST,
 
-#define VALIDATE_TEST_DIALOG      2
-#define VALIDATE_TOGGLE_BELL      3
+    VALIDATE_TEST_DIALOG,
+    VALIDATE_TOGGLE_BELL,
 
-#define VALIDATE_TEXT           101
-#define VALIDATE_LIST           102
-#define VALIDATE_CHECK          103
-#define VALIDATE_COMBO          105
-#define VALIDATE_RADIO          106
-
+    VALIDATE_TEXT,
+    VALIDATE_LIST,
+    VALIDATE_CHECK,
+    VALIDATE_COMBO,
+    VALIDATE_RADIO
+};

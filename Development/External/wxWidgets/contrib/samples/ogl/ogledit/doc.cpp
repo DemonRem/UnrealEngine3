@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        doc.cpp
+// Name:        contrib/samples/ogl/ogledit/doc.cpp
 // Purpose:     Implements document functionality in OGLEdit
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: doc.cpp,v 1.14 2005/05/24 07:54:43 ABX Exp $
+// RCS-ID:      $Id: doc.cpp 38810 2006-04-18 22:26:26Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -21,10 +17,10 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
-#include <wx/ioswrap.h>
+#include "wx/ioswrap.h"
 
 #if !wxUSE_DOC_VIEW_ARCHITECTURE
 #error You must set wxUSE_DOC_VIEW_ARCHITECTURE to 1 in wx_setup.h!
@@ -306,7 +302,7 @@ bool DiagramCommand::Do(void)
         wxClientDC dc(shape->GetCanvas());
         shape->GetCanvas()->PrepareDC(dc);
 
-        wxBrush *oldBrush = shape->GetBrush();
+        const wxBrush *oldBrush = shape->GetBrush();
         shape->SetBrush(shapeBrush);
         shapeBrush = oldBrush;
         shape->Draw(dc);
@@ -392,7 +388,7 @@ bool DiagramCommand::Undo(void)
         wxClientDC dc(shape->GetCanvas());
         shape->GetCanvas()->PrepareDC(dc);
 
-        wxBrush *oldBrush = shape->GetBrush();
+        const wxBrush *oldBrush = shape->GetBrush();
         shape->SetBrush(shapeBrush);
         shapeBrush = oldBrush;
         shape->Draw(dc);

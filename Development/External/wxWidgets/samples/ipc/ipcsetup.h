@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by: Jurgen Doornik
 // Created:     25/01/99
-// RCS-ID:      $Id: ipcsetup.h,v 1.2 2005/09/20 09:12:14 JS Exp $
+// RCS-ID:      $Id: ipcsetup.h 37166 2006-01-26 19:06:06Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@
 // You may set this to 0 to prevent DDE from being used even under Windows
 //#define wxUSE_DDE_FOR_IPC 0
 
-#include <wx/ipc.h>
+#include "wx/ipc.h"
 
 // the default service name
 #define IPC_SERVICE _T("4242")

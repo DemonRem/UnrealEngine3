@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        ctrlcmn.cpp
+// Name:        src/common/ctrlcmn.cpp
 // Purpose:     wxControl common interface
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     26.07.99
-// RCS-ID:      $Id: ctrlcmn.cpp,v 1.28 2004/09/09 17:42:36 ABX Exp $
+// RCS-ID:      $Id: ctrlcmn.cpp 40329 2006-07-25 18:40:04Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,11 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "controlbase.h"
-    #pragma implementation "statbmpbase.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -31,15 +26,17 @@
 
 #if wxUSE_CONTROLS
 
+#include "wx/control.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/control.h"
     #include "wx/log.h"
+    #include "wx/radiobut.h"
+    #include "wx/statbmp.h"
+    #include "wx/bitmap.h"
+    #include "wx/utils.h"       // for wxStripMenuCodes()
 #endif
 
-#if wxUSE_STATBMP
-    #include "wx/bitmap.h"
-    #include "wx/statbmp.h"
-#endif // wxUSE_STATBMP
+const wxChar wxControlNameStr[] = wxT("control");
 
 // ============================================================================
 // implementation
@@ -89,6 +86,13 @@ bool wxControlBase::CreateControl(wxWindowBase *parent,
     return true;
 }
 
+/* static */
+wxString wxControlBase::GetLabelText(const wxString& label)
+{
+    // we don't want strip the TABs here, just the mnemonics
+    return wxStripMenuCodes(label, wxStrip_Mnemonics);
+}
+
 void wxControlBase::Command(wxCommandEvent& event)
 {
     (void)GetEventHandler()->ProcessEvent(event);
@@ -129,6 +133,32 @@ bool wxControlBase::SetFont(const wxFont& font)
     return wxWindow::SetFont(font);
 }
 
+// wxControl-specific processing after processing the update event
+void wxControlBase::DoUpdateWindowUI(wxUpdateUIEvent& event)
+{
+    // call inherited
+    wxWindowBase::DoUpdateWindowUI(event);
+
+    // update label
+    if ( event.GetSetText() )
+    {
+        if ( event.GetText() != GetLabel() )
+            SetLabel(event.GetText());
+    }
+
+    // Unfortunately we don't yet have common base class for
+    // wxRadioButton, so we handle updates of radiobuttons here.
+    // TODO: If once wxRadioButtonBase will exist, move this code there.
+#if wxUSE_RADIOBTN
+    if ( event.GetSetChecked() )
+    {
+        wxRadioButton *radiobtn = wxDynamicCastThis(wxRadioButton);
+        if ( radiobtn )
+            radiobtn->SetValue(event.GetChecked());
+    }
+#endif // wxUSE_RADIOBTN
+}
+
 // ----------------------------------------------------------------------------
 // wxStaticBitmap
 // ----------------------------------------------------------------------------
@@ -156,4 +186,3 @@ wxSize wxStaticBitmapBase::DoGetBestSize() const
 #endif // wxUSE_STATBMP
 
 #endif // wxUSE_CONTROLS
-

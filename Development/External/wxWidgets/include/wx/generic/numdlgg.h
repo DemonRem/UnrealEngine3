@@ -4,7 +4,7 @@
 // Author:      John Labenski
 // Modified by:
 // Created:     07.02.04 (extracted from textdlgg.cpp)
-// RCS-ID:      $Id: numdlgg.h,v 1.4 2004/05/23 20:50:47 JS Exp $
+// RCS-ID:      $Id: numdlgg.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,20 +12,16 @@
 #ifndef __NUMDLGH_G__
 #define __NUMDLGH_G__
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "numdlgg.h"
-#endif
+#include "wx/defs.h"
 
 #if wxUSE_NUMBERDLG
-
-#include "wx/defs.h"
 
 #include "wx/dialog.h"
 
 #if wxUSE_SPINCTRL
-    class WXDLLEXPORT wxSpinCtrl;
+    class WXDLLIMPEXP_FWD_CORE wxSpinCtrl;
 #else
-    class WXDLLEXPORT wxTextCtrl;
+    class WXDLLIMPEXP_FWD_CORE wxTextCtrl;
 #endif // wxUSE_SPINCTRL
 
 // ----------------------------------------------------------------------------
@@ -81,4 +77,3 @@ wxGetNumberFromUser(const wxString& message,
 #endif // wxUSE_NUMBERDLG
 
 #endif // __NUMDLGH_G__
-

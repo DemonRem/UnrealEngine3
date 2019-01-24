@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        db.cpp
+// Name:        src/common/db.cpp
 // Purpose:     Implementation of the wxDb class.  The wxDb class represents a connection
 //              to an ODBC data source.  The wxDb class allows operations on the data
 //              source such as opening and closing the data source.
@@ -16,18 +16,10 @@
 //                -Set ODBC option to only read committed writes to the DB so all
 //                   databases operate the same in that respect
 // Created:     9.96
-// RCS-ID:      $Id: db.cpp,v 1.125 2005/09/16 11:03:52 JS Exp $
+// RCS-ID:      $Id: db.cpp 52489 2008-03-14 14:14:57Z JS $
 // Copyright:   (c) 1996 Remstar International, Inc.
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-/*
-// SYNOPSIS START
-// SYNOPSIS STOP
-*/
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "db.h"
-#endif
 
 #include "wx/wxprec.h"
 
@@ -35,21 +27,23 @@
     #pragma hdrstop
 #endif
 
+#if wxUSE_ODBC
+
+#ifndef WX_PRECOMP
+    #include "wx/object.h"
+    #include "wx/list.h"
+    #include "wx/string.h"
+    #include "wx/utils.h"
+    #include "wx/log.h"
+    #include "wx/app.h"
+#endif
+
 #ifdef DBDEBUG_CONSOLE
     #include "wx/ioswrap.h"
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/string.h"
-    #include "wx/object.h"
-    #include "wx/list.h"
-    #include "wx/utils.h"
-    #include "wx/log.h"
-#endif
 #include "wx/filefn.h"
 #include "wx/wxchar.h"
-
-#if wxUSE_ODBC
 
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +54,6 @@
 #include "wx/db.h"
 
 // DLL options compatibility check:
-#include "wx/app.h"
 WX_CHECK_BUILD_OPTIONS("wxODBC")
 
 WXDLLIMPEXP_DATA_ODBC(wxDbList*) PtrBegDbList = 0;
@@ -69,7 +62,12 @@ wxChar const *SQL_LOG_FILENAME         = wxT("sqllog.txt");
 wxChar const *SQL_CATALOG_FILENAME     = wxT("catalog.txt");
 
 #ifdef __WXDEBUG__
+    #include "wx/thread.h"
+
     extern wxList TablesInUse;
+#if wxUSE_THREADS
+    extern wxCriticalSection csTablesInUse;
+#endif // wxUSE_THREADS
 #endif
 
 // SQL Log defaults to be used by GetDbConnection
@@ -204,37 +202,37 @@ void wxDbConnectInf::FreeHenv()
 
 void wxDbConnectInf::SetDsn(const wxString &dsn)
 {
-    wxASSERT(dsn.Length() < sizeof(Dsn));
+    wxASSERT(dsn.length() < WXSIZEOF(Dsn));
 
-    wxStrncpy(Dsn, dsn, sizeof(Dsn)-1);
-    Dsn[sizeof(Dsn)-1] = 0;  // Prevent buffer overrun
+    wxStrncpy(Dsn, dsn, WXSIZEOF(Dsn)-1);
+    Dsn[WXSIZEOF(Dsn)-1] = 0;  // Prevent buffer overrun
 }  // wxDbConnectInf::SetDsn()
 
 
 void wxDbConnectInf::SetUserID(const wxString &uid)
 {
-    wxASSERT(uid.Length() < sizeof(Uid));
-    wxStrncpy(Uid, uid, sizeof(Uid)-1);
-    Uid[sizeof(Uid)-1] = 0;  // Prevent buffer overrun
+    wxASSERT(uid.length() < WXSIZEOF(Uid));
+    wxStrncpy(Uid, uid, WXSIZEOF(Uid)-1);
+    Uid[WXSIZEOF(Uid)-1] = 0;  // Prevent buffer overrun
 }  // wxDbConnectInf::SetUserID()
 
 
 void wxDbConnectInf::SetPassword(const wxString &password)
 {
-    wxASSERT(password.Length() < sizeof(AuthStr));
+    wxASSERT(password.length() < WXSIZEOF(AuthStr));
 
-    wxStrncpy(AuthStr, password, sizeof(AuthStr)-1);
-    AuthStr[sizeof(AuthStr)-1] = 0;  // Prevent buffer overrun
+    wxStrncpy(AuthStr, password, WXSIZEOF(AuthStr)-1);
+    AuthStr[WXSIZEOF(AuthStr)-1] = 0;  // Prevent buffer overrun
 }  // wxDbConnectInf::SetPassword()
 
 void wxDbConnectInf::SetConnectionStr(const wxString &connectStr)
 {
-    wxASSERT(connectStr.Length() < sizeof(ConnectionStr));
+    wxASSERT(connectStr.length() < WXSIZEOF(ConnectionStr));
 
     useConnectionStr = wxStrlen(connectStr) > 0;
 
-    wxStrncpy(ConnectionStr, connectStr, sizeof(ConnectionStr)-1);
-    ConnectionStr[sizeof(ConnectionStr)-1] = 0;  // Prevent buffer overrun
+    wxStrncpy(ConnectionStr, connectStr, WXSIZEOF(ConnectionStr)-1);
+    ConnectionStr[WXSIZEOF(ConnectionStr)-1] = 0;  // Prevent buffer overrun
 }  // wxDbConnectInf::SetConnectionStr()
 
 
@@ -290,7 +288,7 @@ int wxDbColFor::Format(int Nation, int dbDataType, SWORD sqlDataType,
         if ((i_sqlDataType == SQL_VARCHAR)
 #if wxUSE_UNICODE
     #if defined(SQL_WCHAR)
-            || (i_sqlDataType == SQL_WCHAR) 
+            || (i_sqlDataType == SQL_WCHAR)
     #endif
     #if defined(SQL_WVARCHAR)
             || (i_sqlDataType == SQL_WVARCHAR)
@@ -535,6 +533,12 @@ void wxDb::initialize()
     typeInfBlob.CaseSensitive = 0;
     typeInfBlob.MaximumScale  = 0;
 
+    typeInfMemo.TypeName.Empty();
+    typeInfMemo.FsqlType      = 0;
+    typeInfMemo.Precision     = 0;
+    typeInfMemo.CaseSensitive = 0;
+    typeInfMemo.MaximumScale  = 0;
+
     // Error reporting is turned OFF by default
     silent = true;
 
@@ -653,6 +657,16 @@ bool wxDb::determineDataTypes(bool failOnDataTypeUnsupported)
         SQL_VARBINARY
     };
 
+    // These are the possible SQL types we check for use agains the datasource we are connected
+    // to for the purpose of determining which data type to use for the MEMO column types
+    // (a type which allow to store large strings; like VARCHAR just with a bigger precision)
+    //
+    // NOTE: The first type in this enumeration that is determined to be supported by the
+    //       datasource/driver is the one that will be used.
+    SWORD PossibleSqlMemoTypes[] = {
+        SQL_LONGVARCHAR,
+    };
+
 
     // Query the data source regarding data type information
 
@@ -759,6 +773,16 @@ bool wxDb::determineDataTypes(bool failOnDataTypeUnsupported)
     else if (failOnDataTypeUnsupported)
         return false;
 
+    // --------------- MEMO ---------------
+    for (iIndex = 0; iIndex < WXSIZEOF(PossibleSqlMemoTypes) &&
+                     !getDataTypeInfo(PossibleSqlMemoTypes[iIndex], typeInfMemo); ++iIndex)
+    {}
+
+    if (iIndex < WXSIZEOF(PossibleSqlMemoTypes))
+        typeInfMemo.FsqlType = PossibleSqlMemoTypes[iIndex];
+    else if (failOnDataTypeUnsupported)
+        return false;
+
     return true;
 }  // wxDb::determineDataTypes
 
@@ -793,6 +817,7 @@ bool wxDb::open(bool failOnDataTypeUnsupported)
     cout << wxT("FLOAT   DATA TYPE: ") << typeInfFloat.TypeName << endl;
     cout << wxT("DATE    DATA TYPE: ") << typeInfDate.TypeName << endl;
     cout << wxT("BLOB    DATA TYPE: ") << typeInfBlob.TypeName << endl;
+    cout << wxT("MEMO    DATA TYPE: ") << typeInfMemo.TypeName << endl;
     cout << endl;
 #endif
 
@@ -802,15 +827,15 @@ bool wxDb::open(bool failOnDataTypeUnsupported)
 
 bool wxDb::Open(const wxString& inConnectStr, bool failOnDataTypeUnsupported)
 {
-    wxASSERT(inConnectStr.Length());
+    wxASSERT(inConnectStr.length());
     return Open(inConnectStr, NULL, failOnDataTypeUnsupported);
 }
 
 bool wxDb::Open(const wxString& inConnectStr, SQLHWND parentWnd, bool failOnDataTypeUnsupported)
 {
-    dsn        = wxT("");
-    uid        = wxT("");
-    authStr    = wxT("");
+    dsn        = wxEmptyString;
+    uid        = wxEmptyString;
+    authStr    = wxEmptyString;
 
     RETCODE retcode;
 
@@ -837,8 +862,8 @@ bool wxDb::Open(const wxString& inConnectStr, SQLHWND parentWnd, bool failOnData
     inConnectionStr = inConnectStr;
 
     retcode = SQLDriverConnect(hdbc, parentWnd, (SQLTCHAR FAR *)inConnectionStr.c_str(),
-                        (SWORD)inConnectionStr.Length(), (SQLTCHAR FAR *)outConnectBuffer,
-                        sizeof(outConnectBuffer), &outConnectBufferLen, SQL_DRIVER_COMPLETE );
+                        (SWORD)inConnectionStr.length(), (SQLTCHAR FAR *)outConnectBuffer,
+                        WXSIZEOF(outConnectBuffer), &outConnectBufferLen, SQL_DRIVER_COMPLETE );
 
     if ((retcode != SQL_SUCCESS) &&
         (retcode != SQL_SUCCESS_WITH_INFO))
@@ -854,13 +879,13 @@ bool wxDb::Open(const wxString& inConnectStr, SQLHWND parentWnd, bool failOnData
 /********** wxDb::Open() **********/
 bool wxDb::Open(const wxString &Dsn, const wxString &Uid, const wxString &AuthStr, bool failOnDataTypeUnsupported)
 {
-    wxASSERT(Dsn.Length());
+    wxASSERT(!Dsn.empty());
     dsn        = Dsn;
     uid        = Uid;
     authStr    = AuthStr;
 
-    inConnectionStr = wxT("");
-    outConnectionStr = wxT("");
+    inConnectionStr = wxEmptyString;
+    outConnectionStr = wxEmptyString;
 
     RETCODE retcode;
 
@@ -900,7 +925,7 @@ bool wxDb::Open(wxDbConnectInf *dbConnectInf, bool failOnDataTypeUnsupported)
 
     // Use the connection string if one is present
     if (dbConnectInf->UseConnectionStr())
-        return Open(GetConnectionInStr(), failOnDataTypeUnsupported);
+        return Open(dbConnectInf->GetConnectionStr(), failOnDataTypeUnsupported);
     else
         return Open(dbConnectInf->GetDsn(), dbConnectInf->GetUserID(),
                     dbConnectInf->GetPassword(), failOnDataTypeUnsupported);
@@ -942,8 +967,8 @@ bool wxDb::Open(wxDb *copyDb)
         inConnectionStr = copyDb->GetConnectionInStr();
 
         retcode = SQLDriverConnect(hdbc, NULL, (SQLTCHAR FAR *)inConnectionStr.c_str(),
-                            (SWORD)inConnectionStr.Length(), (SQLTCHAR FAR *)outConnectBuffer,
-                            sizeof(outConnectBuffer), &outConnectBufferLen, SQL_DRIVER_COMPLETE);
+                            (SWORD)inConnectionStr.length(), (SQLTCHAR FAR *)outConnectBuffer,
+                            WXSIZEOF(outConnectBuffer), &outConnectBufferLen, SQL_DRIVER_COMPLETE);
 
         if ((retcode != SQL_SUCCESS) &&
             (retcode != SQL_SUCCESS_WITH_INFO))
@@ -1053,12 +1078,20 @@ bool wxDb::Open(wxDb *copyDb)
     typeInfBlob.CaseSensitive    = copyDb->typeInfBlob.CaseSensitive;
     typeInfBlob.MaximumScale     = copyDb->typeInfBlob.MaximumScale;
 
+    // Memo
+    typeInfMemo.FsqlType         = copyDb->typeInfMemo.FsqlType;
+    typeInfMemo.TypeName         = copyDb->typeInfMemo.TypeName;
+    typeInfMemo.Precision        = copyDb->typeInfMemo.Precision;
+    typeInfMemo.CaseSensitive    = copyDb->typeInfMemo.CaseSensitive;
+    typeInfMemo.MaximumScale     = copyDb->typeInfMemo.MaximumScale;
+
 #ifdef DBDEBUG_CONSOLE
     cout << wxT("VARCHAR DATA TYPE: ") << typeInfVarchar.TypeName << endl;
     cout << wxT("INTEGER DATA TYPE: ") << typeInfInteger.TypeName << endl;
     cout << wxT("FLOAT   DATA TYPE: ") << typeInfFloat.TypeName << endl;
     cout << wxT("DATE    DATA TYPE: ") << typeInfDate.TypeName << endl;
     cout << wxT("BLOB    DATA TYPE: ") << typeInfBlob.TypeName << endl;
+    cout << wxT("MEMO    DATA TYPE: ") << typeInfMemo.TypeName << endl;
     cout << endl;
 #endif
 
@@ -1718,20 +1751,26 @@ void wxDb::Close(void)
     wxASSERT(nTables == 0);
 
 #ifdef __WXDEBUG__
-    wxTablesInUse *tiu;
-    wxList::compatibility_iterator pNode;
-    pNode = TablesInUse.GetFirst();
-    wxString s,s2;
-    while (pNode)
     {
-        tiu = (wxTablesInUse *)pNode->GetData();
-        if (tiu->pDb == this)
+#if wxUSE_THREADS
+        wxCriticalSectionLocker lock(csTablesInUse);
+#endif // wxUSE_THREADS
+        wxTablesInUse *tiu;
+        wxList::compatibility_iterator pNode;
+        pNode = TablesInUse.GetFirst();
+        wxString s,s2;
+        while (pNode)
         {
-            s.Printf(wxT("(%-20s)     tableID:[%6lu]     pDb:[%p]"), tiu->tableName,tiu->tableID,tiu->pDb);
-            s2.Printf(wxT("Orphaned table found using pDb:[%p]"),this);
-            wxLogDebug(s.c_str(),s2.c_str());
+            tiu = (wxTablesInUse *)pNode->GetData();
+            if (tiu->pDb == this)
+            {
+                s.Printf(wxT("(%-20s)     tableID:[%6lu]     pDb:[%p]"),
+                        tiu->tableName, tiu->tableID, wx_static_cast(void*, tiu->pDb));
+                s2.Printf(wxT("Orphaned table found using pDb:[%p]"), wx_static_cast(void*, this));
+                wxLogDebug(s.c_str(),s2.c_str());
+            }
+            pNode = pNode->GetNext();
         }
-        pNode = pNode->GetNext();
     }
 #endif
 
@@ -1796,7 +1835,8 @@ bool wxDb::DispAllErrors(HENV aHenv, HDBC aHdbc, HSTMT aHstmt)
 
    while (SQLError(aHenv, aHdbc, aHstmt, (SQLTCHAR FAR *) sqlState, &nativeError, (SQLTCHAR FAR *) errorMsg, SQL_MAX_MESSAGE_LENGTH - 1, &cbErrorMsg) == SQL_SUCCESS)
      {
-        odbcErrMsg.Printf(wxT("SQL State = %s\nNative Error Code = %li\nError Message = %s\n"), sqlState, nativeError, errorMsg);
+        odbcErrMsg.Printf(wxT("SQL State = %s\nNative Error Code = %li\nError Message = %s\n"),
+                          sqlState, (long)nativeError, errorMsg);
         logError(odbcErrMsg, sqlState);
         if (!silent)
         {
@@ -1834,7 +1874,8 @@ void wxDb::DispNextError(void)
 {
     wxString odbcErrMsg;
 
-    odbcErrMsg.Printf(wxT("SQL State = %s\nNative Error Code = %li\nError Message = %s\n"), sqlState, nativeError, errorMsg);
+    odbcErrMsg.Printf(wxT("SQL State = %s\nNative Error Code = %li\nError Message = %s\n"),
+                      sqlState, (long)nativeError, errorMsg);
     logError(odbcErrMsg, sqlState);
 
     if (silent)
@@ -1857,7 +1898,7 @@ void wxDb::DispNextError(void)
 /********** wxDb::logError() **********/
 void wxDb::logError(const wxString &errMsg, const wxString &SQLState)
 {
-    wxASSERT(errMsg.Length());
+    wxASSERT(errMsg.length());
 
     static int pLast = -1;
     int dbStatus;
@@ -1871,9 +1912,9 @@ void wxDb::logError(const wxString &errMsg, const wxString &SQLState)
     }
 
     wxStrncpy(errorList[pLast], errMsg, DB_MAX_ERROR_MSG_LEN);
-    errorList[pLast][DB_MAX_ERROR_MSG_LEN] = 0;
+    errorList[pLast][DB_MAX_ERROR_MSG_LEN-1] = 0;
 
-    if (SQLState.Length())
+    if (SQLState.length())
         if ((dbStatus = TranslateSqlState(SQLState)) != DB_ERR_FUNCTION_SEQUENCE_ERROR)
             DB_STATUS = dbStatus;
 
@@ -2138,7 +2179,7 @@ bool wxDb::CreateView(const wxString &viewName, const wxString &colList,
     sqlStmt  = wxT("CREATE VIEW ");
     sqlStmt += viewName;
 
-    if (colList.Length())
+    if (colList.length())
     {
         sqlStmt += wxT(" (");
         sqlStmt += colList;
@@ -2288,6 +2329,9 @@ bool wxDb::ExecSql(const wxString &pSqlStmt, wxDbColInf** columns, short& numcol
             case SQL_VARCHAR:
             case SQL_CHAR:
                 pColInf[colNum].dbDataType = DB_DATA_TYPE_VARCHAR;
+                break;
+            case SQL_LONGVARCHAR:
+                pColInf[colNum].dbDataType = DB_DATA_TYPE_MEMO;
                 break;
             case SQL_TINYINT:
             case SQL_SMALLINT:
@@ -3072,6 +3116,9 @@ wxDbColInf *wxDb::GetColumns(const wxString &tableName, int *numCols, const wxCh
                         case SQL_CHAR:
                             colInf[colNo].dbDataType = DB_DATA_TYPE_VARCHAR;
                         break;
+                        case SQL_LONGVARCHAR:
+                            colInf[colNo].dbDataType = DB_DATA_TYPE_MEMO;
+                            break;
                         case SQL_TINYINT:
                         case SQL_SMALLINT:
                         case SQL_INTEGER:
@@ -3414,7 +3461,7 @@ bool wxDb::Catalog(const wxChar *userID, const wxString &fileName)
  *       to avoid undesired unbinding of columns.
  */
 {
-    wxASSERT(fileName.Length());
+    wxASSERT(fileName.length());
 
     RETCODE   retcode;
     SQLLEN    cb;
@@ -3534,14 +3581,14 @@ bool wxDb::TableExists(const wxString &tableName, const wxChar *userID, const wx
  *        userID != ""    ... UserID set equal to 'userID'
  */
 {
-    wxASSERT(tableName.Length());
+    wxASSERT(tableName.length());
 
     wxString TableName;
 
     if (Dbms() == dbmsDBASE)
     {
         wxString dbName;
-        if (tablePath.Length())
+        if (tablePath.length())
             dbName.Printf(wxT("%s/%s.dbf"), tablePath.c_str(), tableName.c_str());
         else
             dbName.Printf(wxT("%s.dbf"), tableName.c_str());
@@ -3611,7 +3658,7 @@ bool wxDb::TableExists(const wxString &tableName, const wxChar *userID, const wx
 bool wxDb::TablePrivileges(const wxString &tableName, const wxString &priv, const wxChar *userID,
                             const wxChar *schema, const wxString &WXUNUSED(tablePath))
 {
-    wxASSERT(tableName.Length());
+    wxASSERT(tableName.length());
 
     wxDbTablePrivilegeInfo  result;
     SQLLEN  cbRetVal;
@@ -3760,7 +3807,7 @@ const wxString wxDb::SQLColumnName(const wxChar *colName)
 bool wxDb::SetSqlLogging(wxDbSqlLogState state, const wxString &filename, bool append)
 {
     wxASSERT(state == sqlLogON  || state == sqlLogOFF);
-    wxASSERT(state == sqlLogOFF || filename.Length());
+    wxASSERT(state == sqlLogOFF || filename.length());
 
     if (state == sqlLogON)
     {
@@ -3790,7 +3837,7 @@ bool wxDb::SetSqlLogging(wxDbSqlLogState state, const wxString &filename, bool a
 /********** wxDb::WriteSqlLog() **********/
 bool wxDb::WriteSqlLog(const wxString &logMsg)
 {
-    wxASSERT(logMsg.Length());
+    wxASSERT(logMsg.length());
 
     if (fpSqlLog == 0 || sqlLogState == sqlLogOFF)
         return false;
@@ -3951,7 +3998,7 @@ wxDBMS wxDb::Dbms(void)
 
     baseName[3] = 0;
     if (!wxStricmp(baseName,wxT("DB2")))
-        return((wxDBMS)(dbmsType = dbmsDBASE));
+        return((wxDBMS)(dbmsType = dbmsDB2));
 
     return((wxDBMS)(dbmsType = dbmsUNIDENTIFIED));
 
@@ -3962,8 +4009,8 @@ bool wxDb::ModifyColumn(const wxString &tableName, const wxString &columnName,
                         int dataType, ULONG columnLength,
                         const wxString &optionalParam)
 {
-    wxASSERT(tableName.Length());
-    wxASSERT(columnName.Length());
+    wxASSERT(tableName.length());
+    wxASSERT(columnName.length());
     wxASSERT((dataType == DB_DATA_TYPE_VARCHAR && columnLength > 0) ||
              dataType != DB_DATA_TYPE_VARCHAR);
 
@@ -4041,7 +4088,7 @@ bool wxDb::ModifyColumn(const wxString &tableName, const wxString &columnName,
     }
 
     // for passing things like "NOT NULL"
-    if (optionalParam.Length())
+    if (optionalParam.length())
     {
         sqlStmt += wxT(" ");
         sqlStmt += optionalParam;
@@ -4050,6 +4097,28 @@ bool wxDb::ModifyColumn(const wxString &tableName, const wxString &columnName,
     return ExecSql(sqlStmt);
 
 } // wxDb::ModifyColumn()
+
+/********** wxDb::EscapeSqlChars() **********/
+wxString wxDb::EscapeSqlChars(const wxString& valueOrig)
+{
+    wxString value(valueOrig);
+    switch (Dbms())
+    {
+        case dbmsACCESS:
+            // Access doesn't seem to care about backslashes, so only escape single quotes.
+            value.Replace(wxT("'"), wxT("''"));
+            break;
+
+        default:
+            // All the others are supposed to be the same for now, add special
+            // handling for them if necessary
+            value.Replace(wxT("\\"), wxT("\\\\"));
+            value.Replace(wxT("'"), wxT("\\'"));
+            break;
+    }
+
+    return value;
+} // wxDb::EscapeSqlChars()
 
 
 /********** wxDbGetConnection() **********/

@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXHEIGHTFIELDDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -33,9 +33,10 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32							nbRows;
 
@@ -47,9 +48,10 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32							nbColumns;
 
@@ -62,9 +64,10 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxHeightFormat NxHeightFieldDesc.samples
 	*/
@@ -77,9 +80,10 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32							sampleStride;
 
@@ -101,16 +105,17 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFormat
 	*/
 	void *							samples;						
 
 	/**
-	\brief Sets how far 'below ground' the height volume extends.
+	\brief Deprecated: Sets how far 'below ground' the height volume extends.
 
 	In this way even objects which are under the surface of the height field but above
 	this cutoff are treated as colliding with the height field. To create a height field with the up axis being
@@ -126,12 +131,37 @@ class NxHeightFieldDesc
 	<b>Default:</b> 0
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
-	\li PS3  : Yes
-	\li XB360: Yes
+	\li PC SW: Deprecated
+	\li GPU  : Deprecated
+	\li PS3  : Deprecated
+	\li XB360: Deprecated
 	*/
 	NxReal					verticalExtent;
+
+	/**
+	\brief Sets how thick the heightfield surface is.
+
+	In this way even objects which are under the surface of the height field but above
+	this cutoff are treated as colliding with the height field. 
+
+	The difference between thickness and (the deprecated) verticalExtent is that thickness
+	is measured relative to the surface at the given point, while vertical extent was an absolute limit.
+
+	You may set this to a positive value, in which case the extent will be cast along the opposite side of the height field.
+
+	You may use a smaller finite value for the extent if you want to put some space under the height field, such as a cave.
+
+	<b>Range:</b> (-inf,inf)<br>
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NxReal					thickness;
 
 	/**
 	This threshold is used by the collision detection to determine if a height field edge is convex 
@@ -149,9 +179,10 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxReal					convexEdgeThreshold;
 
@@ -162,9 +193,10 @@ class NxHeightFieldDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldFlags
 	*/
@@ -184,7 +216,11 @@ class NxHeightFieldDesc
 	\brief Returns true if the descriptor is valid.
 	\return true if the current settings are valid
 	*/
-	NX_INLINE		bool	isValid() const;
+	NX_INLINE		bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxHeightFieldDesc::NxHeightFieldDesc()	//constructor sets to default
@@ -200,32 +236,34 @@ NX_INLINE void NxHeightFieldDesc::setToDefault()
 	sampleStride				= 0;
 	samples						= 0;
 	verticalExtent				= 0;
+	thickness					= 0;
 	convexEdgeThreshold			= 0.0f;
 	flags						= 0;
 	}
 
-NX_INLINE bool NxHeightFieldDesc::isValid() const
+NX_INLINE NxU32 NxHeightFieldDesc::checkValid() const
 	{
-	if (nbColumns < 2) return false;
-	if (nbRows < 2) return false;
+	if (nbColumns < 2) return 1;
+	if (nbRows < 2) return 2;
 	switch (format) 
 		{
 		case NX_HF_S16_TM:
-			if (sampleStride < 4) return false;
+			if (sampleStride < 4) return 3;
 			break;
 		default:
-			return false;
+			return 4;
 		}
-	if (convexEdgeThreshold < 0) return false;
-	if ((flags & NX_HF_NO_BOUNDARY_EDGES) != flags) return false;
-	return true;
+	if (convexEdgeThreshold < 0) return 5;
+	if ((flags & NX_HF_NO_BOUNDARY_EDGES) != flags) return 6;
+	if (verticalExtent != 0 && thickness != 0) return 7;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

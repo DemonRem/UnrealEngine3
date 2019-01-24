@@ -4,7 +4,7 @@
 // Author:      Robert Roebling
 // Modified by:
 // Created:     2005-02-04
-// RCS-ID:      $Id: popup.cpp,v 1.8 2005/04/15 03:04:29 RD Exp $
+// RCS-ID:      $Id: popup.cpp 41547 2006-10-02 05:36:31Z PC $
 // Copyright:   (c) 2005 Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -200,7 +200,7 @@ void SimpleTransientPopup::OnMouse(wxMouseEvent &event)
     rect.SetWidth(1000000);
     wxColour colour(*wxLIGHT_GREY);
 
-    if (rect.Inside(event.GetPosition()))
+    if (rect.Contains(event.GetPosition()))
     {       
         colour = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
     wxLogMessage( wxT("0x%lx SimpleTransientPopup::OnMouse pos(%d, %d)"), long(event.GetEventObject()), event.GetX(), event.GetY());
@@ -229,7 +229,7 @@ void SimpleTransientPopup::OnButton(wxCommandEvent& event)
 
 void SimpleTransientPopup::OnSpinCtrl(wxSpinEvent& event)
 {
-    wxLogMessage( wxT("0x%lx SimpleTransientPopup::OnSpinCtrl ID %d Value %ld"), long(this), event.GetId(), event.GetInt());
+    wxLogMessage( wxT("0x%lx SimpleTransientPopup::OnSpinCtrl ID %d Value %d"), long(this), event.GetId(), event.GetInt());
     event.Skip();
 }
 

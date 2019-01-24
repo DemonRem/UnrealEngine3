@@ -4,7 +4,7 @@
 // Author:      Julian Smart / Kevin Ollivier
 // Modified by:
 // Created:     04/16/2004
-// RCS-ID:      $Id: htmlctrl.cpp,v 1.9 2004/09/24 23:18:16 RN Exp $
+// RCS-ID:      $Id: htmlctrl.cpp 29332 2004-09-24 23:18:16Z RN $
 // Copyright:   (c) Julian Smart / Kevin Ollivier
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

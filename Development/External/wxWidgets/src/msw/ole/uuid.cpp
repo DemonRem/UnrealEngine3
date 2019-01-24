@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        ole/uuid.cpp
+// Name:        src/msw/ole/uuid.cpp
 // Purpose:     implements Uuid class, see uuid.h for details
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     12.09.96
-// RCS-ID:      $Id: uuid.cpp,v 1.21 2004/08/16 12:45:46 ABX Exp $
+// RCS-ID:      $Id: uuid.cpp 55125 2008-08-18 20:04:58Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,10 +13,6 @@
 // Declarations
 // ============================================================================
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "uuid.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -24,14 +20,12 @@
 #pragma hdrstop
 #endif
 
-#include  "wx/setup.h"
-
 #if wxUSE_OLE && ( wxUSE_DRAG_AND_DROP || (defined(__WXDEBUG__) && wxUSE_DATAOBJ) )
 
-// standard headers
-#if wxCHECK_W32API_VERSION( 1, 0 )
+#ifndef WX_PRECOMP
     #include "wx/msw/wrapwin.h"
 #endif
+
 #include  <rpc.h>                       // UUID related functions
 
 #include  "wx/msw/ole/uuid.h"
@@ -86,6 +80,18 @@ Uuid& Uuid::operator=(const Uuid& uuid)
   memcpy(m_pszCForm, uuid.m_pszCForm, UUID_CSTRLEN*sizeof(wxChar));
 
   return *this;
+}
+
+bool Uuid::operator==(const Uuid& uuid) const
+{
+    // IsEqualGUID() returns BOOL and not bool so use an explicit comparison to
+    // avoid MSVC warnings about int->bool conversion
+    return IsEqualGUID(m_uuid, uuid.m_uuid) == TRUE;
+}
+
+bool Uuid::operator!=(const Uuid& uuid) const
+{
+    return !(*this == uuid);
 }
 
 // dtor

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/metafile.cpp
+// Name:        src/msw/metafile.cpp
 // Purpose:     wxMetafileDC etc.
 // Author:      Julian Smart
 // Modified by: VZ 07.01.00: implemented wxMetaFileDataObject
 // Created:     04/01/98
-// RCS-ID:      $Id: metafile.cpp,v 1.32 2005/05/17 16:03:24 DS Exp $
+// RCS-ID:      $Id: metafile.cpp 46103 2007-05-18 15:14:44Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,19 +17,11 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "metafile.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
     #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-    #include "wx/setup.h"
 #endif
 
 #ifndef WX_PRECOMP
@@ -130,8 +122,6 @@ bool wxMetafile::Play(wxDC *dc)
     if (!m_refData)
         return false;
 
-    dc->BeginDrawing();
-
     if (dc->GetHDC() && M_METAFILEDATA->m_metafile)
     {
         if ( !::PlayMetaFile(GetHdcOf(*dc), (HMETAFILE)
@@ -140,8 +130,6 @@ bool wxMetafile::Play(wxDC *dc)
             wxLogLastError(_T("PlayMetaFile"));
         }
     }
-
-    dc->EndDrawing();
 
     return true;
 }
@@ -201,9 +189,9 @@ wxMetafileDC::wxMetafileDC(const wxString& file, int xext, int yext, int xorg, i
     m_minY = 10000;
     m_maxX = -10000;
     m_maxY = -10000;
-    if ( !file.IsEmpty() && wxFileExists(file))
+    if ( !file.empty() && wxFileExists(file) )
         wxRemoveFile(file);
-    m_hDC = (WXHDC) CreateMetaFile(file);
+    m_hDC = (WXHDC) CreateMetaFile(file.empty() ? NULL : file.c_str());
 
     m_ok = true;
 
@@ -221,21 +209,23 @@ wxMetafileDC::~wxMetafileDC()
     m_hDC = 0;
 }
 
-void wxMetafileDC::GetTextExtent(const wxString& string, long *x, long *y,
-                                 long *descent, long *externalLeading, wxFont *theFont, bool WXUNUSED(use16bit)) const
+void wxMetafileDC::DoGetTextExtent(const wxString& string,
+                                   wxCoord *x, wxCoord *y,
+                                   wxCoord *descent,
+                                   wxCoord *externalLeading,
+                                   const wxFont *theFont) const
 {
-    wxFont *fontToUse = theFont;
+    const wxFont *fontToUse = theFont;
     if (!fontToUse)
-        fontToUse = (wxFont*) &m_font;
+        fontToUse = &m_font;
 
-    HDC dc = GetDC(NULL);
+    ScreenHDC dc;
+    SelectInHDC selFont(dc, GetHfontOf(*fontToUse));
 
     SIZE sizeRect;
     TEXTMETRIC tm;
-    ::GetTextExtentPoint32(dc, WXSTRINGCAST string, wxStrlen(WXSTRINGCAST string), &sizeRect);
-    GetTextMetrics(dc, &tm);
-
-    ReleaseDC(NULL, dc);
+    ::GetTextExtentPoint32(dc, string, string.length(), &sizeRect);
+    ::GetTextMetrics(dc, &tm);
 
     if ( x )
         *x = sizeRect.cx;
@@ -245,6 +235,32 @@ void wxMetafileDC::GetTextExtent(const wxString& string, long *x, long *y,
         *descent = tm.tmDescent;
     if ( externalLeading )
         *externalLeading = tm.tmExternalLeading;
+}
+
+void wxMetafileDC::GetTextExtent(const wxString& string, long *x, long *y,
+                                 long *descent, long *externalLeading, wxFont *theFont, bool WXUNUSED(use16bit)) const
+{
+    wxCoord xc, yc, dc, elc;
+    DoGetTextExtent(string, &xc, &yc, &dc, &elc, theFont);
+
+    if ( x )
+        *x = xc;
+    if ( y )
+        *y = yc;
+    if ( descent )
+        *descent = dc;
+    if ( externalLeading )
+        *externalLeading = elc;
+}
+
+void wxMetafileDC::DoGetSize(int *width, int *height) const
+{
+    wxCHECK_RET( m_refData, _T("invalid wxMetafileDC") );
+
+    if ( width )
+        *width = M_METAFILEDATA->m_width;
+    if ( height )
+        *height = M_METAFILEDATA->m_height;
 }
 
 wxMetafile *wxMetafileDC::Close()
@@ -515,4 +531,3 @@ bool wxMetafileDataObject::SetData(size_t WXUNUSED(len), const void *buf)
 #endif // wxUSE_DRAG_AND_DROP
 
 #endif // wxUSE_METAFILE
-

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        artstd.cpp
+// Name:        src/common/artstd.cpp
 // Purpose:     stock wxArtProvider instance with default wxWin art
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     18/03/2002
-// RCS-ID:      $Id: artstd.cpp,v 1.23 2005/06/10 17:53:12 ABX Exp $
+// RCS-ID:      $Id: artstd.cpp 52561 2008-03-16 00:36:37Z VS $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -21,13 +21,10 @@
 #endif
 
 #ifndef WX_PRECOMP
-    #if WXWIN_COMPATIBILITY_2_2
-        #include "wx/app.h"
-    #endif
+    #include "wx/image.h"
 #endif
 
 #include "wx/artprov.h"
-#include "wx/image.h"
 
 // ----------------------------------------------------------------------------
 // wxDefaultArtProvider
@@ -77,7 +74,7 @@ protected:
 
 /*static*/ void wxArtProvider::InitStdProvider()
 {
-    wxArtProvider::PushProvider(new wxDefaultArtProvider);
+    wxArtProvider::Push(new wxDefaultArtProvider);
 }
 
 #if !defined(__WXGTK20__) || defined(__WXUNIVERSAL__)
@@ -91,8 +88,6 @@ protected:
 // XPMs with the art
 // ----------------------------------------------------------------------------
 
-// XPM hack: make the arrays const
-#define static static const
 
 #if defined(__WXGTK__)
     #include "../../art/gtk/info.xpm"
@@ -156,7 +151,6 @@ protected:
 #include "../../art/findrepl.xpm"
 
 
-#undef static
 
 wxBitmap wxDefaultArtProvider_CreateBitmap(const wxArtID& id)
 {
@@ -229,7 +223,7 @@ wxBitmap wxDefaultArtProvider::CreateBitmap(const wxArtID& id,
 {
     wxBitmap bmp = wxDefaultArtProvider_CreateBitmap(id);
 
-#if wxUSE_IMAGE
+#if wxUSE_IMAGE && (!defined(__WXMSW__) || wxUSE_WXDIB)
     if (bmp.Ok())
     {
         // fit into transparent image with desired size hint from the client
@@ -241,13 +235,25 @@ wxBitmap wxDefaultArtProvider::CreateBitmap(const wxArtID& id,
             {
                 int bmp_w = bmp.GetWidth();
                 int bmp_h = bmp.GetHeight();
-                // want default size but it's smaller, paste into transparent image
+
                 if ((bmp_h < bestSize.x) && (bmp_w < bestSize.y))
                 {
+                    // the caller wants default size, which is larger than 
+                    // the image we have; to avoid degrading it visually by
+                    // scaling it up, paste it into transparent image instead:
                     wxPoint offset((bestSize.x - bmp_w)/2, (bestSize.y - bmp_h)/2);
                     wxImage img = bmp.ConvertToImage();
                     img.Resize(bestSize, offset);
                     bmp = wxBitmap(img);
+                }
+                else // scale (down or mixed, but not up)
+                {
+                    wxImage img = bmp.ConvertToImage();
+                    bmp = wxBitmap
+                          (
+                              img.Scale(bestSize.x, bestSize.y,
+                                        wxIMAGE_QUALITY_HIGH)
+                          );
                 }
             }
         }

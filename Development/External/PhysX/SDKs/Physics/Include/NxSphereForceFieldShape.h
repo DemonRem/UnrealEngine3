@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXSPHEREFORCEFIELDSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -22,9 +22,10 @@ class NxSphereForceFieldShapeDesc;
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxForceFieldShape
 */
@@ -40,9 +41,10 @@ class NxSphereForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void setRadius(NxReal radius) = 0;
 
@@ -53,9 +55,10 @@ class NxSphereForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 
 	virtual NxReal getRadius()					const = 0;
@@ -67,9 +70,10 @@ class NxSphereForceFieldShape : public NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphereForceFieldShapeDesc
 	*/
@@ -78,9 +82,9 @@ class NxSphereForceFieldShape : public NxForceFieldShape
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

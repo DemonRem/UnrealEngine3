@@ -1,41 +1,38 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        sashwin.cpp
+// Name:        src/generic/sashwin.cpp
 // Purpose:     wxSashWindow implementation. A sash window has an optional
 //              sash on each edge, allowing it to be dragged. An event
 //              is generated when the sash is released.
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: sashwin.cpp,v 1.46 2004/12/14 20:41:53 ABX Exp $
+// RCS-ID:      $Id: sashwin.cpp 51249 2008-01-16 13:50:23Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "sashwin.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_SASH
+
+#include "wx/sashwin.h"
 
 #ifndef WX_PRECOMP
     #include "wx/dialog.h"
     #include "wx/frame.h"
     #include "wx/settings.h"
+    #include "wx/dcclient.h"
+    #include "wx/dcscreen.h"
+    #include "wx/math.h"
 #endif
-
-#include "wx/math.h"
 
 #include <stdlib.h>
 
-#include "wx/dcscreen.h"
-#include "wx/sashwin.h"
 #include "wx/laywin.h"
 
 DEFINE_EVENT_TYPE(wxEVT_SASH_DRAGGED)
@@ -49,7 +46,7 @@ BEGIN_EVENT_TABLE(wxSashWindow, wxWindow)
     EVT_MOUSE_EVENTS(wxSashWindow::OnMouseEvent)
 #if defined( __WXMSW__ ) || defined( __WXMAC__)
     EVT_SET_CURSOR(wxSashWindow::OnSetCursor)
-#endif // wxMSW
+#endif // __WXMSW__ || __WXMAC__
 
 END_EVENT_TABLE()
 
@@ -98,7 +95,7 @@ void wxSashWindow::OnPaint(wxPaintEvent& WXUNUSED(event))
 
 void wxSashWindow::OnMouseEvent(wxMouseEvent& event)
 {
-    wxCoord x, y;
+    wxCoord x = 0, y = 0;
     event.GetPosition(&x, &y);
 
     wxSashEdgePosition sashHit = SashHitTest(x, y);
@@ -280,11 +277,11 @@ void wxSashWindow::OnMouseEvent(wxMouseEvent& event)
 
         dragRect = wxRect(x, y, newWidth, newHeight);
 
-        wxSashEvent event(GetId(), edge);
-        event.SetEventObject(this);
-        event.SetDragStatus(status);
-        event.SetDragRect(dragRect);
-        GetEventHandler()->ProcessEvent(event);
+        wxSashEvent eventSash(GetId(), edge);
+        eventSash.SetEventObject(this);
+        eventSash.SetDragStatus(status);
+        eventSash.SetDragRect(dragRect);
+        GetEventHandler()->ProcessEvent(eventSash);
     }
     else if ( event.LeftUp() )
     {
@@ -292,7 +289,7 @@ void wxSashWindow::OnMouseEvent(wxMouseEvent& event)
            ReleaseMouse();
         m_mouseCaptured = false;
     }
-    else if (event.Moving() && !event.Dragging())
+    else if ((event.Moving() || event.Leaving()) && !event.Dragging())
     {
         // Just change the cursor if required
         if ( sashHit != wxSASH_NONE )
@@ -706,6 +703,6 @@ void wxSashWindow::OnSetCursor(wxSetCursorEvent& event)
     //else: do nothing, in particular, don't call Skip()
 }
 
-#endif // wxMSW
+#endif // __WXMSW__ || __WXMAC__
 
 #endif // wxUSE_SASH

@@ -4,15 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: lines.cpp,v 1.23 2005/03/03 19:37:14 ABX Exp $
+// RCS-ID:      $Id: lines.cpp 38810 2006-04-18 22:26:26Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation "lines.h"
-#pragma implementation "linesp.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -22,11 +17,11 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
 #if wxUSE_PROLOGIO
-#include <wx/deprecated/wxexpr.h>
+#include "wx/deprecated/wxexpr.h"
 #endif
 
 #ifdef new
@@ -841,8 +836,8 @@ void wxLineShape::DrawArrow(wxDC& dc, wxArrowHead *arrow, double xOffset, bool p
 
 void wxLineShape::OnErase(wxDC& dc)
 {
-    wxPen *old_pen = m_pen;
-    wxBrush *old_brush = m_brush;
+    const wxPen *old_pen = m_pen;
+    const wxBrush *old_brush = m_brush;
     wxPen bg_pen = GetBackgroundPen();
     wxBrush bg_brush = GetBackgroundBrush();
     SetPen(&bg_pen);
@@ -962,8 +957,8 @@ void wxLineShape::FindNth(wxShape *image, int *nth, int *no_arcs, bool incoming)
 
 void wxLineShape::OnDrawOutline(wxDC& dc, double WXUNUSED(x), double WXUNUSED(y), double WXUNUSED(w), double WXUNUSED(h))
 {
-  wxPen *old_pen = m_pen;
-  wxBrush *old_brush = m_brush;
+  const wxPen *old_pen = m_pen;
+  const wxBrush *old_brush = m_brush;
 
   wxPen dottedPen(*wxBLACK, 1, wxDOT);
   SetPen(& dottedPen);
@@ -1746,8 +1741,8 @@ void wxLineShape::OnSizingDragLeft(wxControlPoint* pt, bool WXUNUSED(draw), doub
 
     wxLineShape *lineShape = (wxLineShape *)this;
 
-    wxPen *old_pen = lineShape->GetPen();
-    wxBrush *old_brush = lineShape->GetBrush();
+    const wxPen *old_pen = lineShape->GetPen();
+    const wxBrush *old_brush = lineShape->GetBrush();
 
     wxPen dottedPen(*wxBLACK, 1, wxDOT);
     lineShape->SetPen(& dottedPen);
@@ -1794,8 +1789,8 @@ void wxLineShape::OnSizingBeginDragLeft(wxControlPoint* pt, double x, double y, 
     lpt->m_xpos = x; lpt->m_ypos = y;
     lpt->m_point->x = x; lpt->m_point->y = y;
 
-    wxPen *old_pen = lineShape->GetPen();
-    wxBrush *old_brush = lineShape->GetBrush();
+    const wxPen *old_pen = lineShape->GetPen();
+    const wxBrush *old_brush = lineShape->GetBrush();
 
     wxPen dottedPen(*wxBLACK, 1, wxDOT);
     lineShape->SetPen(& dottedPen);
@@ -2508,4 +2503,3 @@ void wxLabelShape::OnRightClick(double x, double y, int keys, int attachment)
 {
   m_lineShape->GetEventHandler()->OnRightClick(x, y, keys, attachment);
 }
-

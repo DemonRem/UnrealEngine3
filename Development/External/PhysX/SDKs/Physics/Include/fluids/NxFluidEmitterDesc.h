@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ enum NxFluidEmitterFlag
 	/**
 	\brief Flag to start and stop the emission. On default the emission is enabled.
 	*/
-	NX_FEF_ENABLED				= (1<<4),
+	NX_FEF_ENABLED				= (1<<4)
 	};
 
 /**
@@ -202,7 +202,11 @@ class NxFluidEmitterDesc
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -241,39 +245,39 @@ NX_INLINE void NxFluidEmitterDesc::setToDefault()
 	name							= NULL;
 	}
 
-NX_INLINE bool NxFluidEmitterDesc::isValid() const
+NX_INLINE NxU32 NxFluidEmitterDesc::checkValid() const
 	{
-	if (!relPose.isFinite()) return false;
+	if (!relPose.isFinite()) return 1;
 	
-	if (dimensionX < 0.0f) return false;
-	if (dimensionY < 0.0f) return false;
+	if (dimensionX < 0.0f) return 2;
+	if (dimensionY < 0.0f) return 3;
 
-	if (randomPos.x < 0.0f) return false;
-	if (randomPos.y < 0.0f) return false;
-	if (randomPos.z < 0.0f) return false;
-	if (!randomPos.isFinite()) return false;
+	if (randomPos.x < 0.0f) return 4;
+	if (randomPos.y < 0.0f) return 5;
+	if (randomPos.z < 0.0f) return 6;
+	if (!randomPos.isFinite()) return 7;
 
-	if (randomAngle < 0.0f) return false;
+	if (randomAngle < 0.0f) return 8;
 
-	if (!((shape & NX_FE_ELLIPSE) ^ (shape & NX_FE_RECTANGULAR))) return false;
-	if (!((type & NX_FE_CONSTANT_FLOW_RATE) ^ (type & NX_FE_CONSTANT_PRESSURE))) return false;
+	if (!(((shape & NX_FE_ELLIPSE) > 0) ^ ((shape & NX_FE_RECTANGULAR) > 0))) return 9;
+	if (!(((type & NX_FE_CONSTANT_FLOW_RATE) > 0) ^ ((type & NX_FE_CONSTANT_PRESSURE) > 0))) return 10;
 
-	if (rate < 0.0f) return false;
-	if (fluidVelocityMagnitude < 0.0f) return false;
-	if (particleLifetime < 0.0f) return false;
-	if (repulsionCoefficient < 0.0f) return false;
+	if (rate < 0.0f) return 11;
+	if (fluidVelocityMagnitude < 0.0f) return 12;
+	if (particleLifetime < 0.0f) return 13;
+	if (repulsionCoefficient < 0.0f) return 14;
 
-	return true;
+	return 0;
 	}
 
 /** @} */
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

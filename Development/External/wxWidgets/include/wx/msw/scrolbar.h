@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: scrolbar.h,v 1.19 2005/05/31 14:52:17 VZ Exp $
+// RCS-ID:      $Id: scrolbar.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,45 +12,43 @@
 #ifndef _WX_SCROLBAR_H_
 #define _WX_SCROLBAR_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "scrolbar.h"
-#endif
-
 // Scrollbar item
 class WXDLLEXPORT wxScrollBar: public wxScrollBarBase
 {
 public:
-    wxScrollBar() { m_pageSize = 0; m_viewSize = 0; m_objectSize = 0; }
-    ~wxScrollBar();
+    wxScrollBar() { m_pageSize = 0; m_viewSize = 0; m_objectSize = 0; m_smallIncrement = 15;}
+    virtual ~wxScrollBar();
 
-    wxScrollBar(wxWindow *parent, wxWindowID id,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxSB_HORIZONTAL,
-            const wxValidator& validator = wxDefaultValidator,
-            const wxString& name = wxScrollBarNameStr)
-    {
-        Create(parent, id, pos, size, style, validator, name);
-    }
-    bool Create(wxWindow *parent, wxWindowID id,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxSB_HORIZONTAL,
-            const wxValidator& validator = wxDefaultValidator,
-            const wxString& name = wxScrollBarNameStr);
+	wxScrollBar(wxWindow *parent, wxWindowID id,
+		const wxPoint& pos = wxDefaultPosition,
+		const wxSize& size = wxDefaultSize,
+		long style = wxSB_HORIZONTAL,
+		const wxValidator& validator = wxDefaultValidator,
+		const wxString& name = wxScrollBarNameStr)
+	{
+		Create(parent, id, pos, size, style, validator, name);
+	}
+	bool Create(wxWindow *parent, wxWindowID id,
+		const wxPoint& pos = wxDefaultPosition,
+		const wxSize& size = wxDefaultSize,
+		long style = wxSB_HORIZONTAL,
+		const wxValidator& validator = wxDefaultValidator,
+		const wxString& name = wxScrollBarNameStr);
 
-    int GetThumbPosition() const ;
-    int GetThumbSize() const { return m_pageSize; }
-    int GetPageSize() const { return m_viewSize; }
-    int GetRange() const { return m_objectSize; }
+	int GetThumbPosition() const ;
+	int GetThumbSize() const { return m_pageSize; }
+	int GetPageSize() const { return m_viewSize; }
+	int GetSmallIncrement() const { return m_smallIncrement; }
+	int GetRange() const { return m_objectSize; }
 
-    virtual void SetThumbPosition(int viewStart);
-    virtual void SetScrollbar(int position, int thumbSize, int range, int pageSize,
-            bool refresh = true);
+	virtual void SetThumbPosition(int viewStart);
+	virtual void SetScrollbar(int position, int thumbSize, int range, int pageSize,
+		bool refresh = true);
 
-    // needed for RTTI
-    void SetThumbSize( int s ) { SetScrollbar( GetThumbPosition() , s , GetRange() , GetPageSize() , true ) ; }
-    void SetPageSize( int s ) { SetScrollbar( GetThumbPosition() , GetThumbSize() , GetRange() , s , true ) ; }
+	// needed for RTTI
+	void SetThumbSize( int s ) { SetScrollbar( GetThumbPosition() , s , GetRange() , GetPageSize() , true ) ; }
+	void SetPageSize( int s ) { SetScrollbar( GetThumbPosition() , GetThumbSize() , GetRange() , s , true ) ; }
+	void SetSmallIncrement(int newIncrement) { m_smallIncrement = newIncrement; }
     void SetRange( int s ) { SetScrollbar( GetThumbPosition() , GetThumbSize() , s , GetPageSize() , true ) ; }
 
     void Command(wxCommandEvent& event);
@@ -60,13 +58,15 @@ public:
     // override wxControl version to not use solid background here
     virtual WXHBRUSH MSWControlColor(WXHDC pDC, WXHWND hWnd);
 
+    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
+
 protected:
     virtual wxSize DoGetBestSize() const;
-    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
 
     int m_pageSize;
     int m_viewSize;
     int m_objectSize;
+	int m_smallIncrement;
 
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxScrollBar)
 };

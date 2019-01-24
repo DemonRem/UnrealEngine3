@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/main.cpp
+// Name:        src/msw/main.cpp
 // Purpose:     WinMain/DllMain
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: main.cpp,v 1.57 2005/08/28 13:11:18 VZ Exp $
+// RCS-ID:      $Id: main.cpp 44727 2007-03-10 17:24:09Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,19 +24,21 @@
     #pragma hdrstop
 #endif
 
-#include "wx/event.h"
-#include "wx/app.h"
+#ifndef WX_PRECOMP
+    #include "wx/event.h"
+    #include "wx/app.h"
+    #include "wx/utils.h"
+#endif //WX_PRECOMP
+
 #include "wx/cmdline.h"
+#include "wx/scopeguard.h"
 
 #include "wx/msw/private.h"
+#include "wx/msw/seh.h"
 
 #if wxUSE_ON_FATAL_EXCEPTION
     #include "wx/datetime.h"
     #include "wx/msw/crashrpt.h"
-
-    #ifdef __VISUALC__
-        #include <eh.h>
-    #endif // __VISUALC__
 #endif // wxUSE_ON_FATAL_EXCEPTION
 
 #ifdef __WXWINCE__
@@ -81,8 +79,8 @@ extern int wxEntryReal(int& argc, wxChar **argv);
 
     // this warns that /EHa (async exceptions) should be used when using
     // _set_se_translator but, in fact, this doesn't seem to change anything
-    // with VC++ up to 7.1 -- to be confirmed with VC++ 8
-    #if _MSC_VER <= 1310
+    // with VC++ up to 8.0
+    #if _MSC_VER <= 1400
         #pragma warning(disable:4535)
     #endif
 
@@ -121,16 +119,11 @@ unsigned long wxGlobalSEHandler(EXCEPTION_POINTERS *pExcPtrs)
         wxGlobalSEInformation = pExcPtrs;
 
         // give the user a chance to do something special about this
-        __try
+        wxSEH_TRY
         {
             wxTheApp->OnFatalException();
         }
-        __except ( EXCEPTION_EXECUTE_HANDLER )
-        {
-            // nothing to do here, just ignore the exception inside the
-            // exception handler
-            ;
-        }
+        wxSEH_IGNORE      // ignore any exceptions inside the exception handler
 
         wxGlobalSEInformation = NULL;
 
@@ -143,7 +136,7 @@ unsigned long wxGlobalSEHandler(EXCEPTION_POINTERS *pExcPtrs)
 
 #ifdef __VISUALC__
 
-static void wxSETranslator(unsigned int WXUNUSED(code), EXCEPTION_POINTERS *ep)
+void wxSETranslator(unsigned int WXUNUSED(code), EXCEPTION_POINTERS *ep)
 {
     switch ( wxGlobalSEHandler(ep) )
     {
@@ -211,20 +204,11 @@ int wxEntry(int& argc, wxChar **argv)
 {
     DisableAutomaticSETranslator();
 
-    __try
+    wxSEH_TRY
     {
         return wxEntryReal(argc, argv);
     }
-    __except ( wxGlobalSEHandler(GetExceptionInformation()) )
-    {
-        wxFatalExit();
-
-#if !defined(_MSC_VER) || defined(__WXDEBUG__) || (defined(_MSC_VER) && _MSC_VER <= 1200)
-        // this code is unreachable but put it here to suppress warnings in some compilers
-        // and disable for others to supress warnings too
-        return -1;
-#endif // !__VISUALC__ in release build
-    }
+    wxSEH_HANDLE(-1)
 }
 
 #else // !wxUSE_ON_FATAL_EXCEPTION
@@ -264,10 +248,10 @@ static bool wxIsUnicodeAvailable()
 {
     static const wchar_t *ERROR_STRING = L"wxWidgets Fatal Error";
 
-    if ( wxGetOsVersion() != wxWINDOWS_NT )
+    if ( wxGetOsVersion() != wxOS_WINDOWS_NT )
     {
         // we need to be built with MSLU support
-#if !wxUSE_UNICODE_MSLU 
+#if !wxUSE_UNICODE_MSLU
         // note that we can use MessageBoxW() as it's implemented even under
         // Win9x - OTOH, we can't use wxGetTranslation() because the file APIs
         // used by wxLocale are not
@@ -335,6 +319,20 @@ static bool wxIsUnicodeAvailable()
 // Windows-specific wxEntry
 // ----------------------------------------------------------------------------
 
+// helper function used to clean up in wxEntry() just below
+//
+// notice that argv elements are supposed to be allocated using malloc() while
+// argv array itself is allocated with new
+static void wxFreeArgs(int argc, wxChar **argv)
+{
+    for ( int i = 0; i < argc; i++ )
+    {
+        free(argv[i]);
+    }
+
+    delete [] argv;
+}
+
 WXDLLEXPORT int wxEntry(HINSTANCE hInstance,
                         HINSTANCE WXUNUSED(hPrevInstance),
                         wxCmdLineArgType WXUNUSED(pCmdLine),
@@ -371,7 +369,7 @@ WXDLLEXPORT int wxEntry(HINSTANCE hInstance,
     args.Insert(wxGetFullModuleName(), 0);
 #endif
 
-    int argc = 1;//@UE3: args.GetCount();
+    int argc = 1; // @UE3 2007-16-11: OLD:  args.GetCount();
 
     // +1 here for the terminating NULL
     wxChar **argv = new wxChar *[argc + 1];
@@ -383,57 +381,10 @@ WXDLLEXPORT int wxEntry(HINSTANCE hInstance,
     // argv[] must be NULL-terminated
     argv[argc] = NULL;
 
+    wxON_BLOCK_EXIT2(wxFreeArgs, argc, argv);
+
     return wxEntry(argc, argv);
 }
-
-// May wish not to have a DllMain or WinMain, e.g. if we're programming
-// a Netscape plugin or if we're writing a console application
-#if !defined(NOMAIN)
-
-extern "C"
-{
-
-// ----------------------------------------------------------------------------
-// WinMain
-// ----------------------------------------------------------------------------
-
-// Note that WinMain is also defined in dummy.obj, which is linked to
-// an application that is using the DLL version of wxWidgets.
-
-#if defined(_WINDLL)
-
-// DLL entry point
-
-BOOL WINAPI
-DllMain(HINSTANCE hModule, DWORD fdwReason, LPVOID WXUNUSED(lpReserved))
-{
-    // Only call wxEntry if the application itself is part of the DLL.
-    // If only the wxWidgets library is in the DLL, then the
-    // initialisation will be called when the application implicitly
-    // calls WinMain.
-#ifndef WXMAKINGDLL
-    switch (fdwReason)
-    {
-        case DLL_PROCESS_ATTACH:
-            return wxEntry(hModule);
-
-        case DLL_PROCESS_DETACH:
-            wxEntryCleanup();
-            break;
-    }
-#else
-    (void)hModule;
-    (void)fdwReason;
-#endif // !WXMAKINGDLL
-
-    return TRUE;
-}
-
-#endif // _WINDLL
-
-} // extern "C"
-
-#endif // !NOMAIN
 
 #endif // wxUSE_GUI && __WXMSW__
 
@@ -456,4 +407,3 @@ void wxSetInstance(HINSTANCE hInst)
 }
 
 #endif // wxUSE_BASE
-

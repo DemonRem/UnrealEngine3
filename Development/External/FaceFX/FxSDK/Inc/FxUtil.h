@@ -3,13 +3,17 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxUtil_H__
 #define FxUtil_H__
 
 #include "FxPlatform.h"
+
+#ifdef FX_XBOX_360
+	#include <ppcintrinsics.h>
+#endif // FX_XBOX_360
 
 namespace OC3Ent
 {
@@ -26,14 +30,6 @@ static const FxSize FxInvalidIndex = static_cast<FxSize>(-1);
 /// An invalid value.
 /// \ingroup support
 static const FxReal FxInvalidValue = static_cast<FxReal>(FX_INT32_MIN);
-
-/// Creates a FOURCC (four character code) from four characters.
-/// \ingroup support
-#define FX_MAKE_FOURCC(ch0, ch1, ch2, ch3) \
-	                  ((FxUInt32)(FxUInt8)(ch0)        | \
-	                  ((FxUInt32)(FxUInt8)(ch1) << 8)  | \
-	                  ((FxUInt32)(FxUInt8)(ch2) << 16) | \
-	                  ((FxUInt32)(FxUInt8)(ch3) << 24))
 
 /// Performs an XOR swap.
 /// \ingroup support
@@ -52,22 +48,6 @@ FX_INLINE void FX_CALL FxByteSwap( FxByte* byte, FxSize size )
 	}
 }
 
-// Some handy macros to aid in calling FxByteSwap() correctly.  Note that 
-// currently these macros are not commented in the Doxygen style on purpose.
-//@todo Comment these in the Doxygen style when we make the final pass through
-//      the documentation to pick up the macro definitions.
-#if defined(FX_LITTLE_ENDIAN)
-	#define FX_SWAP_BIG_ENDIAN_BYTES(x) FxByteSwap(reinterpret_cast<FxByte*>(&x), sizeof(x))
-	#define FX_SWAP_LITTLE_ENDIAN_BYTES(x)
-#elif defined(FX_BIG_ENDIAN)
-	#define FX_SWAP_BIG_ENDIAN_BYTES(x)
-	#define FX_SWAP_LITTLE_ENDIAN_BYTES(x) FxByteSwap(reinterpret_cast<FxByte*>(&x), sizeof(x))
-#else
-	#define FX_SWAP_BIG_ENDIAN_BYTES(x)
-	#define FX_SWAP_LITTLE_ENDIAN_BYTES(x)
-	#error "Endianness not defined for target platform.  Check FxUtil.h."
-#endif
-
 /// Square function.
 template<typename T> FX_INLINE T FX_CALL FxSquare( const T& a )
 {
@@ -80,15 +60,41 @@ template<typename T> FX_INLINE T FX_CALL FxMax( const T& a, const T& b )
 	return (a >= b) ? a : b;
 }
 
+#ifdef FX_XBOX_360
+// Specialized version for FxReal on 360.
+template<> FX_INLINE FxReal FX_CALL FxMax<FxReal>( const FxReal& a, const FxReal& b )
+{
+	return static_cast<FxReal>(fpmax(a, b));
+}
+// Specialized version for FxDReal on 360.
+template<> FX_INLINE FxDReal FX_CALL FxMax<FxDReal>( const FxDReal& a, const FxDReal& b )
+{
+	return fpmax(a, b);
+}
+#endif // FX_XBOX_360
+
 /// Min function.
 template<typename T> FX_INLINE T FX_CALL FxMin( const T& a, const T& b )
 {
 	return (a <= b) ? a : b;
 }
 
+#ifdef FX_XBOX_360
+// Specialized version for FxReal on 360.
+template<> FX_INLINE FxReal FX_CALL FxMin<FxReal>( const FxReal& a, const FxReal& b )
+{
+	return static_cast<FxReal>(fpmin(a, b));
+}
+// Specialized version for FxDReal on 360.
+template<> FX_INLINE FxDReal FX_CALL FxMin<FxDReal>( const FxDReal& a, const FxDReal& b )
+{
+	return fpmin(a, b);
+}
+#endif // FX_XBOX_360
+
 /// Clamp function.
 template<typename T> FX_INLINE T FX_CALL FxClamp( const T& valMin, const T& val, 
-								                 const T& valMax )
+								                  const T& valMax )
 {
 	return FxMax(FxMin(val, valMax), valMin);
 }

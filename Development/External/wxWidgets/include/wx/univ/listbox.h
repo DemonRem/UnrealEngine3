@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     30.08.00
-// RCS-ID:      $Id: listbox.h,v 1.22 2005/02/13 17:07:58 VZ Exp $
+// RCS-ID:      $Id: listbox.h 41227 2006-09-14 19:36:47Z VZ $
 // Copyright:   (c) 2000 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_LISTBOX_H_
 #define _WX_UNIV_LISTBOX_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "univlistbox.h"
-#endif
 
 #include "wx/scrolwin.h"    // for wxScrollHelper
 #include "wx/dynarray.h"
@@ -56,7 +52,7 @@ class WXDLLEXPORT wxListBox : public wxListBoxBase, public wxScrollHelper
 {
 public:
     // ctors and such
-    wxListBox() { Init(); }
+    wxListBox() : wxScrollHelper(this) { Init(); }
     wxListBox(wxWindow *parent,
               wxWindowID id,
               const wxPoint& pos = wxDefaultPosition,
@@ -65,6 +61,7 @@ public:
               long style = 0,
               const wxValidator& validator = wxDefaultValidator,
               const wxString& name = wxListBoxNameStr )
+        : wxScrollHelper(this)
     {
         Init();
 
@@ -100,34 +97,34 @@ public:
 
     // implement the listbox interface defined by wxListBoxBase
     virtual void Clear();
-    virtual void Delete(int n);
+    virtual void Delete(unsigned int n);
 
-    virtual int GetCount() const
-        { return (int)m_strings->GetCount(); }
-    virtual wxString GetString(int n) const
+    virtual unsigned int GetCount() const
+        { return (unsigned int)m_strings->GetCount(); }
+    virtual wxString GetString(unsigned int n) const
         { return m_strings->Item(n); }
-    virtual void SetString(int n, const wxString& s);
-    virtual int FindString(const wxString& s) const
-        { return m_strings->Index(s); }
+    virtual void SetString(unsigned int n, const wxString& s);
+    virtual int FindString(const wxString& s, bool bCase = false) const
+        { return m_strings->Index(s, bCase); }
 
     virtual bool IsSelected(int n) const
         { return m_selections.Index(n) != wxNOT_FOUND; }
-    virtual void DoSetSelection(int n, bool select);
     virtual int GetSelection() const;
     virtual int GetSelections(wxArrayInt& aSelections) const;
 
 protected:
+    virtual void DoSetSelection(int n, bool select);
     virtual int DoAppendOnly(const wxString& item);
     virtual int DoAppend(const wxString& item);
-    virtual void DoInsertItems(const wxArrayString& items, int pos);
+    virtual void DoInsertItems(const wxArrayString& items, unsigned int pos);
     virtual void DoSetItems(const wxArrayString& items, void **clientData);
 
     virtual void DoSetFirstItem(int n);
 
-    virtual void DoSetItemClientData(int n, void* clientData);
-    virtual void* DoGetItemClientData(int n) const;
-    virtual void DoSetItemClientObject(int n, wxClientData* clientData);
-    virtual wxClientData* DoGetItemClientObject(int n) const;
+    virtual void DoSetItemClientData(unsigned int n, void* clientData);
+    virtual void* DoGetItemClientData(unsigned int n) const;
+    virtual void DoSetItemClientObject(unsigned int n, wxClientData* clientData);
+    virtual wxClientData* DoGetItemClientObject(unsigned int n) const;
 
 public:
     // override some more base class methods
@@ -185,6 +182,12 @@ public:
     virtual bool PerformAction(const wxControlAction& action,
                                long numArg = 0l,
                                const wxString& strArg = wxEmptyString);
+
+    static wxInputHandler *GetStdInputHandler(wxInputHandler *handlerDef);
+    virtual wxInputHandler *DoGetStdInputHandler(wxInputHandler *handlerDef)
+    {
+        return GetStdInputHandler(handlerDef);
+    }
 
     // idle processing
     virtual void OnInternalIdle();
@@ -292,62 +295,6 @@ private:
 
     DECLARE_EVENT_TABLE()
     DECLARE_DYNAMIC_CLASS(wxListBox)
-};
-
-// ----------------------------------------------------------------------------
-// wxStdListboxInputHandler: handles mouse and kbd in a single or multi
-// selection listbox
-// ----------------------------------------------------------------------------
-
-class WXDLLEXPORT wxStdListboxInputHandler : public wxStdInputHandler
-{
-public:
-    // if pressing the mouse button in a multiselection listbox should toggle
-    // the item under mouse immediately, then specify true as the second
-    // parameter (this is the standard behaviour, under GTK the item is toggled
-    // only when the mouse is released in the multi selection listbox)
-    wxStdListboxInputHandler(wxInputHandler *inphand,
-                             bool toggleOnPressAlways = true);
-
-    // base class methods
-    virtual bool HandleKey(wxInputConsumer *consumer,
-                           const wxKeyEvent& event,
-                           bool pressed);
-    virtual bool HandleMouse(wxInputConsumer *consumer,
-                             const wxMouseEvent& event);
-    virtual bool HandleMouseMove(wxInputConsumer *consumer,
-                                 const wxMouseEvent& event);
-
-protected:
-    // return the item under mouse, 0 if the mouse is above the listbox or
-    // GetCount() if it is below it
-    int HitTest(const wxListBox *listbox, const wxMouseEvent& event);
-
-    // parts of HitTest(): first finds the pseudo (because not in range) index
-    // of the item and the second one adjusts it if necessary - that is if the
-    // third one returns false
-    int HitTestUnsafe(const wxListBox *listbox, const wxMouseEvent& event);
-    int FixItemIndex(const wxListBox *listbox, int item);
-    bool IsValidIndex(const wxListBox *listbox, int item);
-
-    // init m_btnCapture and m_actionMouse
-    wxControlAction SetupCapture(wxListBox *lbox,
-                                 const wxMouseEvent& event,
-                                 int item);
-
-    wxRenderer *m_renderer;
-
-    // the button which initiated the mouse capture (currently 0 or 1)
-    int m_btnCapture;
-
-    // the action to perform when the mouse moves while we capture it
-    wxControlAction m_actionMouse;
-
-    // the ctor parameter toggleOnPressAlways (see comments near it)
-    bool m_toggleOnPressAlways;
-
-    // do we track the mouse outside the window when it is captured?
-    bool m_trackMouseOutside;
 };
 
 #endif // _WX_UNIV_LISTBOX_H_

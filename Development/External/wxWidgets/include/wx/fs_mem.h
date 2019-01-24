@@ -9,17 +9,6 @@
 #ifndef _WX_FS_MEM_H_
 #define _WX_FS_MEM_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA) && !defined(__EMX__)
-// Some older compilers (such as EMX) cannot handle
-// #pragma interface/implementation correctly, iff
-// #pragma implementation is used in _two_ translation
-// units (as created by e.g. event.cpp compiled for
-// libwx_base and event.cpp compiled for libwx_gui_core).
-// So we must not use those pragmas for those compilers in
-// such files.
-#pragma interface "fs_mem.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_FILESYSTEM
@@ -27,8 +16,8 @@
 #include "wx/filesys.h"
 
 #if wxUSE_GUI
-    class WXDLLIMPEXP_CORE wxBitmap;
-    class WXDLLIMPEXP_CORE wxImage;
+    class WXDLLIMPEXP_FWD_CORE wxBitmap;
+    class WXDLLIMPEXP_FWD_CORE wxImage;
 #endif // wxUSE_GUI
 
 // ----------------------------------------------------------------------------
@@ -39,13 +28,21 @@ class WXDLLIMPEXP_BASE wxMemoryFSHandlerBase : public wxFileSystemHandler
 {
 public:
     wxMemoryFSHandlerBase();
-    ~wxMemoryFSHandlerBase();
+    virtual ~wxMemoryFSHandlerBase();
 
     // Add file to list of files stored in memory. Stored data (bitmap, text or
     // raw data) will be copied into private memory stream and available under
     // name "memory:" + filename
     static void AddFile(const wxString& filename, const wxString& textdata);
     static void AddFile(const wxString& filename, const void *binarydata, size_t size);
+#if wxABI_VERSION >= 20805
+    static void AddFileWithMimeType(const wxString& filename,
+                                    const wxString& textdata,
+                                    const wxString& mimetype);
+    static void AddFileWithMimeType(const wxString& filename,
+                                    const void *binarydata, size_t size,
+                                    const wxString& mimetype);
+#endif // wxABI_VERSION >= 20805
 
     // Remove file from memory FS and free occupied memory
     static void RemoveFile(const wxString& filename);
@@ -84,6 +81,24 @@ public:
     {
         wxMemoryFSHandlerBase::AddFile(filename, binarydata, size);
     }
+#if wxABI_VERSION >= 20805
+    static void AddFileWithMimeType(const wxString& filename,
+                                    const wxString& textdata,
+                                    const wxString& mimetype)
+    {
+        wxMemoryFSHandlerBase::AddFileWithMimeType(filename,
+                                                   textdata,
+                                                   mimetype);
+    }
+    static void AddFileWithMimeType(const wxString& filename,
+                                    const void *binarydata, size_t size,
+                                    const wxString& mimetype)
+    {
+        wxMemoryFSHandlerBase::AddFileWithMimeType(filename,
+                                                   binarydata, size,
+                                                   mimetype);
+    }
+#endif // wxABI_VERSION >= 20805
 
 #if wxUSE_IMAGE
     static void AddFile(const wxString& filename,

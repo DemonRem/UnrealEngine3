@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxMasterBoneList_H__
@@ -14,6 +14,7 @@
 #include "FxArray.h"
 #include "FxBone.h"
 #include "FxFaceGraph.h"
+#include "FxCompiledFaceGraph.h"
 #include "FxBonePoseNode.h"
 
 namespace OC3Ent
@@ -71,8 +72,12 @@ public:
 	/// \note For internal use only.
 	void ResetRefBoneWeights( void );
 
-	/// Links the reference bones to the bone pose nodes.
-	void Link( FxFaceGraph& faceGraph );
+	/// Pulls the bones from the bone pose nodes in \a faceGraph into the master
+	/// bone list.
+	void PullBones( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg );
+	/// Pushes the bones from the master bone list into the bone pose nodes in 
+	/// \a faceGraph.
+	void PushBones( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg );
 
 	/// Prunes unmoved bones from bonePoseNodes to save memory and 
 	/// speed up bone blending.  This function is called from the tools.  Make
@@ -82,24 +87,21 @@ public:
 	/// \param faceGraph The %Face Graph containing the nodes to prune.
 	void Prune( FxFaceGraph& faceGraph );
 
-	/// Calls GetValue() on all FxBonePoseNodes in faceGraph and puts the values
-	/// in _bonePoseNodeValues.
-	/// \param faceGraph The %Face Graph containing the bone pose nodes.
-	void UpdateBonePoses( FxFaceGraph& faceGraph );
-
 	/// Returns a blended bone for a given state of the %Face Graph.
 	/// \param index The index of the reference bone.
+	/// \param cg The compiled face graph.
 	/// \param bonePos The bone transformation's position component.
 	/// \param boneRot The bone transformation's rotation component.
 	/// \param boneScale The bone transformation's scale component.
 	/// \param boneWeight The current weight of the bone.
 	/// \note Assumes the %Face Graph has been updated for the current frame.
-	void GetBlendedBone( FxSize index, FxVec3& bonePos, FxQuat& boneRot, 
-		                 FxVec3& boneScale, FxReal& boneWeight ) const;
+	void GetBlendedBone( FxSize index, FxCompiledFaceGraph& cg, FxVec3& bonePos, 
+		                 FxQuat& boneRot, FxVec3& boneScale, 
+						 FxReal& boneWeight ) const;
 
 	/// Serializes the master bone list to an archive.
 	friend FxArchive& operator<<( FxArchive& arc, FxMasterBoneList& name );
-
+	
 private:
 	/// A master bone list entry.
 	class FxMasterBoneListEntry
@@ -113,7 +115,7 @@ private:
 			/// Constructor.
 			FxBoneLink();
 			/// Constructor.
-			FxBoneLink( FxSize iValueIndex, 
+			FxBoneLink( FxSize iNodeIndex, 
 				        const FxName& optimizedBoneName,
 				        const FxVec3& optimizedBonePos, 
 						const FxQuat& optimizedBoneRot, 
@@ -121,8 +123,8 @@ private:
 			/// Destructor.
 			~FxBoneLink();
 
-			/// The index to this bone's bone pose node value in _bonePoseNodeValues.
-			FxSize valueIndex;
+			/// The index to this bone's bone pose node.
+			FxSize nodeIndex;
 			/// A local copy of the bone in the bone pose node in optimized form.
 			/// Having this be an actual bone instead of a pointer also improves
 			/// cache coherency.
@@ -136,8 +138,10 @@ private:
 		/// Destructor.
 		~FxMasterBoneListEntry();
 
-		/// Links this reference bone to the bone pose nodes.
-		void Link( FxFaceGraph& faceGraph );
+		/// Pulls this reference bone from the bone pose nodes in \a faceGraph.
+		void PullBone( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg );
+		/// Pushes this reference bone into the bone pose nodes in \a faceGraph.
+		void PushBone( FxFaceGraph& faceGraph, FxCompiledFaceGraph& cg );
 
 		/// Prunes this reference bone from the bone pose nodes.
 		void Prune( FxFaceGraph& faceGraph );
@@ -158,13 +162,16 @@ private:
 	};
 	/// The master bone list.
 	FxArray<FxMasterBoneListEntry> _refBones;
-	/// The values of all of the bone pose nodes in the Face Graph.  They are
-	/// in the same order they are in when iterating through the Face Graph.
-	FxArray<FxReal> _bonePoseNodeValues;
 
 	/// Returns the master bone list entry index for the reference bone named
 	/// 'refBoneName' or \p FxInvalidIndex if it is not found.
 	FxSize _findMasterBoneListEntryIndex( const FxName& refBoneName ) const;
+
+public:
+	/// Serializes the bone link to an archive.
+	friend FxArchive& operator<<( FxArchive& arc, FxMasterBoneList::FxMasterBoneListEntry::FxBoneLink& link );
+	/// Serializes the entry to an archive.
+	friend FxArchive& operator<<( FxArchive& arc, FxMasterBoneList::FxMasterBoneListEntry& entry );
 };
 
 FX_INLINE void FxMasterBoneList::SetRefBoneWeight( const FxName& refBoneName, FxReal weight )
@@ -214,23 +221,9 @@ FX_INLINE void FxMasterBoneList::ResetRefBoneWeights( void )
 	}
 }
 
-FX_INLINE void FxMasterBoneList::UpdateBonePoses( FxFaceGraph& faceGraph )
-{
-	FxFaceGraph::Iterator bonePoseNodeIter    = faceGraph.Begin(FxBonePoseNode::StaticClass());
-	FxFaceGraph::Iterator bonePoseNodeEndIter = faceGraph.End(FxBonePoseNode::StaticClass());
-	FxSize bonePoseNodeIndex = 0;
-	for( ; bonePoseNodeIter != bonePoseNodeEndIter; ++bonePoseNodeIter, ++bonePoseNodeIndex )
-	{
-		// For performance we do not use FxCast<FxBonePoseNode>(bonePoseNodeIter.GetNode())
-		// because it would do a FxClass::IsA() internally.  There are enough safeguards
-		// everywhere else in the code so this is safe.
-		_bonePoseNodeValues[bonePoseNodeIndex] = bonePoseNodeIter.GetNode()->GetValue();
-	}
-}
-
-FX_INLINE void FxMasterBoneList::GetBlendedBone( FxSize index, FxVec3& bonePos, 
-									             FxQuat& boneRot, FxVec3& boneScale, 
-									             FxReal& boneWeight ) const
+FX_INLINE void FxMasterBoneList::GetBlendedBone( FxSize index, FxCompiledFaceGraph& cg, 
+												 FxVec3& bonePos, FxQuat& boneRot, 
+												 FxVec3& boneScale, FxReal& boneWeight ) const
 {
 	// Set up a blend operation for the specified bone.
 	const FxMasterBoneListEntry& boneToBlend = _refBones[index];
@@ -246,7 +239,7 @@ FX_INLINE void FxMasterBoneList::GetBlendedBone( FxSize index, FxVec3& bonePos,
 	for( FxSize i = 0; i < numLinks; ++i )
 	{
 		const FxMasterBoneListEntry::FxBoneLink& link = boneToBlend.links[i];
-		FxReal value = _bonePoseNodeValues[link.valueIndex];
+		FxReal value = cg.nodes[link.nodeIndex].finalValue;
 		if( !FxRealEquality(value, 0.0f) )
 		{
 			bonePos   += link.optimizedBone.GetPos() * value;

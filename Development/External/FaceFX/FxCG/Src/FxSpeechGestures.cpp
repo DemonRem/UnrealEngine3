@@ -3,7 +3,7 @@
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxSpeechGestures.h"
@@ -164,7 +164,7 @@ void FxSpeechGestures::MakeBlinkTrack( FxArray<FxReal>& blinkTimes, FxPhonemeLis
 		FxList<FxReal>::Iterator i = blinkList.Begin();
 		for( ; i != blinkList.End(); ++i )
 		{
-			if( *i - prevBlinkTime > _config.blinkSeparation.max )
+			if( *i - prevBlinkTime > _config.blinkSeparation.rangeMax )
 			{
 				i = blinkList.Insert(random.RealInRange(prevBlinkTime + maxLeft + blinkBuffer, *i - maxRight - blinkBuffer), i);
 			}
@@ -174,7 +174,7 @@ void FxSpeechGestures::MakeBlinkTrack( FxArray<FxReal>& blinkTimes, FxPhonemeLis
 		needMoreBlinks = FxFalse;
 		for( i = blinkList.Begin(); i != blinkList.End(); ++i )
 		{
-			if( *i - prevBlinkTime > _config.blinkSeparation.max )
+			if( *i - prevBlinkTime > _config.blinkSeparation.rangeMax )
 			{
 				needMoreBlinks = FxTrue;
 			}
@@ -187,7 +187,7 @@ void FxSpeechGestures::MakeBlinkTrack( FxArray<FxReal>& blinkTimes, FxPhonemeLis
 	FxReal prevBlinkTime = *(blinkList.Begin());
 	for( ; curr != blinkList.End(); ++curr )
 	{
-		if( prevBlinkTime + maxRight > *curr + maxLeft - _config.blinkSeparation.min )
+		if( prevBlinkTime + maxRight > *curr + maxLeft - _config.blinkSeparation.rangeMin )
 		{
 			FxList<FxReal>::Iterator temp = curr;
 			--curr;

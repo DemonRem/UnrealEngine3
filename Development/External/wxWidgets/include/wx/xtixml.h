@@ -4,17 +4,13 @@
 // Author:      Stefan Csomor
 // Modified by:
 // Created:     27/07/03
-// RCS-ID:      $Id: xtixml.h,v 1.5 2004/09/24 14:32:19 ABX Exp $
+// RCS-ID:      $Id: xtixml.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 2003 Stefan Csomor
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_XTIXMLH__
 #define _WX_XTIXMLH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "xtixml.h"
-#endif
 
 #include "wx/wx.h"
 
@@ -29,7 +25,7 @@ class WXDLLIMPEXP_XML wxXmlWriter : public wxWriter
 public :
 
     wxXmlWriter( wxXmlNode * parent ) ;
-    ~wxXmlWriter() ;
+    virtual ~wxXmlWriter() ;
 
     //
     // streaming callbacks
@@ -88,7 +84,7 @@ class WXDLLIMPEXP_XML wxXmlReader : public wxReader
 {
 public:
     wxXmlReader(wxXmlNode *parent) { m_parent = parent ; }
-    ~wxXmlReader() {}
+    virtual ~wxXmlReader() {}
 
     // Reads a component from XML.  The return value is the root object ID, which can
     // then be used to ask the depersister about that object

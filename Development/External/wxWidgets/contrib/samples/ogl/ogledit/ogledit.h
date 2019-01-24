@@ -1,23 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        ogledit.h
+// Name:        contrib/samples/ogl/ogledit/ogledit.h
 // Purpose:     OGL sample
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: ogledit.h,v 1.5 2005/03/31 19:18:15 ABX Exp $
+// RCS-ID:      $Id: ogledit.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface
-#endif
-
 #ifndef _OGLSAMPLE_OGLEDIT_H_
 #define _OGLSAMPLE_OGLEDIT_H_
 
-#include <wx/docview.h>
-#include <wx/ogl/ogl.h> // base header of OGL, includes and adjusts wx/deprecated/setup.h
+#include "wx/docview.h"
+#include "wx/ogl/ogl.h" // base header of OGL, includes and adjusts wx/deprecated/setup.h
 
 // Define a new application
 class MyFrame;

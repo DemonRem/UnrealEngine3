@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: brush.cpp,v 1.21 2005/01/18 20:12:58 ABX Exp $
+// RCS-ID:      $Id: brush.cpp 42776 2006-10-30 22:03:53Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,6 @@
 // ============================================================================
 // declarations
 // ============================================================================
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "brush.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -28,11 +24,12 @@
     #pragma hdrstop
 #endif
 
+#include "wx/brush.h"
+
 #ifndef WX_PRECOMP
     #include "wx/list.h"
     #include "wx/utils.h"
     #include "wx/app.h"
-    #include "wx/brush.h"
 #endif // WX_PRECOMP
 
 #include "wx/msw/private.h"
@@ -127,7 +124,7 @@ bool wxBrushRefData::operator==(const wxBrushRefData& data) const
     // don't compare HBRUSHes
     return m_style == data.m_style &&
            m_colour == data.m_colour &&
-           m_stipple == data.m_stipple;
+           m_stipple.IsSameAs(data.m_stipple);
 }
 
 void wxBrushRefData::DoSetStipple(const wxBitmap& stipple)
@@ -247,16 +244,6 @@ wxBrush::~wxBrush()
 // wxBrush house keeping stuff
 // ----------------------------------------------------------------------------
 
-wxBrush& wxBrush::operator=(const wxBrush& brush)
-{
-    if ( this != &brush )
-    {
-        Ref(brush);
-    }
-
-    return *this;
-}
-
 bool wxBrush::operator==(const wxBrush& brush) const
 {
     const wxBrushRefData *brushData = (wxBrushRefData *)brush.m_refData;
@@ -338,5 +325,3 @@ void wxBrush::SetStipple(const wxBitmap& stipple)
 
     M_BRUSHDATA->SetStipple(stipple);
 }
-
-

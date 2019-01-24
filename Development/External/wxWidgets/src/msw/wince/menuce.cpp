@@ -4,7 +4,7 @@
 // Author:      Wlodzimierz ABX Skiba
 // Modified by:
 // Created:     28.05.2004
-// RCS-ID:      $Id: menuce.cpp,v 1.5 2005/01/31 17:57:33 ABX Exp $
+// RCS-ID:      $Id: menuce.cpp 40978 2006-09-03 12:23:04Z RR $
 // Copyright:   (c) Wlodzimierz Skiba
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "menuce"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,9 +24,7 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/wx.h"
-#endif
+#if defined(__SMARTPHONE__) && defined(__WXWINCE__)
 
 #ifndef WX_PRECOMP
     #include "wx/app.h"
@@ -38,12 +32,12 @@
     #include "wx/menu.h"
 #endif //WX_PRECOMP
 
-#if defined(__SMARTPHONE__) && defined(__WXWINCE__)
-
 #include <windows.h>
 #include <ole2.h>
 #include <shellapi.h>
 #include <aygshell.h>
+#include <tpcshell.h>
+#include <tpcuser.h>
 #include "wx/msw/wince/missing.h"
 
 #include "wx/msw/wince/resources.h"
@@ -84,7 +78,7 @@ void wxTopLevelWindowMSW::ButtonMenu::SetButton(int id, const wxString& label, w
     m_assigned = true;
     m_id = id;
     if(label.empty() && wxIsStockID(id))
-        m_label = wxGetStockLabel(id, false);
+        m_label = wxGetStockLabel(id, wxSTOCK_NOFLAGS);
     else
         m_label = label;
     m_menu = subMenu;
@@ -246,6 +240,10 @@ void wxTopLevelWindowMSW::ReloadAllButtons()
         ::ShowWindow( prev_MenuBar, SW_HIDE );
     ::ShowWindow( m_MenuBarHWND, SW_SHOW );
 
+    // Setup backspace key handling
+    SendMessage(m_MenuBarHWND, SHCMBM_OVERRIDEKEY, VK_TBACK,
+                MAKELPARAM( SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
+                            SHMBOF_NODEFAULT | SHMBOF_NOTIFY ));
 }
 
 bool wxTopLevelWindowMSW::HandleCommand(WXWORD id, WXWORD WXUNUSED(cmd), WXHWND WXUNUSED(control))
@@ -262,5 +260,18 @@ bool wxTopLevelWindowMSW::HandleCommand(WXWORD id, WXWORD WXUNUSED(cmd), WXHWND 
     return false;
 }
 
-#endif // __SMARTPHONE__ && __WXWINCE__
+bool wxTopLevelWindowMSW::MSWShouldPreProcessMessage(WXMSG* pMsg)
+{
+    MSG *msg = (MSG *)pMsg;
 
+    // Process back key to be like backspace.
+    if (msg->message == WM_HOTKEY)
+    {
+        if (HIWORD(msg->lParam) == VK_TBACK)
+            SHSendBackToFocusWindow(msg->message, msg->wParam, msg->lParam);
+    }
+
+    return wxTopLevelWindowBase::MSWShouldPreProcessMessage(pMsg);
+}
+
+#endif // __SMARTPHONE__ && __WXWINCE__

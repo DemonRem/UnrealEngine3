@@ -1,7 +1,7 @@
 /*
  *  hdbc.c
  *
- *  $Id: hdbc.c,v 1.5 1999/06/01 15:31:41 VZ Exp $
+ *  $Id: hdbc.c 2613 1999-06-01 15:32:12Z VZ $
  *
  *  Data source connect object management functions
  *

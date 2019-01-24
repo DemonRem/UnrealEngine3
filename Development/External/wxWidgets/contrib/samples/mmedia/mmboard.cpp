@@ -4,7 +4,7 @@
 // Author:      Guilhem Lavaux (created from minimal by J. Smart)
 // Modified by:
 // Created:     13/02/2000
-// RCS-ID:      $Id: mmboard.cpp,v 1.17 2005/08/23 16:02:22 ABX Exp $
+// RCS-ID:      $Id: mmboard.cpp 43163 2006-11-07 15:32:27Z VZ $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,9 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-#ifdef __GNUG__
-    #pragma implementation "mmboard.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -36,8 +33,9 @@
 // ----------------------------------------------------------------------------
 // ressources
 // ----------------------------------------------------------------------------
+
 // the application icon
-#if defined(__WXGTK__) || defined(__WXX11__) || defined(__WXMOTIF__) || defined(__WXMAC__)
+#if !defined(__WXMSW__) && !defined(__WXPM__)
     #include "mondrian.xpm"
 #endif
 

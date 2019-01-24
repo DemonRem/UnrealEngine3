@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        generic/vlbox.cpp
+// Name:        src/generic/vlbox.cpp
 // Purpose:     implementation of wxVListBox
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     31.05.03
-// RCS-ID:      $Id: vlbox.cpp,v 1.22 2005/02/19 04:04:08 KH Exp $
+// RCS-ID:      $Id: vlbox.cpp 53998 2008-06-06 22:55:23Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwindows.org>
 // License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,12 +26,15 @@
 
 #if wxUSE_LISTBOX
 
+#include "wx/vlbox.h"
+
 #ifndef WX_PRECOMP
     #include "wx/settings.h"
     #include "wx/dcclient.h"
+    #include "wx/listbox.h"
 #endif //WX_PRECOMP
 
-#include "wx/vlbox.h"
+#include "wx/dcbuffer.h"
 #include "wx/selstore.h"
 
 // ----------------------------------------------------------------------------
@@ -82,6 +85,9 @@ bool wxVListBox::Create(wxWindow *parent,
     SetBackgroundColour(GetBackgroundColour());
     m_colBgSel = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
+    // flicker-free drawing requires this
+    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+
     return true;
 }
 
@@ -92,6 +98,10 @@ wxVListBox::~wxVListBox()
 
 void wxVListBox::SetItemCount(size_t count)
 {
+    // don't leave the current index invalid
+    if ( m_current != wxNOT_FOUND && (size_t)m_current >= count )
+        m_current = count - 1; // also ok when count == 0 as wxNOT_FOUND == -1
+
     if ( m_selStore )
     {
         // tell the selection store that our number of items has changed
@@ -224,10 +234,8 @@ bool wxVListBox::DoSetCurrent(int current)
         {
             // it is, indeed, only partly visible, so scroll it into view to
             // make it entirely visible
-            if ( (size_t)m_current == GetLastVisibleLine() )
-            {
-                ScrollToLine(m_current);
-            }
+            while ( (size_t)m_current == GetLastVisibleLine() &&
+                    ScrollToLine(GetVisibleBegin()+1) ) ;
 
             // but in any case refresh it as even if it was only partly visible
             // before we need to redraw it entirely as its background changed
@@ -258,7 +266,10 @@ void wxVListBox::SetSelection(int selection)
 
     if ( HasMultipleSelection() )
     {
-        Select(selection);
+        if (selection != wxNOT_FOUND)
+            Select(selection);
+        else
+            DeselectAll();
         m_anchor = selection;
     }
 
@@ -351,18 +362,24 @@ void wxVListBox::OnDrawBackground(wxDC& dc, const wxRect& rect, size_t n) const
 
 void wxVListBox::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
-    wxPaintDC dc(this);
+    wxSize clientSize = GetClientSize();
+
+    wxAutoBufferedPaintDC dc(this);
 
     // the update rectangle
     wxRect rectUpdate = GetUpdateClientRect();
 
+    // fill it with background colour
+    dc.SetBackground(GetBackgroundColour());
+    dc.Clear();
+
     // the bounding rectangle of the current line
     wxRect rectLine;
-    rectLine.width = GetClientSize().x;
+    rectLine.width = clientSize.x;
 
     // iterate over all visible lines
-    const size_t lineMax = GetLastVisibleLine();
-    for ( size_t line = GetFirstVisibleLine(); line <= lineMax; line++ )
+    const size_t lineMax = GetVisibleEnd();
+    for ( size_t line = GetFirstVisibleLine(); line < lineMax; line++ )
     {
         const wxCoord hLine = OnGetLineHeight(line);
 
@@ -519,13 +536,11 @@ void wxVListBox::OnKeyDown(wxKeyEvent& event)
             break;
 
         case WXK_PAGEDOWN:
-        case WXK_NEXT:
             PageDown();
             current = GetFirstVisibleLine();
             break;
 
         case WXK_PAGEUP:
-        case WXK_PRIOR:
             if ( m_current == (int)GetFirstVisibleLine() )
             {
                 PageUp();
@@ -577,7 +592,7 @@ void wxVListBox::OnKeyDown(wxKeyEvent& event)
 void wxVListBox::OnLeftDown(wxMouseEvent& event)
 {
     SetFocus();
-    
+
     int item = HitTest(event.GetPosition());
 
     if ( item != wxNOT_FOUND )
@@ -599,16 +614,27 @@ void wxVListBox::OnLeftDown(wxMouseEvent& event)
     }
 }
 
-void wxVListBox::OnLeftDClick(wxMouseEvent& event)
+void wxVListBox::OnLeftDClick(wxMouseEvent& eventMouse)
 {
-    int item = HitTest(event.GetPosition());
+    int item = HitTest(eventMouse.GetPosition());
     if ( item != wxNOT_FOUND )
     {
-        wxCommandEvent event(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, GetId());
-        event.SetEventObject(this);
-        event.SetInt(item);
 
-        (void)GetEventHandler()->ProcessEvent(event);
+        // if item double-clicked was not yet selected, then treat
+        // this event as a left-click instead
+        if ( item == m_current )
+        {
+            wxCommandEvent event(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, GetId());
+            event.SetEventObject(this);
+            event.SetInt(item);
+
+            (void)GetEventHandler()->ProcessEvent(event);
+        }
+        else
+        {
+            OnLeftDown(eventMouse);
+        }
+
     }
 }
 
@@ -616,8 +642,6 @@ void wxVListBox::OnLeftDClick(wxMouseEvent& event)
 // ----------------------------------------------------------------------------
 // use the same default attributes as wxListBox
 // ----------------------------------------------------------------------------
-
-#include "wx/listbox.h"
 
 //static
 wxVisualAttributes

@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     12.02.01
-// RCS-ID:      $Id: scrthumb.h,v 1.9 2004/08/10 13:08:34 ABX Exp $
+// RCS-ID:      $Id: scrthumb.h 37168 2006-01-26 19:35:32Z ABX $
 // Copyright:   (c) 2001 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_SCRTHUMB_H_
 #define _WX_UNIV_SCRTHUMB_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "univscrthumb.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // wxScrollThumb is not a control but just a class containing the common
@@ -90,6 +86,8 @@ private:
 class WXDLLEXPORT wxControlWithThumb
 {
 public:
+    virtual ~wxControlWithThumb() {}
+
     // simple accessors
     // ----------------
 

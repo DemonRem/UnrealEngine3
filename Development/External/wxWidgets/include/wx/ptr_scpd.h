@@ -4,7 +4,7 @@
 // Author:      Jesse Lovelace <jllovela@eos.ncsu.edu>
 // Modified by:
 // Created:     06/01/02
-// RCS-ID:      $Id: ptr_scpd.h,v 1.13 2005/06/13 12:19:14 ABX Exp $
+// RCS-ID:      $Id: ptr_scpd.h 35688 2005-09-25 19:59:19Z VZ $
 // Copyright:   (c) Jesse Lovelace and original Boost authors (see below)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@
     #define wxPOST_NO_WARNING_SCOPE(name)
 #else
     #define wxPRE_NO_WARNING_SCOPE(name)  do
-    #define wxPOST_NO_WARNING_SCOPE(name) while ( 0 )
+    #define wxPOST_NO_WARNING_SCOPE(name) while ( wxFalse )
 #endif
 
 #define wxCHECKED_DELETE(ptr)                                                 \
@@ -197,7 +197,7 @@ void name::reset(T * p){                \
 // ----------------------------------------------------------------------------
 
 #define wxDEFINE_TIED_SCOPED_PTR_TYPE(T)                                      \
-    wxDEFINE_SCOPED_PTR_TYPE(T);                                              \
+    wxDEFINE_SCOPED_PTR_TYPE(T)                                               \
     class T ## TiedPtr : public T ## Ptr                                      \
     {                                                                         \
     public:                                                                   \
@@ -216,7 +216,7 @@ void name::reset(T * p){                \
     private:                                                                  \
         T **m_pp;                                                             \
         T *m_pOld;                                                            \
-    }
+    };
 
 #endif // __WX_SCOPED_POINTER__
 

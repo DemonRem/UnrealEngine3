@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2005-01-07
-// RCS-ID:      $Id: stackwalk.h,v 1.2 2005/01/19 01:15:03 VZ Exp $
+// RCS-ID:      $Id: stackwalk.h 43346 2006-11-12 14:33:03Z RR $
 // Copyright:   (c) 2004 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ public:
     // number of them (this can be useful when Walk() is called from some known
     // location and you don't want to see the first few frames anyhow; also
     // notice that Walk() frame itself is not included if skip >= 1)
-    virtual void Walk(size_t skip = 1) = 0;
+    virtual void Walk(size_t skip = 1, size_t maxDepth = 200) = 0;
 
     // enumerate stack frames from the location of uncaught exception
     //

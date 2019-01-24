@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: tabg.h,v 1.24 2005/08/28 14:36:46 VZ Exp $
+// RCS-ID:      $Id: tabg.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __TABGH_G__
 #define __TABGH_G__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "tabg.h"
-#endif
 
 #define WXTAB_VERSION   1.1
 
@@ -36,7 +32,7 @@ class WXDLLEXPORT wxTabControl: public wxObject
 DECLARE_DYNAMIC_CLASS(wxTabControl)
 public:
     wxTabControl(wxTabView *v = (wxTabView *) NULL);
-    ~wxTabControl(void);
+    virtual ~wxTabControl(void);
 
     virtual void OnDraw(wxDC& dc, bool lastInRow);
     void SetLabel(const wxString& str) { m_controlLabel = str; }
@@ -103,7 +99,7 @@ class WXDLLEXPORT wxTabView: public wxObject
 DECLARE_DYNAMIC_CLASS(wxTabView)
 public:
   wxTabView(long style = wxTAB_STYLE_DRAW_BOX | wxTAB_STYLE_COLOUR_INTERIOR);
-  ~wxTabView();
+  virtual ~wxTabView();
 
   inline int GetNumberOfLayers() const { return m_layers.GetCount(); }
 #if WXWIN_COMPATIBILITY_2_4
@@ -152,10 +148,10 @@ public:
   inline wxColour GetShadowColour(void) const { return m_shadowColour; }
   inline wxColour GetBackgroundColour(void) const { return m_backgroundColour; }
   inline wxColour GetTextColour(void) const { return m_textColour; }
-  inline wxPen *GetHighlightPen(void) const { return m_highlightPen; }
-  inline wxPen *GetShadowPen(void) const { return m_shadowPen; }
-  inline wxPen *GetBackgroundPen(void) const { return m_backgroundPen; }
-  inline wxBrush *GetBackgroundBrush(void) const { return m_backgroundBrush; }
+  inline const wxPen *GetHighlightPen(void) const { return m_highlightPen; }
+  inline const wxPen *GetShadowPen(void) const { return m_shadowPen; }
+  inline const wxPen *GetBackgroundPen(void) const { return m_backgroundPen; }
+  inline const wxBrush *GetBackgroundBrush(void) const { return m_backgroundBrush; }
 
   inline void SetViewRect(const wxRect& rect) { m_tabViewRect = rect; }
   inline wxRect GetViewRect(void) const { return m_tabViewRect; }
@@ -257,10 +253,10 @@ protected:
    wxColour         m_textColour;
 
    // Pen and brush cache
-   wxPen*           m_highlightPen;
-   wxPen*           m_shadowPen;
-   wxPen*           m_backgroundPen;
-   wxBrush*         m_backgroundBrush;
+   const wxPen*     m_highlightPen;
+   const wxPen*     m_shadowPen;
+   const wxPen*     m_backgroundPen;
+   const wxBrush*   m_backgroundBrush;
 
    wxFont           m_tabFont;
    wxFont           m_tabSelectedFont;
@@ -274,87 +270,93 @@ protected:
  * A dialog box class that is tab-friendly
  */
 
-class WXDLLEXPORT wxTabbedDialog: public wxDialog
+class WXDLLEXPORT wxTabbedDialog : public wxDialog
 {
-DECLARE_DYNAMIC_CLASS(wxTabbedDialog)
+    DECLARE_DYNAMIC_CLASS(wxTabbedDialog)
 
 public:
+    wxTabbedDialog(wxWindow *parent,
+                   wxWindowID id,
+                   const wxString& title,
+                   const wxPoint& pos = wxDefaultPosition,
+                   const wxSize& size = wxDefaultSize,
+                   long windowStyle = wxDEFAULT_DIALOG_STYLE,
+                   const wxString& name = wxDialogNameStr);
+    virtual ~wxTabbedDialog();
 
-   wxTabbedDialog(wxWindow *parent, wxWindowID id, const wxString& title,
-    const wxPoint& pos = wxDefaultPosition,
-    const wxSize& size = wxDefaultSize,
-     long windowStyle = wxDEFAULT_DIALOG_STYLE, const wxString& name = wxDialogNameStr);
-   ~wxTabbedDialog(void);
+    wxTabView *GetTabView() const { return m_tabView; }
+    void SetTabView(wxTabView *v) { m_tabView = v; }
 
-   inline wxTabView *GetTabView() const { return m_tabView; }
-   inline void SetTabView(wxTabView *v) { m_tabView = v; }
-
-   void OnCloseWindow(wxCloseEvent& event);
-   void OnMouseEvent(wxMouseEvent& event);
-   void OnPaint(wxPaintEvent& event);
+    void OnCloseWindow(wxCloseEvent& event);
+    void OnMouseEvent(wxMouseEvent& event);
+    void OnPaint(wxPaintEvent& event);
 
 protected:
-   wxTabView*   m_tabView;
+    wxTabView*   m_tabView;
 
-DECLARE_EVENT_TABLE()
+private:
+    DECLARE_EVENT_TABLE()
 };
 
 /*
  * A panel class that is tab-friendly
  */
 
-class WXDLLEXPORT wxTabbedPanel: public wxPanel
+class WXDLLEXPORT wxTabbedPanel : public wxPanel
 {
-DECLARE_DYNAMIC_CLASS(wxTabbedPanel)
+    DECLARE_DYNAMIC_CLASS(wxTabbedPanel)
 
 public:
+    wxTabbedPanel(wxWindow *parent,
+                  wxWindowID id,
+                  const wxPoint& pos = wxDefaultPosition,
+                  const wxSize& size = wxDefaultSize,
+                  long windowStyle = 0,
+                  const wxString& name = wxPanelNameStr);
+    virtual ~wxTabbedPanel();
 
-   wxTabbedPanel(wxWindow *parent, wxWindowID id,
-    const wxPoint& pos = wxDefaultPosition,
-    const wxSize& size = wxDefaultSize,
-    long windowStyle = 0, const wxString& name = wxPanelNameStr);
-   ~wxTabbedPanel(void);
+    wxTabView *GetTabView() const { return m_tabView; }
+    void SetTabView(wxTabView *v) { m_tabView = v; }
 
-   inline wxTabView *GetTabView() const { return m_tabView; }
-   inline void SetTabView(wxTabView *v) { m_tabView = v; }
-
-   void OnMouseEvent(wxMouseEvent& event);
-   void OnPaint(wxPaintEvent& event);
+    void OnMouseEvent(wxMouseEvent& event);
+    void OnPaint(wxPaintEvent& event);
 
 protected:
-   wxTabView*   m_tabView;
+    wxTabView*   m_tabView;
 
-DECLARE_EVENT_TABLE()
+private:
+    DECLARE_EVENT_TABLE()
 };
 
 WX_DECLARE_HASH_MAP(int, wxWindow*, wxIntegerHash, wxIntegerEqual,
                     wxIntToWindowHashMap);
 
-class WXDLLEXPORT wxPanelTabView: public wxTabView
+class WXDLLEXPORT wxPanelTabView : public wxTabView
 {
-DECLARE_DYNAMIC_CLASS(wxPanelTabView)
+    DECLARE_DYNAMIC_CLASS(wxPanelTabView)
+
 public:
-  wxPanelTabView(wxPanel *pan, long style = wxTAB_STYLE_DRAW_BOX | wxTAB_STYLE_COLOUR_INTERIOR);
-  ~wxPanelTabView(void);
+    wxPanelTabView(wxPanel *pan, long style = wxTAB_STYLE_DRAW_BOX | wxTAB_STYLE_COLOUR_INTERIOR);
+    virtual ~wxPanelTabView(void);
 
-  // Called when a tab is activated
-  virtual void OnTabActivate(int activateId, int deactivateId);
+    // Called when a tab is activated
+    virtual void OnTabActivate(int activateId, int deactivateId);
 
-  // Specific to this class
-   void AddTabWindow(int id, wxWindow *window);
-   wxWindow *GetTabWindow(int id) const ;
-   void ClearWindows(bool deleteWindows = true);
-   inline wxWindow *GetCurrentWindow() const { return m_currentWindow; }
+    // Specific to this class
+    void AddTabWindow(int id, wxWindow *window);
+    wxWindow *GetTabWindow(int id) const ;
+    void ClearWindows(bool deleteWindows = true);
+    wxWindow *GetCurrentWindow() const { return m_currentWindow; }
 
-   void ShowWindowForTab(int id);
-   // inline wxList& GetWindows() const { return (wxList&) m_tabWindows; }
+    void ShowWindowForTab(int id);
+    // wxList& GetWindows() const { return (wxList&) m_tabWindows; }
 
 protected:
-   // List of panels, one for each tab. Indexed
-   // by tab ID.
-   wxIntToWindowHashMap m_tabWindows;
-   wxWindow*            m_currentWindow;
-   wxPanel*             m_panel;
+    // List of panels, one for each tab. Indexed
+    // by tab ID.
+    wxIntToWindowHashMap m_tabWindows;
+    wxWindow*            m_currentWindow;
+    wxPanel*             m_panel;
 };
 
 #endif

@@ -2,9 +2,9 @@
 #define NX_COOKING_NX
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /**
@@ -14,7 +14,7 @@ DLL export macros
 	#ifdef NX_COOKING_DLL
            #if defined(WIN32)
 		#define NXC_DLL_EXPORT __declspec(dllexport)
-           #elif defined(LINUX) && defined(NX_LINUX_USE_VISIBILITY)
+           #elif defined(__linux__) && defined(NX_LINUX_USE_VISIBILITY)
 		#define NXC_DLL_EXPORT __attribute__ ((visibility ("default")))
            #else
                 #define NXC_DLL_EXPORT
@@ -26,7 +26,7 @@ DLL export macros
 	#elif defined NX_USE_SDK_DLLS
             #if defined(WIN32)
 		#define NXC_DLL_EXPORT __declspec(dllimport)
-            #elif defined(LINUX)
+            #elif defined(__linux__)
 		#define NXC_DLL_EXPORT
             #else
                 #define NXC_DLL_EXPORT
@@ -39,7 +39,7 @@ DLL export macros
 	#else
             #if defined(WIN32)
 		#define NXC_DLL_EXPORT __declspec(dllimport)
-            #elif defined(LINUX)
+            #elif defined(__linux__)
 		#define NXC_DLL_EXPORT
             #else
                 #define NXC_DLL_EXPORT 
@@ -52,9 +52,9 @@ DLL export macros
 #endif
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

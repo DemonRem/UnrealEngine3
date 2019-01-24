@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: minimal.cpp,v 1.67 2005/02/20 16:14:03 JS Exp $
+// RCS-ID:      $Id: minimal.cpp 43915 2006-12-11 09:33:34Z CE $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,10 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
+ 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
-
+ 
 #ifdef __BORLANDC__
     #pragma hdrstop
 #endif
@@ -119,6 +119,11 @@ IMPLEMENT_APP(MyApp)
 // 'Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
+    // call the base class initialization method, currently it only parses a
+    // few common command-line options but it could be do more in the future
+    if ( !wxApp::OnInit() )
+        return false;
+
     // create the main application window
     MyFrame *frame = new MyFrame(_T("Minimal wxWidgets App"));
 
@@ -180,9 +185,15 @@ void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
-    wxString msg;
-    msg.Printf( _T("This is the About dialog of the minimal sample.\n")
-                _T("Welcome to %s"), wxVERSION_STRING);
-
-    wxMessageBox(msg, _T("About Minimal"), wxOK | wxICON_INFORMATION, this);
+    wxMessageBox(wxString::Format(
+                    _T("Welcome to %s!\n")
+                    _T("\n")
+                    _T("This is the minimal wxWidgets sample\n")
+                    _T("running under %s."),
+                    wxVERSION_STRING,
+                    wxGetOsDescription().c_str()
+                 ),
+                 _T("About wxWidgets minimal sample"),
+                 wxOK | wxICON_INFORMATION,
+                 this);
 }

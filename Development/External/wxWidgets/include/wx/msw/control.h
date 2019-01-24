@@ -1,20 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        control.h
+// Name:        wx/msw/control.h
 // Purpose:     wxControl class
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: control.h,v 1.51 2005/04/10 21:55:11 VZ Exp $
+// RCS-ID:      $Id: control.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_CONTROL_H_
 #define _WX_CONTROL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "control.h"
-#endif
 
 #include "wx/dynarray.h"
 
@@ -60,19 +56,20 @@ public:
     bool ProcessCommand(wxCommandEvent& event);
 
     // MSW-specific
-#ifdef __WIN95__
     virtual bool MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result);
-#endif // Win95
 
     // For ownerdraw items
-    virtual bool MSWOnDraw(WXDRAWITEMSTRUCT *WXUNUSED(item)) { return false; };
-    virtual bool MSWOnMeasure(WXMEASUREITEMSTRUCT *WXUNUSED(item)) { return false; };
+    virtual bool MSWOnDraw(WXDRAWITEMSTRUCT *WXUNUSED(item)) { return false; }
+    virtual bool MSWOnMeasure(WXMEASUREITEMSTRUCT *WXUNUSED(item)) { return false; }
 
     const wxArrayLong& GetSubcontrols() const { return m_subControls; }
 
     // default handling of WM_CTLCOLORxxx: this is public so that wxWindow
     // could call it
     virtual WXHBRUSH MSWControlColor(WXHDC pDC, WXHWND hWnd);
+
+    // default style for the control include WS_TABSTOP if it AcceptsFocus()
+    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
 
 protected:
     // choose the default border for this window
@@ -116,9 +113,6 @@ protected:
                           const wxSize& size = wxDefaultSize,
                           const wxString& label = wxEmptyString,
                           WXDWORD exstyle = (WXDWORD)-1);
-
-    // default style for the control include WS_TABSTOP if it AcceptsFocus()
-    virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
 
     // call this from the derived class MSWControlColor() if you want to show
     // the control greyed out (and opaque)

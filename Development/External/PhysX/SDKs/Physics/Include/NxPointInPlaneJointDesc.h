@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXPOINTINPLANEJOINTDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -18,9 +18,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxPointInPlaneJoint NxJointDesc NxScene.createJoint
 */
@@ -40,7 +41,11 @@ class NxPointInPlaneJointDesc : public NxJointDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	};
 
@@ -54,16 +59,16 @@ NX_INLINE void NxPointInPlaneJointDesc::setToDefault()
 	NxJointDesc::setToDefault();
 	}
 
-NX_INLINE bool NxPointInPlaneJointDesc::isValid() const
+NX_INLINE NxU32 NxPointInPlaneJointDesc::checkValid() const
 	{
-	return NxJointDesc::isValid();
+	return NxJointDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

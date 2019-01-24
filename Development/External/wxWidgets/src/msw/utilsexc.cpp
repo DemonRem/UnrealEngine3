@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/utilsexec.cpp
+// Name:        src/msw/utilsexc.cpp
 // Purpose:     wxExecute implementation for MSW
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: utilsexc.cpp,v 1.80 2005/05/31 09:20:34 JS Exp $
+// RCS-ID:      $Id: utilsexc.cpp 54695 2008-07-18 22:22:16Z VZ $
 // Copyright:   (c) 1998-2002 wxWidgets dev team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -33,14 +29,16 @@
     #include "wx/app.h"
     #include "wx/intl.h"
     #include "wx/log.h"
+    #if wxUSE_STREAMS
+        #include "wx/stream.h"
+    #endif
+    #include "wx/module.h"
 #endif
 
-#include "wx/stream.h"
 #include "wx/process.h"
 
 #include "wx/apptrait.h"
 
-#include "wx/module.h"
 
 #include "wx/msw/private.h"
 
@@ -362,8 +360,19 @@ wxPipeInputStream::~wxPipeInputStream()
 
 bool wxPipeInputStream::CanRead() const
 {
+    // we can read if there's something in the put back buffer
+    // even pipe is closed
+    if ( m_wbacksize > m_wbackcur )
+        return true;
+
+    wxPipeInputStream * const self = wxConstCast(this, wxPipeInputStream);
+
     if ( !IsOpened() )
+    {
+        // set back to mark Eof as it may have been unset by Ungetch()
+        self->m_lasterror = wxSTREAM_EOF;
         return false;
+    }
 
     DWORD nAvailable;
 
@@ -388,8 +397,6 @@ bool wxPipeInputStream::CanRead() const
         // don't try to continue reading from a pipe if an error occurred or if
         // it had been closed
         ::CloseHandle(m_hInput);
-
-        wxPipeInputStream *self = wxConstCast(this, wxPipeInputStream);
 
         self->m_hInput = INVALID_HANDLE_VALUE;
         self->m_lasterror = wxSTREAM_EOF;
@@ -487,16 +494,16 @@ size_t wxPipeOutputStream::OnSysWrite(const void *buffer, size_t len)
 #if wxUSE_IPC
 
 // connect to the given server via DDE and ask it to execute the command
-static bool wxExecuteDDE(const wxString& ddeServer,
-                         const wxString& ddeTopic,
-                         const wxString& ddeCommand)
+bool
+wxExecuteDDE(const wxString& ddeServer,
+             const wxString& ddeTopic,
+             const wxString& ddeCommand)
 {
     bool ok wxDUMMY_INITIALIZE(false);
 
     wxDDEClient client;
-    wxConnectionBase *conn = client.MakeConnection(wxEmptyString,
-                                                   ddeServer,
-                                                   ddeTopic);
+    wxConnectionBase *
+        conn = client.MakeConnection(wxEmptyString, ddeServer, ddeTopic);
     if ( !conn )
     {
         ok = false;
@@ -710,23 +717,37 @@ long wxExecute(const wxString& cmd, int flags, wxProcess *handler)
 
     PROCESS_INFORMATION pi;
     DWORD dwFlags = CREATE_SUSPENDED;
+
 #ifndef __WXWINCE__
     dwFlags |= CREATE_DEFAULT_ERROR_MODE ;
+#else
+    // we are assuming commands without spaces for now
+    wxString moduleName = command.BeforeFirst(wxT(' '));
+    wxString arguments = command.AfterFirst(wxT(' '));
 #endif
 
     bool ok = ::CreateProcess
                 (
-                 NULL,              // application name (use only cmd line)
+                    // WinCE requires appname to be non null
+                    // Win32 allows for null
+#ifdef __WXWINCE__
                  (wxChar *)
-                 command.c_str(),   // full command line
-                 NULL,              // security attributes: defaults for both
-                 NULL,              //   the process and its main thread
-                 redirect,          // inherit handles if we use pipes
-                 dwFlags,           // process creation flags
-                 NULL,              // environment (use the same)
-                 NULL,              // current directory (use the same)
-                 &si,               // startup info (unused here)
-                 &pi                // process info
+                 moduleName.c_str(), // application name
+                 (wxChar *)
+                 arguments.c_str(),  // arguments
+#else
+                 NULL,               // application name (use only cmd line)
+                 (wxChar *)
+                 command.c_str(),    // full command line
+#endif
+                 NULL,               // security attributes: defaults for both
+                 NULL,               //   the process and its main thread
+                 redirect,           // inherit handles if we use pipes
+                 dwFlags,            // process creation flags
+                 NULL,               // environment (use the same)
+                 NULL,               // current directory (use the same)
+                 &si,                // startup info (unused here)
+                 &pi                 // process info
                 ) != 0;
 
 #if wxUSE_STREAMS && !defined(__WXWINCE__)
@@ -931,9 +952,47 @@ long wxExecute(wxChar **argv, int flags, wxProcess *handler)
 {
     wxString command;
 
+    wxString arg;
     for ( ;; )
     {
-        command += *argv++;
+        arg = *argv++;
+
+        // we didn't quote the arguments properly in the previous wx versions
+        // and while this is the right thing to do, there is a good chance that
+        // people worked around our bug in their code by quoting the arguments
+        // manually before, so, for compatibility sake, keep the argument
+        // unchanged if it's already quoted
+
+        bool quote;
+        if ( arg.empty() )
+        {
+            // we need to quote empty arguments, otherwise they'd just
+            // disappear
+            quote = true;
+        }
+        else // non-empty
+        {
+            if ( *arg.begin() != _T('"') || *arg.rbegin() != _T('"') )
+            {
+                // escape any quotes present in the string to avoid interfering
+                // with the command line parsing in the child process
+                arg.Replace(_T("\""), _T("\\\""), true /* replace all */);
+
+                // and quote any arguments containing the spaces to prevent
+                // them from being broken down
+                quote = arg.find_first_of(_T(" \t")) != wxString::npos;
+            }
+            else // already quoted
+            {
+                quote = false;
+            }
+        }
+
+        if ( quote )
+            command += _T('\"') + arg + _T('\"');
+        else
+            command += arg;
+
         if ( !*argv )
             break;
 
@@ -942,4 +1001,3 @@ long wxExecute(wxChar **argv, int flags, wxProcess *handler)
 
     return wxExecute(command, flags, handler);
 }
-

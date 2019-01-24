@@ -4,7 +4,7 @@
 // Author:      John Platts, Vadim Zeitlin
 // Modified by:
 // Created:     2003
-// RCS-ID:      $Id: uxtheme.cpp,v 1.14 2005/05/05 15:03:07 JS Exp $
+// RCS-ID:      $Id: uxtheme.cpp 40943 2006-08-31 19:31:43Z ABX $
 // Copyright:   (c) 2003 John Platts, Vadim Zeitlin
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,6 @@
 // ============================================================================
 // declarations
 // ============================================================================
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "uxtheme.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -35,9 +31,8 @@
     #include "wx/toplevel.h"
     #include "wx/string.h"
     #include "wx/log.h"
+    #include "wx/module.h"
 #endif //WX_PRECOMP
-
-#include "wx/module.h"
 
 #include "wx/msw/uxtheme.h"
 
@@ -180,4 +175,3 @@ bool wxUxThemeEngine::Initialize()
 }
 
 #endif // wxUSE_UXTHEME
-

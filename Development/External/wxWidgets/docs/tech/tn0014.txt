@@ -30,14 +30,14 @@ Note: see also http://ldaptool.sourceforge.net/XRCGuide/XRCGuideSingle/
 1. Terminology
 ==============
 
-The usual XML terminology applies. In particular, we shall use the terms 
+The usual XML terminology applies. In particular, we shall use the terms
 NODE, PROPERTY and VALUE in the XML sense:
 
     <node property1="value1" property2="value2">...</node>
 
-The term ATTRIBUTE is specific to XRC and refers to a subnode 
-of an <object> or <object_ref> node that is itself not <object> or <object_ref>. 
-In the example below, <pos>, <label> and <style> are attributes, while neither 
+The term ATTRIBUTE is specific to XRC and refers to a subnode
+of an <object> or <object_ref> node that is itself not <object> or <object_ref>.
+In the example below, <pos>, <label> and <style> are attributes, while neither
 <resource> nor either of <object>s is:
 
     <?xml version="1.0" encoding="utf-8">
@@ -62,17 +62,17 @@ can think of it as attribute value syntax definition).
 =========================
 
 XRC resource file is a well-formed XML 1.0 document. All elements of XRC file
-are from the http://www.wxwidgets.org/wxxrc namespace. 
+are from the http://www.wxwidgets.org/wxxrc namespace.
 
-The root node of XRC document must be <resource>. The <resource> node has 
-optional "version" property. Default version  (in absence of the version 
-property) is "0.0.0.0". The version consists of four integers separated by 
-periods. Version of XRC format changes only if there was an incompatible 
-change introduced (i.e. either the library cannot understand old resource 
+The root node of XRC document must be <resource>. The <resource> node has
+optional "version" property. Default version  (in absence of the version
+property) is "0.0.0.0". The version consists of four integers separated by
+periods. Version of XRC format changes only if there was an incompatible
+change introduced (i.e. either the library cannot understand old resource
 files or older versions of the library wouldn't understand the new format).
-The first three integers are major, minor and release number of the wxWidgets 
-release when the change was introduced, the last one is revision number and 
-is 0 for the first incompatible change in given wxWidgets release, 1 for 
+The first three integers are major, minor and release number of the wxWidgets
+release when the change was introduced, the last one is revision number and
+is 0 for the first incompatible change in given wxWidgets release, 1 for
 the second etc.
 
 Differences between versions are described within this document in paragraphs
@@ -86,7 +86,7 @@ The <resource> node is only allowed to have <object> and <object_ref>
 subnodes, all of which must have the "name" property.
 
 The <object> node represents a single object (GUI element) and it usually maps
-directly to a wxWidgets class instance. It three properties: "name", "class"
+directly to a wxWidgets class instance. It has the properties: "name", "class"
 and "subclass". "class" must always be present, it tells XRC what wxWidgets
 object should be created in this place. The other two are optional.  "name" is
 ID used to identify the object. It is the value passed to the XRCID() macro and
@@ -99,12 +99,17 @@ constructor for "class". Subclass must be available in the program that loads
 the resource, must be derived from "class" and must be registered within
 wxWidgets' RTTI system.
 
+Finally, an optional "insert_at" property may be present. Currently only the
+values "begin" and "end" are supported, meaning to insert the object in the
+beginning of the parent node objects list or to append it at the end (which is
+the default if this property is absent).
+
 Example:
 
     <object name="MyList1" class="wxListCtrl" subclass="MyListCtrlClass">
         ...
-    </object>    
-    
+    </object>
+
 <object> node may have arbitrary child nodes. What child nodes and their
 semantics are class-dependent and are defined later in this document. The user
 is allowed to register new object handlers within XRC and extend it to accept
@@ -129,7 +134,7 @@ Example:
         <value>bar</value>               <!-- override! -->
     </object_ref>
 
-is identical to:    
+is identical to:
 
     <object name="foo" class="wxTextCtrl">
         <value>hello</value>
@@ -215,7 +220,7 @@ define own constants, effectively any string is legal here). Examples are
 "wxART_FILE_OPEN" (id) or "wxART_MENU" (client).
 
 Any of "stock_id" or "stock_client" properties or the filename may be omitted.
-XRC determines the bitmap to use according to this algorithm: 
+XRC determines the bitmap to use according to this algorithm:
   1. If there is non-empty "stock_id" property, query wxArtProvider for the
      bitmap (if there is no "stock_client", use default one, which is usually
      wxART_OTHER; exceptions are noted in class-specific sections below). If
@@ -251,12 +256,12 @@ relativesize    Float, font size relative to choosen system font's size;
 All of them are optional, if they are missing, wxFont default is used.
 
 Examples:
-    
+
     <font>
         <face>arial,helvetica</face>
         <size>12</size>
     </font>
-    
+
     <font>
         <sysfont>wxSYS_DEFAULT_GUI_FONT</sysfont>
         <weight>bold</weight>
@@ -286,9 +291,23 @@ attribute name             attribute type          default value, if any
                            [(optional remarks....................
                            ...................................)]
 
+Common attributes
+-----------------
+These attributes are supported by all windows:
+
+exstyle                    Int
+bg                         Colour
+fg                         Colour
+enabled                    Boolean                 true
+focused                    Boolean                 false
+hidden                     Boolean                 false
+tooltip                    I18nString
+font                       Font
+help                       I18nString
+
 wxBitmap
 --------
-This is a special case, because it does not create a wxWindow instance but 
+This is a special case, because it does not create a wxWindow instance but
 creates wxBitmap instead. Another exceptional thing is that it does not have
 any attributes. Instead, the node itself is interpreted as if it were attribute
 of type Bitmap.
@@ -305,7 +324,7 @@ wxButton
 --------
 pos                        Position                -1,-1
 size                       Size                    -1,-1
-style                      Style[wxButton]    
+style                      Style[wxButton]
 
 label                      I18nString
 default                    Boolean                 false
@@ -398,11 +417,22 @@ wxMDIChildFrame
 Supports same attributes and children nodes as wxFrame.
 
 
+wxRadioBox
+----------
+
+This control may have "dimension" (major dimension) and (initial) "selection"
+Integer subelements and a composite "content" element similar to wxCheckList.
+The only difference is that the "item" subelements can have an optional
+"tooltip=I18nString" and "helptext=I18nString" attributes to specify
+the per-item tooltip and helptext.
+
+
 wxScrolledWindow
 ----------------
 pos                        Position                -1,-1
 size                       Size                    -1,-1
 style                      Style[wxScrolledWindow] wxHSCROLL | wxVSCROLL
+scrollrate                 Size                    0,0
 
 wxScolledWindow may have children objects.
 
@@ -441,6 +471,8 @@ bitmapsize                 Size                    -1,-1
 margins                    Size                    -1,-1
 packing                    Integer                 -1
 separation                 Integer                 -1
+bg                         Background colour       None
+dontattachtoframe          Boolean                 False
 
 wxToolBar node may have children <object> and <object_ref> nodes. Their class
 may be either "tool", "separator" or any wxWidgets class derived from
@@ -453,10 +485,11 @@ appear within wxToolBar node. Their attributes are as follows:
 
     tool
     ----
-    bitmap                 Bitmap                  
+    bitmap                 Bitmap
     bitmap2                Bitmap                  wxNullBitmap
     toggle                 Boolean                 0
     radio                  Boolean                 0
+    disabled               Boolean                 0
     label                  I18nString              ""
     tooltip                I18nString              ""
     longhelp               I18nString              ""
@@ -466,7 +499,7 @@ appear within wxToolBar node. Their attributes are as follows:
       At most one of "toggle" and "radio" attributes may be 1.
       Attribute "pos" may not appear if "label" or "radio" attributes
       are used or if parent wxToolBar's style contains wxTB_TEXT.
-    
+
     Note:
       Use of "pos" attribute is strongly discouraged, it is deprecated
       usage of wxToolBar and it is not supported by MSW and GTK
@@ -485,4 +518,4 @@ FIXME -- "platform" property handling
 
 === EOF ===
 
-Version: $Id: tn0014.txt,v 1.18 2005/05/31 09:18:07 JS Exp $
+Version: $Id: tn0014.txt 50473 2007-12-04 19:06:09Z VS $

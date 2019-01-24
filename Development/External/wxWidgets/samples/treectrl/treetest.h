@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: treetest.h,v 1.47 2005/04/09 11:04:00 VZ Exp $
+// RCS-ID:      $Id: treetest.h 43021 2006-11-04 11:26:51Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -127,6 +127,8 @@ private:
                              size_t depth,
                              size_t folder);
 
+    void LogEvent(const wxChar *name, const wxTreeEvent& event);
+
     int          m_imageSize;               // current size of images
     bool         m_reverseSort;             // flag for OnCompareItems
     wxTreeItemId m_lastItem,                // for OnEnsureVisible()
@@ -175,6 +177,7 @@ public:
     void OnSetFgColour(wxCommandEvent& event);
     void OnSetBgColour(wxCommandEvent& event);
 
+    void OnHighlight(wxCommandEvent& event);
     void OnDump(wxCommandEvent& event);
 #ifndef NO_MULTIPLE_SELECTION
     void OnDumpSelected(wxCommandEvent& event);
@@ -229,6 +232,7 @@ private:
     void CreateTreeWithDefStyle();
     void CreateTree(long style);
 
+    wxPanel *m_panel;
     MyTreeCtrl *m_treeCtrl;
 #if wxUSE_LOG
     wxTextCtrl *m_textCtrl;
@@ -255,6 +259,7 @@ enum
     TreeTest_SetFgColour,
     TreeTest_SetBgColour,
     TreeTest_ResetStyle,
+    TreeTest_Highlight,
     TreeTest_Dump,
     TreeTest_DumpSelected,
     TreeTest_Count,

@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: ogldiag.h,v 1.10 2004/06/09 16:42:21 ABX Exp $
+// RCS-ID:      $Id: ogldiag.h 35812 2005-10-06 18:17:23Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,14 +12,10 @@
 #ifndef _OGL_OGLDIAG_H_
 #define _OGL_OGLDIAG_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "ogldiag.h"
-#endif
-
 #include "wx/ogl/basic.h"
 
 #if wxUSE_PROLOGIO
-#include <wx/deprecated/wxexpr.h>
+#include "wx/deprecated/wxexpr.h"
 #endif
 
 

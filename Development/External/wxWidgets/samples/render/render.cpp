@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.08.03
-// RCS-ID:      $Id: render.cpp,v 1.4 2004/10/02 12:35:54 VS Exp $
+// RCS-ID:      $Id: render.cpp 53921 2008-06-02 09:58:29Z RR $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -34,6 +34,7 @@
     #include "wx/textdlg.h"
     #include "wx/log.h"
     #include "wx/msgdlg.h"
+    #include "wx/icon.h"
 #endif
 
 #include "wx/apptrait.h"
@@ -58,15 +59,18 @@ class MyRenderer : public wxDelegateRendererNative
 public:
     MyRenderer() : wxDelegateRendererNative(wxRendererNative::GetDefault()) { }
 
-    virtual void DrawHeaderButton(wxWindow * WXUNUSED(win),
+    virtual int DrawHeaderButton(wxWindow *WXUNUSED(win),
                                   wxDC& dc,
                                   const wxRect& rect,
-                                  int WXUNUSED(flags) = 0)
+                                  int WXUNUSED(flags) = 0,
+                                  wxHeaderSortIconType WXUNUSED(sortArrow) = wxHDR_SORT_ICON_NONE,
+                                  wxHeaderButtonParams* WXUNUSED(params) = NULL)
     {
         dc.SetBrush(*wxBLUE_BRUSH);
         dc.SetTextForeground(*wxWHITE);
         dc.DrawRoundedRectangle(rect, 5);
         dc.DrawLabel(_T("MyRenderer"), wxNullBitmap, rect, wxALIGN_CENTER);
+        return rect.width;
     }
 };
 
@@ -102,8 +106,10 @@ public:
     virtual ~MyFrame();
 
     // event handlers (these functions should _not_ be virtual)
+#if wxUSE_DYNLIB_CLASS
     void OnLoad(wxCommandEvent& event);
     void OnUnload(wxCommandEvent& event);
+#endif // wxUSE_DYNLIB_CLASS
     void OnQuit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
 
@@ -128,7 +134,38 @@ public:
         dc.DrawText(_T("using the current renderer:"), 10, 40);
 
         wxRendererNative::Get().DrawHeaderButton(this, dc,
-                                                 wxRect(20, 70, 100, 60));
+                                                 wxRect(20, 70, 100, 25));
+
+        // Draw some check boxes in various states
+        dc.SetBrush(*wxBLACK_BRUSH);
+        dc.SetTextForeground(*wxBLACK);
+        dc.DrawText(_T("Checkbox Drawn with native renderer"), 10, 150);
+        // Checked
+        wxRendererNative::Get().DrawCheckBox(this, dc, wxRect(20, 170, 16, 16), wxCONTROL_CHECKED);
+        // Undetermined
+        wxRendererNative::Get().DrawCheckBox(this, dc, wxRect(40, 170, 16, 16), wxCONTROL_CHECKABLE);
+        // Unchecked
+        wxRendererNative::Get().DrawCheckBox(this, dc, wxRect(60, 170, 16, 16), 0);
+        // Checked and Disabled
+        wxRendererNative::Get().DrawCheckBox(this, dc, wxRect(80, 170, 16, 16), wxCONTROL_CHECKED | wxCONTROL_DISABLED);
+        
+        
+#if defined(__WXGTK20__) || defined(__WXMSW__) || defined(__WXMAC__)
+        dc.DrawText(_T("Draw wxTextCtrl (without text)"), 10, 200);
+        wxRenderer_DrawTextCtrl( this, dc, wxRect(20,220,60,24), 0);
+        wxRenderer_DrawTextCtrl( this, dc, wxRect(120,220,60,24), wxCONTROL_CURRENT );
+        
+        dc.DrawText(_T("Draw wxComboBox (without text)"), 10, 250);
+        wxRenderer_DrawComboBox( this, dc, wxRect(20,270,80,24), 0);
+        
+        dc.DrawText(_T("Draw wxChoice (without text)"), 10, 300);
+        wxRenderer_DrawChoice( this, dc, wxRect(20,320,80,24), 0);
+        
+        dc.DrawText(_T("Draw wxRadioButton (without text)"), 10, 350);
+        wxRenderer_DrawRadioButton( this, dc, wxRect(20,370,24,24), 0);
+        wxRenderer_DrawRadioButton( this, dc, wxRect(40,370,24,24), wxCONTROL_CHECKED );
+#endif
+
     }
 
     DECLARE_EVENT_TABLE()
@@ -146,8 +183,10 @@ END_EVENT_TABLE()
 enum
 {
     // our menu items
+#if wxUSE_DYNLIB_CLASS
     Render_Load = 100,
     Render_Unload,
+#endif // wxUSE_DYNLIB_CLASS
 
     // standard menu items
     Render_Quit = wxID_EXIT,
@@ -166,8 +205,10 @@ enum
 // handlers) which process them. It can be also done at run-time, but for the
 // simple menu events like this the static method is much simpler.
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
+#if wxUSE_DYNLIB_CLASS
     EVT_MENU(Render_Load,  MyFrame::OnLoad)
     EVT_MENU(Render_Unload,MyFrame::OnUnload)
+#endif // wxUSE_DYNLIB_CLASS
     EVT_MENU(Render_Quit,  MyFrame::OnQuit)
 
     EVT_MENU(Render_About, MyFrame::OnAbout)
@@ -204,7 +245,7 @@ bool MyApp::OnInit()
 // frame constructor
 MyFrame::MyFrame()
        : wxFrame(NULL,
-                 -1,
+                 wxID_ANY,
                  _T("Render wxWidgets Sample"),
                  wxPoint(50, 50),
                  wxSize(450, 340))
@@ -215,8 +256,10 @@ MyFrame::MyFrame()
 #if wxUSE_MENUS
     // create a menu bar
     wxMenu *menuFile = new wxMenu;
+#if wxUSE_DYNLIB_CLASS
     menuFile->Append(Render_Load, _T("&Load renderer...\tCtrl-L"));
     menuFile->Append(Render_Unload, _T("&Unload renderer\tCtrl-U"));
+#endif // wxUSE_DYNLIB_CLASS
     menuFile->Append(Render_Quit, _T("E&xit\tCtrl-Q"), _T("Quit this program"));
 
     // the "About" item should be in the help menu
@@ -250,6 +293,8 @@ MyFrame::~MyFrame()
 
 
 // event handlers
+
+#if wxUSE_DYNLIB_CLASS
 
 void MyFrame::OnLoad(wxCommandEvent& WXUNUSED(event))
 {
@@ -302,6 +347,8 @@ void MyFrame::OnUnload(wxCommandEvent& WXUNUSED(event))
         wxLogWarning(_T("No renderer to unload."));
     }
 }
+
+#endif // wxUSE_DYNLIB_CLASS
 
 void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
 {

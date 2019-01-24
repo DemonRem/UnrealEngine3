@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: printdlg.h,v 1.17 2005/05/30 08:39:21 JS Exp $
+// RCS-ID:      $Id: printdlg.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_PRINTDLG_H_
 #define _WX_PRINTDLG_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "printdlg.h"
-#endif
 
 #if wxUSE_PRINTING_ARCHITECTURE
 
@@ -23,7 +19,7 @@
 #include "wx/prntbase.h"
 #include "wx/printdlg.h"
 
-class WXDLLEXPORT wxDC;
+class WXDLLIMPEXP_FWD_CORE wxDC;
 
 //----------------------------------------------------------------------------
 // wxWindowsPrintNativeData
@@ -38,7 +34,8 @@ public:
     virtual bool TransferTo( wxPrintData &data );
     virtual bool TransferFrom( const wxPrintData &data );
     
-    virtual bool Ok() const;
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const;
     
     void* GetDevMode() const { return m_devMode; }
     void SetDevMode(void* data) { m_devMode = data; }
@@ -71,11 +68,12 @@ public:
 
     wxPrintDialogData& GetPrintDialogData() { return m_printDialogData; }
     wxPrintData& GetPrintData() { return m_printDialogData.GetPrintData(); }
+
     virtual wxDC *GetPrintDC();
 
 private:
     wxPrintDialogData m_printDialogData;
-    wxDC*             m_printerDC;
+    wxPrinterDC*      m_printerDC;
     bool              m_destroyDC;
     wxWindow*         m_dialogParent;
     

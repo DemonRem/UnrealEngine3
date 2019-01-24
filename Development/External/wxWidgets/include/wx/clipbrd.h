@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     19.10.99
-// RCS-ID:      $Id: clipbrd.h,v 1.23 2004/09/10 12:55:45 ABX Exp $
+// RCS-ID:      $Id: clipbrd.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) wxWidgets Team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_CLIPBRD_H_BASE_
 #define _WX_CLIPBRD_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "clipboardbase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -24,9 +20,9 @@
 #include "wx/object.h"
 #include "wx/wxchar.h"
 
-class WXDLLEXPORT wxDataFormat;
-class WXDLLEXPORT wxDataObject;
-class WXDLLEXPORT wxClipboard;
+class WXDLLIMPEXP_FWD_CORE wxDataFormat;
+class WXDLLIMPEXP_FWD_CORE wxDataObject;
+class WXDLLIMPEXP_FWD_CORE wxClipboard;
 
 // ----------------------------------------------------------------------------
 // wxClipboard represents the system clipboard. Normally, you should use
@@ -96,8 +92,10 @@ public:
     #include "wx/msw/clipbrd.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/clipbrd.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/clipbrd.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/clipbrd.h"
 #elif defined(__WXX11__)
     #include "wx/x11/clipbrd.h"
 #elif defined(__WXMGL__)

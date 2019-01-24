@@ -4,17 +4,13 @@
 // Author:      Aleksandras Gluchovas
 // Modified by: Sebastian Haase (June 21, 2001)
 // Created:     04/11/98
-// RCS-ID:      $Id: fl_demo1.h,v 1.4 2005/07/22 16:43:04 MR Exp $
+// RCS-ID:      $Id: fl_demo1.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __NEW_TEST_G__
 #define __NEW_TEST_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "fl_demo1.h"
-#endif
 
 #define NEW_TEST_SAVE 1101
 #define NEW_TEST_LOAD 1102

@@ -8,7 +8,7 @@
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxStressDetector_H__
@@ -100,7 +100,7 @@ protected:
 	void CreateHammingWindow( FxArray<FxReal>& window );
 
 	// Input
-	//FxDigitalAudio* _pAudio; // A pointer to the audio to process.
+	//FxAudio* _pAudio; // A pointer to the audio to process.
 	FxDReal*		_pSamples;
 	FxInt32			_sampleCount;
 	FxInt32			_sampleRate;

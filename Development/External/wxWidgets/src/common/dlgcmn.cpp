@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/dlgcmn.cpp
+// Name:        src/common/dlgcmn.cpp
 // Purpose:     common (to all ports) wxDialog functions
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     28.06.99
-// RCS-ID:      $Id: dlgcmn.cpp,v 1.47 2005/08/28 07:55:43 MBN Exp $
+// RCS-ID:      $Id: dlgcmn.cpp 49747 2007-11-09 15:06:52Z JS $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dialogbase.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,17 +24,20 @@
     #pragma hdrstop
 #endif
 
+#include "wx/dialog.h"
+
 #ifndef WX_PRECOMP
     #include "wx/button.h"
-    #include "wx/dialog.h"
     #include "wx/dcclient.h"
     #include "wx/intl.h"
     #include "wx/settings.h"
     #include "wx/stattext.h"
     #include "wx/sizer.h"
-    #include "wx/button.h"
     #include "wx/containr.h"
 #endif
+
+#include "wx/statline.h"
+#include "wx/sysopt.h"
 
 #if wxUSE_STATTEXT
 
@@ -99,28 +98,30 @@ private:
 // wxDialogBase
 // ----------------------------------------------------------------------------
 
-// FIXME - temporary hack in absence of wxTopLevelWindow, should be always used
-#ifdef wxTopLevelWindowNative
 BEGIN_EVENT_TABLE(wxDialogBase, wxTopLevelWindow)
+    EVT_BUTTON(wxID_ANY, wxDialogBase::OnButton)
+
+    EVT_CLOSE(wxDialogBase::OnCloseWindow)
+
+    EVT_CHAR_HOOK(wxDialogBase::OnCharHook)
+
     WX_EVENT_TABLE_CONTROL_CONTAINER(wxDialogBase)
 END_EVENT_TABLE()
 
-WX_DELEGATE_TO_CONTROL_CONTAINER(wxDialogBase)
-#endif
+WX_DELEGATE_TO_CONTROL_CONTAINER(wxDialogBase, wxTopLevelWindow)
 
 void wxDialogBase::Init()
 {
     m_returnCode = 0;
     m_affirmativeId = wxID_OK;
-    
+    m_escapeId = wxID_ANY;
+
     // the dialogs have this flag on by default to prevent the events from the
     // dialog controls from reaching the parent frame which is usually
     // undesirable and can lead to unexpected and hard to find bugs
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
 
-#ifdef wxTopLevelWindowNative // FIXME - temporary hack, should be always used!
     m_container.SetContainerWindow(this);
-#endif
 }
 
 #if wxUSE_STATTEXT
@@ -262,13 +263,15 @@ private:
     wxString m_text;
 };
 
+// NB: don't "factor out" the scope operator, SGI MIPSpro 7.3 (but not 7.4)
+//     gets confused if it doesn't immediately follow the class name
 void
 #if defined(__WXGTK__) && !defined(__WXUNIVERSAL__)
-wxStaticText
+wxStaticText::
 #else
-wxStaticTextBase
+wxStaticTextBase::
 #endif
-::Wrap(int width)
+Wrap(int width)
 {
     wxLabelWrapper wrapper;
     wrapper.WrapLabel(this, width);
@@ -276,62 +279,100 @@ wxStaticTextBase
 
 #endif // wxUSE_STATTEXT
 
-#if wxUSE_BUTTON
-
-wxSizer *wxDialogBase::CreateButtonSizer( long flags )
+wxSizer *wxDialogBase::CreateButtonSizer(long flags)
 {
+    wxSizer *sizer = NULL;
+
 #ifdef __SMARTPHONE__
     wxDialog* dialog = (wxDialog*) this;
-    if (flags & wxOK){
+    if ( flags & wxOK )
         dialog->SetLeftMenu(wxID_OK);
-    }
 
-    if (flags & wxCANCEL){
+    if ( flags & wxCANCEL )
         dialog->SetRightMenu(wxID_CANCEL);
-    }
 
-    if (flags & wxYES){
+    if ( flags & wxYES )
         dialog->SetLeftMenu(wxID_YES);
-    }
 
-    if (flags & wxNO){
-        dialog->SetLeftMenu(wxID_NO);
+    if ( flags & wxNO )
+        dialog->SetRightMenu(wxID_NO);
+#else // !__SMARTPHONE__
+
+#if wxUSE_BUTTON
+
+#ifdef __POCKETPC__
+    // PocketPC guidelines recommend for Ok/Cancel dialogs to use OK button
+    // located inside caption bar and implement Cancel functionality through
+    // Undo outside dialog. As native behaviour this will be default here but
+    // can be replaced with real wxButtons by setting the option below to 1
+    if ( (flags & ~(wxCANCEL|wxNO_DEFAULT)) != wxOK ||
+            wxSystemOptions::GetOptionInt(wxT("wince.dialog.real-ok-cancel")) )
+#endif // __POCKETPC__
+    {
+        sizer = CreateStdDialogButtonSizer(flags);
     }
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+#endif // wxUSE_BUTTON
+
+#endif // __SMARTPHONE__/!__SMARTPHONE__
+
     return sizer;
-#else
-    return CreateStdDialogButtonSizer( flags );
-#endif
 }
+
+wxSizer *wxDialogBase::CreateSeparatedButtonSizer(long flags)
+{
+    wxSizer *sizer = CreateButtonSizer(flags);
+    if ( !sizer )
+        return NULL;
+
+    // Mac Human Interface Guidelines recommend not to use static lines as
+    // grouping elements
+#if wxUSE_STATLINE && !defined(__WXMAC__)
+    wxBoxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
+    topsizer->Add(new wxStaticLine(this),
+                   wxSizerFlags().Expand().DoubleBorder(wxBOTTOM));
+    topsizer->Add(sizer, wxSizerFlags().Expand());
+    sizer = topsizer;
+#endif // wxUSE_STATLINE
+
+    return sizer;
+}
+
+#if wxUSE_BUTTON
 
 wxStdDialogButtonSizer *wxDialogBase::CreateStdDialogButtonSizer( long flags )
 {
     wxStdDialogButtonSizer *sizer = new wxStdDialogButtonSizer();
+
     wxButton *ok = NULL;
     wxButton *yes = NULL;
     wxButton *no = NULL;
 
-    if (flags & wxOK){
+    if (flags & wxOK)
+    {
         ok = new wxButton(this, wxID_OK);
         sizer->AddButton(ok);
     }
 
-    if (flags & wxCANCEL){
+    if (flags & wxCANCEL)
+    {
         wxButton *cancel = new wxButton(this, wxID_CANCEL);
         sizer->AddButton(cancel);
     }
 
-    if (flags & wxYES){
+    if (flags & wxYES)
+    {
         yes = new wxButton(this, wxID_YES);
         sizer->AddButton(yes);
     }
 
-    if (flags & wxNO){
+    if (flags & wxNO)
+    {
         no = new wxButton(this, wxID_NO);
         sizer->AddButton(no);
     }
 
-    if (flags & wxHELP){
+    if (flags & wxHELP)
+    {
         wxButton *help = new wxButton(this, wxID_HELP);
         sizer->AddButton(help);
     }
@@ -368,5 +409,157 @@ wxStdDialogButtonSizer *wxDialogBase::CreateStdDialogButtonSizer( long flags )
     return sizer;
 }
 
-
 #endif // wxUSE_BUTTON
+
+// ----------------------------------------------------------------------------
+// standard buttons handling
+// ----------------------------------------------------------------------------
+
+void wxDialogBase::EndDialog(int rc)
+{
+    if ( IsModal() )
+        EndModal(rc);
+    else
+        Hide();
+}
+
+void wxDialogBase::AcceptAndClose()
+{
+    if ( Validate() && TransferDataFromWindow() )
+    {
+        EndDialog(m_affirmativeId);
+    }
+}
+
+void wxDialogBase::SetAffirmativeId(int affirmativeId)
+{
+    m_affirmativeId = affirmativeId;
+}
+
+void wxDialogBase::SetEscapeId(int escapeId)
+{
+    m_escapeId = escapeId;
+}
+
+bool wxDialogBase::EmulateButtonClickIfPresent(int id)
+{
+#if wxUSE_BUTTON
+    wxButton *btn = wxDynamicCast(FindWindow(id), wxButton);
+
+    if ( !btn || !btn->IsEnabled() || !btn->IsShown() )
+        return false;
+
+    wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, id);
+    event.SetEventObject(btn);
+    btn->GetEventHandler()->ProcessEvent(event);
+
+    return true;
+#else // !wxUSE_BUTTON
+    wxUnusedVar(id);
+    return false;
+#endif // wxUSE_BUTTON/!wxUSE_BUTTON
+}
+
+bool wxDialogBase::IsEscapeKey(const wxKeyEvent& event)
+{
+    // for most platforms, Esc key is used to close the dialogs
+    return event.GetKeyCode() == WXK_ESCAPE &&
+                event.GetModifiers() == wxMOD_NONE;
+}
+
+void wxDialogBase::OnCharHook(wxKeyEvent& event)
+{
+    if ( event.GetKeyCode() == WXK_ESCAPE )
+    {
+        int idCancel = GetEscapeId();
+        switch ( idCancel )
+        {
+            case wxID_NONE:
+                // don't handle Esc specially at all
+                break;
+
+            case wxID_ANY:
+                // this value is special: it means translate Esc to wxID_CANCEL
+                // but if there is no such button, then fall back to wxID_OK
+                if ( EmulateButtonClickIfPresent(wxID_CANCEL) )
+                    return;
+                idCancel = GetAffirmativeId();
+                // fall through
+
+            default:
+                // translate Esc to button press for the button with given id
+                if ( EmulateButtonClickIfPresent(idCancel) )
+                    return;
+        }
+    }
+
+    event.Skip();
+}
+
+void wxDialogBase::OnButton(wxCommandEvent& event)
+{
+    const int id = event.GetId();
+    if ( id == GetAffirmativeId() )
+    {
+        AcceptAndClose();
+    }
+    else if ( id == wxID_APPLY )
+    {
+        if ( Validate() )
+            TransferDataFromWindow();
+
+        // TODO: disable the Apply button until things change again
+    }
+    else if ( id == GetEscapeId() ||
+                (id == wxID_CANCEL && GetEscapeId() == wxID_ANY) )
+    {
+        EndDialog(wxID_CANCEL);
+    }
+    else // not a standard button
+    {
+        event.Skip();
+    }
+}
+
+// ----------------------------------------------------------------------------
+// other event handlers
+// ----------------------------------------------------------------------------
+
+void wxDialogBase::OnCloseWindow(wxCloseEvent& WXUNUSED(event))
+{
+    // We'll send a Cancel message by default, which may close the dialog.
+    // Check for looping if the Cancel event handler calls Close().
+
+    // Note that if a cancel button and handler aren't present in the dialog,
+    // nothing will happen when you close the dialog via the window manager, or
+    // via Close(). We wouldn't want to destroy the dialog by default, since
+    // the dialog may have been created on the stack. However, this does mean
+    // that calling dialog->Close() won't delete the dialog unless the handler
+    // for wxID_CANCEL does so. So use Destroy() if you want to be sure to
+    // destroy the dialog. The default OnCancel (above) simply ends a modal
+    // dialog, and hides a modeless dialog.
+
+    // VZ: this is horrible and MT-unsafe. Can't we reuse some of these global
+    //     lists here? don't dare to change it now, but should be done later!
+    static wxList closing;
+
+    if ( closing.Member(this) )
+        return;
+
+    closing.Append(this);
+
+    wxCommandEvent cancelEvent(wxEVT_COMMAND_BUTTON_CLICKED, wxID_CANCEL);
+    cancelEvent.SetEventObject( this );
+    GetEventHandler()->ProcessEvent(cancelEvent); // This may close the dialog
+
+    closing.DeleteObject(this);
+}
+
+void wxDialogBase::OnSysColourChanged(wxSysColourChangedEvent& event)
+{
+#ifndef __WXGTK__
+    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
+    Refresh();
+#endif
+    event.Skip();
+}

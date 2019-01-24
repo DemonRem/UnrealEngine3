@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: settings.h,v 1.31 2005/03/07 19:10:42 ABX Exp $
+// RCS-ID:      $Id: settings.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@
 #include "wx/colour.h"
 #include "wx/font.h"
 
-class WXDLLEXPORT wxWindow;
+class WXDLLIMPEXP_FWD_CORE wxWindow;
 
 // possible values for wxSystemSettings::GetFont() parameter
 //
@@ -132,7 +132,8 @@ enum wxSystemMetric
 enum wxSystemFeature
 {
     wxSYS_CAN_DRAW_FRAME_DECORATIONS = 1,
-    wxSYS_CAN_ICONIZE_FRAME
+    wxSYS_CAN_ICONIZE_FRAME,
+    wxSYS_TABLET_PRESENT
 };
 
 // values for different screen designs

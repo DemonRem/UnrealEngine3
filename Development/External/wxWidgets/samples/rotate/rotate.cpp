@@ -4,7 +4,7 @@
 // Author:    Carlos Moreno
 // Modified by:
 // Created:   6/2/2000
-// RCS-ID:    $Id: rotate.cpp,v 1.16 2005/05/19 10:15:53 JS Exp $
+// RCS-ID:    $Id: rotate.cpp 40587 2006-08-13 01:17:53Z VZ $
 // Copyright: (c) 2000
 // Licence:   wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -153,7 +153,7 @@ bool MyApp::OnInit()
 // ----------------------------------------------------------------------------
 
 #include "wx/arrimpl.cpp"
-WX_DEFINE_OBJARRAY(ArrayOfImages);
+WX_DEFINE_OBJARRAY(ArrayOfImages)
 
 // ----------------------------------------------------------------------------
 // custom canvas control that we can draw on
@@ -213,7 +213,6 @@ void MyCanvas::OnPaint (wxPaintEvent &)
     size_t numImages = m_images.GetCount();
 
     wxPaintDC dc(this);
-    dc.BeginDrawing();
 
     dc.SetTextForeground(wxColour(255, 255, 255));
     dc.DrawText(wxT("Click on the canvas to draw a duck."), 10, 10);
@@ -222,8 +221,6 @@ void MyCanvas::OnPaint (wxPaintEvent &)
         MyRenderedImage & image = m_images.Item(i);
         dc.DrawBitmap(image.m_bmp, image.m_x, image.m_y, true);
     }
-
-    dc.EndDrawing();
 }
 
 // ----------------------------------------------------------------------------

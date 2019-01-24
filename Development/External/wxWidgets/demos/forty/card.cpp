@@ -4,7 +4,7 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: card.cpp,v 1.10 2005/08/23 15:49:27 ABX Exp $
+// RCS-ID:      $Id: card.cpp 39615 2006-06-07 13:26:00Z ABX $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------
@@ -18,11 +18,6 @@
 //| Jack, Queen and King have been loaded into
 //| hbmap_pictures.
 //+-------------------------------------------------------------+
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -41,10 +36,8 @@
 #include "forty.h"
 #include "card.h"
 
-#ifndef __WXMSW__
 #include "pictures.xpm"
-#include "symbols.xbm"
-#endif
+#include "symbols.xpm"
 
 wxBitmap* Card::m_pictureBmap = 0;
 wxBitmap* Card::m_symbolBmap = 0;
@@ -66,11 +59,7 @@ Card::Card(int value, WayUp way_up) :
 {
     if (!m_symbolBmap)
     {
-#ifdef __WXMSW__
-        m_symbolBmap = new wxBitmap(_T("CardSymbols"), wxBITMAP_TYPE_BMP_RESOURCE);
-#else
-        m_symbolBmap = new wxBitmap(Symbols_bits, Symbols_width, Symbols_height);
-#endif
+        m_symbolBmap = new wxBitmap(symbols_xpm);
         if (!m_symbolBmap->Ok())
         {
             ::wxMessageBox(_T("Failed to load bitmap CardSymbols"), _T("Error"));
@@ -78,11 +67,7 @@ Card::Card(int value, WayUp way_up) :
     }
     if (!m_pictureBmap)
     {
-#ifdef __WXMSW__
-        m_pictureBmap = new wxBitmap(_T("CardPictures"), wxBITMAP_TYPE_BMP_RESOURCE);
-#else
         m_pictureBmap = new wxBitmap(Pictures);
-#endif
         if (!m_pictureBmap->Ok())
         {
             ::wxMessageBox(_T("Failed to load bitmap CardPictures"), _T("Error"));
@@ -185,7 +170,7 @@ void Card::Draw(wxDC& dc, int x, int y)
         dc.SetBackground(* wxRED_BRUSH);
         dc.SetBackgroundMode(wxSOLID);
         wxBrush* brush = wxTheBrushList->FindOrCreateBrush(
-                            _T("BLACK"), wxCROSSDIAG_HATCH
+                            *wxBLACK, wxCROSSDIAG_HATCH
                             );
         dc.SetBrush(* brush);
 

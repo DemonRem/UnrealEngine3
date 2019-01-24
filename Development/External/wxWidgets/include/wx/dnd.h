@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin, Robert Roebling
 // Modified by:
 // Created:     26.05.99
-// RCS-ID:      $Id: dnd.h,v 1.33 2005/03/08 22:50:40 RR Exp $
+// RCS-ID:      $Id: dnd.h 43636 2006-11-25 14:08:27Z VZ $
 // Copyright:   (c) wxWidgets Team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DND_H_BASE_
 #define _WX_DND_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "dndbase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -49,10 +45,9 @@ enum wxDragResult
     wxDragCancel    // the operation was cancelled by user (not an error)
 };
 
-inline WXDLLEXPORT bool wxIsDragResultOk(wxDragResult res)
-{
-    return res == wxDragCopy || res == wxDragMove || res == wxDragLink;
-}
+// return true if res indicates that something was done during a dnd operation,
+// i.e. is neither error nor none nor cancel
+WXDLLEXPORT bool wxIsDragResultOk(wxDragResult res);
 
 // ----------------------------------------------------------------------------
 // wxDropSource is the object you need to create (and call DoDragDrop on it)
@@ -222,8 +217,10 @@ protected:
     #include "wx/motif/dnd.h"
 #elif defined(__WXX11__)
     #include "wx/x11/dnd.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/dnd.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/dnd.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/dnd.h"
 #elif defined(__WXPM__)

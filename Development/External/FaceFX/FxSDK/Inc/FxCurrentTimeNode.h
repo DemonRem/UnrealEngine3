@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxCurrentTimeNode_H__
@@ -40,9 +40,6 @@ public:
 	virtual FxFaceGraphNode* Clone( void );
 	/// Copies the data from this object into the other object.
 	virtual void CopyData( FxFaceGraphNode* pOther );
-
-	/// Returns the current time in the system.
-	virtual FxReal GetValue( void );
 
 	/// Disallow adding input links to this type of node.
 	virtual FxBool AddInputLink( const FxFaceGraphNodeLink& newInputLink );

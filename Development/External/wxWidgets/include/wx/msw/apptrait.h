@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     21.06.2003
-// RCS-ID:      $Id: apptrait.h,v 1.6 2004/05/23 20:51:27 JS Exp $
+// RCS-ID:      $Id: apptrait.h 40599 2006-08-13 21:00:32Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ public:
     virtual void AfterChildWaitLoop(void *data);
 
     virtual bool DoMessageFromThreadWait();
-    virtual wxToolkitInfo& GetToolkitInfo();
+    virtual wxPortId GetToolkitVersion(int *majVer, int *minVer) const;
 };
 
 #endif // wxUSE_GUI

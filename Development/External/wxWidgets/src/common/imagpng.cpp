@@ -2,7 +2,7 @@
 // Name:        src/common/imagepng.cpp
 // Purpose:     wxImage PNG handler
 // Author:      Robert Roebling
-// RCS-ID:      $Id: imagpng.cpp,v 1.56 2005/07/26 09:05:23 ABX Exp $
+// RCS-ID:      $Id: imagpng.cpp 53479 2008-05-07 16:23:55Z PC $
 // Copyright:   (c) Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -10,10 +10,6 @@
 // ============================================================================
 // declarations
 // ============================================================================
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "imagpng.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -23,25 +19,25 @@
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-  #include "wx/defs.h"
+    #pragma hdrstop
 #endif
 
 #if wxUSE_IMAGE && wxUSE_LIBPNG
 
 #include "wx/imagpng.h"
-#include "wx/bitmap.h"
-#include "wx/debug.h"
-#include "wx/log.h"
-#include "wx/app.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/log.h"
+    #include "wx/app.h"
+    #include "wx/bitmap.h"
+    #include "wx/module.h"
+#endif
+
 #include "png.h"
 #include "wx/filefn.h"
 #include "wx/wfstream.h"
 #include "wx/intl.h"
-#include "wx/module.h"
+#include "wx/palette.h"
 
 // For memcpy
 #include <string.h>
@@ -109,7 +105,9 @@ IMPLEMENT_DYNAMIC_CLASS(wxPNGHandler,wxImageHandler)
 #if wxUSE_STREAMS
 
 #ifndef PNGLINKAGEMODE
-    #if defined(__WATCOMC__) && ( defined(__WXMSW__) || __WATCOMC__ > 1230 )
+    #ifdef PNGAPI
+        #define PNGLINKAGEMODE PNGAPI
+    #elif defined(__WATCOMC__)
         // we need an explicit cdecl for Watcom, at least according to
         //
         // http://sf.net/tracker/index.php?func=detail&aid=651492&group_id=9863&atid=109863
@@ -172,20 +170,25 @@ void PNGLINKAGEMODE wx_PNG_stream_writer( png_structp png_ptr, png_bytep data,
     WX_PNG_INFO(png_ptr)->stream.out->Write(data, length);
 }
 
-// from pngerror.c
-// so that the libpng doesn't send anything on stderr
-void
-PNGLINKAGEMODE wx_png_error(png_structp WXUNUSED(png_ptr), png_const_charp message)
-{
-    wxLogFatalError( wxString::FromAscii(message) );
-}
-
 void
 PNGLINKAGEMODE wx_png_warning(png_structp png_ptr, png_const_charp message)
 {
     wxPNGInfoStruct *info = png_ptr ? WX_PNG_INFO(png_ptr) : NULL;
     if ( !info || info->verbose )
         wxLogWarning( wxString::FromAscii(message) );
+}
+
+// from pngerror.c
+// so that the libpng doesn't send anything on stderr
+void
+PNGLINKAGEMODE wx_png_error(png_structp png_ptr, png_const_charp message)
+{
+    wx_png_warning(NULL, message);
+
+    // we're not using libpng built-in jump buffer (see comment before
+    // wxPNGInfoStruct above) so we have to return ourselves, otherwise libpng
+    // would just abort
+    longjmp(WX_PNG_INFO(png_ptr)->jmpbuf, 1);
 }
 
 } // extern "C"
@@ -278,6 +281,7 @@ FindMaskColour(unsigned char **lines, png_uint_32 width, png_uint_32 height,
             r2 = *p++;
             g2 = *p++;
             b2 = *p++;
+            ++p; // jump over alpha
 
             wxImageHistogramEntry&
                 entry = h[wxImageHistogram:: MakeKey(r2, g2, b2)];
@@ -383,8 +387,8 @@ void CopyDataFromPNG(wxImage *image,
                         if ( IsTransparent(a) )
                         {
                             *ptrDst++ = rMask;
-                            *ptrDst++ = bMask;
                             *ptrDst++ = gMask;
+                            *ptrDst++ = bMask;
                             break;
                         }
                         // else: !transparent
@@ -451,8 +455,8 @@ void CopyDataFromPNG(wxImage *image,
                         if ( IsTransparent(a) )
                         {
                             *ptrDst++ = rMask;
-                            *ptrDst++ = bMask;
                             *ptrDst++ = gMask;
+                            *ptrDst++ = bMask;
                             break;
                         }
                         else // !transparent
@@ -507,12 +511,15 @@ wxPNGHandler::LoadFile(wxImage *image,
                        bool verbose,
                        int WXUNUSED(index))
 {
-    // VZ: as this function uses setjmp() the only fool proof error handling
+    // VZ: as this function uses setjmp() the only fool-proof error handling
     //     method is to use goto (setjmp is not really C++ dtors friendly...)
 
     unsigned char **lines = NULL;
     png_infop info_ptr = (png_infop) NULL;
     wxPNGInfoStruct wxinfo;
+
+    png_uint_32 i, width, height = 0;
+    int bit_depth, color_type, interlace_type;
 
     wxinfo.verbose = verbose;
     wxinfo.stream.in = &stream;
@@ -539,9 +546,6 @@ wxPNGHandler::LoadFile(wxImage *image,
 
     if (setjmp(wxinfo.jmpbuf))
         goto error;
-
-    png_uint_32 i, width, height;
-    int bit_depth, color_type, interlace_type;
 
     png_read_info( png_ptr, info_ptr );
     png_get_IHDR( png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, (int*) NULL, (int*) NULL );
@@ -580,6 +584,29 @@ wxPNGHandler::LoadFile(wxImage *image,
 
     png_read_image( png_ptr, lines );
     png_read_end( png_ptr, info_ptr );
+
+#if wxUSE_PALETTE
+    if (color_type == PNG_COLOR_TYPE_PALETTE)
+    {
+        const size_t ncolors = info_ptr->num_palette;
+        unsigned char* r = new unsigned char[ncolors];
+        unsigned char* g = new unsigned char[ncolors];
+        unsigned char* b = new unsigned char[ncolors];
+
+        for (size_t j = 0; j < ncolors; j++)
+        {
+            r[j] = info_ptr->palette[j].red;
+            g[j] = info_ptr->palette[j].green;
+            b[j] = info_ptr->palette[j].blue;
+        }
+
+        image->SetPalette(wxPalette(ncolors, r, g, b));
+        delete[] r;
+        delete[] g;
+        delete[] b;
+    }
+#endif // wxUSE_PALETTE
+
     png_destroy_read_struct( &png_ptr, &info_ptr, (png_infopp) NULL );
 
     // loaded successfully, now init wxImage with this data
@@ -602,6 +629,9 @@ error:
 
     if ( lines )
     {
+        for ( unsigned int n = 0; n < height; n++ )
+            free( lines[n] );
+
         free( lines );
     }
 

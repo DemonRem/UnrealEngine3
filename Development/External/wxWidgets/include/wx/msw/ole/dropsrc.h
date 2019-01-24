@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     06.03.98
-// RCS-ID:      $Id: dropsrc.h,v 1.21 2004/08/16 12:45:40 ABX Exp $
+// RCS-ID:      $Id: dropsrc.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef   _WX_OLEDROPSRC_H
 #define   _WX_OLEDROPSRC_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface
-#endif
 
 #if wxUSE_DRAG_AND_DROP
 
@@ -23,8 +19,8 @@
 // ----------------------------------------------------------------------------
 
 class wxIDropSource;
-class WXDLLEXPORT wxDataObject;
-class WXDLLEXPORT wxWindow;
+class WXDLLIMPEXP_FWD_CORE wxDataObject;
+class WXDLLIMPEXP_FWD_CORE wxWindow;
 
 // ----------------------------------------------------------------------------
 // macros

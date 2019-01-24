@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: splitter.cpp,v 1.24 2005/03/30 15:36:15 JS Exp $
+// RCS-ID:      $Id: splitter.cpp 33179 2005-03-30 15:36:15Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////

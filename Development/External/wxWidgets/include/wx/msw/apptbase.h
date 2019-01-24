@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     22.06.2003
-// RCS-ID:      $Id: apptbase.h,v 1.7 2004/05/23 20:51:27 JS Exp $
+// RCS-ID:      $Id: apptbase.h 40599 2006-08-13 21:00:32Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,14 +40,6 @@ public:
     // process a message while waiting for a(nother) thread, should return
     // false if and only if we have to exit the application
     virtual bool DoMessageFromThreadWait() = 0;
-
-    // other miscellaneous helpers
-    // ---------------------------
-
-    // under MSW this function returns same version for both console and GUI
-    // applications so we can implement it directly in the base class and only
-    // override it wxGUIAppTraits to fill in toolkit information
-    virtual wxToolkitInfo& GetToolkitInfo();
 };
 
 #endif // _WX_MSW_APPTBASE_H_

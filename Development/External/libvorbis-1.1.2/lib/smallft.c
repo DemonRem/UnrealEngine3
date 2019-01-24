@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: *unnormalized* fft transform
- last mod: $Id: smallft.c 7573 2004-08-16 01:26:52Z conrad $
 
  ********************************************************************/
 
@@ -34,22 +33,25 @@
 #include "smallft.h"
 #include "os.h"
 #include "misc.h"
-#ifdef __SSE__												/* SSE Optimize */
 #include "xmmlib.h"
+#ifdef __SSE__												/* SSE Optimize */
 
-static _MM_ALIGN16 int		IP256[16]	 = {  64,   64,   0, 128,  64, 192,  32, 160,  96, 224};
-static _MM_ALIGN16 int		IP512[32]	 = { 128,  128,   0, 256, 128, 384,  64, 320, 192, 448};
-static _MM_ALIGN16 int		IP1024[32]	 = {
+static _MM_ALIGN16 int IP256[16] = {  64,   64,   0, 128,  64, 192,  32, 160,  96, 224 };
+static _MM_ALIGN16 int IP512[32] = { 128,  128,   0, 256, 128, 384,  64, 320, 192, 448 };
+static _MM_ALIGN16 int IP1024[32] = 
+{
 	  256,  256,
 	    0,  512,  256,  768,  128,  640,  384,  896,
 	   64,  576,  320,  832,  192,  704,  448,  960
 };
-static _MM_ALIGN16 int		IP2048[32]	 = {
+static _MM_ALIGN16 int IP2048[32] = 
+{
 	  512,  512,
 	    0, 1024,  512, 1536,  256, 1280,  768, 1792,
 	  128, 1152,  640, 1664,  384, 1408,  896, 1920
 };
-static _MM_ALIGN16 int		IP4096[64]	 = {
+static _MM_ALIGN16 int IP4096[64] =
+{
 	 1024, 1024,
 	    0, 2048, 1024, 3072,  512, 2560, 1536, 3584,
 	  256, 2304, 1280, 3328,  768, 2816, 1792, 3840,
@@ -57,11 +59,10 @@ static _MM_ALIGN16 int		IP4096[64]	 = {
 	  384, 2432, 1408, 3456,  896, 2944, 1920, 3968
 };
 
-static _MM_ALIGN16 float	W2[4]	 = {
-	7.0710676908493e-001, 7.0710676908493e-001, 7.0710676908493e-001, 7.0710676908493e-001
-};
+static _MM_ALIGN16 float W2[4] = { 7.0710676908493e-001, 7.0710676908493e-001, 7.0710676908493e-001, 7.0710676908493e-001 };
 
-static _MM_ALIGN16 float	W256[]	 = {
+static _MM_ALIGN16 float W256[] = 
+{
 	 4.8772937059402e-001,  4.9984940886497e-001,  0.0000000000000e+000,  0.0000000000000e+000,
 	 4.7546616196632e-001,  4.7546616196632e-001,  4.6321770548820e-001,  4.6321770548820e-001,
 	-4.9939772486687e-001,  4.9939772486687e-001, -4.9864521622658e-001,  4.9864521622658e-001,
@@ -126,7 +127,8 @@ static _MM_ALIGN16 float	W256[]	 = {
 	 6.0227513313293e-004,  6.0227513313293e-004,  1.5059113502502e-004,  1.5059113502502e-004,
 	-2.4533838033676e-002,  2.4533838033676e-002, -1.2270614504814e-002,  1.2270614504814e-002
 };
-static _MM_ALIGN16 float	W512[]	 = {
+static _MM_ALIGN16 float W512[] =
+{
 	 4.9386423826218e-001,  4.9996235966682e-001,  0.0000000000000e+000,  0.0000000000000e+000,
 	 4.8772937059402e-001,  4.8772937059402e-001,  4.8159638047218e-001,  4.8159638047218e-001,
 	-4.9984940886497e-001,  4.9984940886497e-001, -4.9966117739677e-001,  4.9966117739677e-001,
@@ -255,7 +257,9 @@ static _MM_ALIGN16 float	W512[]	 = {
 	 1.5059113502502e-004,  1.5059113502502e-004,  3.7640333175659e-005,  3.7640333175659e-005,
 	-1.2270614504814e-002,  1.2270614504814e-002, -6.1357691884041e-003,  6.1357691884041e-003,
 };
-static _MM_ALIGN16 float	W1024[]	 = {
+
+static _MM_ALIGN16 float W1024[] =
+{
 	 4.9693205952644e-001,  4.9999058246613e-001,  0.0000000000000e+000,  0.0000000000000e+000,
 	 4.9386423826218e-001,  4.9386423826218e-001,  4.9079662561417e-001,  4.9079662561417e-001,
 	-4.9996235966682e-001,  4.9996235966682e-001, -4.9991530179977e-001,  4.9991530179977e-001,
@@ -512,7 +516,8 @@ static _MM_ALIGN16 float	W1024[]	 = {
 	 3.7640333175659e-005,  3.7640333175659e-005,  9.4175338745117e-006,  9.4175338745117e-006,
 	-6.1357691884041e-003,  6.1357691884041e-003, -3.0679423362017e-003,  3.0679423362017e-003
 };
-static _MM_ALIGN16 float	W2048[]	 = {
+static _MM_ALIGN16 float W2048[] =
+{
 	 4.9846601486206e-001,  4.9999764561653e-001,  0.0000000000000e+000,  0.0000000000000e+000,
 	 4.9693205952644e-001,  4.9693205952644e-001,  4.9539813399315e-001,  4.9539813399315e-001,
 	-4.9999058246613e-001,  4.9999058246613e-001, -4.9997881054878e-001,  4.9997881054878e-001,
@@ -1025,7 +1030,8 @@ static _MM_ALIGN16 float	W2048[]	 = {
 	 9.4175338745117e-006,  9.4175338745117e-006,  2.3543834686279e-006,  2.3543834686279e-006,
 	-3.0679423362017e-003,  3.0679423362017e-003, -1.5339783858508e-003,  1.5339783858508e-003
 };
-static _MM_ALIGN16 float	W4096[]	 = {
+static _MM_ALIGN16 float W4096[] =
+{
 	 4.9923300743103e-001,  4.9999940395355e-001,  0.0000000000000e+000,  0.0000000000000e+000,
 	 4.9846601486206e-001,  4.9846601486206e-001,  4.9769902229309e-001,  4.9769902229309e-001,
 	-4.9999764561653e-001,  4.9999764561653e-001, -4.9999469518661e-001,  4.9999469518661e-001,
@@ -2051,7 +2057,8 @@ static _MM_ALIGN16 float	W4096[]	 = {
 	-1.5339783858508e-003,  1.5339783858508e-003, -7.6699012424797e-004,  7.6699012424797e-004
 };
 
-static _MM_ALIGN16 float	CT1STP[]	 = {
+static _MM_ALIGN16 float CT1STP[] =
+{
 	 7.0710676908493e-001,  7.0710676908493e-001,  7.0710676908493e-001,  7.0710676908493e-001,
 	-7.0710676908493e-001,  7.0710676908493e-001, -7.0710676908493e-001,  7.0710676908493e-001,
 	 9.2387950420380e-001,  9.2387950420380e-001,  3.8268339633942e-001,  3.8268339633942e-001,
@@ -4094,7 +4101,8 @@ static _MM_ALIGN16 float	CT1STP[]	 = {
 	-9.9999529123306e-001,  9.9999529123306e-001,  9.9995762109756e-001, -9.9995762109756e-001
 };
 
-static _MM_ALIGN16 float	CTMDLP[]	 = {
+static _MM_ALIGN16 float CTMDLP[] =
+{
 	 9.2387950420380e-001,  9.2387950420380e-001,  9.2387950420380e-001,  9.2387950420380e-001,
 	-3.8268345594406e-001,  3.8268345594406e-001, -3.8268345594406e-001,  3.8268345594406e-001,
 	 7.0710676908493e-001,  7.0710676908493e-001,  7.0710676908493e-001,  7.0710676908493e-001,
@@ -4855,420 +4863,427 @@ static _MM_ALIGN16 float	CTMDLP[]	 = {
 
 STIN void cft1st( int n, float* a )
 {
-	int		j;
-	float	*w	 = CT1STP;
+	int j;
+	float* w = CT1STP;
 	
 	__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
-#pragma warning(disable : 592)
-	XMM0	 = _mm_loadl_pi(XMM0, (__m64*)(a   ));
-	XMM2	 = _mm_loadl_pi(XMM2, (__m64*)(a+ 2));
-#pragma warning(default : 592)
-	XMM0	 = _mm_loadh_pi(XMM0, (__m64*)(a+ 4));
-	XMM2	 = _mm_loadh_pi(XMM2, (__m64*)(a+ 6));
-	XMM1	 = XMM0;
-	XMM0	 = _mm_add_ps(XMM0, XMM2);
-	XMM1	 = _mm_sub_ps(XMM1, XMM2);
-	XMM2	 = XMM0;
-	XMM3	 = XMM1;
-	XMM0	 = _mm_movelh_ps(XMM0, XMM0);
-	XMM2	 = _mm_movehl_ps(XMM2, XMM2);
-	XMM1	 = _mm_movelh_ps(XMM1, XMM1);
-	XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,2,3));
-	XMM2	 = _mm_xor_ps(XMM2, PM128(PCS_RRNN));
-	XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_RNNR));
-#pragma warning(disable : 592)
-	XMM4	 = _mm_loadl_pi(XMM4, (__m64*)(a+ 8));
-	XMM5	 = _mm_loadl_pi(XMM5, (__m64*)(a+10));
-#pragma warning(default : 592)
-	XMM0	 = _mm_add_ps(XMM0, XMM2);
-	XMM1	 = _mm_add_ps(XMM1, XMM3);
-	XMM4	 = _mm_loadh_pi(XMM4, (__m64*)(a+12));
-	XMM5	 = _mm_loadh_pi(XMM5, (__m64*)(a+14));
-	XMM2	 = XMM4;
-	_mm_storel_pi((__m64*)(a   ), XMM0);
-	_mm_storel_pi((__m64*)(a+ 2), XMM1);
-	XMM4	 = _mm_add_ps(XMM4, XMM5);
-	XMM2	 = _mm_sub_ps(XMM2, XMM5);
-	_mm_storeh_pi((__m64*)(a+ 4), XMM0);
-	_mm_storeh_pi((__m64*)(a+ 6), XMM1);
-	XMM5	 = XMM4;
-	XMM3	 = XMM2;
-	XMM4	 = _mm_shuffle_ps(XMM4, XMM4, _MM_SHUFFLE(0,3,1,0));
-	XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(2,1,3,2));
-	XMM2	 = _mm_shuffle_ps(XMM2, XMM2, _MM_SHUFFLE(2,3,1,0));
-	XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(1,0,2,3));
-	XMM5	 = _mm_xor_ps(XMM5, PM128(PCS_RRNN));
-	XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_RNNR));
-	XMM4	 = _mm_add_ps(XMM4, XMM5);
-	XMM2	 = _mm_add_ps(XMM2, XMM3);
-	_mm_storel_pi((__m64*)(a+ 8), XMM4);
-	_mm_storeh_pi((__m64*)(a+12), XMM4);
-	XMM5	 = XMM2;
-	XMM3	 = _mm_load_ss(w+2);
-	XMM2	 = _mm_shuffle_ps(XMM2, XMM2, _MM_SHUFFLE(3,3,0,0));
-	XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(2,2,1,1));
-	XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(0,0,0,0));
+
+	XMM0 = _mm_loadl_pi( PFV_0, ( __m64* )( a ) );
+	XMM2 = _mm_loadl_pi( PFV_0, ( __m64* )( a + 2 ) );
+	XMM0 = _mm_loadh_pi( XMM0, ( __m64* )( a + 4 ) );
+	XMM2 = _mm_loadh_pi( XMM2, ( __m64* )( a + 6 ) );
+	XMM1 = XMM0;
+	XMM0 = _mm_add_ps( XMM0, XMM2 );
+	XMM1 = _mm_sub_ps( XMM1, XMM2 );
+	XMM2 = XMM0;
+	XMM3 = XMM1;
+	XMM0 = _mm_movelh_ps( XMM0, XMM0 );
+	XMM2 = _mm_movehl_ps( XMM2, XMM2 );
+	XMM1 = _mm_movelh_ps( XMM1, XMM1 );
+	XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 2, 3 ) );
+	XMM2 = _mm_mul_ps( XMM2, PCS_RRNN2 );
+	XMM3 = _mm_mul_ps( XMM3, PCS_RNNR2 );
+	XMM4 = _mm_loadl_pi( PFV_0, ( __m64* )( a + 8 ) );
+	XMM5 = _mm_loadl_pi( PFV_0, ( __m64* )( a + 10 ) );
+	XMM0 = _mm_add_ps( XMM0, XMM2 );
+	XMM1 = _mm_add_ps( XMM1, XMM3 );
+	XMM4 = _mm_loadh_pi( XMM4, ( __m64* )( a + 12 ) );
+	XMM5 = _mm_loadh_pi( XMM5, ( __m64* )( a + 14 ) );
+	XMM2 = XMM4;
+	_mm_storel_pi( ( __m64* )( a ), XMM0 );
+	_mm_storel_pi( ( __m64* )( a + 2 ), XMM1 );
+	XMM4 = _mm_add_ps( XMM4, XMM5 );
+	XMM2 = _mm_sub_ps( XMM2, XMM5 );
+	_mm_storeh_pi( ( __m64* )( a + 4 ), XMM0 );
+	_mm_storeh_pi( ( __m64* )( a + 6 ), XMM1 );
+	XMM5 = XMM4;
+	XMM3 = XMM2;
+	XMM4 = _mm_shuffle_ps( XMM4, XMM4, _MM_SHUFFLE( 0, 3, 1, 0 ) );
+	XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 2, 1, 3, 2 ) );
+	XMM2 = _mm_shuffle_ps( XMM2, XMM2, _MM_SHUFFLE( 2, 3, 1, 0 ) );
+	XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 1, 0, 2, 3 ) );
+	XMM5 = _mm_mul_ps( XMM5, PCS_RRNN2 );
+	XMM3 = _mm_mul_ps( XMM3, PCS_RNNR2 );
+	XMM4 = _mm_add_ps( XMM4, XMM5 );
+	XMM2 = _mm_add_ps( XMM2, XMM3 );
+	_mm_storel_pi( ( __m64* )( a + 8 ), XMM4 );
+	_mm_storeh_pi( ( __m64* )( a + 12 ), XMM4 );
+	XMM5 = XMM2;
+	XMM3 = _mm_load_ss( w + 2 );
+	XMM2 = _mm_shuffle_ps( XMM2, XMM2, _MM_SHUFFLE( 3, 3, 0, 0 ) );
+	XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 2, 2, 1, 1 ) );
+	XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 0, 0, 0, 0 ) );
 #if	defined(__SSE3__)
-	XMM2	 = _mm_addsub_ps(XMM2, XMM5);
+	XMM2 = _mm_addsub_ps( XMM2, XMM5 );
 #else
-	XMM5	 = _mm_xor_ps(XMM5, PM128(PCS_NRNR));
-	XMM2	 = _mm_add_ps(XMM2, XMM5);
+	XMM5 = _mm_mul_ps( XMM5, PCS_NRNR2 );
+	XMM2 = _mm_add_ps( XMM2, XMM5 );
 #endif
-	XMM2	 = _mm_mul_ps(XMM2, XMM3);
-	_mm_storel_pi((__m64*)(a+10), XMM2);
-	_mm_storeh_pi((__m64*)(a+14), XMM2);
-	for (j = 16; j < n; j += 16)
+	XMM2 = _mm_mul_ps( XMM2, XMM3 );
+	_mm_storel_pi( ( __m64* )( a + 10 ), XMM2 );
+	_mm_storeh_pi( ( __m64* )( a + 14 ), XMM2 );
+
+	for( j = 16; j < n; j += 16 )
 	{
 		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
-#pragma warning(disable : 592)
-		XMM0	 = _mm_loadl_pi(XMM0, (__m64*)(a+j   ));
-		XMM2	 = _mm_loadl_pi(XMM2, (__m64*)(a+j+ 2));
-		XMM0	 = _mm_loadh_pi(XMM0, (__m64*)(a+j+ 4));
-		XMM2	 = _mm_loadh_pi(XMM2, (__m64*)(a+j+ 6));
-		XMM1	 = XMM0;
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM1	 = _mm_sub_ps(XMM1, XMM2);
-		XMM2	 = XMM0;
-		XMM3	 = XMM1;
-		XMM0	 = _mm_movelh_ps(XMM0, XMM0);
-		XMM2	 = _mm_movehl_ps(XMM2, XMM2);
-		XMM1	 = _mm_movelh_ps(XMM1, XMM1);
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,2,3));
-		XMM2	 = _mm_xor_ps(XMM2, PM128(PCS_RRNN));
-		XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_RNNR));
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM1	 = _mm_add_ps(XMM1, XMM3);
-		_mm_storel_pi((__m64*)(a+j   ), XMM0);
-		XMM2	 = XMM0;
-		XMM4	 = _mm_loadl_pi(XMM4, (__m64*)(a+j+ 8));
-		XMM5	 = _mm_loadl_pi(XMM5, (__m64*)(a+j+10));
-#pragma warning(default : 592)
-		XMM2	 = _mm_shuffle_ps(XMM2, XMM2, _MM_SHUFFLE(2,3,2,3));
-		XMM0	 = _mm_mul_ps(XMM0, PM128(w   ));
-		XMM2	 = _mm_mul_ps(XMM2, PM128(w+ 4));
-		XMM3	 = XMM1;
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,0,1));
-		XMM4	 = _mm_loadh_pi(XMM4, (__m64*)(a+j+12));
-		XMM5	 = _mm_loadh_pi(XMM5, (__m64*)(a+j+14));
-		_mm_storeh_pi((__m64*)(a+j+ 4), XMM0);
-		XMM1	 = _mm_mul_ps(XMM1, PM128(w+ 8));
-		XMM2	 = XMM4;
-		XMM3	 = _mm_mul_ps(XMM3, PM128(w+12));
-		XMM4	 = _mm_add_ps(XMM4, XMM5);
-		XMM2	 = _mm_sub_ps(XMM2, XMM5);
-		XMM1	 = _mm_add_ps(XMM1, XMM3);
-		XMM5	 = XMM4;
-		XMM0	 = XMM2;
-		_mm_storel_pi((__m64*)(a+j+ 2), XMM1);
-		XMM4	 = _mm_movelh_ps(XMM4, XMM4);
-		XMM5	 = _mm_movehl_ps(XMM5, XMM5);
-		_mm_storeh_pi((__m64*)(a+j+ 6), XMM1);
-		XMM2	 = _mm_movelh_ps(XMM2, XMM2);
-		XMM0	 = _mm_shuffle_ps(XMM0, XMM0, _MM_SHUFFLE(2,3,2,3));
-		XMM5	 = _mm_xor_ps(XMM5, PM128(PCS_RRNN));
-		XMM0	 = _mm_xor_ps(XMM0, PM128(PCS_RNNR));
-		XMM4	 = _mm_add_ps(XMM4, XMM5);
-		XMM2	 = _mm_add_ps(XMM2, XMM0);
-		_mm_storel_pi((__m64*)(a+j+ 8), XMM4);
-		XMM5	 = XMM4;
-		XMM4	 = _mm_shuffle_ps(XMM4, XMM4, _MM_SHUFFLE(2,3,2,3));
-		XMM4	 = _mm_mul_ps(XMM4, PM128(w+16));
-		XMM5	 = _mm_mul_ps(XMM5, PM128(w+20));
-		XMM0	 = XMM2;
-		XMM4	 = _mm_sub_ps(XMM4, XMM5);
-		XMM0	 = _mm_shuffle_ps(XMM0, XMM0, _MM_SHUFFLE(2,3,0,1));
-		_mm_storeh_pi((__m64*)(a+j+12), XMM4);
-		XMM2	 = _mm_mul_ps(XMM2, PM128(w+24));
-		XMM0	 = _mm_mul_ps(XMM0, PM128(w+28));
-		XMM2	 = _mm_add_ps(XMM2, XMM0);
-		_mm_storel_pi((__m64*)(a+j+10), XMM2);
-		_mm_storeh_pi((__m64*)(a+j+14), XMM2);
-		w	+= 32;
+
+		XMM0 = _mm_loadl_pi( PFV_0, ( __m64* )( a + j ) );
+		XMM2 = _mm_loadl_pi( PFV_0, ( __m64* )( a + j + 2 ) );
+		XMM0 = _mm_loadh_pi( XMM0, ( __m64* )( a + j + 4 ) );
+		XMM2 = _mm_loadh_pi( XMM2, ( __m64* )( a + j + 6 ) );
+		XMM1 = XMM0;
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM1 = _mm_sub_ps( XMM1, XMM2 );
+		XMM2 = XMM0;
+		XMM3 = XMM1;
+		XMM0 = _mm_movelh_ps( XMM0, XMM0 );
+		XMM2 = _mm_movehl_ps( XMM2, XMM2 );
+		XMM1 = _mm_movelh_ps( XMM1, XMM1 );
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 2, 3 ) );
+		XMM2 = _mm_mul_ps( XMM2, PCS_RRNN2 );
+		XMM3 = _mm_mul_ps( XMM3, PCS_RNNR2 );
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM1 = _mm_add_ps( XMM1, XMM3 );
+		_mm_storel_pi( ( __m64* )( a + j ), XMM0 );
+		XMM2 = XMM0;
+		XMM4 = _mm_loadl_pi( PFV_0, ( __m64* )( a + j + 8 ) );
+		XMM5 = _mm_loadl_pi( PFV_0, ( __m64* )( a + j + 10 ) );
+		XMM2 = _mm_shuffle_ps( XMM2, XMM2, _MM_SHUFFLE( 2, 3, 2, 3 ) );
+		XMM0 = _mm_mul_ps( XMM0, PM128( w ) );
+		XMM2 = _mm_mul_ps( XMM2, PM128( w + 4 ) );
+		XMM3 = XMM1;
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		XMM4 = _mm_loadh_pi( XMM4, (__m64*)(a+j+12));
+		XMM5 = _mm_loadh_pi( XMM5, (__m64*)(a+j+14));
+		_mm_storeh_pi((__m64*)(a+j+ 4), XMM0 );
+		XMM1 = _mm_mul_ps( XMM1, PM128(w+ 8));
+		XMM2 = XMM4;
+		XMM3 = _mm_mul_ps( XMM3, PM128(w+12));
+		XMM4 = _mm_add_ps( XMM4, XMM5 );
+		XMM2 = _mm_sub_ps( XMM2, XMM5 );
+		XMM1 = _mm_add_ps( XMM1, XMM3 );
+		XMM5 = XMM4;
+		XMM0 = XMM2;
+		_mm_storel_pi( ( __m64* )( a + j + 2 ), XMM1 );
+		XMM4 = _mm_movelh_ps( XMM4, XMM4 );
+		XMM5 = _mm_movehl_ps( XMM5, XMM5 );
+		_mm_storeh_pi( ( __m64* )( a + j + 6), XMM1 );
+		XMM2 = _mm_movelh_ps( XMM2, XMM2 );
+		XMM0 = _mm_shuffle_ps( XMM0, XMM0, _MM_SHUFFLE( 2, 3, 2, 3 ) );
+		XMM5 = _mm_mul_ps( XMM5, PCS_RRNN2 );
+		XMM0 = _mm_mul_ps( XMM0, PCS_RNNR2 );
+		XMM4 = _mm_add_ps( XMM4, XMM5 );
+		XMM2 = _mm_add_ps( XMM2, XMM0 );
+		_mm_storel_pi( ( __m64* )( a + j + 8 ), XMM4 );
+		XMM5 = XMM4;
+		XMM4 = _mm_shuffle_ps( XMM4, XMM4, _MM_SHUFFLE( 2, 3, 2, 3 ) );
+		XMM4 = _mm_mul_ps( XMM4, PM128( w + 16 ) );
+		XMM5 = _mm_mul_ps( XMM5, PM128( w + 20 ) );
+		XMM0 = XMM2;
+		XMM4 = _mm_sub_ps( XMM4, XMM5 );
+		XMM0 = _mm_shuffle_ps( XMM0, XMM0, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		_mm_storeh_pi( ( __m64* )( a + j + 12 ), XMM4 );
+		XMM2 = _mm_mul_ps( XMM2, PM128( w + 24 ) );
+		XMM0 = _mm_mul_ps( XMM0, PM128( w + 28 ) );
+		XMM2 = _mm_add_ps( XMM2, XMM0 );
+		_mm_storel_pi( ( __m64* )( a + j + 10 ), XMM2 );
+		_mm_storeh_pi( ( __m64* )( a + j + 14 ), XMM2 );
+		w += 32;
 	}
 }
-
 
 STIN void cftmdl( int n, int l, float* a )
 {
 	int j, j1, j2, j3, k, m, m2;
-	__m128	XMM6;
-	__m128	*ctmdl = (__m128*)CTMDLP;
+	__m128 XMM6;
+	__m128* ctmdl = ( __m128* )CTMDLP;
 
 	m = l << 2;
-	for (j = 0; j < l; j += 8) {
+	for( j = 0; j < l; j += 8 )
+	{
 		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6;
-		j1 = j  + l;
-		j2 = j1 + l;
-		j3 = j2 + l;
-		XMM0	 = _mm_load_ps(a+j   );
-		XMM4	 = _mm_load_ps(a+j1  );
-		XMM2	 = _mm_load_ps(a+j2  );
-		XMM5	 = _mm_load_ps(a+j3  );
-		XMM1	 = XMM0;
-		XMM3	 = XMM2;
-		XMM0	 = _mm_add_ps(XMM0, XMM4);
-		XMM2	 = _mm_add_ps(XMM2, XMM5);
-		XMM1	 = _mm_sub_ps(XMM1, XMM4);
-		XMM3	 = _mm_sub_ps(XMM3, XMM5);
-		XMM4	 = XMM0;
-		XMM5	 = XMM1;
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,0,1));
-		XMM6	 = _mm_load_ps(a+j +4);
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_NRNR));
-		XMM4	 = _mm_sub_ps(XMM4, XMM2);
-		XMM2	 = _mm_load_ps(a+j1+4);
-		XMM1	 = _mm_add_ps(XMM1, XMM3);
-		XMM5	 = _mm_sub_ps(XMM5, XMM3);
-		XMM3	 = _mm_load_ps(a+j2+4);
-		_mm_store_ps(a+j   , XMM0);
-		XMM0	 = _mm_load_ps(a+j3+4);
-		_mm_store_ps(a+j1  , XMM1);
-		XMM1	 = XMM6;
-		_mm_store_ps(a+j2  , XMM4);
-		XMM4	 = XMM3;
-		XMM6	 = _mm_add_ps(XMM6, XMM2);
-		XMM3	 = _mm_add_ps(XMM3, XMM0);
-		XMM1	 = _mm_sub_ps(XMM1, XMM2);
-		XMM4	 = _mm_sub_ps(XMM4, XMM0);
-		XMM2	 = XMM6;
-		XMM0	 = XMM1;
-		XMM4	 = _mm_shuffle_ps(XMM4, XMM4, _MM_SHUFFLE(2,3,0,1));
-		_mm_store_ps(a+j3  , XMM5);
-		XMM6	 = _mm_add_ps(XMM6, XMM3);
-		XMM4	 = _mm_xor_ps(XMM4, PM128(PCS_NRNR));
-		XMM2	 = _mm_sub_ps(XMM2, XMM3);
-		XMM1	 = _mm_add_ps(XMM1, XMM4);
-		XMM0	 = _mm_sub_ps(XMM0, XMM4);
-		_mm_store_ps(a+j +4, XMM6);
-		_mm_store_ps(a+j1+4, XMM1);
-		_mm_store_ps(a+j2+4, XMM2);
-		_mm_store_ps(a+j3+4, XMM0);
-	}
-	XMM6	 = _mm_load_ps(W2);
-	for (j = m; j < l + m; j += 8) {
-		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
-		j1 = j  + l;
-		j2 = j1 + l;
-		j3 = j2 + l;
-		XMM0	 = _mm_load_ps(a+j   );
-		XMM4	 = _mm_load_ps(a+j1  );
-		XMM2	 = _mm_load_ps(a+j2  );
-		XMM5	 = _mm_load_ps(a+j3  );
-		XMM1	 = XMM0;
-		XMM3	 = XMM2;
-		XMM0	 = _mm_add_ps(XMM0, XMM4);
-		XMM2	 = _mm_add_ps(XMM2, XMM5);
-		XMM1	 = _mm_sub_ps(XMM1, XMM4);
-		XMM3	 = _mm_sub_ps(XMM3, XMM5);
-		XMM4	 = XMM0;
-		XMM5	 = XMM0;
-		XMM4	 = _mm_shuffle_ps(XMM4, XMM2, _MM_SHUFFLE(3,1,2,0));	/* (x2i_1,x2i_0,x0r_1,x0r_0) */
-		XMM5	 = _mm_shuffle_ps(XMM5, XMM2, _MM_SHUFFLE(2,0,3,1));	/* (x2r_1,x2r_0,x0i_1,x0i_0) */
-		XMM4	 = _mm_shuffle_ps(XMM4, XMM4, _MM_SHUFFLE(1,3,0,2));	/* (x0r_1,x2i_1,x0r_0,x2i_0) */
-		XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(3,1,2,0));	/* (x2r_1,x0i_1,x2r_0,x0i_0) */
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM2	 = XMM1;												/* x1  */
-		XMM4	 = _mm_sub_ps(XMM4, XMM5);
-		XMM5	 = XMM3;												/* x3  */
-#if	defined(__SSE3__)
-		XMM2	 = _mm_moveldup_ps(XMM2);
-		XMM1	 = _mm_movehdup_ps(XMM1);
-#else
-		XMM2	 = _mm_shuffle_ps(XMM2, XMM2, _MM_SHUFFLE(2,2,0,0));	/* x1r */
-		XMM1	 = _mm_shuffle_ps(XMM1, XMM1, _MM_SHUFFLE(3,3,1,1));	/* x1i */
-#endif
-		_mm_store_ps(a+j   , XMM0);
-		_mm_store_ps(a+j2  , XMM4);
-#if	defined(__SSE3__)
-		XMM5	 = _mm_moveldup_ps(XMM5);
-		XMM3	 = _mm_movehdup_ps(XMM3);
-#else
-		XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(2,2,0,0));	/* x3r */
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(3,3,1,1));	/* x3i */
-#endif
-		XMM0	 = XMM2;												/* x1r */
-		XMM4	 = XMM1;												/* x1i */
-		XMM2	 = _mm_sub_ps(XMM2, XMM3);								/* x1r - x3i */
-		XMM1	 = _mm_add_ps(XMM1, XMM5);								/* x1i + x3r */
-		XMM5	 = _mm_sub_ps(XMM5, XMM4);								/* x3r - x1i */
-		XMM4	 = _mm_load_ps(a+j +4);
-		XMM3	 = _mm_add_ps(XMM3, XMM0);								/* x3i + x1r */
-		XMM0	 = _mm_load_ps(a+j1+4);
-#if	defined(__SSE3__)
-		XMM2	 = _mm_addsub_ps(XMM2, XMM1);
-		XMM1	 = _mm_load_ps(a+j2+4);
-		XMM5	 = _mm_addsub_ps(XMM5, XMM3);
-#else
-		XMM1	 = _mm_xor_ps(XMM1, PM128(PCS_NRNR));
-		XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_NRNR));
-		XMM2	 = _mm_add_ps(XMM2, XMM1);
-		XMM1	 = _mm_load_ps(a+j2+4);
-		XMM5	 = _mm_add_ps(XMM5, XMM3);
-#endif
-		XMM3	 = _mm_load_ps(a+j3+4);
-		XMM2	 = _mm_mul_ps(XMM2, XMM6);
-		XMM5	 = _mm_mul_ps(XMM5, XMM6);
-		_mm_store_ps(a+j1  , XMM2);
-		XMM2	 = XMM4;
-		_mm_store_ps(a+j3  , XMM5);
-		XMM5	 = XMM1;
-		XMM4	 = _mm_add_ps(XMM4, XMM0);
-		XMM1	 = _mm_add_ps(XMM1, XMM3);
-		XMM2	 = _mm_sub_ps(XMM2, XMM0);
-		XMM5	 = _mm_sub_ps(XMM5, XMM3);
-		XMM0	 = XMM4;
-		XMM3	 = XMM4;
-		XMM0	 = _mm_shuffle_ps(XMM0, XMM1, _MM_SHUFFLE(3,1,2,0));	/* (x2i_1,x2i_0,x0r_1,x0r_0) */
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM1, _MM_SHUFFLE(2,0,3,1));	/* (x2r_1,x2r_0,x0i_1,x0i_0) */
-		XMM0	 = _mm_shuffle_ps(XMM0, XMM0, _MM_SHUFFLE(1,3,0,2));	/* (x0r_1,x2i_1,x0r_0,x2i_0) */
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(3,1,2,0));	/* (x2r_1,x0i_1,x2r_0,x0i_0) */
-		XMM4	 = _mm_add_ps(XMM4, XMM1);
-		XMM1	 = XMM2;												/* x1  */
-		XMM0	 = _mm_sub_ps(XMM0, XMM3);
-		XMM3	 = XMM5;												/* x3  */
-#if	defined(__SSE3__)
-		XMM1	 = _mm_moveldup_ps(XMM1);
-		XMM2	 = _mm_movehdup_ps(XMM2);
-#else
-		XMM1	 = _mm_shuffle_ps(XMM1, XMM1, _MM_SHUFFLE(2,2,0,0));	/* x1r */
-		XMM2	 = _mm_shuffle_ps(XMM2, XMM2, _MM_SHUFFLE(3,3,1,1));	/* x1i */
-#endif
-		_mm_store_ps(a+j +4, XMM4);
-		_mm_store_ps(a+j2+4, XMM0);
-#if	defined(__SSE3__)
-		XMM3	 = _mm_moveldup_ps(XMM3);
-		XMM5	 = _mm_movehdup_ps(XMM5);
-#else
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,2,0,0));	/* x3r */
-		XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(3,3,1,1));	/* x3i */
-#endif
-		XMM4	 = XMM1;												/* x1r */
-		XMM0	 = XMM2;												/* x1i */
-		XMM1	 = _mm_sub_ps(XMM1, XMM5);								/* x1r - x3i */
-		XMM2	 = _mm_add_ps(XMM2, XMM3);								/* x1i + x3r */
-		XMM3	 = _mm_sub_ps(XMM3, XMM0);								/* x3r - x1i */
-		XMM5	 = _mm_add_ps(XMM5, XMM4);								/* x3i + x1r */
-#if	defined(__SSE3__)
-		XMM1	 = _mm_addsub_ps(XMM1, XMM2);
-		XMM3	 = _mm_addsub_ps(XMM3, XMM5);
-#else
-		XMM2	 = _mm_xor_ps(XMM2, PM128(PCS_NRNR));
-		XMM5	 = _mm_xor_ps(XMM5, PM128(PCS_NRNR));
-		XMM1	 = _mm_add_ps(XMM1, XMM2);
-		XMM3	 = _mm_add_ps(XMM3, XMM5);
-#endif
-		XMM1	 = _mm_mul_ps(XMM1, XMM6);
-		XMM3	 = _mm_mul_ps(XMM3, XMM6);
-		_mm_store_ps(a+j1+4, XMM1);
-		_mm_store_ps(a+j3+4, XMM3);
-	}
-	m2 = 2 * m;
-	for (k = m2; k < n; k += m2) {
-		for (j = k; j < l + k; j += 4) {
-			__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
-			j1 = j  + l;
-			j2 = j1 + l;
-			j3 = j2 + l;
-			XMM0	 = _mm_load_ps(a+j );
-			XMM4	 = _mm_load_ps(a+j1);
-			XMM2	 = _mm_load_ps(a+j2);
-			XMM5	 = _mm_load_ps(a+j3);
-			XMM1	 = XMM0;
-			XMM3	 = XMM2;
-			XMM0	 = _mm_add_ps(XMM0, XMM4);
-			XMM2	 = _mm_add_ps(XMM2, XMM5);
-			XMM1	 = _mm_sub_ps(XMM1, XMM4);
-			XMM3	 = _mm_sub_ps(XMM3, XMM5);
 
-			XMM4	 = XMM0;
-			XMM5	 = XMM0;
-			XMM6	 = XMM2;
-			XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(2,3,0,1));
-			XMM6	 = _mm_shuffle_ps(XMM6, XMM6, _MM_SHUFFLE(2,3,0,1));
-			XMM4	 = _mm_sub_ps(XMM4, XMM2);
-			XMM5	 = _mm_sub_ps(XMM5, XMM6);
-			XMM4	 = _mm_mul_ps(XMM4, *(ctmdl+ 2));
-			XMM5	 = _mm_mul_ps(XMM5, *(ctmdl+ 3));
-			XMM0	 = _mm_add_ps(XMM0, XMM2);
-			XMM2	 = XMM1;
-			XMM4	 = _mm_add_ps(XMM4, XMM5);
-			XMM5	 = XMM3;
-			_mm_store_ps(a+j , XMM0);
-			XMM0	 = XMM1;
-			_mm_store_ps(a+j2, XMM4);
-			XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(2,3,0,1));
-			XMM0	 = _mm_shuffle_ps(XMM0, XMM0, _MM_SHUFFLE(2,3,0,1));
-			XMM4	 = XMM0;
-			XMM5	 = _mm_xor_ps(XMM5, PM128(PCS_NRNR));
-			XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_NRNR));
-			XMM1	 = _mm_add_ps(XMM1, XMM5);
-			XMM0	 = _mm_sub_ps(XMM0, XMM3);
-			XMM2	 = _mm_sub_ps(XMM2, XMM5);
-			XMM4	 = _mm_add_ps(XMM4, XMM3);
-			XMM1	 = _mm_mul_ps(XMM1, *(ctmdl   ));
-			XMM0	 = _mm_mul_ps(XMM0, *(ctmdl+ 1));
-			XMM2	 = _mm_mul_ps(XMM2, *(ctmdl+ 4));
-			XMM4	 = _mm_mul_ps(XMM4, *(ctmdl+ 5));
-			XMM1	 = _mm_add_ps(XMM1, XMM0);
-			XMM2	 = _mm_add_ps(XMM2, XMM4);
-			_mm_store_ps(a+j1, XMM1);
-			_mm_store_ps(a+j3, XMM2);
-		}
-		for (j = k + m; j < l + (k + m); j += 4) {
+		j1 = j + l;
+		j2 = j1 + l;
+		j3 = j2 + l;
+		XMM0 = _mm_load_ps( a + j );
+		XMM4 = _mm_load_ps( a + j1 );
+		XMM2 = _mm_load_ps( a + j2 );
+		XMM5 = _mm_load_ps( a + j3 );
+		XMM1 = XMM0;
+		XMM3 = XMM2;
+		XMM0 = _mm_add_ps( XMM0, XMM4 );
+		XMM2 = _mm_add_ps( XMM2, XMM5 );
+		XMM1 = _mm_sub_ps( XMM1, XMM4 );
+		XMM3 = _mm_sub_ps( XMM3, XMM5 );
+		XMM4 = XMM0;
+		XMM5 = XMM1;
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		XMM6 = _mm_load_ps( a + j + 4 );
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM3 = _mm_mul_ps( XMM3, PCS_NRNR2 );
+		XMM4 = _mm_sub_ps( XMM4, XMM2 );
+		XMM2 = _mm_load_ps( a + j1 + 4 );
+		XMM1 = _mm_add_ps( XMM1, XMM3 );
+		XMM5 = _mm_sub_ps( XMM5, XMM3 );
+		XMM3 = _mm_load_ps( a + j2 + 4 );
+		_mm_store_ps( a + j, XMM0 );
+		XMM0 = _mm_load_ps( a + j3 + 4 );
+		_mm_store_ps( a + j1, XMM1 );
+		XMM1 = XMM6;
+		_mm_store_ps( a + j2, XMM4 );
+		XMM4 = XMM3;
+		XMM6 = _mm_add_ps( XMM6, XMM2 );
+		XMM3 = _mm_add_ps( XMM3, XMM0 );
+		XMM1 = _mm_sub_ps( XMM1, XMM2 );
+		XMM4 = _mm_sub_ps( XMM4, XMM0 );
+		XMM2 = XMM6;
+		XMM0 = XMM1;
+		XMM4 = _mm_shuffle_ps( XMM4, XMM4, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		_mm_store_ps( a + j3, XMM5 );
+		XMM6 = _mm_add_ps( XMM6, XMM3 );
+		XMM4 = _mm_mul_ps( XMM4, PCS_NRNR2 );
+		XMM2 = _mm_sub_ps( XMM2, XMM3 );
+		XMM1 = _mm_add_ps( XMM1, XMM4 );
+		XMM0 = _mm_sub_ps( XMM0, XMM4 );
+		_mm_store_ps( a + j + 4, XMM6 );
+		_mm_store_ps( a + j1 + 4, XMM1 );
+		_mm_store_ps( a + j2 + 4, XMM2 );
+		_mm_store_ps( a + j3 + 4, XMM0 );
+	}
+
+	XMM6 = _mm_load_ps( W2 );
+	for( j = m; j < l + m; j += 8 ) 
+	{
+		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
+
+		j1 = j + l;
+		j2 = j1 + l;
+		j3 = j2 + l;
+		XMM0 = _mm_load_ps( a + j );
+		XMM4 = _mm_load_ps( a + j1 );
+		XMM2 = _mm_load_ps( a + j2 );
+		XMM5 = _mm_load_ps( a + j3 );
+		XMM1 = XMM0;
+		XMM3 = XMM2;
+		XMM0 = _mm_add_ps( XMM0, XMM4 );
+		XMM2 = _mm_add_ps( XMM2, XMM5 );
+		XMM1 = _mm_sub_ps( XMM1, XMM4 );
+		XMM3 = _mm_sub_ps( XMM3, XMM5 );
+		XMM4 = XMM0;
+		XMM5 = XMM0;
+		XMM4 = _mm_shuffle_ps( XMM4, XMM2, _MM_SHUFFLE( 3, 1, 2, 0 ) );	/* (x2i_1,x2i_0,x0r_1,x0r_0) */
+		XMM5 = _mm_shuffle_ps( XMM5, XMM2, _MM_SHUFFLE( 2, 0, 3, 1 ) );	/* (x2r_1,x2r_0,x0i_1,x0i_0) */
+		XMM4 = _mm_shuffle_ps( XMM4, XMM4, _MM_SHUFFLE( 1, 3, 0, 2 ) );	/* (x0r_1,x2i_1,x0r_0,x2i_0) */
+		XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 3, 1, 2, 0 ) );	/* (x2r_1,x0i_1,x2r_0,x0i_0) */
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM2 = XMM1;												/* x1  */
+		XMM4 = _mm_sub_ps( XMM4, XMM5 );
+		XMM5 = XMM3;												/* x3  */
+#if	defined(__SSE3__)
+		XMM2 = _mm_moveldup_ps( XMM2 );
+		XMM1 = _mm_movehdup_ps( XMM1 );
+#else
+		XMM2 = _mm_shuffle_ps( XMM2, XMM2, _MM_SHUFFLE( 2, 2, 0, 0 ) );	/* x1r */
+		XMM1 = _mm_shuffle_ps( XMM1, XMM1, _MM_SHUFFLE( 3, 3, 1, 1 ) );	/* x1i */
+#endif
+		_mm_store_ps( a + j, XMM0 );
+		_mm_store_ps( a + j2, XMM4 );
+#if	defined(__SSE3__)
+		XMM5 = _mm_moveldup_ps( XMM5 );
+		XMM3 = _mm_movehdup_ps( XMM3 );
+#else
+		XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 2, 2, 0, 0 ) );	/* x3r */
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 3, 3, 1, 1 ) );	/* x3i */
+#endif
+		XMM0 = XMM2;												/* x1r */
+		XMM4 = XMM1;												/* x1i */
+		XMM2 = _mm_sub_ps( XMM2, XMM3 );								/* x1r - x3i */
+		XMM1 = _mm_add_ps( XMM1, XMM5 );								/* x1i + x3r */
+		XMM5 = _mm_sub_ps( XMM5, XMM4 );								/* x3r - x1i */
+		XMM4 = _mm_load_ps( a + j + 4 );
+		XMM3 = _mm_add_ps( XMM3, XMM0 );								/* x3i + x1r */
+		XMM0 = _mm_load_ps( a + j1 + 4 );
+#if	defined(__SSE3__)
+		XMM2 = _mm_addsub_ps( XMM2, XMM1 );
+		XMM1 = _mm_load_ps( a + j2 + 4 );
+		XMM5 = _mm_addsub_ps( XMM5, XMM3 );
+#else
+		XMM1 = _mm_mul_ps( XMM1, PCS_NRNR2 );
+		XMM3 = _mm_mul_ps( XMM3, PCS_NRNR2 );
+		XMM2 = _mm_add_ps( XMM2, XMM1 );
+		XMM1 = _mm_load_ps( a + j2 + 4 );
+		XMM5 = _mm_add_ps( XMM5, XMM3 );
+#endif
+		XMM3 = _mm_load_ps( a + j3 + 4 );
+		XMM2 = _mm_mul_ps( XMM2, XMM6 );
+		XMM5 = _mm_mul_ps( XMM5, XMM6 );
+		_mm_store_ps( a + j1, XMM2 );
+		XMM2 = XMM4;
+		_mm_store_ps( a + j3, XMM5 );
+		XMM5 = XMM1;
+		XMM4 = _mm_add_ps( XMM4, XMM0 );
+		XMM1 = _mm_add_ps( XMM1, XMM3 );
+		XMM2 = _mm_sub_ps( XMM2, XMM0 );
+		XMM5 = _mm_sub_ps( XMM5, XMM3 );
+		XMM0 = XMM4;
+		XMM3 = XMM4;
+		XMM0 = _mm_shuffle_ps( XMM0, XMM1, _MM_SHUFFLE( 3, 1, 2, 0 ) );	/* (x2i_1,x2i_0,x0r_1,x0r_0) */
+		XMM3 = _mm_shuffle_ps( XMM3, XMM1, _MM_SHUFFLE( 2, 0, 3, 1 ) );	/* (x2r_1,x2r_0,x0i_1,x0i_0) */
+		XMM0 = _mm_shuffle_ps( XMM0, XMM0, _MM_SHUFFLE( 1, 3, 0, 2 ) );	/* (x0r_1,x2i_1,x0r_0,x2i_0) */
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 3, 1, 2, 0 ) );	/* (x2r_1,x0i_1,x2r_0,x0i_0) */
+		XMM4 = _mm_add_ps( XMM4, XMM1 );
+		XMM1 = XMM2;												/* x1  */
+		XMM0 = _mm_sub_ps( XMM0, XMM3 );
+		XMM3 = XMM5;												/* x3  */
+#if	defined(__SSE3__)
+		XMM1 = _mm_moveldup_ps( XMM1 );
+		XMM2 = _mm_movehdup_ps( XMM2 );
+#else
+		XMM1 = _mm_shuffle_ps( XMM1, XMM1, _MM_SHUFFLE( 2, 2, 0, 0 ) );	/* x1r */
+		XMM2 = _mm_shuffle_ps( XMM2, XMM2, _MM_SHUFFLE( 3, 3, 1, 1 ) );	/* x1i */
+#endif
+		_mm_store_ps( a + j + 4, XMM4 );
+		_mm_store_ps( a + j2 + 4, XMM0 );
+#if	defined(__SSE3__)
+		XMM3 = _mm_moveldup_ps( XMM3 );
+		XMM5 = _mm_movehdup_ps( XMM5 );
+#else
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 2, 0, 0 ) );	/* x3r */
+		XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 3, 3, 1, 1 ) );	/* x3i */
+#endif
+		XMM4 = XMM1;												/* x1r */
+		XMM0 = XMM2;												/* x1i */
+		XMM1 = _mm_sub_ps( XMM1, XMM5 );								/* x1r - x3i */
+		XMM2 = _mm_add_ps( XMM2, XMM3 );								/* x1i + x3r */
+		XMM3 = _mm_sub_ps( XMM3, XMM0 );								/* x3r - x1i */
+		XMM5 = _mm_add_ps( XMM5, XMM4 );								/* x3i + x1r */
+#if	defined(__SSE3__)
+		XMM1 = _mm_addsub_ps( XMM1, XMM2 );
+		XMM3 = _mm_addsub_ps( XMM3, XMM5 );
+#else
+		XMM2 = _mm_mul_ps( XMM2, PCS_NRNR2 );
+		XMM5 = _mm_mul_ps( XMM5, PCS_NRNR2 );
+		XMM1 = _mm_add_ps( XMM1, XMM2 );
+		XMM3 = _mm_add_ps( XMM3, XMM5 );
+#endif
+		XMM1 = _mm_mul_ps( XMM1, XMM6 );
+		XMM3 = _mm_mul_ps( XMM3, XMM6 );
+		_mm_store_ps( a + j1 + 4, XMM1 );
+		_mm_store_ps( a + j3 + 4, XMM3 );
+	}
+
+	m2 = 2 * m;
+	for( k = m2; k < n; k += m2 ) 
+	{
+		for( j = k; j < l + k; j += 4 )
+		{
 			__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
+
+			j1 = j + l;
+			j2 = j1 + l;
+			j3 = j2 + l;
+			XMM0 = _mm_load_ps( a + j );
+			XMM4 = _mm_load_ps( a + j1 );
+			XMM2 = _mm_load_ps( a + j2 );
+			XMM5 = _mm_load_ps( a + j3 );
+			XMM1 = XMM0;
+			XMM3 = XMM2;
+			XMM0 = _mm_add_ps( XMM0, XMM4 );
+			XMM2 = _mm_add_ps( XMM2, XMM5 );
+			XMM1 = _mm_sub_ps( XMM1, XMM4 );
+			XMM3 = _mm_sub_ps( XMM3, XMM5 );
+
+			XMM4 = XMM0;
+			XMM5 = XMM0;
+			XMM6 = XMM2;
+			XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM6 = _mm_shuffle_ps( XMM6, XMM6, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM4 = _mm_sub_ps( XMM4, XMM2 );
+			XMM5 = _mm_sub_ps( XMM5, XMM6 );
+			XMM4 = _mm_mul_ps( XMM4, *( ctmdl + 2 ) );
+			XMM5 = _mm_mul_ps( XMM5, *( ctmdl + 3 ) );
+			XMM0 = _mm_add_ps( XMM0, XMM2 );
+			XMM2 = XMM1;
+			XMM4 = _mm_add_ps( XMM4, XMM5 );
+			XMM5 = XMM3;
+			_mm_store_ps( a + j, XMM0 );
+			XMM0 = XMM1;
+			_mm_store_ps( a + j2, XMM4 );
+			XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM0 = _mm_shuffle_ps( XMM0, XMM0, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM4 = XMM0;
+			XMM5 = _mm_mul_ps( XMM5, PCS_NRNR2 );
+			XMM3 = _mm_mul_ps( XMM3, PCS_NRNR2 );
+			XMM1 = _mm_add_ps( XMM1, XMM5 );
+			XMM0 = _mm_sub_ps( XMM0, XMM3 );
+			XMM2 = _mm_sub_ps( XMM2, XMM5 );
+			XMM4 = _mm_add_ps( XMM4, XMM3 );
+			XMM1 = _mm_mul_ps( XMM1, *( ctmdl ) );
+			XMM0 = _mm_mul_ps( XMM0, *( ctmdl + 1 ) );
+			XMM2 = _mm_mul_ps( XMM2, *( ctmdl + 4 ) );
+			XMM4 = _mm_mul_ps( XMM4, *( ctmdl + 5 ) );
+			XMM1 = _mm_add_ps( XMM1, XMM0 );
+			XMM2 = _mm_add_ps( XMM2, XMM4 );
+			_mm_store_ps( a + j1, XMM1 );
+			_mm_store_ps( a + j3, XMM2 );
+		}
+
+		for( j = k + m; j < l + ( k + m ); j += 4 ) 
+		{
+			__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
+
 			j1 = j  + l;
 			j2 = j1 + l;
 			j3 = j2 + l;
-			XMM0	 = _mm_load_ps(a+j );
-			XMM4	 = _mm_load_ps(a+j1);
-			XMM2	 = _mm_load_ps(a+j2);
-			XMM5	 = _mm_load_ps(a+j3);
-			XMM1	 = XMM0;
-			XMM3	 = XMM2;
-			XMM0	 = _mm_add_ps(XMM0, XMM4);
-			XMM2	 = _mm_add_ps(XMM2, XMM5);
-			XMM1	 = _mm_sub_ps(XMM1, XMM4);
-			XMM3	 = _mm_sub_ps(XMM3, XMM5);
-			XMM4	 = XMM0;
-			XMM5	 = XMM0;
-			XMM6	 = XMM2;
-			XMM5	 = _mm_shuffle_ps(XMM5, XMM5, _MM_SHUFFLE(2,3,0,1));
-			XMM6	 = _mm_shuffle_ps(XMM6, XMM6, _MM_SHUFFLE(2,3,0,1));
-			XMM4	 = _mm_sub_ps(XMM4, XMM2);
-			XMM5	 = _mm_sub_ps(XMM5, XMM6);
-			XMM4	 = _mm_mul_ps(XMM4, *(ctmdl+ 9));
-			XMM5	 = _mm_mul_ps(XMM5, *(ctmdl+ 8));
-			XMM0	 = _mm_add_ps(XMM0, XMM2);
-			XMM2	 = XMM1;
-			XMM5	 = _mm_sub_ps(XMM5, XMM4);
-			XMM4	 = XMM3;
-			_mm_store_ps(a+j , XMM0);
-			XMM0	 = XMM1;
-			XMM4	 = _mm_shuffle_ps(XMM4, XMM4, _MM_SHUFFLE(2,3,0,1));
-			XMM0	 = _mm_shuffle_ps(XMM0, XMM0, _MM_SHUFFLE(2,3,0,1));
-			_mm_store_ps(a+j2, XMM5);
-			XMM5	 = XMM0;
-			XMM4	 = _mm_xor_ps(XMM4, PM128(PCS_NRNR));
-			XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_NRNR));
-			XMM1	 = _mm_add_ps(XMM1, XMM4);
-			XMM0	 = _mm_sub_ps(XMM0, XMM3);
-			XMM2	 = _mm_sub_ps(XMM2, XMM4);
-			XMM5	 = _mm_add_ps(XMM5, XMM3);
-			XMM1	 = _mm_mul_ps(XMM1, *(ctmdl+ 6));
-			XMM0	 = _mm_mul_ps(XMM0, *(ctmdl+ 7));
-			XMM2	 = _mm_mul_ps(XMM2, *(ctmdl+10));
-			XMM5	 = _mm_mul_ps(XMM5, *(ctmdl+11));
-			XMM1	 = _mm_add_ps(XMM1, XMM0);
-			XMM2	 = _mm_add_ps(XMM2, XMM5);
-			_mm_store_ps(a+j1, XMM1);
-			_mm_store_ps(a+j3, XMM2);
+			XMM0 = _mm_load_ps( a + j );
+			XMM4 = _mm_load_ps( a + j1 );
+			XMM2 = _mm_load_ps( a + j2 );
+			XMM5 = _mm_load_ps( a + j3 );
+			XMM1 = XMM0;
+			XMM3 = XMM2;
+			XMM0 = _mm_add_ps( XMM0, XMM4 );
+			XMM2 = _mm_add_ps( XMM2, XMM5 );
+			XMM1 = _mm_sub_ps( XMM1, XMM4 );
+			XMM3 = _mm_sub_ps( XMM3, XMM5 );
+			XMM4 = XMM0;
+			XMM5 = XMM0;
+			XMM6 = XMM2;
+			XMM5 = _mm_shuffle_ps( XMM5, XMM5, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM6 = _mm_shuffle_ps( XMM6, XMM6, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM4 = _mm_sub_ps( XMM4, XMM2 );
+			XMM5 = _mm_sub_ps( XMM5, XMM6 );
+			XMM4 = _mm_mul_ps( XMM4, *( ctmdl + 9 ) );
+			XMM5 = _mm_mul_ps( XMM5, *( ctmdl + 8 ) );
+			XMM0 = _mm_add_ps( XMM0, XMM2 );
+			XMM2 = XMM1;
+			XMM5 = _mm_sub_ps( XMM5, XMM4 );
+			XMM4 = XMM3;
+			_mm_store_ps( a + j, XMM0 );
+			XMM0 = XMM1;
+			XMM4 = _mm_shuffle_ps( XMM4, XMM4, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM0 = _mm_shuffle_ps( XMM0, XMM0, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			_mm_store_ps( a + j2, XMM5 );
+			XMM5 = XMM0;
+			XMM4 = _mm_mul_ps( XMM4, PCS_NRNR2 );
+			XMM3 = _mm_mul_ps( XMM3, PCS_NRNR2 );
+			XMM1 = _mm_add_ps( XMM1, XMM4 );
+			XMM0 = _mm_sub_ps( XMM0, XMM3 );
+			XMM2 = _mm_sub_ps( XMM2, XMM4 );
+			XMM5 = _mm_add_ps( XMM5, XMM3 );
+			XMM1 = _mm_mul_ps( XMM1, *( ctmdl + 6 ) );
+			XMM0 = _mm_mul_ps( XMM0, *( ctmdl + 7 ) );
+			XMM2 = _mm_mul_ps( XMM2, *( ctmdl + 10 ) );
+			XMM5 = _mm_mul_ps( XMM5, *( ctmdl + 11 ) );
+			XMM1 = _mm_add_ps( XMM1, XMM0 );
+			XMM2 = _mm_add_ps( XMM2, XMM5 );
+			_mm_store_ps( a + j1, XMM1 );
+			_mm_store_ps( a + j3, XMM2 );
 		}
-		ctmdl	+= 12;
+		ctmdl += 12;
 	}
 }
-
 
 STIN void bitrv2( int n, int* ip, float* a )
 {
@@ -5277,56 +5292,64 @@ STIN void bitrv2( int n, int* ip, float* a )
 	
 	ip[0] = 0;
 	l = n;
-	if(n==256)
+	if( n == 256 )
 	{
-		l	 = 32;
-		m	 = 8;
+		l = 32;
+		m = 8;
 	}
-	else if(n==512)
+	else if( n == 512 )
 	{
-		l	 = 64;
-		m	 = 8;
+		l = 64;
+		m = 8;
 	}
-	else if(n==1024)
+	else if( n == 1024 )
 	{
-		l	 = 64;
-		m	 = 16;
+		l = 64;
+		m = 16;
 	}
-	else if(n==2048)
+	else if( n == 2048 )
 	{
-		l	 = 128;
-		m	 = 16;
+		l = 128;
+		m = 16;
 	}
-	else if(n==4096)
+	else if( n == 4096 )
 	{
-		l	 = 128;
-		m	 = 32;
+		l = 128;
+		m = 32;
 	}
+	else
+	{
+		l = 0;
+		m = 0;
+	}
+
 	m2 = 2 * m;
-	if ((m << 3) == l) {
-		for (k = 0; k < m; k++) {
-			for (j = 0; j < k; j++) {
+	if( ( m << 3 ) == l ) 
+	{
+		for( k = 0; k < m; k++ ) 
+		{
+			for( j = 0; j < k; j++ ) 
+			{
 				__m128	X0, Y0, X1, Y1;
+
 				j1 = 2 * j + ip[k];
 				k1 = 2 * k + ip[j];
-#pragma warning(disable : 592)
-				X0	 = _mm_loadl_pi(X0, (__m64*)(a+j1     ));
-				Y0	 = _mm_loadl_pi(Y0, (__m64*)(a+k1     ));
-				X1	 = _mm_loadl_pi(X1, (__m64*)(a+j1+m2*2));
-				Y1	 = _mm_loadl_pi(Y1, (__m64*)(a+k1+m2  ));
-#pragma warning(default : 592)
-				X0	 = _mm_loadh_pi(X0, (__m64*)(a+j1+m2  ));
-				Y0	 = _mm_loadh_pi(Y0, (__m64*)(a+k1+m2*2));
-				X1	 = _mm_loadh_pi(X1, (__m64*)(a+j1+m2*3));
-				Y1	 = _mm_loadh_pi(Y1, (__m64*)(a+k1+m2*3));
-				_mm_storel_pi((__m64*)(a+k1     ), X0);
-				_mm_storel_pi((__m64*)(a+j1     ), Y0);
-				_mm_storel_pi((__m64*)(a+k1+m2  ), X1);
-				_mm_storel_pi((__m64*)(a+j1+m2*2), Y1);
-				_mm_storeh_pi((__m64*)(a+k1+m2*2), X0);
-				_mm_storeh_pi((__m64*)(a+j1+m2  ), Y0);
-				_mm_storeh_pi((__m64*)(a+k1+m2*3), X1);
-				_mm_storeh_pi((__m64*)(a+j1+m2*3), Y1);
+				X0 = _mm_loadl_pi( PFV_0, ( __m64* )( a + j1 ) );
+				Y0 = _mm_loadl_pi( PFV_0, ( __m64* )( a + k1 ) );
+				X1 = _mm_loadl_pi( PFV_0, ( __m64* )( a + j1 + m2 * 2 ) );
+				Y1 = _mm_loadl_pi( PFV_0, ( __m64* )( a + k1 + m2 ) );
+				X0 = _mm_loadh_pi( X0, ( __m64* )( a + j1 + m2 ) );
+				Y0 = _mm_loadh_pi( Y0, ( __m64* )( a + k1 + m2 * 2 ) );
+				X1 = _mm_loadh_pi( X1, ( __m64* )( a + j1 + m2 * 3 ) );
+				Y1 = _mm_loadh_pi( Y1, ( __m64* )( a + k1 + m2 * 3 ) );
+				_mm_storel_pi( ( __m64* )( a + k1 ), X0 );
+				_mm_storel_pi( ( __m64* )( a + j1 ), Y0 );
+				_mm_storel_pi( ( __m64* )( a + k1 + m2 ), X1 );
+				_mm_storel_pi( ( __m64* )( a + j1 + m2 * 2 ), Y1 );
+				_mm_storeh_pi( ( __m64* )( a + k1 + m2 * 2 ), X0 );
+				_mm_storeh_pi( ( __m64* )( a + j1 + m2 ), Y0 );
+				_mm_storeh_pi( ( __m64* )( a + k1 + m2 * 3 ), X1 );
+				_mm_storeh_pi( ( __m64* )( a + j1 + m2 * 3 ), Y1 );
 			}
 			j1 = 2 * k + m2 + ip[k];
 			k1 = j1 + m2;
@@ -5339,192 +5362,204 @@ STIN void bitrv2( int n, int* ip, float* a )
 			a[k1] = xr;
 			a[k1 + 1] = xi;
 		}
-	} else {
-		for (k = 1; k < m; k++) {
-			for (j = 0; j < k; j++) {
+	} 
+	else 
+	{
+		for( k = 1; k < m; k++ )
+		{
+			for( j = 0; j < k; j++ ) 
+			{
 				__m128	X, Y;
+
 				j1 = 2 * j + ip[k];
 				k1 = 2 * k + ip[j];
-#pragma warning(disable : 592)
-				X	 = _mm_loadl_pi(X, (__m64*)(a+j1   ));
-				Y	 = _mm_loadl_pi(Y, (__m64*)(a+k1   ));
-#pragma warning(default : 592)
-				X	 = _mm_loadh_pi(X, (__m64*)(a+j1+m2));
-				Y	 = _mm_loadh_pi(Y, (__m64*)(a+k1+m2));
-				_mm_storel_pi((__m64*)(a+k1   ), X);
-				_mm_storel_pi((__m64*)(a+j1   ), Y);
-				_mm_storeh_pi((__m64*)(a+k1+m2), X);
-				_mm_storeh_pi((__m64*)(a+j1+m2), Y);
+				X = _mm_loadl_pi( PFV_0, ( __m64* )( a + j1 ) );
+				Y = _mm_loadl_pi( PFV_0, ( __m64* )( a + k1 ) );
+				X = _mm_loadh_pi( X, ( __m64* )( a + j1 + m2 ) );
+				Y = _mm_loadh_pi( Y, ( __m64* )( a + k1 + m2 ) );
+				_mm_storel_pi( ( __m64* ) (a + k1 ), X );
+				_mm_storel_pi( ( __m64* ) (a + j1 ), Y );
+				_mm_storeh_pi( ( __m64* ) (a + k1 + m2 ), X );
+				_mm_storeh_pi( ( __m64* ) (a + j1 + m2 ), Y );
 			}
 		}
 	}
 }
-
 
 STIN void cftfsub( int n, float* a )
 {
 	int j, j1, j2, j3, l;
 	
 	l = 2;
-	if (n > 8) {
-		cft1st(n, a);
+	if( n > 8 ) 
+	{
+		cft1st( n, a );
 		l = 8;
-		while ((l << 2) < n) {
-			cftmdl(n, l, a);
+		while( ( l << 2 ) < n ) 
+		{
+			cftmdl( n, l, a );
 			l <<= 2;
 		}
 	}
-	if ((l << 2) == n) {
-		for (j = 0; j < l; j += 4) {
+
+	if( ( l << 2 ) == n ) 
+	{
+		for(j = 0; j < l; j += 4 ) 
+		{
 			__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
 
-			j1 = j  + l;
+			j1 = j + l;
 			j2 = j1 + l;
 			j3 = j2 + l;
 
-			XMM0	 = _mm_load_ps(a+j );
-			XMM4	 = _mm_load_ps(a+j1);
-			XMM2	 = _mm_load_ps(a+j2);
-			XMM5	 = _mm_load_ps(a+j3);
-			XMM1	 = XMM0;
-			XMM3	 = XMM2;
-			XMM0	 = _mm_add_ps(XMM0, XMM4);
-			XMM2	 = _mm_add_ps(XMM2, XMM5);
-			XMM1	 = _mm_sub_ps(XMM1, XMM4);
-			XMM3	 = _mm_sub_ps(XMM3, XMM5);
-			XMM4	 = XMM0;
-			XMM5	 = XMM1;
-			XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,0,1));
-			XMM0	 = _mm_add_ps(XMM0, XMM2);
-			XMM4	 = _mm_sub_ps(XMM4, XMM2);
-			XMM3	 = _mm_xor_ps(XMM3, PM128(PCS_NRNR));
-			_mm_store_ps(a+j , XMM0);
-			_mm_store_ps(a+j2, XMM4);
-			XMM1	 = _mm_add_ps(XMM1, XMM3);
-			XMM5	 = _mm_sub_ps(XMM5, XMM3);
-			_mm_store_ps(a+j1, XMM1);
-			_mm_store_ps(a+j3, XMM5);
+			XMM0 = _mm_load_ps( a + j );
+			XMM4 = _mm_load_ps( a + j1 );
+			XMM2 = _mm_load_ps( a + j2 );
+			XMM5 = _mm_load_ps( a + j3 );
+			XMM1 = XMM0;
+			XMM3 = XMM2;
+			XMM0 = _mm_add_ps( XMM0, XMM4 );
+			XMM2 = _mm_add_ps( XMM2, XMM5 );
+			XMM1 = _mm_sub_ps( XMM1, XMM4 );
+			XMM3 = _mm_sub_ps( XMM3, XMM5 );
+			XMM4 = XMM0;
+			XMM5 = XMM1;
+			XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+			XMM0 = _mm_add_ps( XMM0, XMM2 );
+			XMM4 = _mm_sub_ps( XMM4, XMM2 );
+			XMM3 = _mm_mul_ps( XMM3, PCS_NRNR2 );
+			_mm_store_ps( a + j, XMM0 );
+			_mm_store_ps( a + j2, XMM4 );
+			XMM1 = _mm_add_ps( XMM1, XMM3 );
+			XMM5 = _mm_sub_ps( XMM5, XMM3 );
+			_mm_store_ps( a + j1, XMM1 );
+			_mm_store_ps( a + j3, XMM5 );
 		}
-	} else {
-		for (j = 0; j < l; j += 8)
+	} 
+	else 
+	{
+		for( j = 0; j < l; j += 8 )
 		{
 			__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5;
 			j1 = j + l;
 
-			XMM0	 = _mm_load_ps(a+j   );
-			XMM4	 = _mm_load_ps(a+j1  );
-			XMM1	 = _mm_load_ps(a+j+ 4);
-			XMM5	 = _mm_load_ps(a+j1+4);
-			XMM2	 = XMM0;
-			XMM3	 = XMM1;
-			XMM0	 = _mm_add_ps(XMM0, XMM4);
-			XMM1	 = _mm_add_ps(XMM1, XMM5);
-			XMM2	 = _mm_sub_ps(XMM2, XMM4);
-			XMM3	 = _mm_sub_ps(XMM3, XMM5);
-			_mm_store_ps(a+j   , XMM0);
-			_mm_store_ps(a+j +4, XMM1);
-			_mm_store_ps(a+j1  , XMM2);
-			_mm_store_ps(a+j1+4, XMM3);
+			XMM0 = _mm_load_ps( a + j );
+			XMM4 = _mm_load_ps( a + j1 );
+			XMM1 = _mm_load_ps( a + j + 4 );
+			XMM5 = _mm_load_ps( a + j1 +4 );
+			XMM2 = XMM0;
+			XMM3 = XMM1;
+			XMM0 = _mm_add_ps( XMM0, XMM4 );
+			XMM1 = _mm_add_ps( XMM1, XMM5 );
+			XMM2 = _mm_sub_ps( XMM2, XMM4 );
+			XMM3 = _mm_sub_ps( XMM3, XMM5 );
+			_mm_store_ps( a + j, XMM0 );
+			_mm_store_ps( a + j + 4, XMM1 );
+			_mm_store_ps( a + j1, XMM2 );
+			_mm_store_ps( a + j1 + 4, XMM3 );
 		}
 	}
 }
 
 STIN void rftfsub( int n, float* a, int nc, float* w )
 {
-	int		j, k, m, o;
+	int	j, k, m, o;
 	
-	m	 = n >> 1;
-	j	 = 2;
+	m = n >> 1;
+	j = 2;
 	{
-		float	wkr, wki, xr, xi, yr, yi;
-		k	 = n - j;
-		wkr	 = w[0];
-		wki	 = w[1];
-		xr	 = a[j  ] - a[k  ];
-		xi	 = a[j+1] + a[k+1];
-		yr	 = wkr * xr - wki * xi;
-		yi	 = wkr * xi + wki * xr;
-		a[j  ]	-= yr;
-		a[j+1]	-= yi;
-		a[k  ]	+= yr;
-		a[k+1]	-= yi;
-		j	+= 2;
+		float wkr, wki, xr, xi, yr, yi;
+		k = n - j;
+		wkr = w[0];
+		wki = w[1];
+		xr = a[j] - a[k];
+		xi = a[j + 1] + a[k + 1];
+		yr = wkr * xr - wki * xi;
+		yi = wkr * xi + wki * xr;
+		a[j] -= yr;
+		a[j + 1] -= yi;
+		a[k] += yr;
+		a[k + 1] -= yi;
+		j += 2;
 	}
-	n	-= 2;
-	w	-= 4;
-	o	 = ((m-j)&(~7))+j;
-#pragma warning(disable : 592)
-	for(;j<o;j+=8)
-	{
-		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6;
-		k	 = n - j;
-		XMM0	 = _mm_loadl_pi(XMM0, (__m64*)(a+k+2));
-		XMM5	 = _mm_load_ps(w+j*2   );
-		XMM0	 = _mm_loadh_pi(XMM0, (__m64*)(a+k  ));
-		XMM6	 = _mm_load_ps(w+j*2+ 4);
-		XMM1	 = XMM0;
-		XMM0	 = _mm_xor_ps(XMM0, PM128(PCS_NRNR));
-		XMM2	 = _mm_load_ps(a+j  );
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM3	 = XMM0;
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,0,1));
-		XMM0	 = _mm_mul_ps(XMM0, XMM5);
-		XMM5	 = _mm_loadl_pi(XMM5, (__m64*)(a+k-2));
-		XMM3	 = _mm_mul_ps(XMM3, XMM6);
-		XMM6	 = _mm_load_ps(w+j*2+ 8);
-		XMM0	 = _mm_add_ps(XMM0, XMM3);
-		XMM5	 = _mm_loadh_pi(XMM5, (__m64*)(a+k-4));
-		XMM4	 = XMM0;
-		XMM2	 = _mm_sub_ps(XMM2, XMM0);
-		XMM4	 = _mm_xor_ps(XMM4, PM128(PCS_NRNR));
-		_mm_store_ps(a+j  , XMM2);
-		XMM3	 = _mm_load_ps(w+j*2+12);
-		XMM1	 = _mm_sub_ps(XMM1, XMM4);
-		XMM0	 = XMM5;
-		_mm_storel_pi((__m64*)(a+k+2), XMM1);
-		XMM2	 = _mm_load_ps(a+j+4);
-		XMM5	 = _mm_xor_ps(XMM5, PM128(PCS_NRNR));
-		_mm_storeh_pi((__m64*)(a+k  ), XMM1);
-		XMM5	 = _mm_add_ps(XMM5, XMM2);
-		XMM4	 = XMM5;
-		XMM4	 = _mm_shuffle_ps(XMM4, XMM4, _MM_SHUFFLE(2,3,0,1));
-		XMM5	 = _mm_mul_ps(XMM5, XMM6);
-		XMM4	 = _mm_mul_ps(XMM4, XMM3);
-		XMM5	 = _mm_add_ps(XMM5, XMM4);
-		XMM1	 = XMM5;
-		XMM2	 = _mm_sub_ps(XMM2, XMM5);
-		XMM1	 = _mm_xor_ps(XMM1, PM128(PCS_NRNR));
-		_mm_store_ps(a+j+4, XMM2);
-		XMM0	 = _mm_sub_ps(XMM0, XMM1);
-		_mm_storel_pi((__m64*)(a+k-2), XMM0);
-		_mm_storeh_pi((__m64*)(a+k-4), XMM0);
-	}
-	for(;j<m;j+=4)
+
+	n -= 2;
+	w -= 4;
+	o = ( ( m - j ) & ( ~7 ) ) + j;
+
+	for( ; j < o; j +=  8)
 	{
 		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6;
-		k	 = n - j;
-		XMM0	 = _mm_loadl_pi(XMM0, (__m64*)(a+k+2));
-		XMM5	 = _mm_load_ps(w+j*2  );
-		XMM0	 = _mm_loadh_pi(XMM0, (__m64*)(a+k  ));
-		XMM6	 = _mm_load_ps(w+j*2+4);
-		XMM1	 = XMM0;
-		XMM0	 = _mm_xor_ps(XMM0, PM128(PCS_NRNR));
-		XMM2	 = _mm_load_ps(a+j  );
-		XMM0	 = _mm_add_ps(XMM0, XMM2);
-		XMM3	 = XMM0;
-		XMM3	 = _mm_shuffle_ps(XMM3, XMM3, _MM_SHUFFLE(2,3,0,1));
-		XMM0	 = _mm_mul_ps(XMM0, XMM5);
-		XMM3	 = _mm_mul_ps(XMM3, XMM6);
-		XMM0	 = _mm_add_ps(XMM0, XMM3);
-		XMM4	 = XMM0;
-		XMM2	 = _mm_sub_ps(XMM2, XMM0);
-		XMM4	 = _mm_xor_ps(XMM4, PM128(PCS_NRNR));
-		_mm_store_ps(a+j  , XMM2);
-		XMM1	 = _mm_sub_ps(XMM1, XMM4);
-		_mm_storel_pi((__m64*)(a+k+2), XMM1);
-		_mm_storeh_pi((__m64*)(a+k  ), XMM1);
+
+		k = n - j;
+		XMM0 = _mm_loadl_pi( PFV_0, ( __m64* )( a + k + 2 ) );
+		XMM5 = _mm_load_ps( w + j * 2 );
+		XMM0 = _mm_loadh_pi( XMM0, ( __m64* )( a + k ) );
+		XMM6 = _mm_load_ps( w + j * 2 + 4 );
+		XMM1 = XMM0;
+		XMM0 = _mm_mul_ps( XMM0, PCS_NRNR2 );
+		XMM2 = _mm_load_ps( a + j );
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM3 = XMM0;
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		XMM0 = _mm_mul_ps( XMM0, XMM5 );
+		XMM5 = _mm_loadl_pi( XMM5, ( __m64* )( a + k - 2 ) );
+		XMM3 = _mm_mul_ps( XMM3, XMM6 );
+		XMM6 = _mm_load_ps( w + j * 2 + 8 );
+		XMM0 = _mm_add_ps( XMM0, XMM3 );
+		XMM5 = _mm_loadh_pi( XMM5, ( __m64* )( a + k - 4 ) );
+		XMM4 = XMM0;
+		XMM2 = _mm_sub_ps( XMM2, XMM0 );
+		XMM4 = _mm_mul_ps( XMM4, PCS_NRNR2 );
+		_mm_store_ps( a + j, XMM2 );
+		XMM3 = _mm_load_ps( w + j * 2 + 12 );
+		XMM1 = _mm_sub_ps( XMM1, XMM4 );
+		XMM0 = XMM5;
+		_mm_storel_pi( ( __m64* )( a + k + 2 ), XMM1 );
+		XMM2 = _mm_load_ps( a + j + 4 );
+		XMM5 = _mm_mul_ps( XMM5, PCS_NRNR2 );
+		_mm_storeh_pi( ( __m64* )( a + k ), XMM1 );
+		XMM5 = _mm_add_ps( XMM5, XMM2 );
+		XMM4 = XMM5;
+		XMM4 = _mm_shuffle_ps( XMM4, XMM4, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		XMM5 = _mm_mul_ps( XMM5, XMM6 );
+		XMM4 = _mm_mul_ps( XMM4, XMM3 );
+		XMM5 = _mm_add_ps( XMM5, XMM4 );
+		XMM1 = XMM5;
+		XMM2 = _mm_sub_ps( XMM2, XMM5 );
+		XMM1 = _mm_mul_ps( XMM1, PCS_NRNR2 );
+		_mm_store_ps( a + j + 4, XMM2 );
+		XMM0 = _mm_sub_ps( XMM0, XMM1 );
+		_mm_storel_pi( ( __m64* )( a + k - 2 ), XMM0 );
+		_mm_storeh_pi( ( __m64* )( a + k - 4 ), XMM0 );
 	}
-#pragma warning(default : 592)
+
+	for( ; j < m; j += 4 )
+	{
+		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6;
+
+		k = n - j;
+		XMM0 = _mm_loadl_pi( PFV_0, ( __m64* )( a + k + 2 ) );
+		XMM5 = _mm_load_ps( w + j * 2 );
+		XMM0 = _mm_loadh_pi( XMM0, ( __m64* )( a + k ) );
+		XMM6 = _mm_load_ps( w + j * 2 + 4 );
+		XMM1 = XMM0;
+		XMM0 = _mm_mul_ps( XMM0, PCS_NRNR2 );
+		XMM2 = _mm_load_ps( a + j );
+		XMM0 = _mm_add_ps( XMM0, XMM2 );
+		XMM3 = XMM0;
+		XMM3 = _mm_shuffle_ps( XMM3, XMM3, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		XMM0 = _mm_mul_ps( XMM0, XMM5 );
+		XMM3 = _mm_mul_ps( XMM3, XMM6 );
+		XMM0 = _mm_add_ps( XMM0, XMM3 );
+		XMM4 = XMM0;
+		XMM2 = _mm_sub_ps( XMM2, XMM0 );
+		XMM4 = _mm_mul_ps( XMM4, PCS_NRNR2 );
+		_mm_store_ps( a + j, XMM2 );
+		XMM1 = _mm_sub_ps( XMM1, XMM4 );
+		_mm_storel_pi( ( __m64* )( a + k + 2 ), XMM1 );
+		_mm_storeh_pi( ( __m64* )( a + k ), XMM1 );
+	}
 }
 
 STIN void rdft( int n, float* a, int* ip, float* w )
@@ -5534,13 +5569,17 @@ STIN void rdft( int n, float* a, int* ip, float* w )
 	
 	nw = ip[0];
 	nc = ip[1];
-	if (n > 4) {
-		bitrv2(n, ip + 2, a);
-		cftfsub(n, a);
-		rftfsub(n, a, nc, w);
-	} else if (n == 4) {
-		cftfsub(n, a);
+	if( n > 4 ) 
+	{
+		bitrv2( n, ip + 2, a );
+		cftfsub( n, a );
+		rftfsub( n, a, nc, w );
+	} 
+	else if( n == 4 ) 
+	{
+		cftfsub( n, a );
 	}
+
 	xi = a[0] - a[1];
 	a[0] += a[1];
 	a[1] = xi;
@@ -5550,1281 +5589,1582 @@ STIN void rdft( int n, float* a, int* ip, float* w )
 
 static void drftf256( float* a )
 {
-	rdft(256, a, IP256, W256 );
+	rdft( 256, a, IP256, W256 );
 }
 static void drftf512( float* a )
 {
-	rdft(512, a, IP512, W512 );
+	rdft( 512, a, IP512, W512 );
 }
 static void drftf1024(float* a )
 {
-	rdft(1024, a, IP1024, W1024 );
+	rdft( 1024, a, IP1024, W1024 );
 }
 static void drftf2048( float* a )
 {
-	rdft(2048, a, IP2048, W2048);
+	rdft( 2048, a, IP2048, W2048);
 }
 static void drftf4096( float* a )
 {
-	rdft(4096, a, IP4096, W4096);
+	rdft( 4096, a, IP4096, W4096);
 }
 #endif														/* SSE Optimize */
 
-static void drfti1( int n, float* wa, int* ifac ){
-  static int ntryh[4] = { 4,2,3,5 };
-  static float tpi = 6.28318530717958648f;
-  float arg,argh,argld,fi;
-  int ntry=0,i,j=-1;
-  int k1, l1, l2, ib;
-  int ld, ii, ip, is, nq, nr;
-  int ido, ipm, nfm1;
-  int nl=n;
-  int nf=0;
+static void drfti1( int n, float* wa, int* ifac )
+{
+	static int ntryh[4] = { 4, 2, 3, 5 };
+	static float tpi = 6.28318530717958648f;
+	float arg, argh, argld, fi;
+	int ntry = 0, i, j = -1;
+	int k1, l1, l2, ib;
+	int ld, ii, ip, is, nq, nr;
+	int ido, ipm, nfm1;
+	int nl = n;
+	int nf = 0;
 
  L101:
-  j++;
-  if (j < 4)
-    ntry=ntryh[j];
-  else
-    ntry+=2;
+	j++;
+	if( j < 4 )
+	{
+		ntry = ntryh[j];
+	}
+	else
+	{
+		ntry += 2;
+	}
 
  L104:
-  nq=nl/ntry;
-  nr=nl-ntry*nq;
-  if (nr!=0) goto L101;
+	nq = nl / ntry;
+	nr = nl - ntry * nq;
+	if( nr != 0 )
+	{ 
+		goto L101;
+	}
 
-  nf++;
-  ifac[nf+1]=ntry;
-  nl=nq;
-  if(ntry!=2)goto L107;
-  if(nf==1)goto L107;
+	nf++;
+	ifac[nf + 1] = ntry;
+	nl = nq;
+	if( ntry != 2 )
+	{
+		goto L107;
+	}
+	if( nf == 1 )
+	{
+		goto L107;
+	}
 
-  for (i=1;i<nf;i++){
-    ib=nf-i+1;
-    ifac[ib+1]=ifac[ib];
-  }
-  ifac[2] = 2;
+	for( i = 1; i < nf; i++ )
+	{
+		ib = nf - i + 1;
+		ifac[ib + 1] = ifac[ib];
+	}
+	ifac[2] = 2;
 
  L107:
-  if(nl!=1)goto L104;
-  ifac[0]=n;
-  ifac[1]=nf;
-  argh=tpi/n;
-  is=0;
-  nfm1=nf-1;
-  l1=1;
+	if( nl != 1 )
+	{
+		goto L104;
+	}
+	ifac[0] = n;
+	ifac[1] = nf;
+	argh = tpi / n;
+	is = 0;
+	nfm1 = nf - 1;
+	l1 = 1;
 
-  if(nfm1==0)return;
+	if( nfm1 == 0 )
+	{
+		return;
+	}
 
-  for (k1=0;k1<nfm1;k1++){
-    ip=ifac[k1+2];
-    ld=0;
-    l2=l1*ip;
-    ido=n/l2;
-    ipm=ip-1;
+	for( k1 = 0; k1 < nfm1; k1++ )
+	{
+		ip = ifac[k1 + 2];
+		ld = 0;
+		l2 = l1 * ip;
+		ido = n / l2;
+		ipm = ip - 1;
 
-    for (j=0;j<ipm;j++){
-      ld+=l1;
-      i=is;
-      argld=(float)ld*argh;
-      fi=0.f;
-      for (ii=2;ii<ido;ii+=2){
-	fi+=1.f;
-	arg=fi*argld;
-	wa[i++]=cos(arg);
-	wa[i++]=sin(arg);
-      }
-      is+=ido;
-    }
-    l1=l2;
-  }
+		for( j = 0; j < ipm; j++ )
+		{
+			ld += l1;
+			i = is;
+			argld = ( float )ld * argh;
+			fi = 0.0f;
+
+			for( ii = 2; ii < ido; ii += 2 )
+			{
+				fi += 1.0f;
+				arg = fi * argld;
+				wa[i++] = cosf( arg );
+				wa[i++] = sinf( arg );
+			}
+
+			is += ido;
+		}
+
+		l1 = l2;
+	}
 }
 
-static void fdrffti( int n, float* wsave, int* ifac ){
+static void fdrffti( int n, float* wsave, int* ifac )
+{
+	if( n == 1 )
+	{
+		return;
+	}
 
-  if (n == 1) return;
-  drfti1(n, wsave+n, ifac);
+	drfti1( n, wsave + n, ifac );
 }
 
-static void dradf2( int ido, int l1, float* cc, float* ch, float* wa1 ){
-  int i,k;
-  float ti2,tr2;
-  int t0,t1,t2,t3,t4,t5,t6;
-
-  t1=0;
-  t0=(t2=l1*ido);
-  t3=ido<<1;
-  for(k=0;k<l1;k++){
-    ch[t1<<1]=cc[t1]+cc[t2];
-    ch[(t1<<1)+t3-1]=cc[t1]-cc[t2];
-    t1+=ido;
-    t2+=ido;
-  }
-    
-  if(ido<2)return;
-  if(ido==2)goto L105;
-
-  t1=0;
-  t2=t0;
-  for(k=0;k<l1;k++){
-    t3=t2;
-    t4=(t1<<1)+(ido<<1);
-    t5=t1;
-    t6=t1+t1;
-    for(i=2;i<ido;i+=2){
-      t3+=2;
-      t4-=2;
-      t5+=2;
-      t6+=2;
-      tr2=wa1[i-2]*cc[t3-1]+wa1[i-1]*cc[t3];
-      ti2=wa1[i-2]*cc[t3]-wa1[i-1]*cc[t3-1];
-      ch[t6]=cc[t5]+ti2;
-      ch[t4]=ti2-cc[t5];
-      ch[t6-1]=cc[t5-1]+tr2;
-      ch[t4-1]=cc[t5-1]-tr2;
-    }
-    t1+=ido;
-    t2+=ido;
-  }
-
-  if(ido%2==1)return;
-
- L105:
-  t3=(t2=(t1=ido)-1);
-  t2+=t0;
-  for(k=0;k<l1;k++){
-    ch[t1]=-cc[t2];
-    ch[t1-1]=cc[t3];
-    t1+=ido<<1;
-    t2+=ido;
-    t3+=ido;
-  }
-}
-
-static void dradf4( int ido, int l1, float* cc, float* ch, float* wa1, float* wa2, float* wa3 ){
-  static float hsqt2 = .70710678118654752f;
-  int i,k,t0,t1,t2,t3,t4,t5,t6;
-  float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
-  t0=l1*ido;
-  
-  t1=t0;
-  t4=t1<<1;
-  t2=t1+(t1<<1);
-  t3=0;
-
-  for(k=0;k<l1;k++){
-    tr1=cc[t1]+cc[t2];
-    tr2=cc[t3]+cc[t4];
-
-    ch[t5=t3<<2]=tr1+tr2;
-    ch[(ido<<2)+t5-1]=tr2-tr1;
-    ch[(t5+=(ido<<1))-1]=cc[t3]-cc[t4];
-    ch[t5]=cc[t2]-cc[t1];
-
-    t1+=ido;
-    t2+=ido;
-    t3+=ido;
-    t4+=ido;
-  }
-
-  if(ido<2)return;
-  if(ido==2)goto L105;
-
-
-  t1=0;
-  for(k=0;k<l1;k++){
-    t2=t1;
-    t4=t1<<2;
-    t5=(t6=ido<<1)+t4;
-    for(i=2;i<ido;i+=2){
-      t3=(t2+=2);
-      t4+=2;
-      t5-=2;
-
-      t3+=t0;
-      cr2=wa1[i-2]*cc[t3-1]+wa1[i-1]*cc[t3];
-      ci2=wa1[i-2]*cc[t3]-wa1[i-1]*cc[t3-1];
-      t3+=t0;
-      cr3=wa2[i-2]*cc[t3-1]+wa2[i-1]*cc[t3];
-      ci3=wa2[i-2]*cc[t3]-wa2[i-1]*cc[t3-1];
-      t3+=t0;
-      cr4=wa3[i-2]*cc[t3-1]+wa3[i-1]*cc[t3];
-      ci4=wa3[i-2]*cc[t3]-wa3[i-1]*cc[t3-1];
-
-      tr1=cr2+cr4;
-      tr4=cr4-cr2;
-      ti1=ci2+ci4;
-      ti4=ci2-ci4;
-
-      ti2=cc[t2]+ci3;
-      ti3=cc[t2]-ci3;
-      tr2=cc[t2-1]+cr3;
-      tr3=cc[t2-1]-cr3;
-
-      ch[t4-1]=tr1+tr2;
-      ch[t4]=ti1+ti2;
-
-      ch[t5-1]=tr3-ti4;
-      ch[t5]=tr4-ti3;
-
-      ch[t4+t6-1]=ti4+tr3;
-      ch[t4+t6]=tr4+ti3;
-
-      ch[t5+t6-1]=tr2-tr1;
-      ch[t5+t6]=ti1-ti2;
-    }
-    t1+=ido;
-  }
-  if(ido&1)return;
-
- L105:
-  
-  t2=(t1=t0+ido-1)+(t0<<1);
-  t3=ido<<2;
-  t4=ido;
-  t5=ido<<1;
-  t6=ido;
-
-  for(k=0;k<l1;k++){
-    ti1=-hsqt2*(cc[t1]+cc[t2]);
-    tr1=hsqt2*(cc[t1]-cc[t2]);
-
-    ch[t4-1]=tr1+cc[t6-1];
-    ch[t4+t5-1]=cc[t6-1]-tr1;
-
-    ch[t4]=ti1-cc[t1+t0];
-    ch[t4+t5]=ti1+cc[t1+t0];
-
-    t1+=ido;
-    t2+=ido;
-    t4+=t3;
-    t6+=ido;
-  }
-}
-
-static void dradfg( int ido, int ip, int l1, int idl1, float* cc, float* c1, float* c2, float* ch, float* ch2, float* wa ){
-
-  static float tpi=6.283185307179586f;
-  int idij,ipph,i,j,k,l,ic,ik,is;
-  int t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
-  float dc2,ai1,ai2,ar1,ar2,ds2;
-  int nbd;
-  float dcp,arg,dsp,ar1h,ar2h;
-  int idp2,ipp2;
-  
-  arg=tpi/(float)ip;
-  dcp=cos(arg);
-  dsp=sin(arg);
-  ipph=(ip+1)>>1;
-  ipp2=ip;
-  idp2=ido;
-  nbd=(ido-1)>>1;
-  t0=l1*ido;
-  t10=ip*ido;
-
-  if(ido==1)goto L119;
-  for(ik=0;ik<idl1;ik++)ch2[ik]=c2[ik];
-
-  t1=0;
-  for(j=1;j<ip;j++){
-    t1+=t0;
-    t2=t1;
-    for(k=0;k<l1;k++){
-      ch[t2]=c1[t2];
-      t2+=ido;
-    }
-  }
-
-  is=-ido;
-  t1=0;
-  if(nbd>l1){
-    for(j=1;j<ip;j++){
-      t1+=t0;
-      is+=ido;
-      t2= -ido+t1;
-      for(k=0;k<l1;k++){
-        idij=is-1;
-        t2+=ido;
-        t3=t2;
-        for(i=2;i<ido;i+=2){
-          idij+=2;
-          t3+=2;
-          ch[t3-1]=wa[idij-1]*c1[t3-1]+wa[idij]*c1[t3];
-          ch[t3]=wa[idij-1]*c1[t3]-wa[idij]*c1[t3-1];
-        }
-      }
-    }
-  }
-  else
-  {
-
-    for(j=1;j<ip;j++){
-      is+=ido;
-      idij=is-1;
-      t1+=t0;
-      t2=t1;
-      for(i=2;i<ido;i+=2){
-        idij+=2;
-        t2+=2;
-        t3=t2;
-        for(k=0;k<l1;k++){
-          ch[t3-1]=wa[idij-1]*c1[t3-1]+wa[idij]*c1[t3];
-          ch[t3]=wa[idij-1]*c1[t3]-wa[idij]*c1[t3-1];
-          t3+=ido;
-        }
-      }
-    }
-  }
-
-  t1=0;
-  t2=ipp2*t0;
-  if(nbd<l1){
-    for(j=1;j<ipph;j++){
-      t1+=t0;
-      t2-=t0;
-      t3=t1;
-      t4=t2;
-      for(i=2;i<ido;i+=2){
-        t3+=2;
-        t4+=2;
-        t5=t3-ido;
-        t6=t4-ido;
-        for(k=0;k<l1;k++){
-          t5+=ido;
-          t6+=ido;
-          c1[t5-1]=ch[t5-1]+ch[t6-1];
-          c1[t6-1]=ch[t5]-ch[t6];
-          c1[t5]=ch[t5]+ch[t6];
-          c1[t6]=ch[t6-1]-ch[t5-1];
-        }
-      }
-    }
-  }
-  else
-  {
-    for(j=1;j<ipph;j++){
-      t1+=t0;
-      t2-=t0;
-      t3=t1;
-      t4=t2;
-      for(k=0;k<l1;k++){
-        t5=t3;
-        t6=t4;
-        for(i=2;i<ido;i+=2){
-          t5+=2;
-          t6+=2;
-          c1[t5-1]=ch[t5-1]+ch[t6-1];
-          c1[t6-1]=ch[t5]-ch[t6];
-          c1[t5]=ch[t5]+ch[t6];
-          c1[t6]=ch[t6-1]-ch[t5-1];
-        }
-        t3+=ido;
-        t4+=ido;
-      }
-    }
-  }
-
-L119:
-  for(ik=0;ik<idl1;ik++)c2[ik]=ch2[ik];
-
-  t1=0;
-  t2=ipp2*idl1;
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1-ido;
-    t4=t2-ido;
-    for(k=0;k<l1;k++){
-      t3+=ido;
-      t4+=ido;
-      c1[t3]=ch[t3]+ch[t4];
-      c1[t4]=ch[t4]-ch[t3];
-    }
-  }
-
-  ar1=1.f;
-  ai1=0.f;
-  t1=0;
-  t2=ipp2*idl1;
-  t3=(ip-1)*idl1;
-  for(l=1;l<ipph;l++){
-    t1+=idl1;
-    t2-=idl1;
-    ar1h=dcp*ar1-dsp*ai1;
-    ai1=dcp*ai1+dsp*ar1;
-    ar1=ar1h;
-    t4=t1;
-    t5=t2;
-    t6=t3;
-    t7=idl1;
-
-    for(ik=0;ik<idl1;ik++){
-      ch2[t4++]=c2[ik]+ar1*c2[t7++];
-      ch2[t5++]=ai1*c2[t6++];
-    }
-
-    dc2=ar1;
-    ds2=ai1;
-    ar2=ar1;
-    ai2=ai1;
-
-    t4=idl1;
-    t5=(ipp2-1)*idl1;
-    for(j=2;j<ipph;j++){
-      t4+=idl1;
-      t5-=idl1;
-
-      ar2h=dc2*ar2-ds2*ai2;
-      ai2=dc2*ai2+ds2*ar2;
-      ar2=ar2h;
-
-      t6=t1;
-      t7=t2;
-      t8=t4;
-      t9=t5;
-      for(ik=0;ik<idl1;ik++){
-        ch2[t6++]+=ar2*c2[t8++];
-        ch2[t7++]+=ai2*c2[t9++];
-      }
-    }
-  }
-
-  t1=0;
-  for(j=1;j<ipph;j++){
-    t1+=idl1;
-    t2=t1;
-    for(ik=0;ik<idl1;ik++)ch2[ik]+=c2[t2++];
-  }
-
-  if(ido<l1)goto L132;
-
-  t1=0;
-  t2=0;
-  for(k=0;k<l1;k++){
-    t3=t1;
-    t4=t2;
-    for(i=0;i<ido;i++)cc[t4++]=ch[t3++];
-    t1+=ido;
-    t2+=t10;
-  }
-
-  goto L135;
-
- L132:
-  for(i=0;i<ido;i++){
-    t1=i;
-    t2=i;
-    for(k=0;k<l1;k++){
-      cc[t2]=ch[t1];
-      t1+=ido;
-      t2+=t10;
-    }
-  }
-
- L135:
-  t1=0;
-  t2=ido<<1;
-  t3=0;
-  t4=ipp2*t0;
-  for(j=1;j<ipph;j++){
-
-    t1+=t2;
-    t3+=t0;
-    t4-=t0;
-
-    t5=t1;
-    t6=t3;
-    t7=t4;
-
-    for(k=0;k<l1;k++){
-      cc[t5-1]=ch[t6];
-      cc[t5]=ch[t7];
-      t5+=t10;
-      t6+=ido;
-      t7+=ido;
-    }
-  }
-
-  if(ido==1)return;
-  if(nbd<l1)goto L141;
-
-  t1=-ido;
-  t3=0;
-  t4=0;
-  t5=ipp2*t0;
-  for(j=1;j<ipph;j++){
-    t1+=t2;
-    t3+=t2;
-    t4+=t0;
-    t5-=t0;
-    t6=t1;
-    t7=t3;
-    t8=t4;
-    t9=t5;
-    for(k=0;k<l1;k++){
-      for(i=2;i<ido;i+=2){
-        ic=idp2-i;
-        cc[i+t7-1]=ch[i+t8-1]+ch[i+t9-1];
-        cc[ic+t6-1]=ch[i+t8-1]-ch[i+t9-1];
-        cc[i+t7]=ch[i+t8]+ch[i+t9];
-        cc[ic+t6]=ch[i+t9]-ch[i+t8];
-      }
-      t6+=t10;
-      t7+=t10;
-      t8+=ido;
-      t9+=ido;
-    }
-  }
-  return;
-
- L141:
-
-  t1=-ido;
-  t3=0;
-  t4=0;
-  t5=ipp2*t0;
-  for(j=1;j<ipph;j++){
-    t1+=t2;
-    t3+=t2;
-    t4+=t0;
-    t5-=t0;
-    for(i=2;i<ido;i+=2){
-      t6=idp2+t1-i;
-      t7=i+t3;
-      t8=i+t4;
-      t9=i+t5;
-      for(k=0;k<l1;k++){
-        cc[t7-1]=ch[t8-1]+ch[t9-1];
-        cc[t6-1]=ch[t8-1]-ch[t9-1];
-        cc[t7]=ch[t8]+ch[t9];
-        cc[t6]=ch[t9]-ch[t8];
-        t6+=t10;
-        t7+=t10;
-        t8+=ido;
-        t9+=ido;
-      }
-    }
-  }
-}
-
-static void drftf1( int n, float *c,float *ch,float *wa,int *ifac){
-  int i,k1,l1,l2;
-  int na,kh,nf;
-  int ip,iw,ido,idl1,ix2,ix3;
-
-  nf=ifac[1];
-  na=1;
-  l2=n;
-  iw=n;
-
-  for(k1=0;k1<nf;k1++){
-    kh=nf-k1;
-    ip=ifac[kh+1];
-    l1=l2/ip;
-    ido=n/l2;
-    idl1=ido*l1;
-    iw-=(ip-1)*ido;
-    na=1-na;
-
-    if(ip!=4)goto L102;
-
-    ix2=iw+ido;
-    ix3=ix2+ido;
-    if(na!=0)
-      dradf4(ido,l1,ch,c,wa+iw-1,wa+ix2-1,wa+ix3-1);
-    else
-      dradf4(ido,l1,c,ch,wa+iw-1,wa+ix2-1,wa+ix3-1);
-    goto L110;
-
- L102:
-    if(ip!=2)goto L104;
-    if(na!=0)goto L103;
-
-    dradf2(ido,l1,c,ch,wa+iw-1);
-    goto L110;
-
-  L103:
-    dradf2(ido,l1,ch,c,wa+iw-1);
-    goto L110;
-
-  L104:
-    if(ido==1)na=1-na;
-    if(na!=0)goto L109;
-
-    dradfg(ido,ip,l1,idl1,c,c,c,ch,ch,wa+iw-1);
-    na=1;
-    goto L110;
-
-  L109:
-    dradfg(ido,ip,l1,idl1,ch,ch,ch,c,c,wa+iw-1);
-    na=0;
-
-  L110:
-    l2=l1;
-  }
-
-  if(na==1)return;
-
-  for(i=0;i<n;i++)c[i]=ch[i];
-}
-
-static void dradb2( int ido, int l1, float* cc, float* ch, float* wa1 ){
-  int i,k,t0,t1,t2,t3,t4,t5,t6;
-  float ti2,tr2;
-
-  t0=l1*ido;
-  
-  t1=0;
-  t2=0;
-  t3=(ido<<1)-1;
-  for(k=0;k<l1;k++){
-    ch[t1]=cc[t2]+cc[t3+t2];
-    ch[t1+t0]=cc[t2]-cc[t3+t2];
-    t2=(t1+=ido)<<1;
-  }
-
-  if(ido<2)return;
-  if(ido==2)goto L105;
-
-  t1=0;
-  t2=0;
-  for(k=0;k<l1;k++){
-    t3=t1;
-    t5=(t4=t2)+(ido<<1);
-    t6=t0+t1;
-    for(i=2;i<ido;i+=2){
-      t3+=2;
-      t4+=2;
-      t5-=2;
-      t6+=2;
-      ch[t3-1]=cc[t4-1]+cc[t5-1];
-      tr2=cc[t4-1]-cc[t5-1];
-      ch[t3]=cc[t4]-cc[t5];
-      ti2=cc[t4]+cc[t5];
-      ch[t6-1]=wa1[i-2]*tr2-wa1[i-1]*ti2;
-      ch[t6]=wa1[i-2]*ti2+wa1[i-1]*tr2;
-    }
-    t2=(t1+=ido)<<1;
-  }
-
-  if(ido%2==1)return;
+static void dradf2( int ido, int l1, float* cc, float* ch, float* wa1 )
+{
+	int i, k;
+	float ti2, tr2;
+	int t0, t1, t2, t3, t4, t5, t6;
+
+	t1 = 0;
+	t0 = ( t2 = l1 * ido );
+	t3 = ido << 1;
+	for( k = 0; k < l1; k++ )
+	{
+		ch[t1 << 1] = cc[t1] + cc[t2];
+		ch[( t1 << 1 ) + t3 - 1] = cc[t1] - cc[t2];
+		t1 += ido;
+		t2 += ido;
+	}
+
+	if( ido < 2 )
+	{
+		return;
+	}
+	if( ido == 2 )
+	{
+		goto L105;
+	}
+
+	t1 = 0;
+	t2 = t0;
+	for( k = 0; k < l1; k++ )
+	{
+		t3 = t2;
+		t4 = ( t1 << 1 ) + ( ido << 1 );
+		t5 = t1;
+		t6 = t1 + t1;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t3 += 2;
+			t4 -= 2;
+			t5 += 2;
+			t6 += 2;
+			tr2 = wa1[i - 2] * cc[t3 - 1] + wa1[i - 1] * cc[t3];
+			ti2 = wa1[i -2 ] * cc[t3] - wa1[i - 1] * cc[t3 - 1];
+			ch[t6] = cc[t5] +ti2;
+			ch[t4] = ti2 - cc[t5];
+			ch[t6 - 1] = cc[t5 - 1] + tr2;
+			ch[t4 - 1] = cc[t5 - 1] - tr2;
+		}
+
+		t1 += ido;
+		t2 += ido;
+	}
+
+	if( ido % 2 == 1 )
+	{
+		return;
+	}
 
 L105:
-  t1=ido-1;
-  t2=ido-1;
-  for(k=0;k<l1;k++){
-    ch[t1]=cc[t2]+cc[t2];
-    ch[t1+t0]=-(cc[t2+1]+cc[t2+1]);
-    t1+=ido;
-    t2+=ido<<1;
-  }
+	t3 = ( t2 = ( t1 = ido ) - 1 );
+	t2 += t0;
+	for( k = 0; k < l1; k++ )
+	{
+		ch[t1] = -cc[t2];
+		ch[t1 - 1] = cc[t3];
+		t1 += ido << 1;
+		t2 += ido;
+		t3 += ido;
+	}
 }
 
-static void dradb3( int ido, int l1, float* cc, float* ch, float* wa1, float* wa2 ){
-  static float taur = -.5f;
-  static float taui = .8660254037844386f;
-  int i,k,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
-  float ci2,ci3,di2,di3,cr2,cr3,dr2,dr3,ti2,tr2;
-  t0=l1*ido;
+static void dradf4( int ido, int l1, float* cc, float* ch, float* wa1, float* wa2, float* wa3 )
+{
+	static float hsqt2 = 0.70710678118654752f;
+	int i, k, t0, t1, t2, t3, t4, t5, t6;
+	float ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
+	t0 = l1 * ido;
 
-  t1=0;
-  t2=t0<<1;
-  t3=ido<<1;
-  t4=ido+(ido<<1);
-  t5=0;
-  for(k=0;k<l1;k++){
-    tr2=cc[t3-1]+cc[t3-1];
-    cr2=cc[t5]+(taur*tr2);
-    ch[t1]=cc[t5]+tr2;
-    ci3=taui*(cc[t3]+cc[t3]);
-    ch[t1+t0]=cr2-ci3;
-    ch[t1+t2]=cr2+ci3;
-    t1+=ido;
-    t3+=t4;
-    t5+=t4;
-  }
+	t1 = t0;
+	t4 = t1 << 1;
+	t2 = t1 + ( t1 << 1 );
+	t3 = 0;
 
-  if(ido==1)return;
+	for( k = 0; k <l1; k++ )
+	{
+		tr1 = cc[t1] + cc[t2];
+		tr2 = cc[t3] + cc[t4];
 
-  t1=0;
-  t3=ido<<1;
-  for(k=0;k<l1;k++){
-    t7=t1+(t1<<1);
-    t6=(t5=t7+t3);
-    t8=t1;
-    t10=(t9=t1+t0)+t0;
+		ch[t5 = t3 << 2] = tr1 + tr2;
+		ch[( ido << 2 ) + t5 - 1] = tr2 - tr1;
+		ch[( t5 += ( ido << 1 ) ) - 1] = cc[t3] - cc[t4];
+		ch[t5] = cc[t2] - cc[t1];
 
-    for(i=2;i<ido;i+=2){
-      t5+=2;
-      t6-=2;
-      t7+=2;
-      t8+=2;
-      t9+=2;
-      t10+=2;
-      tr2=cc[t5-1]+cc[t6-1];
-      cr2=cc[t7-1]+(taur*tr2);
-      ch[t8-1]=cc[t7-1]+tr2;
-      ti2=cc[t5]-cc[t6];
-      ci2=cc[t7]+(taur*ti2);
-      ch[t8]=cc[t7]+ti2;
-      cr3=taui*(cc[t5-1]-cc[t6-1]);
-      ci3=taui*(cc[t5]+cc[t6]);
-      dr2=cr2-ci3;
-      dr3=cr2+ci3;
-      di2=ci2+cr3;
-      di3=ci2-cr3;
-      ch[t9-1]=wa1[i-2]*dr2-wa1[i-1]*di2;
-      ch[t9]=wa1[i-2]*di2+wa1[i-1]*dr2;
-      ch[t10-1]=wa2[i-2]*dr3-wa2[i-1]*di3;
-      ch[t10]=wa2[i-2]*di3+wa2[i-1]*dr3;
-    }
-    t1+=ido;
-  }
+		t1 += ido;
+		t2 += ido;
+		t3 += ido;
+		t4 += ido;
+	}
+
+	if( ido < 2 )
+	{
+		return;
+	}
+
+	if( ido == 2 )
+	{
+		goto L105;
+	}
+
+	t1 = 0;
+	for( k = 0; k < l1; k++ )
+	{
+		t2 = t1;
+		t4 = t1 << 2;
+		t5 = ( t6 = ido << 1 ) + t4;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t3 = ( t2 += 2 );
+			t4 += 2;
+			t5 -= 2;
+
+			t3 += t0;
+			cr2 = wa1[i - 2] * cc[t3 - 1] + wa1[i - 1] * cc[t3];
+			ci2 = wa1[i - 2] * cc[t3] - wa1[i - 1] * cc[t3 - 1];
+			t3 += t0;
+			cr3 = wa2[i - 2] * cc[t3 - 1] + wa2[i - 1] * cc[t3];
+			ci3 = wa2[i - 2] * cc[t3] - wa2[i - 1] * cc[t3 - 1];
+			t3 += t0;
+			cr4 = wa3[i - 2] * cc[t3 - 1] + wa3[i - 1] * cc[t3];
+			ci4 = wa3[i - 2] * cc[t3] - wa3[i - 1] * cc[t3 - 1];
+
+			tr1 = cr2 + cr4;
+			tr4 = cr4 - cr2;
+			ti1 = ci2 + ci4;
+			ti4 = ci2 - ci4;
+
+			ti2 = cc[t2] + ci3;
+			ti3 = cc[t2] - ci3;
+			tr2 = cc[t2 - 1] + cr3;
+			tr3 = cc[t2 - 1] - cr3;
+
+			ch[t4 - 1] = tr1 + tr2;
+			ch[t4] = ti1 + ti2;
+
+			ch[t5 - 1] = tr3 - ti4;
+			ch[t5] = tr4 - ti3;
+
+			ch[t4 + t6 - 1] = ti4 + tr3;
+			ch[t4 + t6] = tr4 + ti3;
+
+			ch[t5 + t6 - 1] = tr2 - tr1;
+			ch[t5 + t6] = ti1 - ti2;
+		}
+		t1 += ido;
+	}
+
+	if( ido & 1 )
+	{
+		return;
+	}
+
+L105:
+	t2 = ( t1 = t0 + ido - 1 ) + ( t0 << 1 );
+	t3 = ido << 2;
+	t4 = ido;
+	t5 = ido << 1;
+	t6 = ido;
+
+	for( k = 0; k < l1; k++ )
+	{
+		ti1 = -hsqt2 * ( cc[t1] + cc[t2] );
+		tr1 = hsqt2 * ( cc[t1] - cc[t2] );
+
+		ch[t4 - 1] = tr1 + cc[t6 - 1];
+		ch[t4 + t5 - 1] = cc[t6 - 1] - tr1;
+
+		ch[t4] = ti1 - cc[t1 + t0];
+		ch[t4 + t5] = ti1 + cc[t1 + t0];
+
+		t1 += ido;
+		t2 += ido;
+		t4 += t3;
+		t6 += ido;
+	}
 }
 
-static void dradb4( int ido, int l1, float* cc, float* ch, float* wa1, float* wa2, float* wa3 ){
-  static float sqrt2=1.414213562373095f;
-  int i,k,t0,t1,t2,t3,t4,t5,t6,t7,t8;
-  float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
-  t0=l1*ido;
-  
-  t1=0;
-  t2=ido<<2;
-  t3=0;
-  t6=ido<<1;
-  for(k=0;k<l1;k++){
-    t4=t3+t6;
-    t5=t1;
-    tr3=cc[t4-1]+cc[t4-1];
-    tr4=cc[t4]+cc[t4]; 
-    tr1=cc[t3]-cc[(t4+=t6)-1];
-    tr2=cc[t3]+cc[t4-1];
-    ch[t5]=tr2+tr3;
-    ch[t5+=t0]=tr1-tr4;
-    ch[t5+=t0]=tr2-tr3;
-    ch[t5+=t0]=tr1+tr4;
-    t1+=ido;
-    t3+=t2;
-  }
+static void dradfg( int ido, int ip, int l1, int idl1, float* cc, float* c1, float* c2, float* ch, float* ch2, float* wa )
+{
+	static float tpi = 6.283185307179586f;
+	int idij, ipph, i, j, k, l, ic, ik, is;
+	int t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
+	float dc2, ai1, ai2, ar1, ar2, ds2;
+	int nbd;
+	float dcp, arg, dsp, ar1h, ar2h;
+	int idp2, ipp2;
 
-  if(ido<2)return;
-  if(ido==2)goto L105;
+	arg = tpi / ( float )ip;
+	dcp = cosf( arg );
+	dsp = sinf( arg );
+	ipph = ( ip + 1 ) >> 1;
+	ipp2 = ip;
+	idp2 = ido;
+	nbd = ( ido - 1 ) >> 1;
+	t0 = l1 * ido;
+	t10 = ip * ido;
 
-  t1=0;
-  for(k=0;k<l1;k++){
-    t5=(t4=(t3=(t2=t1<<2)+t6))+t6;
-    t7=t1;
-    for(i=2;i<ido;i+=2){
-      t2+=2;
-      t3+=2;
-      t4-=2;
-      t5-=2;
-      t7+=2;
-      ti1=cc[t2]+cc[t5];
-      ti2=cc[t2]-cc[t5];
-      ti3=cc[t3]-cc[t4];
-      tr4=cc[t3]+cc[t4];
-      tr1=cc[t2-1]-cc[t5-1];
-      tr2=cc[t2-1]+cc[t5-1];
-      ti4=cc[t3-1]-cc[t4-1];
-      tr3=cc[t3-1]+cc[t4-1];
-      ch[t7-1]=tr2+tr3;
-      cr3=tr2-tr3;
-      ch[t7]=ti2+ti3;
-      ci3=ti2-ti3;
-      cr2=tr1-tr4;
-      cr4=tr1+tr4;
-      ci2=ti1+ti4;
-      ci4=ti1-ti4;
+	if( ido == 1 )
+	{
+		goto L119;
+	}
 
-      ch[(t8=t7+t0)-1]=wa1[i-2]*cr2-wa1[i-1]*ci2;
-      ch[t8]=wa1[i-2]*ci2+wa1[i-1]*cr2;
-      ch[(t8+=t0)-1]=wa2[i-2]*cr3-wa2[i-1]*ci3;
-      ch[t8]=wa2[i-2]*ci3+wa2[i-1]*cr3;
-      ch[(t8+=t0)-1]=wa3[i-2]*cr4-wa3[i-1]*ci4;
-      ch[t8]=wa3[i-2]*ci4+wa3[i-1]*cr4;
-    }
-    t1+=ido;
-  }
+	for( ik = 0; ik < idl1; ik++ )
+	{
+		ch2[ik] = c2[ik];
+	}
 
-  if(ido%2 == 1)return;
+	t1 = 0;
+	for( j = 1; j < ip; j++ )
+	{
+		t1 += t0;
+		t2 = t1;
+		for( k = 0; k < l1; k++ )
+		{
+			ch[t2] = c1[t2];
+			t2 += ido;
+		}
+	}
 
- L105:
+	is = -ido;
+	t1 = 0;
+	if( nbd > l1 )
+	{
+		for( j = 1; j < ip; j++ )
+		{
+			t1 += t0;
+			is += ido;
+			t2 = -ido + t1;
+			for( k = 0; k < l1; k++ )
+			{
+				idij = is - 1;
+				t2 += ido;
+				t3 = t2;
+				for( i = 2; i < ido; i += 2 )
+				{
+					idij += 2;
+					t3 += 2;
+					ch[t3 - 1] = wa[idij - 1] * c1[t3 - 1] + wa[idij] * c1[t3];
+					ch[t3] = wa[idij - 1] * c1[t3] - wa[idij] * c1[t3 - 1];
+				}
+			}
+		}
+	}
+	else
+	{
+		for( j = 1; j < ip; j++ )
+		{
+			is += ido;
+			idij = is - 1;
+			t1 += t0;
+			t2 = t1;
+			for( i = 2; i < ido; i += 2 )
+			{
+				idij += 2;
+				t2 += 2;
+				t3 = t2;
+				for( k = 0; k < l1; k++ )
+				{
+					ch[t3 - 1] = wa[idij - 1] * c1[t3 - 1] + wa[idij] * c1[t3];
+					ch[t3] = wa[idij - 1] * c1[t3] - wa[idij] * c1[t3 - 1];
+					t3 += ido;
+				}
+			}
+		}
+	}
 
-  t1=ido;
-  t2=ido<<2;
-  t3=ido-1;
-  t4=ido+(ido<<1);
-  for(k=0;k<l1;k++){
-    t5=t3;
-    ti1=cc[t1]+cc[t4];
-    ti2=cc[t4]-cc[t1];
-    tr1=cc[t1-1]-cc[t4-1];
-    tr2=cc[t1-1]+cc[t4-1];
-    ch[t5]=tr2+tr2;
-    ch[t5+=t0]=sqrt2*(tr1-ti1);
-    ch[t5+=t0]=ti2+ti2;
-    ch[t5+=t0]=-sqrt2*(tr1+ti1);
+	t1 = 0;
+	t2 = ipp2 * t0;
+	if( nbd < l1 )
+	{
+		for( j = 1; j < ipph; j++ )
+		{
+			t1 += t0;
+			t2 -= t0;
+			t3 = t1;
+			t4 = t2;
+			for( i = 2; i < ido; i += 2 )
+			{
+				t3 += 2;
+				t4 += 2;
+				t5 = t3 - ido;
+				t6 = t4 - ido;
+				for( k = 0; k < l1; k++ )
+				{
+					t5 += ido;
+					t6 += ido;
+					c1[t5 - 1] = ch[t5 - 1] + ch[t6 - 1];
+					c1[t6 - 1] = ch[t5] - ch[t6];
+					c1[t5] = ch[t5] + ch[t6];
+					c1[t6] = ch[t6 - 1] - ch[t5 - 1];
+				}
+			}
+		}
+	}
+	else
+	{
+		for( j = 1; j < ipph; j++ )
+		{
+			t1 += t0;
+			t2 -= t0;
+			t3 = t1;
+			t4 = t2;
+			for( k = 0; k < l1; k++ )
+			{
+				t5 = t3;
+				t6 = t4;
+				for( i = 2; i < ido; i += 2 )
+				{
+					t5 += 2;
+					t6 += 2;
+					c1[t5 - 1] = ch[t5 - 1] + ch[t6 - 1];
+					c1[t6 - 1]  =ch[t5] - ch[t6];
+					c1[t5] = ch[t5] + ch[t6];
+					c1[t6] = ch[t6 - 1] - ch[t5 - 1];
+				}
 
-    t3+=ido;
-    t1+=t2;
-    t4+=t2;
-  }
-}
+				t3 += ido;
+				t4 += ido;
+			}
+		}
+	}
 
-static void dradbg( int ido, int ip, int l1, int idl1, float* cc, float* c1, float* c2, float* ch, float* ch2, float* wa ){
-  static float tpi=6.283185307179586f;
-  int idij,ipph,i,j,k,l,ik,is,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,
-      t11,t12;
-  float dc2,ai1,ai2,ar1,ar2,ds2;
-  int nbd;
-  float dcp,arg,dsp,ar1h,ar2h;
-  int ipp2;
+L119:
+	for( ik = 0; ik < idl1; ik++ )
+	{
+		c2[ik] = ch2[ik];
+	}
 
-  t10=ip*ido;
-  t0=l1*ido;
-  arg=tpi/(float)ip;
-  dcp=cos(arg);
-  dsp=sin(arg);
-  nbd=(ido-1)>>1;
-  ipp2=ip;
-  ipph=(ip+1)>>1;
-  if(ido<l1)goto L103;
-  
-  t1=0;
-  t2=0;
-  for(k=0;k<l1;k++){
-    t3=t1;
-    t4=t2;
-    for(i=0;i<ido;i++){
-      ch[t3]=cc[t4];
-      t3++;
-      t4++;
-    }
-    t1+=ido;
-    t2+=t10;
-  }
-  goto L106;
+	t1 = 0;
+	t2 = ipp2 * idl1;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1 - ido;
+		t4 = t2 - ido;
+		for( k = 0; k < l1; k++ )
+		{
+			t3 += ido;
+			t4 += ido;
+			c1[t3] = ch[t3] + ch[t4];
+			c1[t4] = ch[t4] - ch[t3];
+		}
+	}
 
- L103:
-  t1=0;
-  for(i=0;i<ido;i++){
-    t2=t1;
-    t3=t1;
-    for(k=0;k<l1;k++){
-      ch[t2]=cc[t3];
-      t2+=ido;
-      t3+=t10;
-    }
-    t1++;
-  }
+	ar1 = 1.0f;
+	ai1 = 0.0f;
+	t1 = 0;
+	t2 = ipp2 * idl1;
+	t3 = ( ip - 1 ) * idl1;
 
- L106:
-  t1=0;
-  t2=ipp2*t0;
-  t7=(t5=ido<<1);
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1;
-    t4=t2;
-    t6=t5;
-    for(k=0;k<l1;k++){
-      ch[t3]=cc[t6-1]+cc[t6-1];
-      ch[t4]=cc[t6]+cc[t6];
-      t3+=ido;
-      t4+=ido;
-      t6+=t10;
-    }
-    t5+=t7;
-  }
+	for( l = 1; l < ipph; l++ )
+	{
+		t1 += idl1;
+		t2 -= idl1;
+		ar1h = dcp * ar1 - dsp * ai1;
+		ai1 = dcp * ai1 + dsp * ar1;
+		ar1 = ar1h;
+		t4 = t1;
+		t5 = t2;
+		t6 = t3;
+		t7 = idl1;
 
-  if (ido == 1)goto L116;
-  if(nbd<l1)goto L112;
+		for( ik = 0; ik < idl1; ik++ )
+		{
+			ch2[t4++] = c2[ik] + ar1 * c2[t7++];
+			ch2[t5++] = ai1 * c2[t6++];
+		}
 
-  t1=0;
-  t2=ipp2*t0;
-  t7=0;
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1;
-    t4=t2;
+		dc2 = ar1;
+		ds2 = ai1;
+		ar2 = ar1;
+		ai2 = ai1;
 
-    t7+=(ido<<1);
-    t8=t7;
-    for(k=0;k<l1;k++){
-      t5=t3;
-      t6=t4;
-      t9=t8;
-      t11=t8;
-      for(i=2;i<ido;i+=2){
-        t5+=2;
-        t6+=2;
-        t9+=2;
-        t11-=2;
-        ch[t5-1]=cc[t9-1]+cc[t11-1];
-        ch[t6-1]=cc[t9-1]-cc[t11-1];
-        ch[t5]=cc[t9]-cc[t11];
-        ch[t6]=cc[t9]+cc[t11];
-      }
-      t3+=ido;
-      t4+=ido;
-      t8+=t10;
-    }
-  }
-  goto L116;
+		t4 = idl1;
+		t5 = ( ipp2 - 1 ) * idl1;
+		for( j = 2; j < ipph; j++ )
+		{
+			t4 += idl1;
+			t5 -= idl1;
 
- L112:
-  t1=0;
-  t2=ipp2*t0;
-  t7=0;
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1;
-    t4=t2;
-    t7+=(ido<<1);
-    t8=t7;
-    t9=t7;
-    for(i=2;i<ido;i+=2){
-      t3+=2;
-      t4+=2;
-      t8+=2;
-      t9-=2;
-      t5=t3;
-      t6=t4;
-      t11=t8;
-      t12=t9;
-      for(k=0;k<l1;k++){
-        ch[t5-1]=cc[t11-1]+cc[t12-1];
-        ch[t6-1]=cc[t11-1]-cc[t12-1];
-        ch[t5]=cc[t11]-cc[t12];
-        ch[t6]=cc[t11]+cc[t12];
-        t5+=ido;
-        t6+=ido;
-        t11+=t10;
-        t12+=t10;
-      }
-    }
-  }
+			ar2h = dc2 * ar2 - ds2 * ai2;
+			ai2 = dc2 * ai2 + ds2 * ar2;
+			ar2 = ar2h;
 
-L116:
-  ar1=1.f;
-  ai1=0.f;
-  t1=0;
-  t9=(t2=ipp2*idl1);
-  t3=(ip-1)*idl1;
-  for(l=1;l<ipph;l++){
-    t1+=idl1;
-    t2-=idl1;
+			t6 = t1;
+			t7 = t2;
+			t8 = t4;
+			t9 = t5;
+			for( ik = 0; ik < idl1; ik++ )
+			{
+				ch2[t6++] += ar2 * c2[t8++];
+				ch2[t7++] += ai2 * c2[t9++];
+			}
+		}
+	}
 
-    ar1h=dcp*ar1-dsp*ai1;
-    ai1=dcp*ai1+dsp*ar1;
-    ar1=ar1h;
-    t4=t1;
-    t5=t2;
-    t6=0;
-    t7=idl1;
-    t8=t3;
-    for(ik=0;ik<idl1;ik++){
-      c2[t4++]=ch2[t6++]+ar1*ch2[t7++];
-      c2[t5++]=ai1*ch2[t8++];
-    }
-    dc2=ar1;
-    ds2=ai1;
-    ar2=ar1;
-    ai2=ai1;
+	t1 = 0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += idl1;
+		t2 = t1;
+		for( ik = 0; ik < idl1; ik++ )
+		{
+			ch2[ik] += c2[t2++];
+		}
+	}
 
-    t6=idl1;
-    t7=t9-idl1;
-    for(j=2;j<ipph;j++){
-      t6+=idl1;
-      t7-=idl1;
-      ar2h=dc2*ar2-ds2*ai2;
-      ai2=dc2*ai2+ds2*ar2;
-      ar2=ar2h;
-      t4=t1;
-      t5=t2;
-      t11=t6;
-      t12=t7;
-      for(ik=0;ik<idl1;ik++){
-        c2[t4++]+=ar2*ch2[t11++];
-        c2[t5++]+=ai2*ch2[t12++];
-      }
-    }
-  }
+	if( ido < l1 )
+	{
+		goto L132;
+	}
 
-  t1=0;
-  for(j=1;j<ipph;j++){
-    t1+=idl1;
-    t2=t1;
-    for(ik=0;ik<idl1;ik++)ch2[ik]+=ch2[t2++];
-  }
+	t1 = 0;
+	t2 = 0;
+	for( k = 0; k < l1; k++ )
+	{
+		t3 = t1;
+		t4 = t2;
+		for( i = 0; i < ido; i++ )
+		{
+			cc[t4++] = ch[t3++];
+		}
 
-  t1=0;
-  t2=ipp2*t0;
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1;
-    t4=t2;
-    for(k=0;k<l1;k++){
-      ch[t3]=c1[t3]-c1[t4];
-      ch[t4]=c1[t3]+c1[t4];
-      t3+=ido;
-      t4+=ido;
-    }
-  }
+		t1 += ido;
+		t2 += t10;
+	}
 
-  if(ido==1)goto L132;
-  if(nbd<l1)goto L128;
-
-  t1=0;
-  t2=ipp2*t0;
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1;
-    t4=t2;
-    for(k=0;k<l1;k++){
-      t5=t3;
-      t6=t4;
-      for(i=2;i<ido;i+=2){
-        t5+=2;
-        t6+=2;
-        ch[t5-1]=c1[t5-1]-c1[t6];
-        ch[t6-1]=c1[t5-1]+c1[t6];
-        ch[t5]=c1[t5]+c1[t6-1];
-        ch[t6]=c1[t5]-c1[t6-1];
-      }
-      t3+=ido;
-      t4+=ido;
-    }
-  }
-  goto L132;
-
- L128:
-  t1=0;
-  t2=ipp2*t0;
-  for(j=1;j<ipph;j++){
-    t1+=t0;
-    t2-=t0;
-    t3=t1;
-    t4=t2;
-    for(i=2;i<ido;i+=2){
-      t3+=2;
-      t4+=2;
-      t5=t3;
-      t6=t4;
-      for(k=0;k<l1;k++){
-        ch[t5-1]=c1[t5-1]-c1[t6];
-        ch[t6-1]=c1[t5-1]+c1[t6];
-        ch[t5]=c1[t5]+c1[t6-1];
-        ch[t6]=c1[t5]-c1[t6-1];
-        t5+=ido;
-        t6+=ido;
-      }
-    }
-  }
+	goto L135;
 
 L132:
-  if(ido==1)return;
+	for( i = 0; i < ido; i++ )
+	{
+		t1 = i;
+		t2 = i;
+		for( k = 0; k < l1; k++ )
+		{
+			cc[t2] = ch[t1];
+			t1 += ido;
+			t2 += t10;
+		}
+	}
 
-  for(ik=0;ik<idl1;ik++)c2[ik]=ch2[ik];
+L135:
+	t1 = 0;
+	t2 = ido << 1;
+	t3 = 0;
+	t4 = ipp2 * t0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t2;
+		t3 += t0;
+		t4 -= t0;
 
-  t1=0;
-  for(j=1;j<ip;j++){
-    t2=(t1+=t0);
-    for(k=0;k<l1;k++){
-      c1[t2]=ch[t2];
-      t2+=ido;
-    }
-  }
+		t5 = t1;
+		t6 = t3;
+		t7 = t4;
 
-  if(nbd>l1)goto L139;
+		for( k = 0; k < l1; k++ )
+		{
+			cc[t5 - 1] = ch[t6];
+			cc[t5] = ch[t7];
+			t5 += t10;
+			t6 += ido;
+			t7 += ido;
+		}
+	}
 
-  is= -ido-1;
-  t1=0;
-  for(j=1;j<ip;j++){
-    is+=ido;
-    t1+=t0;
-    idij=is;
-    t2=t1;
-    for(i=2;i<ido;i+=2){
-      t2+=2;
-      idij+=2;
-      t3=t2;
-      for(k=0;k<l1;k++){
-        c1[t3-1]=wa[idij-1]*ch[t3-1]-wa[idij]*ch[t3];
-        c1[t3]=wa[idij-1]*ch[t3]+wa[idij]*ch[t3-1];
-        t3+=ido;
-      }
-    }
-  }
-  return;
+	if( ido == 1 )
+	{
+		return;
+	}
+
+	if( nbd < l1 )
+	{
+		goto L141;
+	}
+
+	t1 = -ido;
+	t3 = 0;
+	t4 = 0;
+	t5 = ipp2 * t0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t2;
+		t3 += t2;
+		t4 += t0;
+		t5 -= t0;
+		t6 = t1;
+		t7 = t3;
+		t8 = t4;
+		t9 = t5;
+		for( k = 0; k < l1; k++ )
+		{
+			for( i = 2; i < ido; i += 2 )
+			{
+				ic = idp2 - i;
+				cc[i + t7 - 1] = ch[i + t8 - 1] + ch[i + t9 - 1];
+				cc[ic + t6 - 1] = ch[i + t8 - 1] - ch[i + t9 - 1];
+				cc[i + t7] = ch[i + t8] + ch[i + t9];
+				cc[ic + t6] = ch[i + t9] - ch[i + t8];
+			}
+
+			t6 += t10;
+			t7 += t10;
+			t8 += ido;
+			t9 += ido;
+		}
+	}
+	return;
+
+ L141:
+	t1 = -ido;
+	t3 = 0;
+	t4 = 0;
+	t5 = ipp2 * t0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t2;
+		t3 += t2;
+		t4 += t0;
+		t5 -= t0;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t6 = idp2 + t1 - i;
+			t7 = i + t3;
+			t8 = i + t4;
+			t9 = i + t5;
+			for( k = 0; k < l1; k++ )
+			{
+				cc[t7 - 1] = ch[t8 - 1] + ch[t9 - 1];
+				cc[t6 - 1] = ch[t8 - 1] - ch[t9 - 1];
+				cc[t7] = ch[t8] + ch[t9];
+				cc[t6] = ch[t9] - ch[t8];
+				t6 += t10;
+				t7 += t10;
+				t8 += ido;
+				t9 += ido;
+			}
+		}
+	}
+}
+
+static void drftf1( int n, float* c, float* ch, float* wa, int* ifac )
+{
+	int i, k1, l1, l2;
+	int na, kh, nf;
+	int ip, iw, ido, idl1, ix2, ix3;
+
+	nf = ifac[1];
+	na = 1;
+	l2 = n;
+	iw = n;
+
+	for( k1 = 0; k1 < nf; k1++ )
+	{
+		kh = nf - k1;
+		ip = ifac[kh + 1];
+		l1 = l2 / ip;
+		ido = n / l2;
+		idl1 = ido * l1;
+		iw -= ( ip - 1 ) * ido;
+		na = 1 - na;
+
+		if( ip != 4 )
+		{
+			goto L102;
+		}
+
+		ix2 = iw + ido;
+		ix3 = ix2 + ido;
+		if( na != 0 )
+		{
+			dradf4( ido, l1, ch, c, wa + iw - 1, wa + ix2 - 1, wa + ix3 - 1 );
+		}
+		else
+		{
+			dradf4( ido, l1, c, ch, wa + iw - 1, wa + ix2 - 1, wa + ix3 - 1 );
+		}
+		goto L110;
+
+ L102:
+		if( ip != 2 )
+		{
+			goto L104;
+		}
+
+		if( na != 0 )
+		{
+			goto L103;
+		}
+
+		dradf2( ido, l1, c, ch, wa + iw - 1 );
+		goto L110;
+
+ L103:
+		dradf2( ido, l1, ch, c, wa + iw - 1 );
+		goto L110;
+
+ L104:
+		if( ido == 1 )
+		{
+			na = 1 - na;
+		}
+
+		if( na != 0 )
+		{
+			goto L109;
+		}
+
+		dradfg( ido, ip, l1, idl1, c, c, c, ch, ch, wa + iw - 1 );
+		na = 1;
+		goto L110;
+
+ L109:
+		dradfg( ido, ip, l1, idl1, ch, ch, ch, c, c, wa + iw - 1 );
+		na = 0;
+
+L110:
+		l2 = l1;
+	}
+
+	if( na == 1 )
+	{
+		return;
+	}
+
+	for( i = 0; i < n; i++ )
+	{
+		c[i] = ch[i];
+	}
+}
+
+static void dradb2( int ido, int l1, float* cc, float* ch, float* wa1 )
+{
+	int i, k, t0, t1, t2, t3, t4, t5, t6;
+	float ti2, tr2;
+
+	t0 = l1 * ido;
+
+	t1 = 0;
+	t2 = 0;
+	t3 = ( ido << 1 ) - 1;
+	for( k = 0; k < l1; k++ )
+	{
+		ch[t1] = cc[t2] + cc[t3 + t2];
+		ch[t1 + t0] = cc[t2] - cc[t3 + t2];
+		t2 = ( t1 += ido ) << 1;
+	}
+
+	if( ido < 2 )
+	{
+		return;
+	}
+
+	if( ido == 2 )
+	{
+		goto L105;
+	}
+
+	t1 = 0;
+	t2 = 0;
+	for( k = 0; k < l1; k++ )
+	{
+		t3 = t1;
+		t5 = ( t4 = t2 ) + ( ido << 1 );
+		t6 = t0 + t1;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t3 += 2;
+			t4 += 2;
+			t5 -= 2;
+			t6 += 2;
+			ch[t3 - 1] = cc[t4 - 1] + cc[t5 - 1];
+			tr2 = cc[t4 - 1] - cc[t5 - 1];
+			ch[t3] = cc[t4] - cc[t5];
+			ti2 = cc[t4] + cc[t5];
+			ch[t6 - 1] = wa1[i - 2] * tr2 - wa1[i - 1] * ti2;
+			ch[t6] = wa1[i - 2] * ti2 + wa1[i - 1] * tr2;
+		}
+		t2 = ( t1 += ido ) << 1;
+	}
+
+	if( ido % 2 == 1 )
+	{
+		return;
+	}
+
+L105:
+	t1 = ido - 1;
+	t2 = ido - 1;
+	for( k = 0; k < l1; k++ )
+	{
+		ch[t1] = cc[t2] + cc[t2];
+		ch[t1 + t0] = -( cc[t2 + 1] + cc[t2 + 1] );
+		t1 += ido;
+		t2 += ido << 1;
+	}
+}
+
+static void dradb3( int ido, int l1, float* cc, float* ch, float* wa1, float* wa2 )
+{
+	static float taur = -0.5f;
+	static float taui = 0.8660254037844386f;
+	int i, k, t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
+	float ci2, ci3, di2, di3, cr2, cr3, dr2, dr3, ti2, tr2;
+	t0 = l1 * ido;
+
+	t1 = 0;
+	t2 = t0 << 1;
+	t3 = ido << 1;
+	t4 = ido + ( ido << 1 );
+	t5 = 0;
+	for( k = 0; k < l1; k++ )
+	{
+		tr2 = cc[t3 - 1] + cc[t3 - 1];
+		cr2 = cc[t5] + ( taur * tr2 );
+		ch[t1] = cc[t5] + tr2;
+		ci3 = taui * ( cc[t3] + cc[t3] );
+		ch[t1 + t0] = cr2 - ci3;
+		ch[t1 + t2] = cr2 + ci3;
+		t1 += ido;
+		t3 += t4;
+		t5 += t4;
+	}
+
+	if( ido == 1 )
+	{
+		return;
+	}
+
+	t1 = 0;
+	t3 = ido << 1;
+	for( k = 0; k < l1; k++ )
+	{
+		t7 = t1 + ( t1 << 1 );
+		t6 = ( t5 = t7 + t3 );
+		t8 = t1;
+		t10 = ( t9 = t1 + t0 ) + t0;
+
+		for( i = 2; i < ido; i += 2 )
+		{
+			t5 += 2;
+			t6 -= 2;
+			t7 += 2;
+			t8 += 2;
+			t9 += 2;
+			t10 += 2;
+			tr2 = cc[t5 - 1] + cc[t6 - 1];
+			cr2 = cc[t7 - 1] + ( taur * tr2 );
+			ch[t8 - 1] = cc[t7 - 1] + tr2;
+			ti2 = cc[t5] - cc[t6];
+			ci2 = cc[t7] + ( taur * ti2 );
+			ch[t8] = cc[t7] + ti2;
+			cr3 = taui * ( cc[t5 - 1] - cc[t6 - 1] );
+			ci3 = taui * ( cc[t5] + cc[t6] );
+			dr2 = cr2 - ci3;
+			dr3 = cr2 + ci3;
+			di2 = ci2 + cr3;
+			di3 = ci2 - cr3;
+			ch[t9 - 1] = wa1[i - 2] * dr2 - wa1[i - 1] * di2;
+			ch[t9] = wa1[i - 2] * di2 + wa1[i - 1] * dr2;
+			ch[t10 - 1] = wa2[i - 2] * dr3 - wa2[i - 1] * di3;
+			ch[t10] = wa2[i - 2] * di3 + wa2[i - 1] * dr3;
+		}
+
+		t1 += ido;
+	}
+}
+
+static void dradb4( int ido, int l1, float* cc, float* ch, float* wa1, float* wa2, float* wa3 )
+{
+	static float sqrt2 = 1.414213562373095f;
+	int i, k, t0, t1, t2, t3, t4, t5, t6, t7, t8;
+	float ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
+	t0 = l1 * ido;
+
+	t1 = 0;
+	t2 = ido << 2;
+	t3 = 0;
+	t6 = ido << 1;
+	for( k = 0; k < l1; k++ )
+	{
+		t4 = t3 + t6;
+		t5 = t1;
+		tr3 = cc[t4 - 1] + cc[t4 - 1];
+		tr4 = cc[t4] + cc[t4]; 
+		tr1 = cc[t3] - cc[( t4 += t6 ) - 1];
+		tr2 = cc[t3] + cc[t4 - 1];
+		ch[t5] = tr2 + tr3;
+		ch[t5 += t0] = tr1 - tr4;
+		ch[t5 += t0] = tr2 - tr3;
+		ch[t5 += t0] = tr1 + tr4;
+		t1 += ido;
+		t3 += t2;
+	}
+
+	if( ido < 2 )
+	{
+		return;
+	}
+
+	if( ido == 2 )
+	{
+		goto L105;
+	}
+
+	t1 = 0;
+	for( k = 0; k < l1; k++ )
+	{
+		t5 = ( t4 = ( t3 = ( t2 = t1 << 2 ) + t6 ) ) + t6;
+		t7 = t1;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t2 += 2;
+			t3 += 2;
+			t4 -= 2;
+			t5 -= 2;
+			t7 += 2;
+			ti1 = cc[t2] + cc[t5];
+			ti2 = cc[t2] - cc[t5];
+			ti3 = cc[t3] - cc[t4];
+			tr4 = cc[t3] + cc[t4];
+			tr1 = cc[t2 - 1] - cc[t5 - 1];
+			tr2 = cc[t2 - 1] + cc[t5 - 1];
+			ti4 = cc[t3 - 1] - cc[t4 - 1];
+			tr3 = cc[t3 - 1] + cc[t4 - 1];
+			ch[t7 - 1] = tr2 + tr3;
+			cr3 = tr2 - tr3;
+			ch[t7] = ti2 + ti3;
+			ci3 = ti2 - ti3;
+			cr2 = tr1 - tr4;
+			cr4 = tr1 + tr4;
+			ci2 = ti1 + ti4;
+			ci4 = ti1 - ti4;
+
+			ch[( t8 = t7 + t0 ) - 1] = wa1[i - 2] * cr2  -wa1[i - 1] * ci2;
+			ch[t8] = wa1[i - 2] * ci2 + wa1[i - 1] * cr2;
+			ch[( t8 += t0 ) - 1] = wa2[i - 2] * cr3 - wa2[i - 1] * ci3;
+			ch[t8] = wa2[i - 2] * ci3 + wa2[i - 1] * cr3;
+			ch[( t8 += t0 ) - 1] = wa3[i - 2] * cr4 - wa3[i - 1] * ci4;
+			ch[t8] = wa3[i - 2] * ci4 + wa3[i - 1] * cr4;
+		}
+		t1 += ido;
+	}
+
+	if( ido % 2 == 1 )
+	{
+		return;
+	}
+
+L105:
+	t1 = ido;
+	t2 = ido << 2;
+	t3 = ido - 1;
+	t4 = ido + ( ido << 1 );
+	for( k = 0; k < l1; k++ )
+	{
+		t5 = t3;
+		ti1 = cc[t1] + cc[t4];
+		ti2 = cc[t4] - cc[t1];
+		tr1 = cc[t1 - 1] - cc[t4 - 1];
+		tr2 = cc[t1 - 1] + cc[t4 - 1];
+		ch[t5] = tr2 + tr2;
+		ch[t5 += t0] = sqrt2 * ( tr1 - ti1 );
+		ch[t5 += t0] = ti2 + ti2;
+		ch[t5 += t0] = -sqrt2 * ( tr1 + ti1 );
+
+		t3 += ido;
+		t1 += t2;
+		t4 += t2;
+	}
+}
+
+static void dradbg( int ido, int ip, int l1, int idl1, float* cc, float* c1, float* c2, float* ch, float* ch2, float* wa )
+{
+	static float tpi = 6.283185307179586f;
+	int idij, ipph, i, j, k, l, ik, is, t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12;
+	float dc2, ai1, ai2, ar1, ar2, ds2;
+	int nbd;
+	float dcp, arg, dsp, ar1h, ar2h;
+	int ipp2;
+
+	t10 = ip * ido;
+	t0 = l1 * ido;
+	arg = tpi / ( float )ip;
+	dcp = cosf( arg );
+	dsp = sinf( arg );
+	nbd = ( ido - 1 ) >> 1;
+	ipp2 = ip;
+	ipph = ( ip + 1 ) >> 1;
+	if( ido < l1 )
+	{
+		goto L103;
+	}
+  
+	t1 = 0;
+	t2 = 0;
+	for( k = 0; k < l1; k++ )
+	{
+		t3 = t1;
+		t4 = t2;
+		for( i = 0; i < ido; i++ )
+		{
+			ch[t3] = cc[t4];
+			t3++;
+			t4++;
+		}
+		t1 += ido;
+		t2 += t10;
+	}
+	goto L106;
+
+L103:
+	t1 = 0;
+	for( i = 0; i < ido; i++ )
+	{
+		t2 = t1;
+		t3 = t1;
+		for( k = 0; k < l1; k++ )
+		{
+			ch[t2] = cc[t3];
+			t2 += ido;
+			t3 += t10;
+		}
+		t1++;
+	}
+
+L106:
+	t1 = 0;
+	t2 = ipp2 * t0;
+	t7 = ( t5 = ido << 1 );
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1;
+		t4 = t2;
+		t6 = t5;
+		for( k = 0; k < l1; k++ )
+		{
+			ch[t3] = cc[t6 - 1] + cc[t6 - 1];
+			ch[t4] = cc[t6] + cc[t6];
+			t3 += ido;
+			t4 += ido;
+			t6 += t10;
+		}
+		t5 += t7;
+	}
+
+	if( ido == 1 )
+	{
+		goto L116;
+	}
+	if( nbd < l1 )
+	{
+		goto L112;
+	}
+
+	t1 = 0;
+	t2 = ipp2 * t0;
+	t7 = 0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1;
+		t4 = t2;
+
+		t7 += ( ido << 1 );
+		t8 = t7;
+		for( k = 0; k < l1; k++ )
+		{
+			t5 = t3;
+			t6 = t4;
+			t9 = t8;
+			t11 = t8;
+			for( i = 2; i < ido; i += 2 )
+			{
+				t5 += 2;
+				t6 += 2;
+				t9 += 2;
+				t11 -= 2;
+				ch[t5 - 1] = cc[t9 - 1] + cc[t11 - 1];
+				ch[t6 - 1] = cc[t9 - 1] - cc[t11 - 1];
+				ch[t5] = cc[t9] - cc[t11];
+				ch[t6] = cc[t9] + cc[t11];
+			}
+			t3 += ido;
+			t4 += ido;
+			t8 += t10;
+		}
+	}
+	goto L116;
+
+L112:
+	t1 = 0;
+	t2 = ipp2 * t0;
+	t7 = 0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1;
+		t4 = t2;
+		t7 += ( ido << 1 );
+		t8 = t7;
+		t9 = t7;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t3 += 2;
+			t4 += 2;
+			t8 += 2;
+			t9 -= 2;
+			t5 = t3;
+			t6 = t4;
+			t11 = t8;
+			t12 = t9;
+			for( k = 0; k < l1; k++ )
+			{
+				ch[t5 - 1] = cc[t11 - 1] + cc[t12 - 1];
+				ch[t6 - 1] = cc[t11 - 1] - cc[t12 - 1];
+				ch[t5] = cc[t11] - cc[t12];
+				ch[t6] = cc[t11] + cc[t12];
+				t5 += ido;
+				t6 += ido;
+				t11 += t10;
+				t12 += t10;
+			}
+		}
+	}
+
+L116:
+	ar1 = 1.0f;
+	ai1 = 0.0f;
+	t1 = 0;
+	t9 = ( t2 = ipp2 * idl1 );
+	t3 = ( ip - 1 ) * idl1;
+	for( l = 1; l < ipph; l++ )
+	{
+		t1 += idl1;
+		t2 -= idl1;
+
+		ar1h = dcp * ar1 - dsp * ai1;
+		ai1 = dcp * ai1 + dsp * ar1;
+		ar1 = ar1h;
+		t4 = t1;
+		t5 = t2;
+		t6 = 0;
+		t7 = idl1;
+		t8 = t3;
+		for( ik = 0; ik < idl1; ik++ )
+		{
+			c2[t4++] = ch2[t6++] + ar1 * ch2[t7++];
+			c2[t5++] = ai1 * ch2[t8++];
+		}
+		dc2 = ar1;
+		ds2 = ai1;
+		ar2 = ar1;
+		ai2 = ai1;
+
+		t6 = idl1;
+		t7 = t9 - idl1;
+		for( j = 2; j < ipph; j++ )
+		{
+			t6 += idl1;
+			t7 -= idl1;
+			ar2h = dc2 * ar2 - ds2 * ai2;
+			ai2 = dc2 * ai2 + ds2 * ar2;
+			ar2 = ar2h;
+			t4 = t1;
+			t5 = t2;
+			t11 = t6;
+			t12 = t7;
+			for( ik = 0; ik < idl1; ik++ )
+			{
+				c2[t4++] += ar2 * ch2[t11++];
+				c2[t5++] += ai2 * ch2[t12++];
+			}
+		}
+	}
+
+	t1 = 0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += idl1;
+		t2 = t1;
+		for( ik = 0; ik < idl1; ik++ )
+		{
+			ch2[ik] += ch2[t2++];
+		}
+	}
+
+	t1 = 0;
+	t2 = ipp2 * t0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1;
+		t4 = t2;
+		for( k = 0; k < l1; k++ )
+		{
+			ch[t3] = c1[t3] - c1[t4];
+			ch[t4] = c1[t3] + c1[t4];
+			t3 += ido;
+			t4 += ido;
+		}
+	}
+
+	if( ido == 1 )
+	{
+		goto L132;
+	}
+	if( nbd < l1 )
+	{
+		goto L128;
+	}
+
+	t1 = 0;
+	t2 = ipp2 * t0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1;
+		t4 = t2;
+		for( k = 0; k < l1; k++ )
+		{
+			t5 = t3;
+			t6 = t4;
+			for( i = 2; i < ido; i += 2 )
+			{
+				t5 += 2;
+				t6 += 2;
+				ch[t5 - 1] = c1[t5 - 1] - c1[t6];
+				ch[t6 - 1] = c1[t5 - 1] + c1[t6];
+				ch[t5] = c1[t5] + c1[t6 - 1];
+				ch[t6] = c1[t5] - c1[t6 - 1];
+			}
+			t3 += ido;
+			t4 += ido;
+		}
+	}
+	goto L132;
+
+L128:
+	t1 = 0;
+	t2 = ipp2 * t0;
+	for( j = 1; j < ipph; j++ )
+	{
+		t1 += t0;
+		t2 -= t0;
+		t3 = t1;
+		t4 = t2;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t3 += 2;
+			t4 += 2;
+			t5 = t3;
+			t6 = t4;
+			for( k = 0; k < l1; k++ )
+			{
+				ch[t5 - 1] = c1[t5 - 1] - c1[t6];
+				ch[t6 - 1] = c1[t5 - 1] + c1[t6];
+				ch[t5] = c1[t5] + c1[t6 - 1];
+				ch[t6] = c1[t5] - c1[t6 - 1];
+				t5 += ido;
+				t6 += ido;
+			}
+		}
+	}
+
+L132:
+	if( ido == 1 )
+	{
+		return;
+	}
+
+	for( ik = 0; ik < idl1; ik++ )
+	{
+		c2[ik] = ch2[ik];
+	}
+
+	t1 = 0;
+	for( j = 1; j < ip; j++ )
+	{
+		t2 = ( t1 += t0 );
+		for( k = 0; k < l1; k++ )
+		{
+			c1[t2] = ch[t2];
+			t2 += ido;
+		}
+	}
+
+	if( nbd > l1 )
+	{
+		goto L139;
+	}
+
+	is= -ido - 1;
+	t1 = 0;
+	for( j = 1; j < ip; j++ )
+	{
+		is += ido;
+		t1 += t0;
+		idij = is;
+		t2 = t1;
+		for( i = 2; i < ido; i += 2 )
+		{
+			t2 += 2;
+			idij += 2;
+			t3 = t2;
+			for( k = 0; k < l1; k++ )
+			{
+				c1[t3 - 1] = wa[idij - 1] * ch[t3 - 1] - wa[idij] * ch[t3];
+				c1[t3] = wa[idij - 1] * ch[t3] + wa[idij] * ch[t3 - 1];
+				t3 += ido;
+			}
+		}
+	}
+	return;
 
  L139:
-  is= -ido-1;
-  t1=0;
-  for(j=1;j<ip;j++){
-    is+=ido;
-    t1+=t0;
-    t2=t1;
-    for(k=0;k<l1;k++){
-      idij=is;
-      t3=t2;
-      for(i=2;i<ido;i+=2){
-        idij+=2;
-        t3+=2;
-        c1[t3-1]=wa[idij-1]*ch[t3-1]-wa[idij]*ch[t3];
-        c1[t3]=wa[idij-1]*ch[t3]+wa[idij]*ch[t3-1];
-      }
-      t2+=ido;
-    }
-  }
+	is= -ido - 1;
+	t1 = 0;
+	for( j = 1; j < ip; j++ )
+	{
+		is += ido;
+		t1 += t0;
+		t2 = t1;
+		for( k = 0; k < l1; k++ )
+		{
+			idij = is;
+			t3 = t2;
+			for( i = 2; i < ido; i += 2 )
+			{
+				idij += 2;
+				t3 += 2;
+				c1[t3 - 1] = wa[idij - 1] * ch[t3 - 1] - wa[idij] * ch[t3];
+				c1[t3] = wa[idij - 1] * ch[t3] + wa[idij] * ch[t3 - 1];
+			}
+			t2 += ido;
+		}
+	}
 }
 
-static void drftb1( int n, float* c, float* ch, float* wa, int* ifac ){
-  int i,k1,l1,l2;
-  int na;
-  int nf,ip,iw,ix2,ix3,ido,idl1;
+static void drftb1( int n, float* c, float* ch, float* wa, int* ifac )
+{
+	int i, k1, l1, l2;
+	int na;
+	int nf, ip, iw, ix2, ix3, ido, idl1;
 
-  nf=ifac[1];
-  na=0;
-  l1=1;
-  iw=1;
+	nf = ifac[1];
+	na = 0;
+	l1 = 1;
+	iw = 1;
 
-  for(k1=0;k1<nf;k1++){
-    ip=ifac[k1 + 2];
-    l2=ip*l1;
-    ido=n/l2;
-    idl1=ido*l1;
-    if(ip!=4)goto L103;
-    ix2=iw+ido;
-    ix3=ix2+ido;
+	for( k1 = 0; k1 < nf; k1++ )
+	{
+		ip = ifac[k1 + 2];
+		l2 = ip * l1;
+		ido = n / l2;
+		idl1 = ido * l1;
+		if( ip != 4 )
+		{
+			goto L103;
+		}
+		ix2 = iw + ido;
+		ix3 = ix2 + ido;
 
-    if(na!=0)
-      dradb4(ido,l1,ch,c,wa+iw-1,wa+ix2-1,wa+ix3-1);
-    else
-      dradb4(ido,l1,c,ch,wa+iw-1,wa+ix2-1,wa+ix3-1);
-    na=1-na;
-    goto L115;
+		if( na != 0 )
+		{
+			dradb4( ido, l1, ch, c, wa + iw - 1, wa + ix2 - 1, wa + ix3 - 1 );
+		}
+		else
+		{
+			dradb4( ido, l1, c, ch, wa + iw - 1, wa + ix2 - 1, wa + ix3 - 1 );
+		}
+		na = 1 - na;
+		goto L115;
 
-  L103:
-    if(ip!=2)goto L106;
+L103:
+		if( ip != 2 )
+		{
+			goto L106;
+		}
 
-    if(na!=0)
-      dradb2(ido,l1,ch,c,wa+iw-1);
-    else
-      dradb2(ido,l1,c,ch,wa+iw-1);
-    na=1-na;
-    goto L115;
+		if( na != 0 )
+		{
+			dradb2( ido, l1, ch, c, wa + iw - 1 );
+		}
+		else
+		{
+			dradb2( ido, l1, c, ch, wa + iw - 1 );
+		}
+		na = 1 - na;
+		goto L115;
 
-  L106:
-    if(ip!=3)goto L109;
+L106:
+		if( ip != 3 )
+		{
+			goto L109;
+		}
 
-    ix2=iw+ido;
-    if(na!=0)
-      dradb3(ido,l1,ch,c,wa+iw-1,wa+ix2-1);
-    else
-      dradb3(ido,l1,c,ch,wa+iw-1,wa+ix2-1);
-    na=1-na;
-    goto L115;
+		ix2 = iw + ido;
+		if( na != 0 )
+		{
+			dradb3( ido, l1, ch, c, wa + iw - 1, wa + ix2 - 1 );
+		}
+		else
+		{
+			dradb3( ido, l1, c, ch, wa + iw - 1, wa + ix2 - 1 );
+		}
+		na = 1 - na;
+		goto L115;
 
-  L109:
-/*    The radix five case can be translated later..... */
-/*    if(ip!=5)goto L112;
+L109:
+		if( na != 0 )
+		{
+			dradbg( ido, ip, l1, idl1, ch, ch, ch, c, c, wa + iw - 1 );
+		}
+		else
+		{
+			dradbg( ido, ip, l1, idl1, c, c, c, ch, ch, wa + iw - 1 );
+		}
 
-    ix2=iw+ido;
-    ix3=ix2+ido;
-    ix4=ix3+ido;
-    if(na!=0)
-      dradb5(ido,l1,ch,c,wa+iw-1,wa+ix2-1,wa+ix3-1,wa+ix4-1);
-    else
-      dradb5(ido,l1,c,ch,wa+iw-1,wa+ix2-1,wa+ix3-1,wa+ix4-1);
-    na=1-na;
-    goto L115;
+		if( ido == 1 )
+		{
+			na = 1 - na;
+		}
 
-  L112:*/
-    if(na!=0)
-      dradbg(ido,ip,l1,idl1,ch,ch,ch,c,c,wa+iw-1);
-    else
-      dradbg(ido,ip,l1,idl1,c,c,c,ch,ch,wa+iw-1);
-    if(ido==1)na=1-na;
+L115:
+		l1 = l2;
+		iw += ( ip - 1 ) * ido;
+	}
 
-  L115:
-    l1=l2;
-    iw+=(ip-1)*ido;
-  }
+	if( na == 0 )
+	{
+		return;
+	}
 
-  if(na==0)return;
-
-  for(i=0;i<n;i++)c[i]=ch[i];
+	for( i = 0; i < n; i++ )
+	{
+		c[i] = ch[i];
+	}
 }
 
-void drft_forward( drft_lookup* l, float* data ){
-  if(l->n==1)return;
+void drft_forward( drft_lookup* l, float* data )
+{
+	if( l->n == 1 )
+	{
+		return;
+	}
 #ifdef __SSE__												/* SSE Optimize */
-	if(l->n==256)
+	if( l->n == 256 )
 	{
-		drftf256(data);
+		drftf256( data );
 		return;
 	}
-	if(l->n==512)
+
+	if( l->n == 512 )
 	{
-		drftf512(data);
+		drftf512( data );
 		return;
 	}
-	if(l->n==1024)
+
+	if( l->n == 1024 )
 	{
-		drftf1024(data);
+		drftf1024( data );
 		return;
 	}
-	if(l->n==2048)
+
+	if( l->n == 2048 )
 	{
-		drftf2048(data);
+		drftf2048( data );
 		return;
 	}
-	if(l->n==4096)
+
+	if( l->n == 4096 )
 	{
-		drftf4096(data);
+		drftf4096( data );
 		return;
 	}
 #endif														/* SSE Optimize */
-#pragma omp critical
-  {
-  drftf1(l->n,data,l->trigcache,l->trigcache+l->n,l->splitcache);
-  }
+	{
+		drftf1( l->n, data, l->trigcache, l->trigcache + l->n, l->splitcache );
+	}
 }
 
-void drft_backward( drft_lookup* l, float* data ){
+void drft_backward( drft_lookup* l, float* data )
+{
 #ifdef __SSE__												/* SSE Optimize */
-  if (l->n==1||(l->n>=256&&l->n<=4096))return;
+	if( l->n == 1 || ( l->n >= 256 && l->n <= 4096 ) )
+	{
+		return;
+	}
 #else														/* SSE Optimize */
-  if (l->n==1)return;
+	if( l->n == 1 )
+	{
+		return;
+	}
 #endif														/* SSE Optimize */
-  drftb1(l->n,data,l->trigcache,l->trigcache+l->n,l->splitcache);
+	drftb1( l->n, data, l->trigcache, l->trigcache + l->n, l->splitcache );
 }
 
-void drft_init( drft_lookup* l, int n ){
-  l->n=n;
+void drft_init( drft_lookup* l, int n )
+{
+	l->n = n;
 #ifdef __SSE__												/* SSE Optimize */
-  if (l->n>=256&&l->n<=4096)return;
+	if( l->n >= 256 && l->n <= 4096 )
+	{
+		return;
+	}
 #endif														/* SSE Optimize */
-  l->trigcache = ( float* )_ogg_calloc( 3 * n, sizeof( *l->trigcache ) );
-  l->splitcache = ( int* )_ogg_calloc( 32, sizeof( *l->splitcache ) );
-  fdrffti(n, l->trigcache, l->splitcache);
+	l->trigcache = ( float* )_ogg_calloc( 3 * n, sizeof( *l->trigcache ) );
+	l->splitcache = ( int* )_ogg_calloc( 32, sizeof( *l->splitcache ) );
+	fdrffti( n, l->trigcache, l->splitcache );
 }
 
-void drft_clear( drft_lookup* l ){
-  if(l){
+void drft_clear( drft_lookup* l )
+{
+	if( l )
+	{
 #ifdef __SSE__												/* SSE Optimize */
-    if (l->n>=256&&l->n<=4096)return;
+		if( l->n >= 256 && l->n <= 4096 )
+		{
+			return;
+		}
 #endif														/* SSE Optimize */
-    if(l->trigcache)_ogg_free(l->trigcache);
-    if(l->splitcache)_ogg_free(l->splitcache);
-    memset(l,0,sizeof(*l));
-  }
+		if( l->trigcache )
+		{
+			_ogg_free( l->trigcache );
+		}
+
+		if( l->splitcache )
+		{
+			_ogg_free( l->splitcache );
+		}
+
+		memset( l, 0, sizeof( *l ) );
+	}
 }
 

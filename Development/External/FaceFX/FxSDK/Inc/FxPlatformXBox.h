@@ -3,13 +3,18 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxPlatformXBox_H__
 #define FxPlatformXBox_H__
 
 #include <cwchar>  // For wchar_t and supporting functions.
+
+#ifdef FX_XBOX_360
+	#include <xtl.h>
+	#include <ppcintrinsics.h>
+#endif // FX_XBOX_360
 
 #define FX_USE_BUILT_IN_BOOL_TYPE
 
@@ -53,6 +58,10 @@ namespace Face
 #endif
 	// Shut up the warning level 4 conditional expression is constant warnings.
 	#pragma warning(disable : 4127)
+#ifdef FX_ORIGINAL_XBOX
+	// Shut up the function marked as __forceinline not inlined warnings.
+	#pragma warning(disable : 4714)
+#endif
 
 	// Turn on some useful warnings that are turned off by default.
 
@@ -103,6 +112,10 @@ namespace Face
 
 	#define FX_CALL __cdecl
 	#define FX_INLINE __forceinline
+
+#ifdef FX_XBOX_360
+	#define FX_RESTRICT __restrict
+#endif
 
 #if _MSC_VER >= 1310
 	#define FX_PLATFORM_SUPPORTS_PARTIAL_TEMPLATE_SPECIALIZATION

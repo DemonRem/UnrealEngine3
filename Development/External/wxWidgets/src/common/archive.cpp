@@ -1,25 +1,17 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        archive.cpp
+// Name:        src/common/archive.cpp
 // Purpose:     Streams for archive formats
 // Author:      Mike Wetherell
-// RCS-ID:      $Id: archive.cpp,v 1.5 2005/02/22 10:41:48 MW Exp $
+// RCS-ID:      $Id: archive.cpp 42508 2006-10-27 09:53:38Z MW $
 // Copyright:   (c) Mike Wetherell
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma implementation "archive.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-  #include "wx/defs.h"
+    #pragma hdrstop
 #endif
 
 #if wxUSE_STREAMS && wxUSE_ARCHIVE_STREAMS
@@ -27,14 +19,7 @@
 #include "wx/archive.h"
 
 IMPLEMENT_ABSTRACT_CLASS(wxArchiveEntry, wxObject)
-IMPLEMENT_ABSTRACT_CLASS(wxArchiveClassFactory, wxObject)
-
-#if wxUSE_ZIPSTREAM
-//FORCE_LINK(zipstrm)
-extern int _wx_link_dummy_func_zipstrm();
-static int _wx_link_dummy_var_zipstrm =
-               _wx_link_dummy_func_zipstrm ();
-#endif
+IMPLEMENT_ABSTRACT_CLASS(wxArchiveClassFactory, wxFilterClassFactoryBase)
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -47,11 +32,25 @@ wxArchiveInputStream::wxArchiveInputStream(wxInputStream& stream,
 {
 }
 
+wxArchiveInputStream::wxArchiveInputStream(wxInputStream *stream,
+                                           wxMBConv& conv)
+  : wxFilterInputStream(stream),
+    m_conv(conv)
+{
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // wxArchiveOutputStream
 
 wxArchiveOutputStream::wxArchiveOutputStream(wxOutputStream& stream,
+                                             wxMBConv& conv)
+  : wxFilterOutputStream(stream),
+    m_conv(conv)
+{
+}
+
+wxArchiveOutputStream::wxArchiveOutputStream(wxOutputStream *stream,
                                              wxMBConv& conv)
   : wxFilterOutputStream(stream),
     m_conv(conv)
@@ -73,6 +72,27 @@ wxArchiveEntry& wxArchiveEntry::operator=(const wxArchiveEntry& WXUNUSED(e))
 {
     m_notifier = NULL;
     return *this;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// wxArchiveClassFactory
+
+wxArchiveClassFactory *wxArchiveClassFactory::sm_first = NULL;
+
+void wxArchiveClassFactory::Remove()
+{
+    if (m_next != this)
+    {
+        wxArchiveClassFactory **pp = &sm_first;
+
+        while (*pp != this)
+            pp = &(*pp)->m_next;
+
+        *pp = m_next;
+
+        m_next = this;
+    }
 }
 
 #endif // wxUSE_STREAMS && wxUSE_ARCHIVE_STREAMS

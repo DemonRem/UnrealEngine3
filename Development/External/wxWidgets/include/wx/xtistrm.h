@@ -4,17 +4,13 @@
 // Author:      Stefan Csomor
 // Modified by:
 // Created:     27/07/03
-// RCS-ID:      $Id: xtistrm.h,v 1.19 2004/09/24 14:32:18 ABX Exp $
+// RCS-ID:      $Id: xtistrm.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 2003 Stefan Csomor
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_XTISTRMH__
 #define _WX_XTISTRMH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "xtistrm.h"
-#endif
 
 #include "wx/wx.h"
 
@@ -78,7 +74,7 @@ class WXDLLIMPEXP_BASE wxWriter : public wxObject
 {
 public :
     wxWriter() ;
-    ~wxWriter() ;
+    virtual ~wxWriter() ;
 
     // with this call you start writing out a new top-level object
     void WriteObject(const wxObject *object, const wxClassInfo *classInfo , wxPersister *persister , const wxString &name , wxxVariantArray &WXUNUSED(metadata)) ;
@@ -163,7 +159,7 @@ class WXDLLIMPEXP_BASE wxReader : public wxObject
 {
 public :
     wxReader() ;
-    ~wxReader() ;
+    virtual ~wxReader() ;
 
     // the only thing wxReader knows about is the class info by object ID
     wxClassInfo *GetObjectClassInfo(int objectID) ;

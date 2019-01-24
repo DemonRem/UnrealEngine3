@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: Header of SSE Function Library
- last mod: $Id: xmmlib.h,v 1.3 2005-07-08 15:00:00+09 blacksword Exp $
 
  ********************************************************************/
 
@@ -50,17 +49,9 @@ typedef union __declspec( intrin_type ) _MM_ALIGN16 __m128x
 #define	_mm_lddqu_ps( x )	_mm_loadu_ps( x )
 #endif
 
-extern _MM_ALIGN16 const unsigned long PCS_NNRR[4];
-extern _MM_ALIGN16 const unsigned long PCS_NRNR[4];
-extern _MM_ALIGN16 const unsigned long PCS_NRRN[4];
-extern _MM_ALIGN16 const unsigned long PCS_NRRR[4];
-extern _MM_ALIGN16 const unsigned long PCS_RNRN[4];
-extern _MM_ALIGN16 const unsigned long PCS_RRNN[4];
-extern _MM_ALIGN16 const unsigned long PCS_RNNR[4];
 extern _MM_ALIGN16 const unsigned long PCS_RRRR[4];
-extern _MM_ALIGN16 const unsigned long PCS_NNNR[4];
 extern _MM_ALIGN16 const unsigned long PABSMASK[4];
-extern _MM_ALIGN16 const unsigned long PMASKTABLE[16*4];
+extern _MM_ALIGN16 const unsigned long PMASKTABLE[4];
 
 extern const __m128 PFV_0;   
 extern const __m128 PFV_1;   
@@ -71,29 +62,19 @@ extern const __m128 PFV_INIT;
 extern const __m128 PFV_0P5; 
 extern const __m128 PFV_M0P5;
 
+extern const __m128 PCS_NNRR2;
+extern const __m128 PCS_NRNR2;
+extern const __m128 PCS_NRRN2;
+extern const __m128 PCS_NRRR2;
+extern const __m128 PCS_RNRN2;
+extern const __m128 PCS_RRNN2;
+extern const __m128 PCS_NNNR2;
+extern const __m128 PCS_RNNR2;
+extern const __m128 PCS_RRRR2;
+
+extern const __m128 ConstMax;
+
 extern const int bitCountTable[16];
-
-STIN int ilog( unsigned int v )
-{
-	unsigned long result;
-
-	if( _BitScanReverse( &result, v ) )
-	{
-		return( result + 1 );
-	}
-
-	return( 0 );
-}
-
-STIN int ilog2( unsigned int v )
-{
-	if( v )
-	{
-		v--;
-	}
-
-	return( ilog( v ) );
-}
 
 STIN float _mm_add_horz( __m128 x )
 {
@@ -104,7 +85,7 @@ STIN float _mm_add_horz( __m128 x )
 	__m128	y;
 	float	r;
 
-	y = _mm_movehl_ps( PFV_0, x );
+	y = _mm_movehl_ps( x, x );
 	x = _mm_add_ps( x, y );
 	y = x;
 	y = _mm_shuffle_ps( y, y, _MM_SHUFFLE( 1, 1, 1, 1 ) );
@@ -120,7 +101,7 @@ STIN float _mm_max_horz( __m128 x )
 	__m128	y;
 	float	r;
 
-	y = _mm_movehl_ps( y, x );
+	y = _mm_movehl_ps( x, x );
 	x = _mm_max_ps( x, y );
 	y = x;
 	y = _mm_shuffle_ps( y, y, _MM_SHUFFLE( 1, 1, 1, 1 ) );
@@ -130,11 +111,12 @@ STIN float _mm_max_horz( __m128 x )
 	return( r );
 }
 
-void* xmm_calloc(size_t nitems, size_t size);
 void* xmm_align( void* address );
 void xmm_copy_forward( float* d, float* s, int count );
 void xmm_copy_backward( float* d, float* s, int count );
 
 #endif /* defined(__SSE__) */
+
+void* xmm_calloc(size_t nitems, size_t size);
 
 #endif /* _XMMLIB_H_INCLUDED */

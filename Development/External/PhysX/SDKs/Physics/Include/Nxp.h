@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXP
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -18,7 +18,7 @@
 		#define NXP_DLL_EXPORT __declspec(dllexport)
 		//new: default foundation to static lib:
 		#define NXF_DLL_EXPORT //__declspec(dllimport)
-             #elif defined(LINUX) && defined(NX_LINUX_USE_VISIBILITY)
+             #elif defined(__linux__) && defined(NX_LINUX_USE_VISIBILITY)
 		#define NXP_DLL_EXPORT __attribute__ ((visibility ("default")))
 		#define NXF_DLL_EXPORT 
              #else
@@ -33,7 +33,7 @@
 		#define NXP_DLL_EXPORT __declspec(dllimport)
 		//new: default foundation to static lib:
 		#define NXF_DLL_EXPORT //__declspec(dllimport)
-             #elif defined(LINUX) && defined(NX_LINUX_USE_VISIBILITY)
+             #elif defined(__linux__) && defined(NX_LINUX_USE_VISIBILITY)
 		#define NXP_DLL_EXPORT __attribute__ ((visibility ("default")))
 		#define NXF_DLL_EXPORT 
              #else
@@ -52,7 +52,7 @@
 		//new: default foundation to static lib:
 		#define NXP_DLL_EXPORT __declspec(dllimport)
 		#define NXF_DLL_EXPORT //__declspec(dllimport)
-             #elif defined(LINUX) && defined(NX_LINUX_USE_VISIBILITY)
+             #elif defined(__linux__) && defined(NX_LINUX_USE_VISIBILITY)
 		#define NXP_DLL_EXPORT __attribute__ ((visibility ("default")))
 		#define NXF_DLL_EXPORT
              #else
@@ -62,6 +62,8 @@
   			
 	#endif
 #endif
+
+// #define NX_DISABLE_VISUALIZATION
 
 #include "Nxf.h"
 #include "NxVec3.h"
@@ -93,19 +95,20 @@ AM: PLEASE MAKE SURE TO HAVE AN 'NX_' PREFIX ON ALL NEW DEFINES YOU ADD HERE!!!!
 #define NX_FIX_TTP_1922				1
 #define NX_SUPPORT_SWEEP_API		1
 #define NX_HAS_CCD_SKELETONS
+#define NX_ENABLE_HW_PARSER			0
 //#define SUPPORT_INTERNAL_RADIUS	// For raycast CCD only
 //#define NX_SUPPORT_MESH_SCALE		// Experimental mesh scale support
 
-#if defined(_XBOX) | defined(__CELLOS_LV2__)
-#define NX_DISABLE_FLUIDS
+#define NX_DEFORMABLE_BATCH_SIZE   32
+#if defined(ANDROID) || (defined(__APPLE__) && defined(__arm))
+#define NX_DISABLE_FLUIDS 1
+#define NX_DISABLE_CLOTH 1
+#define NX_DISABLE_SOFTBODY 1
 #endif
-//#define NX_DISABLE_CLOTH
-//#define NX_DISABLE_SOFTBODY
 
 #ifdef NX_DISABLE_FLUIDS
 	#define NX_USE_FLUID_API  0
 	//#define NX_USE_SDK_FLUIDS 0
-    #define NX_USE_IMPLICIT_SCREEN_SURFACE_API 0
 #else
 	// If we are exposing the Fluid API.
 	#define NX_USE_FLUID_API 1
@@ -117,8 +120,8 @@ AM: PLEASE MAKE SURE TO HAVE AN 'NX_' PREFIX ON ALL NEW DEFINES YOU ADD HERE!!!!
 		//#define NX_USE_SDK_FLUIDS 1
 	//#endif
 
-    // enable fluid surfaces
-    #define NX_USE_IMPLICIT_SCREEN_SURFACE_API 1
+	// Experimental code path which allows to put fluids in the primary scene
+	//#define NX_FLUID_IN_PRIMARY_SCENE
 #endif /* NX_DISABLE_FLUIDS */
 
 // Exposing of the Cloth API
@@ -135,12 +138,24 @@ AM: PLEASE MAKE SURE TO HAVE AN 'NX_' PREFIX ON ALL NEW DEFINES YOU ADD HERE!!!!
 	#define NX_USE_SOFTBODY_API 1
 #endif /* NX_DISABLE_SOFTBODY */
 
+#ifdef _XBOX
+	#define NX_SUPPORT_SIMD
+#endif
+
+//Exposing of the RRB backdoor
+#ifdef WIN32
+#define RRB_SUPPORTED_PLATFORM
+#endif
+
 // a bunch of simple defines used in several places:
 
 typedef NxU16 NxActorGroup;
 typedef NxU16 NxDominanceGroup;		// Must be < 32, NxU16 to be symmetric with NxCollisionGroup, NxActorGroup.
 typedef NxU16 NxCollisionGroup;		// Must be < 32
 typedef NxU16 NxMaterialIndex;
+typedef NxU16 NxForceFieldVariety;
+typedef NxU16 NxForceFieldMaterial;
+
 typedef NxU32 NxTriangleID;
 
 ////// moved enums here that are used in Core so we don't have to include headers such as NxBoxShape in core!!
@@ -371,16 +386,10 @@ enum NxBodyFlag
 	*/
 	NX_BF_VISUALIZATION		= (1<<8),
 
-	/**
-	\brief Deprecated; do not use. Consider using sleep damping instead.
-
-	@see NxBodyDesc.sleepDamping
-	*/
-	NX_BF_POSE_SLEEP_TEST	= (1<<9),
+	NX_BF_DUMMY_0			= (1<<9), // deprecated flag placeholder
 
 	/**
-	\brief Filter velocities used keep body awake.  Velocities are based on pose deltas, if
-	NX_BF_POSE_SLEEP_TEST flag is raised.  The filter reduces rapid oscillations and transient spikes.
+	\brief Filter velocities used keep body awake. The filter reduces rapid oscillations and transient spikes.
 	@see NxActor.isSleeping()
 	*/
 	NX_BF_FILTER_SLEEP_VEL	= (1<<10),
@@ -389,7 +398,7 @@ enum NxBodyFlag
 	\brief Enables energy-based sleeping algorithm.
 	@see NxActor.isSleeping() NxBodyDesc.sleepEnergyThreshold 
 	*/
-	NX_BF_ENERGY_SLEEP_TEST	= (1<<11),
+	NX_BF_ENERGY_SLEEP_TEST	= (1<<11)
 	};
 
 
@@ -466,7 +475,6 @@ enum NxShapeFlag
 	/**
 	\brief Disable collision response for this shape (counterpart of NX_AF_DISABLE_RESPONSE)
 
-	\warning IMPORTANT: this is only used for compound objects! Use NX_AF_DISABLE_RESPONSE otherwise.
 	\warning not supported by cloth / soft bodies
 	*/
 	NX_SF_DISABLE_RESPONSE			= (1<<12),
@@ -500,7 +508,7 @@ enum NxShapeFlag
 	\brief  Enables the reaction of the shapes actor on soft body collision.
 	\warning Compound objects cannot use a different value for each constituent shape.
 	*/
-	NX_SF_SOFTBODY_TWOWAY				= (1<<20),
+	NX_SF_SOFTBODY_TWOWAY				= (1<<20)
 	};
 
 /**
@@ -572,7 +580,7 @@ struct NxConstraintDominance
 typedef NxU32 NxSubmeshIndex;
 
 /**
-\brief Enum to allow axis to internal data structures for triangle meshes and convex meshes.
+\brief Enum to access internal data structures for triangle meshes and convex meshes.
 
 @see NxTriangleMesh.getFormat() NxConvexMesh.getFormat()
 */
@@ -582,21 +590,22 @@ enum NxInternalFormat
 	NX_FORMAT_FLOAT,		//!< Data is in floating-point format
 	NX_FORMAT_BYTE,			//!< Data is in byte format (8 bit)
 	NX_FORMAT_SHORT,		//!< Data is in short format (16 bit)
-	NX_FORMAT_INT,			//!< Data is in int format (32 bit)
+	NX_FORMAT_INT			//!< Data is in int format (32 bit)
 	};
 
 /**
-\brief Enum to allow axis to internal data structures for triangle meshes and convex meshes.
+\brief Enum to access internal data structures for triangle meshes and convex meshes.
 
 @see NxTriangleMesh.getBase() NxConvexMesh.getBase()
 */
 enum NxInternalArray
 	{
-	NX_ARRAY_TRIANGLES,		//!< Array of triangles (index buffer). One triangle = 3 vertex references in returned format.
-	NX_ARRAY_VERTICES,		//!< Array of vertices (vertex buffer). One vertex = 3 coordinates in returned format.
-	NX_ARRAY_NORMALS,		//!< Array of vertex normals. One normal = 3 coordinates in returned format.
-	NX_ARRAY_HULL_VERTICES,	//!< Array of hull vertices. One vertex = 3 coordinates in returned format.
-	NX_ARRAY_HULL_POLYGONS,	//!< Array of hull polygons
+	NX_ARRAY_TRIANGLES,			//!< Array of triangles (index buffer). One triangle = 3 vertex references in returned format.
+	NX_ARRAY_VERTICES,			//!< Array of vertices (vertex buffer). One vertex = 3 coordinates in returned format.
+	NX_ARRAY_NORMALS,			//!< Array of vertex normals. One normal = 3 coordinates in returned format.
+	NX_ARRAY_HULL_VERTICES,		//!< Array of hull vertices. One vertex = 3 coordinates in returned format.
+	NX_ARRAY_HULL_POLYGONS,		//!< Array of hull polygons
+	NX_ARRAY_TRIANGLES_REMAP	//!< Array of triangle remap indices. One triangle index = 1 original triangle index in returned format. (NxTriangleMesh only).
 	};
 
 /**
@@ -723,7 +732,7 @@ enum NxJointFlag
 
 	@see NxScene.getDebugRenderable() NxDebugRenderable NxParameter
 	*/
-    NX_JF_VISUALIZATION		= (1<<1),
+    NX_JF_VISUALIZATION		= (1<<1)
     };
 
 /**
@@ -741,7 +750,7 @@ enum NxJointProjectionMode
 	{
 	NX_JPM_NONE  = 0,				//!< don't project this joint
 	NX_JPM_POINT_MINDIST = 1,		//!< linear and angular minimum distance projection
-	NX_JPM_LINEAR_MINDIST = 2,		//!< linear only minimum distance projection
+	NX_JPM_LINEAR_MINDIST = 2		//!< linear only minimum distance projection
 	//there may be more modes later
 	};
 
@@ -771,7 +780,7 @@ enum NxRevoluteJointFlag
 
 	@see NxRevoluteJoint.spring
 	*/
-	NX_RJF_SPRING_ENABLED = 1 << 2,
+	NX_RJF_SPRING_ENABLED = 1 << 2
 	};
 
 /**
@@ -816,7 +825,7 @@ enum NxDistanceJointFlag
 	
 	@see NxDistanceJointDesc.spring
 	*/
-	NX_DJF_SPRING_ENABLED		= 1 << 2,
+	NX_DJF_SPRING_ENABLED		= 1 << 2
 	};
 
 /**
@@ -1031,6 +1040,15 @@ enum NxSphericalJointFlag
 
 	*/
 	NX_SJF_JOINT_SPRING_ENABLED= 1 << 4,
+
+	/**
+	\brief Add additional constraints to linear movement.
+
+	Constrain movements along directions perpendicular to the distance vector defined by the two anchor points.
+
+	\note Setting this flag can increase the stability of the joint but the computation will be more expensive.
+	*/
+    NX_SJF_PERPENDICULAR_DIR_CONSTRAINTS	= 1 << 5
 	};
 
 /**
@@ -1041,7 +1059,7 @@ enum NxSphericalJointFlag
 enum NxQueryFlags
 	{
 	NX_QUERY_WORLD_SPACE	= (1<<0),	//!< world-space parameter, else object space
-	NX_QUERY_FIRST_CONTACT	= (1<<1),	//!< returns first contact only, else returns all contacts
+	NX_QUERY_FIRST_CONTACT	= (1<<1)	//!< returns first contact only, else returns all contacts
 	};
 
 /**
@@ -1059,7 +1077,7 @@ enum NxTriangleFlags
 	NXTF_DOUBLE_SIDED		= (1<<3),
 	NXTF_BOUNDARY_EDGE01	= (1<<4),
 	NXTF_BOUNDARY_EDGE12	= (1<<5),
-	NXTF_BOUNDARY_EDGE20	= (1<<6),
+	NXTF_BOUNDARY_EDGE20	= (1<<6)
 	};
 
 /*
@@ -1085,9 +1103,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_PENALTY_FORCE			= 0,
 	
@@ -1100,9 +1119,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeDesc.skinWidth
 	*/
@@ -1118,9 +1138,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Sleep behavior on hardware is different)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_DEFAULT_SLEEP_LIN_VEL_SQUARED = 2,
 	
@@ -1133,9 +1154,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Sleep behavior on hardware is different)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_DEFAULT_SLEEP_ANG_VEL_SQUARED = 3,
 
@@ -1148,9 +1170,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterial
 	*/
@@ -1164,9 +1187,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterial
 	*/
@@ -1180,9 +1204,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterial
 	*/
@@ -1197,9 +1222,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc.setMaxAngularVelocity()
 	*/
@@ -1216,9 +1242,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPhysicsSDK.createCCDSkeleton()
 	*/
@@ -1251,9 +1278,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (only a subset of visualizations are supported)
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZATION_SCALE = 9,
 
@@ -1263,9 +1291,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_WORLD_AXES = 10,
 	
@@ -1276,9 +1305,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.globalPose NxActor
 	*/
@@ -1293,9 +1323,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc.massLocalPose NxActor
 	*/
@@ -1306,9 +1337,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc.linearVelocity NxActor
 	*/
@@ -1319,9 +1351,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc.angularVelocity NxActor
 	*/
@@ -1343,9 +1376,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_BODY_JOINT_GROUPS = 22,
 
@@ -1354,7 +1388,7 @@ enum NxParameter
 	NX_VISUALIZE_BODY_JOINT_LIST = 24,
 	NX_VISUALIZE_BODY_DAMPING = 25,
 	NX_VISUALIZE_BODY_SLEEP = 26,
-/*
+*/
 
 /* Joint visualisations */
 	/**
@@ -1362,9 +1396,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJointDesc.localAxis NxJoint
 	*/
@@ -1375,9 +1410,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJoint
 	*/
@@ -1388,9 +1424,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxJoint
 	*/
@@ -1409,9 +1446,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_CONTACT_POINT = 33,
 	
@@ -1420,9 +1458,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_CONTACT_NORMAL = 34,
 	
@@ -1431,9 +1470,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_CONTACT_ERROR = 35,
 	
@@ -1442,9 +1482,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_CONTACT_FORCE = 36,
 
@@ -1454,9 +1495,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor
 	*/
@@ -1468,9 +1510,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_COLLISION_AABBS = 38,
 	
@@ -1479,9 +1522,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape
 	*/
@@ -1492,9 +1536,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape
 	*/
@@ -1505,9 +1550,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_COLLISION_COMPOUNDS = 41,
 	
@@ -1516,9 +1562,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh NxConvexMesh
 	*/
@@ -1529,9 +1576,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh NxConvexMesh
 	*/
@@ -1542,9 +1590,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh
 	*/
@@ -1555,32 +1604,26 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_COLLISION_SPHERES = 45,
-
 	
-	/**
-	\brief SAP structures.
-	
-	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : No
-	\li PS3  : Yes
-	\li XB360: Yes
-	*/
+/* Obsolete parameter
 	NX_VISUALIZE_COLLISION_SAP = 46,
+*/
 	
 	/**
 	\brief Static pruning structures
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_COLLISION_STATIC = 47,
 	
@@ -1589,9 +1632,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_COLLISION_DYNAMIC = 48,
 	
@@ -1600,9 +1644,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_COLLISION_FREE = 49,
 	
@@ -1611,9 +1656,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPhysicsSDK.createCCDSkeleton()
 	*/
@@ -1624,9 +1670,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPhysicsSDK.createCCDSkeleton()
 	*/
@@ -1638,9 +1685,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_FLUID_EMITTERS = 52,
 	
@@ -1649,9 +1697,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_FLUID_POSITION = 53,
 	
@@ -1660,9 +1709,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_FLUID_VELOCITY = 54,
 	
@@ -1671,9 +1721,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_FLUID_KERNEL_RADIUS = 55,
 	
@@ -1682,9 +1733,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_VISUALIZE_FLUID_BOUNDS = 56,
 
@@ -1740,7 +1792,7 @@ enum NxParameter
 	NX_VISUALIZE_CLOTH_SELFCOLLISIONS = 65,
 	
 	/**
-	\brief Cloth clustering for the PPU simulation visualization.
+	\brief Cloth clustering for the GPU simulation visualization.
 	*/
 	NX_VISUALIZE_CLOTH_WORKPACKETS = 66,
 	
@@ -1786,7 +1838,7 @@ enum NxParameter
 	NX_VISUALIZE_SOFTBODY_COLLISIONS = 84,
 
 	/**
-	\brief Soft body clustering for the PPU simulation visualization.
+	\brief Soft body clustering for the GPU simulation visualization.
 	*/
 	NX_VISUALIZE_SOFTBODY_WORKPACKETS = 85,
 
@@ -1830,9 +1882,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_ADAPTIVE_FORCE = 68,
 	
@@ -1846,9 +1899,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_COLL_VETO_JOINTED = 69,
 	
@@ -1860,9 +1914,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserTriggerReport
 	*/
@@ -1886,9 +1941,10 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_CCD_EPSILON = 73,
 
@@ -1900,7 +1956,7 @@ enum NxParameter
 	
 	<b>Platform:</b>
 	\li PC SW: No
-	\li PPU  : Yes
+	\li GPU  : No
 	\li PS3  : No
 	\li XB360: No
 	*/
@@ -1914,7 +1970,7 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: No
-	\li PPU  : Yes
+	\li GPU  : No
 	\li PS3  : No
 	\li XB360: No
 	*/
@@ -1928,9 +1984,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_IMPLICIT_SWEEP_CACHE_SIZE = 76,
 
@@ -1944,23 +2001,25 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_DEFAULT_SLEEP_ENERGY = 77,
 
 	/**
 	\brief Constant for the maximum number of packets per fluid. Used to compute the fluid packet buffer size in NxFluidPacketData.
 
-	<b>Range:</b> [924, 924]<br>
-	<b>Default:</b> 924
+	<b>Range:</b> [925, 925]<br>
+	<b>Default:</b> 925
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxFluidPacketData
 	*/
@@ -1973,9 +2032,10 @@ enum NxParameter
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_CONSTANT_FLUID_MAX_PARTICLES_PER_STEP = 79,
 
@@ -1986,7 +2046,7 @@ enum NxParameter
 
 	/**
 	\brief [Experimental] Disables scene locks when creating/releasing meshes.
-	
+
 	Prevents the SDK from locking all scenes when creating and releasing triangle meshes, convex meshes, height field 
 	meshes, softbody meshes and cloth meshes, which is the default behavior. Can be used to improve parallelism but beware
 	of possible side effects.
@@ -1996,10 +2056,57 @@ enum NxParameter
 	NX_ASYNCHRONOUS_MESH_CREATION = 96,
 
 	/**
+	\brief Epsilon for custom force field kernels.
+	
+	This epsilon is used in custom force field kernels (NxSwTarget). Methods like recip()
+	or recipSqrt() evaluate to zero if their input is smaller than this epsilon.
+	
+	<br>
+	*/
+	NX_FORCE_FIELD_CUSTOM_KERNEL_EPSILON = 97,
+
+	/**
+	\brief Enable/disable improved spring solver for joints and wheelshapes
+	
+	This parameter allows to enable/disable an improved version of the spring solver for joints and wheelshapes.
+
+	\warning 
+	The parameter is introduced for legacy purposes only and will be removed in future versions (such that
+	the improved spring solver will always be used).
+
+	\note 
+	Changing the parameter will only affect newly created scenes but not existing ones.
+
+	<b>Range:</b> {0: disabled, 1: enabled}<br>
+	<b>Default:</b> 1
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NX_IMPROVED_SPRING_SOLVER = 98,
+
+	NX_FAST_MASSIVE_BP_VOLUME_DELETION = 99,
+
+	NX_LEGACY_JOINT_DRIVE = 100,
+
+	/**
+	\brief Cloth hierarchy visualization. The value determines which level is visualized
+	*/
+	NX_VISUALIZE_CLOTH_HIERARCHY = 101,
+
+	/**
+	\brief For visualization of the tree used to performe hard stretching limitation
+	*/
+	NX_VISUALIZE_CLOTH_HARD_STRETCHING_LIMITATION = 102,
+	/**
 	\brief This is not a parameter, it just records the current number of parameters (as max(NxParameter)+1) for use in loops.
 	When a new parameter is added this number should be assigned to it and then incremented.
 	*/
-	NX_PARAMS_NUM_VALUES = 97,
+	NX_PARAMS_NUM_VALUES = 103,
 
 	NX_PARAMS_FORCE_DWORD = 0x7fffffff
 	};
@@ -2120,13 +2227,14 @@ enum NxParameter
 
 		<b>Platform:</b>
 		\li PC SW: Yes
-		\li PPU  : Yes (Software fallback)
+		\li GPU  : Yes [SW]
 		\li PS3  : Yes
 		\li XB360: Yes
+		\li WII	 : Yes
 
 		@see NxHeightFieldDesc.format NxHeightFieldDesc.samples
 		*/
-		NX_HF_S16_TM = (1 << 0),
+		NX_HF_S16_TM = (1 << 0)
 		};
 
 	/** 
@@ -2174,9 +2282,10 @@ enum NxParameter
 		
 		<b>Platform:</b>
 		\li PC SW: Yes
-		\li PPU  : Yes (Software fallback)
+		\li GPU  : Yes [SW]
 		\li PS3  : Yes
 		\li XB360: Yes
+		\li WII	 : Yes
 
 		@see NxHeightFieldDesc.format NxHeightFieldDesc.samples
 		*/
@@ -2198,20 +2307,21 @@ enum NxParameter
 
 		<b>Platform:</b>
 		\li PC SW: Yes
-		\li PPU  : Yes (Software fallback)
+		\li GPU  : Yes [SW]
 		\li PS3  : Yes
 		\li XB360: Yes
+		\li WII	 : Yes
 
 		@see NxHeightFieldDesc.flags
 		*/
-		NX_HF_NO_BOUNDARY_EDGES = (1 << 0),
+		NX_HF_NO_BOUNDARY_EDGES = (1 << 0)
 		};
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

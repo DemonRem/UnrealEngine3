@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXMATERIALDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -46,9 +46,10 @@ enum NxMaterialFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (SW fall-back)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterialDesc.dirOfAnisotropy
 	*/
@@ -60,9 +61,10 @@ enum NxMaterialFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxWheelShape
 	*/
@@ -88,13 +90,14 @@ enum NxMaterialFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxWheelShape
 	*/
-	NX_MF_DISABLE_STRONG_FRICTION = 1 << 5,
+	NX_MF_DISABLE_STRONG_FRICTION = 1 << 5
 
 	//Note: Bits 16-31 are reserved for internal use!
 	};
@@ -117,9 +120,10 @@ The effective combine mode for the pair is max(material0.combineMode, material1.
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+	\li WII	 : Yes
 
 @see NxMaterial NxMaterialDesc NxMaterialDesc.frictionCombineMode NxMaterialDesc.restitutionCombineMode
 */
@@ -151,9 +155,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags frictionCombineMode
 	*/
@@ -168,9 +173,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags frictionCombineMode
 	*/
@@ -184,9 +190,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags restitutionCombineMode
 	*/
@@ -201,9 +208,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags dynamicFriction
 	*/
@@ -218,9 +226,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags staticFriction
 	*/
@@ -235,9 +244,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see flags staticFrictionV dynamicFrictionV
 	*/
@@ -250,9 +260,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterialFlag
 	*/
@@ -265,9 +276,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCombineMode staticFriction dynamicFriction
 	*/
@@ -280,9 +292,10 @@ class NxMaterialDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCombineMode restitution
 	*/
@@ -306,7 +319,11 @@ class NxMaterialDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxMaterialDesc::NxMaterialDesc()
@@ -331,47 +348,47 @@ NX_INLINE	void NxMaterialDesc::setToDefault()
 	spring = 0;
 	}
 
-NX_INLINE	bool NxMaterialDesc::isValid()	const
+NX_INLINE	NxU32 NxMaterialDesc::checkValid()	const
 	{
 	if(dynamicFriction < 0.0f) 
-		return false;
+		return 1;
 	if(staticFriction < 0.0f) 
-		return false;
+		return 2;
 	if(restitution < 0.0f || restitution > 1.0f) 
-		return false;
+		return 3;
 
 
 	if (flags & NX_MF_ANISOTROPIC)
 		{
 		NxReal ad = dirOfAnisotropy.magnitudeSquared();
 		if (ad < 0.98f || ad > 1.03f)
-			return false;
+			return 4;
 		if(dynamicFrictionV < 0.0f) 
-			return false;
+			return 5;
 		if(staticFrictionV < 0.0f) 
-			return false;
+			return 6;
 		}
 	/*
 	if (flags & NX_MF_MOVING_SURFACE)
 		{
 		NxReal md = dirOfMotion.magnitudeSquared();
 		if (md < 0.98f || md > 1.03f)
-			return false;
+			return 7;
 		}
 	*/
 	if (frictionCombineMode >= NX_CM_N_VALUES)
-		return false;
+		return 8;
 	if (restitutionCombineMode >= NX_CM_N_VALUES)
-		return false;
+		return 9;
 
-	return true;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

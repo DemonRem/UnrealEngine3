@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: cursor.h,v 1.16 2004/09/16 22:36:12 VZ Exp $
+// RCS-ID:      $Id: cursor.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,13 +12,9 @@
 #ifndef _WX_CURSOR_H_
 #define _WX_CURSOR_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "cursor.h"
-#endif
-
 #include "wx/msw/gdiimage.h"
 
-class WXDLLEXPORT wxImage;
+class WXDLLIMPEXP_FWD_CORE wxImage;
 
 // Cursor
 class WXDLLEXPORT wxCursor : public wxGDIImage
@@ -26,7 +22,6 @@ class WXDLLEXPORT wxCursor : public wxGDIImage
 public:
     // constructors
     wxCursor();
-    wxCursor(const wxCursor& cursor) : wxGDIImage(cursor) { Ref(cursor); }
     wxCursor(const wxImage& image);
     wxCursor(const char bits[], int width, int height,
              int hotSpotX = -1, int hotSpotY = -1,
@@ -36,13 +31,6 @@ public:
              int hotSpotX = 0, int hotSpotY = 0);
     wxCursor(int idCursor);
     virtual ~wxCursor();
-
-    wxCursor& operator=(const wxCursor& cursor)
-        { if (*this == cursor) return (*this); Ref(cursor); return *this; }
-
-    bool operator==(const wxCursor& cursor) const;
-    bool operator!=(const wxCursor& cursor) const
-        { return !(*this == cursor); }
 
     // implementation only
     void SetHCURSOR(WXHCURSOR cursor) { SetHandle((WXHANDLE)cursor); }

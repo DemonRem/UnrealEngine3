@@ -5,17 +5,13 @@
 // Modified by: Vadim Zeitlin (wxTimerBase)
 //              Guillermo Rodriguez (global clean up)
 // Created:     04/01/98
-// RCS-ID:      $Id: timer.h,v 1.53 2005/05/04 18:52:05 JS Exp $
+// RCS-ID:      $Id: timer.h 44244 2007-01-18 17:00:52Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_TIMER_H_BASE_
 #define _WX_TIMER_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "timerbase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -25,10 +21,8 @@
 #include "wx/longlong.h"
 #include "wx/event.h"
 #include "wx/stopwatch.h" // for backwards compatibility
+#include "wx/window.h"    // only for NewControlId()
 
-// ----------------------------------------------------------------------------
-// wxTimer
-// ----------------------------------------------------------------------------
 
 // more readable flags for Start():
 
@@ -47,7 +41,8 @@ public:
 
     // default: if you don't call SetOwner(), your only chance to get timer
     // notifications is to override Notify() in the derived class
-    wxTimerBase() { Init(); SetOwner(this); }
+    wxTimerBase()
+        { Init(); SetOwner(this); }
 
     // ctor which allows to avoid having to override Notify() in the derived
     // class: the owner will get timer notifications which can be handled with
@@ -57,8 +52,12 @@ public:
 
     // same as ctor above
     void SetOwner(wxEvtHandler *owner, int timerid = wxID_ANY)
-        { m_owner = owner; m_idTimer = timerid; }
-    wxEvtHandler* GetOwner() const { return m_owner; }
+    {
+        m_owner = owner;
+        m_idTimer = timerid == wxID_ANY ? wxWindow::NewControlId() : timerid;
+    }
+
+    wxEvtHandler *GetOwner() const { return m_owner; }
 
     virtual ~wxTimerBase();
 
@@ -85,23 +84,22 @@ public:
     // return true if the timer is running
     virtual bool IsRunning() const = 0;
 
-    // get the (last) timer interval in the milliseconds
+    // return the timer ID
+    int GetId() const { return m_idTimer; }
+
+    // get the (last) timer interval in milliseconds
     int GetInterval() const { return m_milli; }
 
     // return true if the timer is one shot
     bool IsOneShot() const { return m_oneShot; }
 
-    // return the timer ID
-    int GetId() const { return m_idTimer; }
-
-
 protected:
     // common part of all ctors
-    void Init() { m_oneShot = false; m_milli = 0; }
+    void Init()
+        { m_owner = NULL; m_idTimer = wxID_ANY; m_milli = 0; m_oneShot = false; }
 
     wxEvtHandler *m_owner;
     int     m_idTimer;
-
     int     m_milli;        // the timer interval
     bool    m_oneShot;      // true if one shot
 
@@ -116,9 +114,11 @@ protected:
     #include "wx/msw/timer.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/timer.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/timer.h"
-#elif defined(__WXX11__) || defined(__WXMGL__)
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/timer.h"
+#elif defined(__WXX11__) || defined(__WXMGL__) || defined(__WXDFB__)
     #include "wx/generic/timer.h"
 #elif defined (__WXCOCOA__)
     #include "wx/cocoa/timer.h"

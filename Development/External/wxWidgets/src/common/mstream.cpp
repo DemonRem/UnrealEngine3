@@ -4,7 +4,7 @@
 // Author:      Guilhem Lavaux
 // Modified by: VZ (23.11.00): general code review
 // Created:     04/01/98
-// RCS-ID:      $Id: mstream.cpp,v 1.34 2005/04/05 10:23:27 ABX Exp $
+// RCS-ID:      $Id: mstream.cpp 39001 2006-05-03 21:50:35Z ABX $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,22 +17,22 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "mstream.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_STREAMS
 
-#include <stdlib.h>
-#include "wx/stream.h"
 #include "wx/mstream.h"
+
+#ifndef   WX_PRECOMP
+    #include  "wx/stream.h"
+#endif  //WX_PRECOMP
+
+#include <stdlib.h>
 
 // ============================================================================
 // implementation
@@ -54,12 +54,17 @@ wxMemoryInputStream::wxMemoryInputStream(const void *data, size_t len)
 
 wxMemoryInputStream::wxMemoryInputStream(const wxMemoryOutputStream& stream)
 {
-    ssize_t len = (ssize_t)stream.GetLength();
-    if (len == wxInvalidOffset) {
+    const wxFileOffset lenFile = stream.GetLength();
+    if ( lenFile == wxInvalidOffset )
+    {
         m_i_streambuf = NULL;
         m_lasterror = wxSTREAM_EOF;
         return;
     }
+
+    const size_t len = wx_truncate_cast(size_t, lenFile);
+    wxASSERT_MSG( len == lenFile + size_t(0), _T("huge files not supported") );
+
     m_i_streambuf = new wxStreamBuffer(wxStreamBuffer::read);
     m_i_streambuf->SetBufferIO(len); // create buffer
     stream.CopyTo(m_i_streambuf->GetBufferStart(), len);
@@ -85,11 +90,6 @@ char wxMemoryInputStream::Peek()
     }
 
     return buf[pos];
-}
-
-bool wxMemoryInputStream::Eof() const
-{
-    return !m_i_streambuf->GetBytesLeft();
 }
 
 size_t wxMemoryInputStream::OnSysRead(void *buffer, size_t nbytes)

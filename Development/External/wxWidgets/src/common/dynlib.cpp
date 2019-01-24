@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dynlib.cpp
+// Name:        src/common/dynlib.cpp
 // Purpose:     Dynamic library management
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     20/07/98
-// RCS-ID:      $Id: dynlib.cpp,v 1.107 2005/04/27 01:16:00 DW Exp $
+// RCS-ID:      $Id: dynlib.cpp 41807 2006-10-09 15:58:56Z VZ $
 // Copyright:   (c) 1998 Guilhem Lavaux
 //                  2000-2005 Vadim Zeitlin
 // Licence:     wxWindows licence
@@ -21,26 +21,26 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#   pragma implementation "dynlib.h"
-#endif
-
 #include  "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_DYNLIB_CLASS
 
 #include "wx/dynlib.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/app.h"
+    #include "wx/utils.h"
+#endif //WX_PRECOMP
+
 #include "wx/filefn.h"
-#include "wx/intl.h"
-#include "wx/log.h"
-#include "wx/utils.h"
 #include "wx/filename.h"        // for SplitPath()
-#include "wx/app.h"
-#include "wx/apptrait.h"
+#include "wx/platinfo.h"
 
 #include "wx/arrimpl.cpp"
 
@@ -48,7 +48,7 @@
     #include "wx/mac/private.h"
 #endif
 
-WX_DEFINE_USER_EXPORTED_OBJARRAY(wxDynamicLibraryDetailsArray);
+WX_DEFINE_USER_EXPORTED_OBJARRAY(wxDynamicLibraryDetailsArray)
 
 // ============================================================================
 // implementation
@@ -119,9 +119,9 @@ bool wxDynamicLibrary::Load(const wxString& libnameOrig, int flags)
     }
 
 #elif defined(__WXPM__) || defined(__EMX__)
-    char    err[256] = "";
+    char err[256] = "";
     DosLoadModule(err, sizeof(err), (PSZ)libname.c_str(), &m_handle);
-#else
+#else // this should be the only remaining branch eventually
     m_handle = RawLoad(libname, flags);
 #endif
 
@@ -145,7 +145,7 @@ bool wxDynamicLibrary::Load(const wxString& libnameOrig, int flags)
 /* static */
 void wxDynamicLibrary::Unload(wxDllType handle)
 {
-#if defined(__WXPM__) || defined(__EMX__)
+#if defined(__OS2__) || defined(__EMX__)
     DosFreeModule( handle );
 #elif defined(__WXMAC__) && !defined(__DARWIN__)
     CloseConnection( (CFragConnectionID*) &handle );
@@ -247,11 +247,7 @@ wxString wxDynamicLibrary::CanonicalizePluginName(const wxString& name,
     wxString suffix;
     if ( cat == wxDL_PLUGIN_GUI )
     {
-        wxAppTraits *traits = wxAppConsole::GetInstance() ?
-                              wxAppConsole::GetInstance()->GetTraits() : NULL;
-        wxASSERT_MSG( traits,
-               _("can't query for GUI plugins name in console applications") );
-        suffix = traits->GetToolkitInfo().shortName;
+        suffix = wxPlatformInfo::Get().GetPortIdShortName();
     }
 #if wxUSE_UNICODE
     suffix << _T('u');

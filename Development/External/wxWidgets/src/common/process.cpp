@@ -4,7 +4,7 @@
 // Author:      Guilhem Lavaux
 // Modified by: Vadim Zeitlin to check error codes, added Detach() method
 // Created:     24/06/98
-// RCS-ID:      $Id: process.cpp,v 1.24 2005/01/07 20:03:16 ABX Exp $
+// RCS-ID:      $Id: process.cpp 42702 2006-10-30 09:03:18Z JS $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "process.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -47,21 +43,13 @@ IMPLEMENT_DYNAMIC_CLASS(wxProcessEvent, wxEvent)
 // wxProcess creation
 // ----------------------------------------------------------------------------
 
-#if WXWIN_COMPATIBILITY_2_2
-
-wxProcess::wxProcess(wxEvtHandler *parent, bool redirect)
-{
-    Init(parent, wxID_ANY, redirect ? wxPROCESS_REDIRECT : wxPROCESS_DEFAULT);
-}
-
-#endif // WXWIN_COMPATIBILITY_2_2
-
 void wxProcess::Init(wxEvtHandler *parent, int id, int flags)
 {
     if ( parent )
         SetNextHandler(parent);
 
     m_id         = id;
+    m_pid        = 0;
     m_redirect   = (flags & wxPROCESS_REDIRECT) != 0;
 
 #if wxUSE_STREAMS
@@ -76,12 +64,15 @@ wxProcess *wxProcess::Open(const wxString& cmd, int flags)
 {
     wxASSERT_MSG( !(flags & wxEXEC_SYNC), wxT("wxEXEC_SYNC should not be used." ));
     wxProcess *process = new wxProcess(wxPROCESS_REDIRECT);
-    if ( !wxExecute(cmd, flags, process) )
+    long pid = wxExecute(cmd, flags, process);
+    if( !pid )
     {
         // couldn't launch the process
         delete process;
         return NULL;
     }
+
+    process->SetPid(pid);
 
     return process;
 }

@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: colordlg.h,v 1.9 2004/05/23 20:51:27 JS Exp $
+// RCS-ID:      $Id: colordlg.h 37393 2006-02-08 21:47:09Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,11 +12,7 @@
 #ifndef _WX_COLORDLG_H_
 #define _WX_COLORDLG_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "colordlg.h"
-#endif
-
-#include "wx/setup.h"
+#include "wx/defs.h"
 #include "wx/dialog.h"
 #include "wx/cmndata.h"
 
@@ -40,9 +36,8 @@ public:
 
     virtual int ShowModal();
 
-    virtual void DoGetPosition( int *x, int *y ) const;
-
 protected:
+    virtual void DoGetPosition( int *x, int *y ) const;
     virtual void DoGetSize(int *width, int *height) const;
     virtual void DoGetClientSize(int *width, int *height) const;
     virtual void DoSetSize(int x, int y,

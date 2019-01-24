@@ -4,7 +4,7 @@
 //
 // Owner: John Briggs
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxArrayBase.h"
@@ -114,28 +114,28 @@ void FxStringBase<T>::Clear()
 }
 
 // Returns the string length.
-template<typename T>
+template<typename T> FX_INLINE
 FxSize FxStringBase<T>::Length() const
 {
 	return _container._usedCount;
 }
 
 // Returns the amount of memory allocated by the string.
-template<typename T>
+template<typename T> FX_INLINE
 FxSize FxStringBase<T>::Allocated() const
 {
 	return _container._allocatedCount;
 }
 
 // Returns true if the string is empty.
-template<typename T>
+template<typename T> FX_INLINE
 FxBool FxStringBase<T>::IsEmpty() const
 {
 	return _container._usedCount == 0;
 }
 
 // Character access.
-template<typename T>
+template<typename T> FX_INLINE
 typename FxStringBase<T>::char_type& FxStringBase<T>::operator[](FxSize index)
 {
 	FxAssert(index < _container._usedCount);
@@ -143,7 +143,7 @@ typename FxStringBase<T>::char_type& FxStringBase<T>::operator[](FxSize index)
 }
 
 // Const character access.
-template<typename T>
+template<typename T> FX_INLINE
 const typename FxStringBase<T>::char_type& FxStringBase<T>::operator[](FxSize index) const
 {
 	FxAssert(index < _container._usedCount);
@@ -151,7 +151,7 @@ const typename FxStringBase<T>::char_type& FxStringBase<T>::operator[](FxSize in
 }
 
 // Character retrieval.
-template<typename T>
+template<typename T> FX_INLINE
 typename FxStringBase<T>::char_type FxStringBase<T>::GetChar(FxSize index) const
 {
 	FxAssert(index < _container._usedCount);
@@ -186,7 +186,7 @@ FxStringBase<T>& FxStringBase<T>::operator+=(const char_type& other)
 }
 
 // Returns the native string.
-template<typename T>
+template<typename T> FX_INLINE
 const typename FxStringBase<T>::char_type* FxStringBase<T>::operator*() const
 {
 	_EnsureValid();
@@ -194,7 +194,7 @@ const typename FxStringBase<T>::char_type* FxStringBase<T>::operator*() const
 }
 
 // Returns the native string.
-template<typename T>
+template<typename T> FX_INLINE
 const typename FxStringBase<T>::char_type* FxStringBase<T>::GetData() const
 {
 	_EnsureValid();
@@ -217,7 +217,7 @@ template<typename T>
 FxStringBase<T>& FxStringBase<T>::operator<<(const FxInt32 num)
 {
 	char_type buffer[64] = {0};
-	FxItoa(num, buffer);
+	FxItoa(num, buffer, 64);
 	_DoAppendString(buffer, traits_type::Length(buffer));
 	return *this;
 }
@@ -227,7 +227,7 @@ template<typename T>
 FxStringBase<T>& FxStringBase<T>::operator<<(const FxUInt32 num)
 {
 	char_type buffer[64] = {0};
-	FxItoa(num, buffer);
+	FxItoa(num, buffer, 64);
 	_DoAppendString(buffer, traits_type::Length(buffer));
 	return *this;
 }
@@ -245,7 +245,7 @@ FxStringBase<T>& FxStringBase<T>::operator<<(const FxReal num)
 template<typename T>
 FxSize FxStringBase<T>::FindFirst(const char_type& c, FxSize start) const
 {
-	FxAssert(start < _container._usedCount);
+	FxAssert(start <= _container._usedCount);
 	if( _container._usedCount > 0 )
 	{
 		const char_type* pos = traits_type::Find(_container._v + start, c, _container._usedCount - start);
@@ -540,7 +540,7 @@ void FxStringBase<T>::_DoAppendString(const char_type* str, FxSize length)
 }
 
 // Ensures the string has valid data.
-template<typename T>
+template<typename T> FX_INLINE
 void FxStringBase<T>::_EnsureValid() const
 {
 	if( _container._v == NULL )
@@ -624,28 +624,28 @@ FxBool operator!=(const T* lhs, const FxStringBase<T>& rhs)
 template<typename T>
 FxBool operator<(const FxStringBase<T>& lhs, const FxStringBase<T>& rhs)
 {
-	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs, FxMin(lhs.Length(), rhs.Length())) < 0;
+	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs) < 0;
 }
 
 // Lexicographic less-than-equal-to
 template<typename T>
 FxBool operator<=(const FxStringBase<T>& lhs, const FxStringBase<T>& rhs)
 {
-	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs, FxMin(lhs.Length(), rhs.Length())) <= 0;
+	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs) <= 0;
 }
 
 // Lexicographic greater-than
 template<typename T>
 FxBool operator>(const FxStringBase<T>& lhs, const FxStringBase<T>& rhs)
 {
-	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs, FxMin(lhs.Length(), rhs.Length())) > 0;
+	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs) > 0;
 }
 
 // Lexicographic greater-than-equal-to
 template<typename T>
 FxBool operator>=(const FxStringBase<T>& lhs, const FxStringBase<T>& rhs)
 {
-	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs, FxMin(lhs.Length(), rhs.Length())) >= 0;
+	return FxStringBase<T>::traits_type::Compare(*lhs, *rhs) >= 0;
 }
 
 // String concatenation
@@ -732,7 +732,7 @@ FxTempCharBuffer<T>::~FxTempCharBuffer()
 }
 
 // Allow implicit conversion to a native string.
-template<typename T>
+template<typename T> FX_INLINE
 FxTempCharBuffer<T>::operator const typename FxTempCharBuffer<T>::char_type*() const
 {
 	return _buffer;
@@ -750,7 +750,7 @@ typename FxTempCharBuffer<T>::char_type* FxTempCharBuffer<T>::Release()
 
 // Return the size of the memory used by the native string in the temp
 // buffer (in bytes, including the NULL terminator).
-template<typename T>
+template<typename T> FX_INLINE
 FxSize FxTempCharBuffer<T>::GetSize() const
 {
 	return _bufferSize;

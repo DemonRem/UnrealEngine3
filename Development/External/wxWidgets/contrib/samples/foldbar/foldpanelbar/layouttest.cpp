@@ -4,14 +4,10 @@
 // Author:      Jorgen Bodde
 // Modified by:
 // Created:     25/06/2004
-// RCS-ID:      $Id: layouttest.cpp,v 1.2 2004/08/03 14:39:06 ABX Exp $
+// RCS-ID:      $Id: layouttest.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma implementation "layouttest.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"

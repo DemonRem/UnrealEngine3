@@ -2,18 +2,13 @@
 // Name:        htmlpars.h
 // Purpose:     wxHtmlParser class (generic parser)
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: htmlpars.h,v 1.22 2004/09/27 19:06:39 ABX Exp $
+// RCS-ID:      $Id: htmlpars.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef _WX_HTMLPARS_H_
 #define _WX_HTMLPARS_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "htmlpars.h"
-#endif
 
 #include "wx/defs.h"
 #if wxUSE_HTML
@@ -23,10 +18,10 @@
 #include "wx/hash.h"
 #include "wx/fontenc.h"
 
-class WXDLLIMPEXP_BASE wxMBConv;
-class WXDLLIMPEXP_HTML wxHtmlParser;
-class WXDLLIMPEXP_HTML wxHtmlTagHandler;
-class WXDLLIMPEXP_HTML wxHtmlEntitiesParser;
+class WXDLLIMPEXP_FWD_BASE wxMBConv;
+class WXDLLIMPEXP_FWD_HTML wxHtmlParser;
+class WXDLLIMPEXP_FWD_HTML wxHtmlTagHandler;
+class WXDLLIMPEXP_FWD_HTML wxHtmlEntitiesParser;
 
 class wxHtmlTextPieces;
 class wxHtmlParserState;
@@ -40,7 +35,7 @@ enum wxHtmlURLType
 };
 
 // This class handles generic parsing of HTML document : it scans
-// the document and divide it into blocks of tags (where one block
+// the document and divides it into blocks of tags (where one block
 // consists of starting and ending tag and of text between these
 // 2 tags.
 class WXDLLIMPEXP_HTML wxHtmlParser : public wxObject
@@ -64,7 +59,7 @@ public:
     // This method does these things:
     // 1. call InitParser(source);
     // 2. call DoParsing();
-    // 3. call GetProduct(); (it's return value is then returned)
+    // 3. call GetProduct(); (its return value is then returned)
     // 4. call DoneParser();
     wxObject* Parse(const wxString& source);
 
@@ -101,10 +96,10 @@ public:
     //     <it name="two" value="2">
     //   </myitems>
     //   <it> This last it has different meaning, we don't want it to be parsed by myitems handler!
-    // handler can handle only 'myitems' (e.g. it's GetSupportedTags returns "MYITEMS")
+    // handler can handle only 'myitems' (e.g. its GetSupportedTags returns "MYITEMS")
     // you can call PushTagHandler(handler, "IT") when you find <myitems>
     // and call PopTagHandler() when you find </myitems>
-    void PushTagHandler(wxHtmlTagHandler *handler, wxString tags);
+    void PushTagHandler(wxHtmlTagHandler *handler, const wxString& tags);
 
     // Restores state before last call to PushTagHandler
     void PopTagHandler();
@@ -112,7 +107,7 @@ public:
     wxString* GetSource() {return &m_Source;}
     void SetSource(const wxString& src);
 
-    // Sets HTML source and remebers current parser's state so that it can
+    // Sets HTML source and remembers current parser's state so that it can
     // later be restored. This is useful for on-line modifications of
     // HTML source (for example, <pre> handler replaces spaces with &nbsp;
     // and newlines with <br>)
@@ -120,6 +115,10 @@ public:
     // Restores parser's state from stack or returns false if the stack is
     // empty
     virtual bool RestoreState();
+
+    // Returns HTML source inside the element (i.e. between the starting
+    // and ending tag)
+    wxString GetInnerSource(const wxHtmlTag& tag);
 
     // Parses HTML string 'markup' and extracts charset info from <meta> tag
     // if present. Returns empty string if the tag is missing.
@@ -194,7 +193,7 @@ protected:
 // Each recognized tag is passed to handler which is capable
 // of handling it. Each tag is handled in 3 steps:
 // 1. Handler will modifies state of parser
-//    (using it's public methods)
+//    (using its public methods)
 // 2. Parser parses source between starting and ending tag
 // 3. Handler restores original state of the parser
 class WXDLLIMPEXP_HTML wxHtmlTagHandler : public wxObject
@@ -228,6 +227,12 @@ protected:
     // m_Parser must be set.
     void ParseInner(const wxHtmlTag& tag)
         { m_Parser->DoParsing(tag.GetBeginPos(), tag.GetEndPos1()); }
+
+    // Parses given source as if it was tag's inner code (see
+    // wxHtmlParser::GetInnerSource).  Unlike ParseInner(), this method lets
+    // you specify the source code to parse. This is useful when you need to
+    // modify the inner text before parsing.
+    void ParseInnerSource(const wxString& source);
 
     wxHtmlParser *m_Parser;
 

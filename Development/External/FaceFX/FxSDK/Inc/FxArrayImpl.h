@@ -4,7 +4,7 @@
 //
 // Owner: John Briggs
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxTypeTraits.h"
@@ -69,35 +69,35 @@ void FxArray<Elem>::Clear()
 }
 
 // Returns the number of elements in the array.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 FxSize FxArray<Elem>::Length() const
 {
 	return _container._usedCount;
 }
 
 // Returns the number of elements allocated.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 FxSize FxArray<Elem>::Allocated() const
 {
 	return _container._allocatedCount;
 }
 
 // Returns true if the array has no elements.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 FxBool FxArray<Elem>::IsEmpty() const
 {
 	return _container._usedCount == 0;
 }
 
 // Element access.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 Elem& FxArray<Elem>::operator[](FxSize index)
 {
 	FxAssert(index < _container._usedCount);
 	return _container._v[index];
 }
 
-template<typename Elem>
+template<typename Elem> FX_INLINE
 const Elem& FxArray<Elem>::operator[](FxSize index) const
 {
 	FxAssert(index < _container._usedCount);
@@ -105,27 +105,27 @@ const Elem& FxArray<Elem>::operator[](FxSize index) const
 }
 
 // Returns the beginning of the array.
-template<typename Elem>
-typename FxArray<Elem>::iterator FxArray<Elem>::Begin()
+template<typename Elem> FX_INLINE
+typename FxArray<Elem>::Iterator FxArray<Elem>::Begin()
 {
 	return _container._v;
 }
 
-template<typename Elem>
-typename FxArray<Elem>::const_iterator FxArray<Elem>::Begin() const
+template<typename Elem> FX_INLINE
+typename FxArray<Elem>::ConstIterator FxArray<Elem>::Begin() const
 {
 	return _container._v;
 }
 
 // Returns the end of the array.
-template<typename Elem>
-typename FxArray<Elem>::iterator FxArray<Elem>::End()
+template<typename Elem> FX_INLINE
+typename FxArray<Elem>::Iterator FxArray<Elem>::End()
 {
 	return _container._v + _container._usedCount;
 }
 
-template<typename Elem>
-typename FxArray<Elem>::const_iterator FxArray<Elem>::End() const
+template<typename Elem> FX_INLINE
+typename FxArray<Elem>::ConstIterator FxArray<Elem>::End() const
 {
 	return _container._v + _container._usedCount;
 }
@@ -183,7 +183,7 @@ void FxArray<Elem>::PopBack()
 }
 
 // Returns a reference to the last element in the array.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 Elem& FxArray<Elem>::Back()
 {
 	FxAssert(_container._usedCount > 0);
@@ -191,7 +191,7 @@ Elem& FxArray<Elem>::Back()
 }
 
 // Returns a const reference to the last element in the array.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 const Elem& FxArray<Elem>::Back() const
 {
 	FxAssert(_container._usedCount > 0);
@@ -199,7 +199,7 @@ const Elem& FxArray<Elem>::Back() const
 }
 
 // Returns a reference to the front element in the array.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 Elem& FxArray<Elem>::Front()
 {
 	FxAssert(_container._usedCount > 0);
@@ -207,7 +207,7 @@ Elem& FxArray<Elem>::Front()
 }
 
 // Returns a const reference to the front element in the array.
-template<typename Elem>
+template<typename Elem> FX_INLINE
 const Elem& FxArray<Elem>::Front() const
 {
 	FxAssert(_container._usedCount > 0);
@@ -306,6 +306,30 @@ void FxArray<Elem>::Remove(FxSize index)
 	FxMemset(_container._v + _container._usedCount, 0, sizeof(Elem));
 }
 
+/// Removes the element at index by swapping it for the last on in the array.
+/// \param index The index of the element to remove.
+template<typename Elem>
+void FxArray<Elem>::RemoveInPlace(FxSize index)
+{
+	FxAssert(index < _container._usedCount);
+	// Copy the items individually.
+	value_type* curr = _container._v + index;
+	value_type* swap = _container._v + _container._usedCount - 1;
+	(*curr) = *(swap);
+	// Clean up the last item.
+	--_container._usedCount;
+	FxDestroy(_container._v + _container._usedCount);
+	// Zero the memory to prevent unintentional accesses.
+	FxMemset(_container._v + _container._usedCount, 0, sizeof(Elem));
+}
+
+// Removes the element at the iterator.
+template<typename Elem>
+void FxArray<Elem>::RemoveIterator(Iterator iter)
+{
+	Remove(static_cast<FxSize>(iter - _container._v));
+}
+
 // Finds the index of element.
 template<typename Elem>
 FxSize FxArray<Elem>::Find(const value_type& element, FxSize startIndex) const
@@ -328,7 +352,13 @@ void FxArray<Elem>::Swap(FxArray& other)
 	_container.Swap(other._container);
 }
 
-template<typename Elem>
+template<typename Elem> FX_INLINE
+void FxArray<Elem>::Prefetch() const
+{
+	_container.Prefetch();
+}
+
+template<typename Elem> FX_INLINE
 Elem* FxArray<Elem>::GetData() const
 {
 	return _container._v;

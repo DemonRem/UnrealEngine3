@@ -5,7 +5,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     06.08.01
-// RCS-ID:      $Id: containr.h,v 1.16 2004/12/11 12:51:05 RR Exp $
+// RCS-ID:      $Id: containr.h 50863 2007-12-20 18:32:55Z VS $
 // Copyright:   (c) 2001 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,14 +13,10 @@
 #ifndef _WX_CONTAINR_H_
 #define _WX_CONTAINR_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "containr.h"
-#endif
-
-class WXDLLEXPORT wxFocusEvent;
-class WXDLLEXPORT wxNavigationKeyEvent;
-class WXDLLEXPORT wxWindow;
-class WXDLLEXPORT wxWindowBase;
+class WXDLLIMPEXP_FWD_CORE wxFocusEvent;
+class WXDLLIMPEXP_FWD_CORE wxNavigationKeyEvent;
+class WXDLLIMPEXP_FWD_CORE wxWindow;
+class WXDLLIMPEXP_FWD_CORE wxWindowBase;
 
 /*
    Implementation note: wxControlContainer is not a real mix-in but rather
@@ -41,24 +37,6 @@ public:
     // ctors and such
     wxControlContainer(wxWindow *winParent = NULL);
     void SetContainerWindow(wxWindow *winParent) { m_winParent = winParent; }
-
-    // default item access: we have a permanent default item which is the one
-    // set by the user code but we may also have a temporary default item which
-    // would be chosen if the user pressed "Enter" now but the default action
-    // reverts to the "permanent" default as soon as this temporary default
-    // item lsoes focus
-
-    // get the default item, temporary or permanent
-    wxWindow *GetDefaultItem() const
-        { return m_winTmpDefault ? m_winTmpDefault : m_winDefault; }
-
-    // set the permanent default item, return its old value
-    wxWindow *SetDefaultItem(wxWindow *win)
-        { wxWindow *winOld = m_winDefault; m_winDefault = win; return winOld; }
-
-    // set a temporary default item, SetTmpDefaultItem(NULL) should be called
-    // soon after a call to SetTmpDefaultItem(window)
-    void SetTmpDefaultItem(wxWindow *win) { m_winTmpDefault = win; }
 
     // the methods to be called from the window event handlers
     void HandleOnNavigationKey(wxNavigationKeyEvent& event);
@@ -86,12 +64,6 @@ protected:
     // the child which had the focus last time this panel was activated
     wxWindow *m_winLastFocused;
 
-    // a default window (usually a button) or NULL
-    wxWindow *m_winDefault;
-
-    // a temporary override of m_winDefault, use the latter if NULL
-    wxWindow *m_winTmpDefault;
-
     // a guard against infinite recursion
     bool m_inSetFocus;
 
@@ -115,9 +87,6 @@ public: \
     virtual void SetFocus(); \
     virtual void SetFocusIgnoringChildren(); \
     virtual void RemoveChild(wxWindowBase *child); \
-    virtual wxWindow *GetDefaultItem() const; \
-    virtual wxWindow *SetDefaultItem(wxWindow *child); \
-    virtual void SetTmpDefaultItem(wxWindow *win); \
     virtual bool AcceptsFocus() const; \
 \
 protected: \
@@ -130,22 +99,7 @@ protected: \
     EVT_NAVIGATION_KEY(classname::OnNavigationKey)
 
 // implement the methods forwarding to the wxControlContainer
-#define WX_DELEGATE_TO_CONTROL_CONTAINER(classname)  \
-wxWindow *classname::SetDefaultItem(wxWindow *child) \
-{ \
-    return m_container.SetDefaultItem(child); \
-} \
- \
-void classname::SetTmpDefaultItem(wxWindow *child) \
-{ \
-    m_container.SetTmpDefaultItem(child); \
-} \
- \
-wxWindow *classname::GetDefaultItem() const \
-{ \
-    return m_container.GetDefaultItem(); \
-} \
- \
+#define WX_DELEGATE_TO_CONTROL_CONTAINER(classname, basename)  \
 void classname::OnNavigationKey( wxNavigationKeyEvent& event ) \
 { \
     m_container.HandleOnNavigationKey(event); \
@@ -155,23 +109,24 @@ void classname::RemoveChild(wxWindowBase *child) \
 { \
     m_container.HandleOnWindowDestroy(child); \
  \
-    wxWindow::RemoveChild(child); \
+    basename::RemoveChild(child); \
 } \
  \
 void classname::SetFocus() \
 { \
     if ( !m_container.DoSetFocus() ) \
-        wxWindow::SetFocus(); \
+        basename::SetFocus(); \
 } \
  \
 void classname::SetFocusIgnoringChildren() \
 { \
-        wxWindow::SetFocus(); \
+        basename::SetFocus(); \
 } \
  \
 void classname::OnChildFocus(wxChildFocusEvent& event) \
 { \
     m_container.SetLastFocus(event.GetWindow()); \
+    event.Skip(); \
 } \
  \
 void classname::OnFocus(wxFocusEvent& event) \

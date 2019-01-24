@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: docview.cpp,v 1.136 2005/08/26 22:52:29 VZ Exp $
+// RCS-ID:      $Id: docview.cpp 51392 2008-01-26 23:23:09Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,30 +17,31 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "docview.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_DOC_VIEW_ARCHITECTURE
 
+#include "wx/docview.h"
+
 #ifndef WX_PRECOMP
+    #include "wx/list.h"
     #include "wx/string.h"
     #include "wx/utils.h"
     #include "wx/app.h"
     #include "wx/dc.h"
     #include "wx/dialog.h"
     #include "wx/menu.h"
-    #include "wx/list.h"
     #include "wx/filedlg.h"
     #include "wx/intl.h"
     #include "wx/log.h"
+    #include "wx/msgdlg.h"
+    #include "wx/mdi.h"
+    #include "wx/choicdlg.h"
 #endif
 
 #include "wx/ffile.h"
@@ -49,34 +50,28 @@
     #include "wx/filename.h"
 #endif
 
-#ifdef __WXGTK__
-    #include "wx/mdi.h"
-#endif
-
 #if wxUSE_PRINTING_ARCHITECTURE
-  #include "wx/prntbase.h"
-  #include "wx/printdlg.h"
+    #include "wx/prntbase.h"
+    #include "wx/printdlg.h"
 #endif
 
-#include "wx/msgdlg.h"
-#include "wx/choicdlg.h"
-#include "wx/docview.h"
 #include "wx/confbase.h"
 #include "wx/file.h"
 #include "wx/cmdproc.h"
+#include "wx/tokenzr.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #if wxUSE_STD_IOSTREAM
-  #include "wx/ioswrap.h"
-  #if wxUSE_IOSTREAMH
-    #include <fstream.h>
-  #else
-    #include <fstream>
-  #endif
+    #include "wx/ioswrap.h"
+    #if wxUSE_IOSTREAMH
+        #include <fstream.h>
+    #else
+        #include <fstream>
+    #endif
 #else
-  #include "wx/wfstream.h"
+    #include "wx/wfstream.h"
 #endif
 
 // ----------------------------------------------------------------------------
@@ -100,7 +95,6 @@ IMPLEMENT_DYNAMIC_CLASS(wxFileHistory, wxObject)
 // function prototypes
 // ----------------------------------------------------------------------------
 
-static inline wxString FindExtension(const wxChar *path);
 static wxWindow* wxFindSuitableParent(void);
 
 // ----------------------------------------------------------------------------
@@ -279,7 +273,7 @@ bool wxDocument::SaveAs()
 
     if (docTemplate->GetViewClassInfo() && docTemplate->GetDocClassInfo())
     {
-        wxList::compatibility_iterator node = wxDocManager::GetDocumentManager()->GetTemplates().GetFirst();
+        wxList::compatibility_iterator node = docTemplate->GetDocumentManager()->GetTemplates().GetFirst();
         while (node)
         {
             wxDocTemplate *t = (wxDocTemplate*) node->GetData();
@@ -302,12 +296,16 @@ bool wxDocument::SaveAs()
 #else
     wxString filter = docTemplate->GetFileFilter() ;
 #endif
+    wxString defaultDir = docTemplate->GetDirectory();
+    if (defaultDir.IsEmpty())
+        defaultDir = wxPathOnly(GetFilename());
+
     wxString tmp = wxFileSelector(_("Save as"),
-            docTemplate->GetDirectory(),
+            defaultDir,
             wxFileNameFromPath(GetFilename()),
             docTemplate->GetDefaultExtension(),
             filter,
-            wxSAVE | wxOVERWRITE_PROMPT,
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
             GetDocumentWindow());
 
     if (tmp.empty())
@@ -660,14 +658,18 @@ void wxView::OnUpdate(wxView *WXUNUSED(sender), wxObject *WXUNUSED(hint))
 
 void wxView::OnChangeFilename()
 {
-    if (GetFrame() && GetDocument())
-    {
-        wxString title;
+    // GetFrame can return wxWindow rather than wxTopLevelWindow due to
+    // generic MDI implementation so use SetLabel rather than SetTitle.
+    // It should cause SetTitle() for top level windows.
+    wxWindow *win = GetFrame();
+    if (!win) return;
 
-        GetDocument()->GetPrintableName(title);
+    wxDocument *doc = GetDocument();
+    if (!doc) return;
 
-        GetFrame()->SetTitle(title);
-    }
+    wxString name;
+    doc->GetPrintableName(name);
+    win->SetLabel(name);
 }
 
 void wxView::SetDocument(wxDocument *doc)
@@ -796,6 +798,17 @@ wxView *wxDocTemplate::CreateView(wxDocument *doc, long flags)
 // that of the template
 bool wxDocTemplate::FileMatchesTemplate(const wxString& path)
 {
+    wxStringTokenizer parser (GetFileFilter(), wxT(";"));
+    wxString anything = wxT ("*");
+    while (parser.HasMoreTokens())
+    {
+        wxString filter = parser.GetNextToken();
+        wxString filterExt = FindExtension (filter);
+        if ( filter.IsSameAs (anything)    ||
+             filterExt.IsSameAs (anything) ||
+             filterExt.IsSameAs (FindExtension (path)) )
+            return true;
+    }
     return GetDefaultExtension().IsSameAs(FindExtension(path));
 }
 
@@ -1913,6 +1926,11 @@ BEGIN_EVENT_TABLE(wxDocParentFrame, wxFrame)
     EVT_CLOSE(wxDocParentFrame::OnCloseWindow)
 END_EVENT_TABLE()
 
+wxDocParentFrame::wxDocParentFrame()
+{
+    m_docManager = NULL;
+}
+
 wxDocParentFrame::wxDocParentFrame(wxDocManager *manager,
                                    wxFrame *frame,
                                    wxWindowID id,
@@ -1924,6 +1942,19 @@ wxDocParentFrame::wxDocParentFrame(wxDocManager *manager,
                 : wxFrame(frame, id, title, pos, size, style, name)
 {
     m_docManager = manager;
+}
+
+bool wxDocParentFrame::Create(wxDocManager *manager,
+                              wxFrame *frame,
+                              wxWindowID id,
+                              const wxString& title,
+                              const wxPoint& pos,
+                              const wxSize& size,
+                              long style,
+                              const wxString& name)
+{
+    m_docManager = manager;
+    return base_type::Create(frame, id, title, pos, size, style, name);
 }
 
 void wxDocParentFrame::OnExit(wxCommandEvent& WXUNUSED(event))
@@ -2197,20 +2228,20 @@ void wxFileHistory::RemoveFileFromHistory(size_t i)
     wxList::compatibility_iterator node = m_fileMenus.GetFirst();
     while ( node )
     {
-         wxMenu* menu = (wxMenu*) node->GetData();
+        wxMenu* menu = (wxMenu*) node->GetData();
 
-         // shuffle filenames up
-         wxString buf;
-         for ( j = i; j < m_fileHistoryN - 1; j++ )
-         {
-             buf.Printf(s_MRUEntryFormat, j + 1, m_fileHistory[j]);
-             menu->SetLabel(m_idBase + j, buf);
-         }
+        // shuffle filenames up
+        wxString buf;
+        for ( j = i; j < m_fileHistoryN - 1; j++ )
+        {
+            buf.Printf(s_MRUEntryFormat, j + 1, m_fileHistory[j]);
+            menu->SetLabel(m_idBase + j, buf);
+        }
 
-         node = node->GetNext();
+        node = node->GetNext();
 
         // delete the last menu item which is unused now
-        wxWindowID lastItemId = m_idBase + m_fileHistoryN - 1;
+        wxWindowID lastItemId = m_idBase + wx_truncate_cast(wxWindowID, m_fileHistoryN) - 1;
         if (menu->FindItem(lastItemId))
         {
             menu->Delete(lastItemId);
@@ -2219,10 +2250,10 @@ void wxFileHistory::RemoveFileFromHistory(size_t i)
         // delete the last separator too if no more files are left
         if ( m_fileHistoryN == 1 )
         {
-            wxMenuItemList::compatibility_iterator node = menu->GetMenuItems().GetLast();
-            if ( node )
+            wxMenuItemList::compatibility_iterator nodeLast = menu->GetMenuItems().GetLast();
+            if ( nodeLast )
             {
-                wxMenuItem *menuItem = node->GetData();
+                wxMenuItem *menuItem = nodeLast->GetData();
                 if ( menuItem->IsSeparator() )
                 {
                     menu->Delete(menuItem);
@@ -2429,15 +2460,22 @@ bool wxTransferStreamToFile(wxInputStream& stream, const wxString& filename)
         return false;
 
     char buf[4096];
-    do
+    for ( ;; )
     {
         stream.Read(buf, WXSIZEOF(buf));
 
         const size_t nRead = stream.LastRead();
-        if ( !nRead || !file.Write(buf, nRead) )
+        if ( !nRead )
+        {
+            if ( stream.Eof() )
+                break;
+
+            return false;
+        }
+
+        if ( !file.Write(buf, nRead) )
             return false;
     }
-    while ( !stream.Eof() );
 
     return true;
 }
@@ -2445,4 +2483,3 @@ bool wxTransferStreamToFile(wxInputStream& stream, const wxString& filename)
 #endif // wxUSE_STD_IOSTREAM/!wxUSE_STD_IOSTREAM
 
 #endif // wxUSE_DOC_VIEW_ARCHITECTURE
-

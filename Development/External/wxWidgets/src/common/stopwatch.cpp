@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/stopwatch.cpp
+// Name:        src/common/stopwatch.cpp
 // Purpose:     wxStopWatch and other non-GUI stuff from wx/timer.h
 // Author:
 //    Original version by Julian Smart
@@ -8,7 +8,7 @@
 //    Guillermo Rodriguez <guille@iies.es> rewrote from scratch (Dic/99)
 // Modified by:
 // Created:     20.06.2003 (extracted from common/timercmn.cpp)
-// RCS-ID:      $Id: stopwatch.cpp,v 1.18 2005/07/24 13:33:57 SC Exp $
+// RCS-ID:      $Id: stopwatch.cpp 41054 2006-09-07 19:01:45Z ABX $
 // Copyright:   (c) 1998-2003 wxWidgets Team
 // License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,21 +28,19 @@
     #pragma hdrstop
 #endif
 
+#include "wx/stopwatch.h"
+
 #ifndef WX_PRECOMP
+    #ifdef __WXMSW__
+        #include "wx/msw/wrapwin.h"
+    #endif
     #include "wx/intl.h"
     #include "wx/log.h"
 #endif //WX_PRECOMP
 
-#include "wx/longlong.h"
-#include "wx/stopwatch.h"
-
 // ----------------------------------------------------------------------------
 // System headers
 // ----------------------------------------------------------------------------
-
-#if defined(__WIN32__)
-    #include "wx/msw/wrapwin.h"
-#endif
 
 #if defined(__WIN32__) && !defined(HAVE_FTIME) && !defined(__MWERKS__) && !defined(__WXWINCE__)
     #define HAVE_FTIME
@@ -364,6 +362,11 @@ wxLongLong wxGetLocalTimeMillis()
 #endif // time functions
 }
 
-#endif // wxUSE_LONGLONG
+#else // !wxUSE_LONGLONG
 
+double wxGetLocalTimeMillis(void)
+{
+    return (double(clock()) / double(CLOCKS_PER_SEC)) * 1000.0;
+}
 
+#endif // wxUSE_LONGLONG/!wxUSE_LONGLONG

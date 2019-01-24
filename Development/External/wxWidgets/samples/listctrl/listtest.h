@@ -4,10 +4,18 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: listtest.h,v 1.42 2005/05/22 21:31:42 VZ Exp $
+// RCS-ID:      $Id: listtest.h 44131 2007-01-07 17:28:18Z KO $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
+
+// not all ports have support for EVT_CONTEXT_MENU yet, don't define
+// USE_CONTEXT_MENU for those which don't
+#if defined(__WXMOTIF__) || defined(__WXPM__) || defined(__WXX11__) || defined(__WXMGL__)
+    #define USE_CONTEXT_MENU 0
+#else
+    #define USE_CONTEXT_MENU 1
+#endif
 
 // Define a new application type
 class MyApp: public wxApp
@@ -32,6 +40,9 @@ public:
         : wxListCtrl(parent, id, pos, size, style),
           m_attr(*wxBLUE, *wxLIGHT_GREY, wxNullFont)
         {
+#ifdef __POCKETPC__
+            EnableContextMenu();
+#endif
         }
 
     // add one item to the listctrl in report mode
@@ -61,14 +72,22 @@ public:
 
     void OnChar(wxKeyEvent& event);
 
+#if USE_CONTEXT_MENU
+    void OnContextMenu(wxContextMenuEvent& event);
+#endif
+
+    void OnRightClick(wxMouseEvent& event);
+
 private:
+    void ShowContextMenu(const wxPoint& pos);
+    wxLog *m_logOld;
     void SetColumnImage(int col, int image);
 
     void LogEvent(const wxListEvent& event, const wxChar *eventName);
     void LogColEvent(const wxListEvent& event, const wxChar *eventName);
 
     virtual wxString OnGetItemText(long item, long column) const;
-    virtual int OnGetItemImage(long item) const;
+    virtual int OnGetItemColumnImage(long item, long column) const;
     virtual wxListItemAttr *OnGetItemAttr(long item) const;
 
     wxListItemAttr m_attr;
@@ -81,7 +100,7 @@ private:
 class MyFrame: public wxFrame
 {
 public:
-    MyFrame(const wxChar *title, int x, int y, int w, int h);
+    MyFrame(const wxChar *title);
     virtual ~MyFrame();
 
     void DoSize();
@@ -117,6 +136,7 @@ protected:
     void OnFreeze(wxCommandEvent& event);
     void OnThaw(wxCommandEvent& event);
     void OnToggleLines(wxCommandEvent& event);
+    void OnToggleMacUseGeneric(wxCommandEvent& event);
 
     void OnUpdateShowColInfo(wxUpdateUIEvent& event);
     void OnUpdateToggleMultiSel(wxUpdateUIEvent& event);
@@ -184,7 +204,7 @@ enum
     LIST_FREEZE,
     LIST_THAW,
     LIST_TOGGLE_LINES,
+    LIST_MAC_USE_GENERIC,
 
     LIST_CTRL                   = 1000
 };
-

@@ -4,18 +4,14 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     07.04.98 (adapted from appconf.cpp)
-// RCS-ID:      $Id: fileconf.h,v 1.56 2005/07/01 18:05:10 VZ Exp $
-// Copyright:   (c) 1997 Karsten Ballüder   &  Vadim Zeitlin
+// RCS-ID:      $Id: fileconf.h 50711 2007-12-15 02:57:58Z VZ $
+// Copyright:   (c) 1997 Karsten Ballueder   &  Vadim Zeitlin
 //                       Ballueder@usa.net     <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef   _FILECONF_H
 #define   _FILECONF_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "fileconf.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -93,13 +89,13 @@
   (it's on by default, the current status can be retrieved with
    IsExpandingEnvVars function).
 */
-class WXDLLIMPEXP_BASE wxFileConfigGroup;
-class WXDLLIMPEXP_BASE wxFileConfigEntry;
-class WXDLLIMPEXP_BASE wxFileConfigLineList;
+class WXDLLIMPEXP_FWD_BASE wxFileConfigGroup;
+class WXDLLIMPEXP_FWD_BASE wxFileConfigEntry;
+class WXDLLIMPEXP_FWD_BASE wxFileConfigLineList;
 
 #if wxUSE_STREAMS
-class WXDLLIMPEXP_BASE wxInputStream;
-class WXDLLIMPEXP_BASE wxOutputStream;
+class WXDLLIMPEXP_FWD_BASE wxInputStream;
+class WXDLLIMPEXP_FWD_BASE wxOutputStream;
 #endif // wxUSE_STREAMS
 
 class WXDLLIMPEXP_BASE wxFileConfig : public wxConfigBase
@@ -126,11 +122,11 @@ public:
                const wxString& localFilename = wxEmptyString,
                const wxString& globalFilename = wxEmptyString,
                long style = wxCONFIG_USE_LOCAL_FILE | wxCONFIG_USE_GLOBAL_FILE,
-               wxMBConv& conv = wxConvUTF8);
+               const wxMBConv& conv = wxConvAuto());
 
 #if wxUSE_STREAMS
     // ctor that takes an input stream.
-  wxFileConfig(wxInputStream &inStream, wxMBConv& conv = wxConvUTF8);
+  wxFileConfig(wxInputStream &inStream, const wxMBConv& conv = wxConvAuto());
 #endif // wxUSE_STREAMS
 
     // dtor will save unsaved data
@@ -173,7 +169,7 @@ public:
   // save the entire config file text to the given stream, note that the text
   // won't be saved again in dtor when Flush() is called if you use this method
   // as it won't be "changed" any more
-  virtual bool Save(wxOutputStream& os, wxMBConv& conv = wxConvUTF8);
+  virtual bool Save(wxOutputStream& os, const wxMBConv& conv = wxConvAuto());
 #endif // wxUSE_STREAMS
 
 public:
@@ -204,7 +200,7 @@ private:
   void CleanUp();
 
   // parse the whole file
-  void Parse(wxTextBuffer& buffer, bool bLocal);
+  void Parse(const wxTextBuffer& buffer, bool bLocal);
 
   // the same as SetPath("/")
   void SetRootPath();
@@ -231,7 +227,7 @@ private:
   wxFileConfigGroup *m_pRootGroup,      // the top (unnamed) group
                     *m_pCurrentGroup;   // the current group
 
-  wxMBConv   &m_conv;
+  wxMBConv    *m_conv;
 
 #ifdef __UNIX__
   int m_umask;                          // the umask to use for file creation

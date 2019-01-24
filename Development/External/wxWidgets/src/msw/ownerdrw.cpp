@@ -1,41 +1,37 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/ownerdrw.cpp
+// Name:        src/msw/ownerdrw.cpp
 // Purpose:     implementation of wxOwnerDrawn class
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     13.11.97
-// RCS-ID:      $Id: ownerdrw.cpp,v 1.62 2005/08/15 20:09:46 VZ Exp $
+// RCS-ID:      $Id: ownerdrw.cpp 51379 2008-01-26 01:38:06Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
-#include "wx/msw/private.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
-  #include "wx/window.h"
-  #include "wx/msw/private.h"
-  #include "wx/font.h"
-  #include "wx/bitmap.h"
-  #include "wx/dcmemory.h"
-  #include "wx/menu.h"
-  #include "wx/utils.h"
+    #include "wx/window.h"
+    #include "wx/msw/private.h"
+    #include "wx/font.h"
+    #include "wx/bitmap.h"
+    #include "wx/image.h"
+    #include "wx/dcmemory.h"
+    #include "wx/menu.h"
+    #include "wx/utils.h"
+    #include "wx/settings.h"
+    #include "wx/menuitem.h"
+    #include "wx/module.h"
 #endif
 
-#include "wx/settings.h"
 #include "wx/ownerdrw.h"
-#include "wx/menuitem.h"
 #include "wx/fontutil.h"
-#include "wx/module.h"
 
 #if wxUSE_OWNER_DRAWN
 
@@ -54,7 +50,21 @@ public:
 #if defined(__WXMSW__) && defined(__WIN32__) && defined(SM_CXMENUCHECK)
         NONCLIENTMETRICS nm;
         nm.cbSize = sizeof(NONCLIENTMETRICS);
-        SystemParametersInfo(SPI_GETNONCLIENTMETRICS,0,&nm,0);
+        if ( !::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,0,&nm,0) )
+        {
+#if WINVER >= 0x0600
+            // a new field has been added to NONCLIENTMETRICS under Vista, so
+            // the call to SystemParametersInfo() fails if we use the struct
+            // size incorporating this new value on an older system -- retry
+            // without it
+            nm.cbSize -= sizeof(int);
+            if ( !::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &nm, 0) )
+#endif // WINVER >= 0x0600
+            {
+                // maybe we should initialize the struct with some defaults?
+                wxLogLastError(_T("SystemParametersInfo(SPI_GETNONCLIENTMETRICS)"));
+            }
+        }
 
         ms_systemMenuButtonWidth = nm.iMenuHeight;
         ms_systemMenuHeight = nm.iMenuHeight;
@@ -97,12 +107,6 @@ bool wxMSWSystemMenuFontModule::ms_showCues = true;
 IMPLEMENT_DYNAMIC_CLASS(wxMSWSystemMenuFontModule, wxModule)
 
 
-// temporary hack to implement wxOwnerDrawn::IsMenuItem() without breaking
-// backwards compatibility
-#if wxCHECK_VERSION(2, 7, 0)
-    #pragma warning "TODO: remove gs_menuItems hack"
-#endif
-
 // VC++ 6 gives a warning here:
 //
 //      return type for 'OwnerDrawnSet_wxImplementation_HashTable::iterator::
@@ -110,12 +114,12 @@ IMPLEMENT_DYNAMIC_CLASS(wxMSWSystemMenuFontModule, wxModule)
 //      a UDT.  Will produce errors if applied using infix notation.
 //
 // shut it down
-#ifdef __VISUALC__
-    #if __VISUALC__ <= 1300
+#if defined __VISUALC__ && __VISUALC__ <= 1300
+    #if __VISUALC__ >= 1200
         #pragma warning(push)
-        #pragma warning(disable: 4284)
         #define POP_WARNINGS
     #endif
+    #pragma warning(disable: 4284)
 #endif
 
 #include "wx/hashset.h"
@@ -124,8 +128,6 @@ WX_DECLARE_HASH_SET(wxOwnerDrawn*, wxPointerHash, wxPointerEqual, OwnerDrawnSet)
 #ifdef POP_WARNINGS
     #pragma warning(pop)
 #endif
-
-static OwnerDrawnSet gs_menuItems;
 
 // ============================================================================
 // implementation of wxOwnerDrawn class
@@ -138,7 +140,7 @@ wxOwnerDrawn::wxOwnerDrawn(const wxString& str,
                            bool bMenuItem)
             : m_strName(str)
 {
-    if (ms_nDefaultMarginWidth == 0)
+    if ( ms_nDefaultMarginWidth == 0 )
     {
        ms_nDefaultMarginWidth = ::GetSystemMetrics(SM_CXMENUCHECK) +
                                 wxSystemSettings::GetMetric(wxSYS_EDGE_X);
@@ -147,32 +149,19 @@ wxOwnerDrawn::wxOwnerDrawn(const wxString& str,
 
     m_bCheckable   = bCheckable;
     m_bOwnerDrawn  = false;
+    m_isMenuItem   = bMenuItem;
     m_nHeight      = 0;
     m_nMarginWidth = ms_nLastMarginWidth;
     m_nMinHeight   = wxMSWSystemMenuFontModule::ms_systemMenuHeight;
-
-    m_bmpDisabled = wxNullBitmap;
-
-    // TODO: we can't add new m_isMenuItem field in 2.6, so we use this hack
-    //       with the map, but do add m_isMenuItem in 2.7
-    if ( bMenuItem )
-    {
-        gs_menuItems.insert(this);
-    }
 }
 
 wxOwnerDrawn::~wxOwnerDrawn()
 {
-    // TODO: remove this in 2.7
-    gs_menuItems.erase(this);
 }
 
 bool wxOwnerDrawn::IsMenuItem() const
 {
-    // TODO: in 2.7, replace this with simple "return m_isMenuItem"
-
-    // some versions of mingw have problems without const_cast when wxUSE_STL=1
-    return gs_menuItems.count(wx_const_cast(wxOwnerDrawn *, this)) == 1;
+    return m_isMenuItem;
 }
 
 
@@ -217,13 +206,17 @@ bool wxOwnerDrawn::OnMeasureItem(size_t *pwidth, size_t *pheight)
         // placed on top of each other.
         if ( !m_strAccel.empty() )
         {
-            str.Pad(str.Length()%8);
+            str.Pad(str.length()%8);
             str += m_strAccel;
         }
 
         dc.SetFont(GetFontToUse());
 
-        dc.GetTextExtent(str, (long *)pwidth, (long *)pheight);
+		// nick.a: fixing 64-bit compatibility issue
+		int tmpWidth, tmpHeight;
+        dc.GetTextExtent(str, &tmpWidth, &tmpHeight);
+		*pwidth = tmpWidth;
+		*pheight = tmpHeight;
 
         // add space at the end of the menu for the submenu expansion arrow
         // this will also allow offsetting the accel string from the right edge
@@ -378,7 +371,7 @@ bool wxOwnerDrawn::OnDrawItem(wxDC& dc,
         xText += 3; // separate text from the highlight rectangle
 
         SIZE sizeRect;
-        ::GetTextExtentPoint32(hdc, strMenuText.c_str(), strMenuText.Length(), &sizeRect);
+        ::GetTextExtentPoint32(hdc, strMenuText.c_str(), strMenuText.length(), &sizeRect);
         ::DrawState(hdc, NULL, NULL,
                     (LPARAM)strMenuText.c_str(), strMenuText.length(),
                     xText, rc.y + (int) ((rc.GetHeight()-sizeRect.cy)/2.0), // centre text vertically
@@ -447,15 +440,26 @@ bool wxOwnerDrawn::OnDrawItem(wxDC& dc,
 
         if ( !bmp.Ok() )
         {
-            // for not checkable bitmaps we should always use unchecked one because
-            // their checked bitmap is not set
+            // for not checkable bitmaps we should always use unchecked one
+            // because their checked bitmap is not set
             bmp = GetBitmap(!IsCheckable() || (st & wxODChecked));
+
+#if wxUSE_IMAGE
+            if ( bmp.Ok() && st & wxODDisabled )
+            {
+                // we need to grey out the bitmap as we don't have any specific
+                // disabled bitmap
+                wxImage imgGrey = bmp.ConvertToImage().ConvertToGreyscale();
+                if ( imgGrey.Ok() )
+                    bmp = wxBitmap(imgGrey);
+            }
+#endif // wxUSE_IMAGE
         }
 
         if ( bmp.Ok() )
         {
             wxMemoryDC dcMem(&dc);
-            dcMem.SelectObject(bmp);
+            dcMem.SelectObjectAsSource(bmp);
 
             // center bitmap
             int nBmpWidth = bmp.GetWidth(),
@@ -490,4 +494,3 @@ bool wxOwnerDrawn::OnDrawItem(wxDC& dc,
 
 
 #endif // wxUSE_OWNER_DRAWN
-

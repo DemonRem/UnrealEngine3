@@ -4,7 +4,7 @@
 // Purpose:     Part of the widgets sample showing wxCheckBox
 // Author:      Dimitri Schoolwerth, Vadim Zeitlin
 // Created:     27 Sep 2003
-// Id:          $Id: checkbox.cpp,v 1.10 2005/08/28 08:54:54 MBN Exp $
+// Id:          $Id: checkbox.cpp 43755 2006-12-03 13:43:44Z VZ $
 // Copyright:   (c) 2003 wxWindows team
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@
 // control ids
 enum
 {
-    CheckboxPage_Reset = 100,
+    CheckboxPage_Reset = wxID_HIGHEST,
     CheckboxPage_ChangeLabel,
     CheckboxPage_Check,
     CheckboxPage_Uncheck,
@@ -73,10 +73,14 @@ enum
 class CheckBoxWidgetsPage : public WidgetsPage
 {
 public:
-    CheckBoxWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist);
+    CheckBoxWidgetsPage(WidgetsBookCtrl *book, wxImageList *imaglist);
     virtual ~CheckBoxWidgetsPage(){};
 
     virtual wxControl *GetWidget() const { return m_checkbox; }
+    virtual void RecreateWidget() { CreateCheckbox(); }
+
+    // lazy creation of the content
+    virtual void CreateContent();
 
 protected:
     // event handlers
@@ -147,14 +151,22 @@ END_EVENT_TABLE()
 // implementation
 // ============================================================================
 
-IMPLEMENT_WIDGETS_PAGE(CheckBoxWidgetsPage, wxT("CheckBox"));
+#if defined(__WXUNIVERSAL__)
+    #define FAMILY_CTRLS UNIVERSAL_CTRLS
+#else
+    #define FAMILY_CTRLS NATIVE_CTRLS
+#endif
 
-CheckBoxWidgetsPage::CheckBoxWidgetsPage(wxBookCtrlBase *book,
+IMPLEMENT_WIDGETS_PAGE(CheckBoxWidgetsPage, wxT("CheckBox"), FAMILY_CTRLS );
+
+CheckBoxWidgetsPage::CheckBoxWidgetsPage(WidgetsBookCtrl *book,
                                          wxImageList *imaglist)
-                  : WidgetsPage(book)
+                  : WidgetsPage(book, imaglist, checkbox_xpm)
 {
-    imaglist->Add(wxBitmap(checkbox_xpm));
+}
 
+void CheckBoxWidgetsPage::CreateContent()
+{
     wxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
 
     // left pane
@@ -221,8 +233,6 @@ CheckBoxWidgetsPage::CheckBoxWidgetsPage(wxBookCtrlBase *book,
     Reset();
 
     SetSizer(sizerTop);
-
-    sizerTop->Fit(this);
 }
 
 void CheckBoxWidgetsPage::Reset()
@@ -243,7 +253,7 @@ void CheckBoxWidgetsPage::CreateCheckbox()
 
     delete m_checkbox;
 
-    int flags = 0;
+    int flags = ms_defaultFlags;
     if ( m_chkRight->IsChecked() )
         flags |= wxALIGN_RIGHT;
 

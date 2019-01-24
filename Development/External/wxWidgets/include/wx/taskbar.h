@@ -5,7 +5,7 @@
 // Modified by:
 // Created:
 // Copyright:   (c) Julian Smart
-// RCS-ID:      $Id: taskbar.h,v 1.26 2005/05/04 18:52:03 JS Exp $
+// RCS-ID:      $Id: taskbar.h 53135 2008-04-12 02:31:04Z VZ $
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@
 
 #include "wx/event.h"
 
-class WXDLLIMPEXP_ADV wxTaskBarIconEvent;
+class WXDLLIMPEXP_FWD_ADV wxTaskBarIconEvent;
 
 // ----------------------------------------------------------------------------
 // wxTaskBarIconBase: define wxTaskBarIcon interface
@@ -109,8 +109,16 @@ END_DECLARE_EVENT_TYPES()
 #define EVT_TASKBAR_LEFT_DCLICK(fn)  wx__DECLARE_TASKBAREVT(LEFT_DCLICK, fn)
 #define EVT_TASKBAR_RIGHT_DCLICK(fn) wx__DECLARE_TASKBAREVT(RIGHT_DCLICK, fn)
 
+// taskbar menu is shown on right button press under all platforms except MSW
+// where it's shown on right button release, using this event type and macro
+// allows to write code which works correctly on all platforms
+#ifdef __WXMSW__
+    #define wxEVT_TASKBAR_CLICK wxEVT_TASKBAR_RIGHT_UP
+#else
+    #define wxEVT_TASKBAR_CLICK wxEVT_TASKBAR_RIGHT_DOWN
 #endif
-    // wxHAS_TASK_BAR_ICON
+#define EVT_TASKBAR_CLICK(fn)        wx__DECLARE_TASKBAREVT(CLICK, fn)
 
-#endif
-    // _WX_TASKBAR_H_BASE_
+#endif // wxHAS_TASK_BAR_ICON
+
+#endif // _WX_TASKBAR_H_BASE_

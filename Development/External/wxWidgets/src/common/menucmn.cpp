@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/menucmn.cpp
+// Name:        src/common/menucmn.cpp
 // Purpose:     wxMenu and wxMenuBar methods common to all ports
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     26.10.99
-// RCS-ID:      $Id: menucmn.cpp,v 1.54 2005/08/19 13:24:38 MW Exp $
+// RCS-ID:      $Id: menucmn.cpp 51361 2008-01-24 18:12:55Z PC $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "menubase.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -38,18 +34,338 @@
     #include "wx/menu.h"
 #endif
 
+#include "wx/stockitem.h"
+
 // ----------------------------------------------------------------------------
 // template lists
 // ----------------------------------------------------------------------------
 
 #include "wx/listimpl.cpp"
 
-WX_DEFINE_LIST(wxMenuList);
-WX_DEFINE_LIST(wxMenuItemList);
+WX_DEFINE_LIST(wxMenuList)
+WX_DEFINE_LIST(wxMenuItemList)
 
 // ============================================================================
 // implementation
 // ============================================================================
+
+// ----------------------------------------------------------------------------
+// wxAcceleratorEntry
+// ----------------------------------------------------------------------------
+
+
+#if wxUSE_ACCEL
+
+static const struct wxKeyName
+{
+    wxKeyCode code;
+    const wxChar *name;
+} wxKeyNames[] =
+{
+    { WXK_DELETE, wxTRANSLATE("DEL") },
+    { WXK_DELETE, wxTRANSLATE("DELETE") },
+    { WXK_BACK, wxTRANSLATE("BACK") },
+    { WXK_INSERT, wxTRANSLATE("INS") },
+    { WXK_INSERT, wxTRANSLATE("INSERT") },
+    { WXK_RETURN, wxTRANSLATE("ENTER") },
+    { WXK_RETURN, wxTRANSLATE("RETURN") },
+    { WXK_PAGEUP, wxTRANSLATE("PGUP") },
+    { WXK_PAGEDOWN, wxTRANSLATE("PGDN") },
+    { WXK_LEFT, wxTRANSLATE("LEFT") },
+    { WXK_RIGHT, wxTRANSLATE("RIGHT") },
+    { WXK_UP, wxTRANSLATE("UP") },
+    { WXK_DOWN, wxTRANSLATE("DOWN") },
+    { WXK_HOME, wxTRANSLATE("HOME") },
+    { WXK_END, wxTRANSLATE("END") },
+    { WXK_SPACE, wxTRANSLATE("SPACE") },
+    { WXK_TAB, wxTRANSLATE("TAB") },
+    { WXK_ESCAPE, wxTRANSLATE("ESC") },
+    { WXK_ESCAPE, wxTRANSLATE("ESCAPE") },
+    { WXK_CANCEL, wxTRANSLATE("CANCEL") },
+    { WXK_CLEAR, wxTRANSLATE("CLEAR") },
+    { WXK_MENU, wxTRANSLATE("MENU") },
+    { WXK_PAUSE, wxTRANSLATE("PAUSE") },
+    { WXK_CAPITAL, wxTRANSLATE("CAPITAL") },
+    { WXK_SELECT, wxTRANSLATE("SELECT") },
+    { WXK_PRINT, wxTRANSLATE("PRINT") },
+    { WXK_EXECUTE, wxTRANSLATE("EXECUTE") },
+    { WXK_SNAPSHOT, wxTRANSLATE("SNAPSHOT") },
+    { WXK_HELP, wxTRANSLATE("HELP") },
+    { WXK_ADD, wxTRANSLATE("ADD") },
+    { WXK_SEPARATOR, wxTRANSLATE("SEPARATOR") },
+    { WXK_SUBTRACT, wxTRANSLATE("SUBTRACT") },
+    { WXK_DECIMAL, wxTRANSLATE("DECIMAL") },
+    { WXK_DIVIDE, wxTRANSLATE("DIVIDE") },
+    { WXK_NUMLOCK, wxTRANSLATE("NUM_LOCK") },
+    { WXK_SCROLL, wxTRANSLATE("SCROLL_LOCK") },
+    { WXK_PAGEUP, wxTRANSLATE("PAGEUP") },
+    { WXK_PAGEDOWN, wxTRANSLATE("PAGEDOWN") },
+    { WXK_NUMPAD_SPACE, wxTRANSLATE("KP_SPACE") },
+    { WXK_NUMPAD_TAB, wxTRANSLATE("KP_TAB") },
+    { WXK_NUMPAD_ENTER, wxTRANSLATE("KP_ENTER") },
+    { WXK_NUMPAD_HOME, wxTRANSLATE("KP_HOME") },
+    { WXK_NUMPAD_LEFT, wxTRANSLATE("KP_LEFT") },
+    { WXK_NUMPAD_UP, wxTRANSLATE("KP_UP") },
+    { WXK_NUMPAD_RIGHT, wxTRANSLATE("KP_RIGHT") },
+    { WXK_NUMPAD_DOWN, wxTRANSLATE("KP_DOWN") },
+    { WXK_NUMPAD_PAGEUP, wxTRANSLATE("KP_PRIOR") },
+    { WXK_NUMPAD_PAGEUP, wxTRANSLATE("KP_PAGEUP") },
+    { WXK_NUMPAD_PAGEDOWN, wxTRANSLATE("KP_NEXT") },
+    { WXK_NUMPAD_PAGEDOWN, wxTRANSLATE("KP_PAGEDOWN") },
+    { WXK_NUMPAD_END, wxTRANSLATE("KP_END") },
+    { WXK_NUMPAD_BEGIN, wxTRANSLATE("KP_BEGIN") },
+    { WXK_NUMPAD_INSERT, wxTRANSLATE("KP_INSERT") },
+    { WXK_NUMPAD_DELETE, wxTRANSLATE("KP_DELETE") },
+    { WXK_NUMPAD_EQUAL, wxTRANSLATE("KP_EQUAL") },
+    { WXK_NUMPAD_MULTIPLY, wxTRANSLATE("KP_MULTIPLY") },
+    { WXK_NUMPAD_ADD, wxTRANSLATE("KP_ADD") },
+    { WXK_NUMPAD_SEPARATOR, wxTRANSLATE("KP_SEPARATOR") },
+    { WXK_NUMPAD_SUBTRACT, wxTRANSLATE("KP_SUBTRACT") },
+    { WXK_NUMPAD_DECIMAL, wxTRANSLATE("KP_DECIMAL") },
+    { WXK_NUMPAD_DIVIDE, wxTRANSLATE("KP_DIVIDE") },
+    { WXK_WINDOWS_LEFT, wxTRANSLATE("WINDOWS_LEFT") },
+    { WXK_WINDOWS_RIGHT, wxTRANSLATE("WINDOWS_RIGHT") },
+    { WXK_WINDOWS_MENU, wxTRANSLATE("WINDOWS_MENU") },
+    { WXK_COMMAND, wxTRANSLATE("COMMAND") },
+};
+
+// return true if the 2 strings refer to the same accel
+//
+// as accels can be either translated or not, check for both possibilities and
+// also compare case-insensitively as the key names case doesn't count
+static inline bool CompareAccelString(const wxString& str, const wxChar *accel)
+{
+    return str.CmpNoCase(accel) == 0
+#if wxUSE_INTL
+            || str.CmpNoCase(wxGetTranslation(accel)) == 0
+#endif
+            ;
+}
+
+// return prefixCode+number if the string is of the form "<prefix><number>" and
+// 0 if it isn't
+//
+// first and last parameter specify the valid domain for "number" part
+static int
+        IsNumberedAccelKey(const wxString& str,
+                           const wxChar *prefix,
+                           wxKeyCode prefixCode,
+                           unsigned first,
+                           unsigned last)
+{
+    const size_t lenPrefix = wxStrlen(prefix);
+    if ( !CompareAccelString(str.Left(lenPrefix), prefix) )
+        return 0;
+
+    unsigned long num;
+    if ( !str.Mid(lenPrefix).ToULong(&num) )
+        return 0;
+
+    if ( num < first || num > last )
+    {
+        // this must be a mistake, chances that this is a valid name of another
+        // key are vanishingly small
+        wxLogDebug(_T("Invalid key string \"%s\""), str.c_str());
+        return 0;
+    }
+
+    return prefixCode + num - first;
+}
+
+/* static */
+bool
+wxAcceleratorEntry::ParseAccel(const wxString& text, int *flagsOut, int *keyOut)
+{
+    // the parser won't like trailing spaces
+    wxString label = text;
+    label.Trim(true);  // the initial \t must be preserved so don't strip leading whitespaces
+
+    // check for accelerators: they are given after '\t'
+    int posTab = label.Find(wxT('\t'));
+    if ( posTab == wxNOT_FOUND )
+    {
+        return false;
+    }
+
+    // parse the accelerator string
+    int accelFlags = wxACCEL_NORMAL;
+    wxString current;
+    for ( size_t n = (size_t)posTab + 1; n < label.length(); n++ )
+    {
+        if ( (label[n] == '+') || (label[n] == '-') )
+        {
+            if ( CompareAccelString(current, wxTRANSLATE("ctrl")) )
+                accelFlags |= wxACCEL_CTRL;
+            else if ( CompareAccelString(current, wxTRANSLATE("alt")) )
+                accelFlags |= wxACCEL_ALT;
+            else if ( CompareAccelString(current, wxTRANSLATE("shift")) )
+                accelFlags |= wxACCEL_SHIFT;
+            else // not a recognized modifier name
+            {
+                // we may have "Ctrl-+", for example, but we still want to
+                // catch typos like "Crtl-A" so only give the warning if we
+                // have something before the current '+' or '-', else take
+                // it as a literal symbol
+                if ( current.empty() )
+                {
+                    current += label[n];
+
+                    // skip clearing it below
+                    continue;
+                }
+                else
+                {
+                    wxLogDebug(wxT("Unknown accel modifier: '%s'"),
+                               current.c_str());
+                }
+            }
+
+            current.clear();
+        }
+        else // not special character
+        {
+            current += (wxChar) wxTolower(label[n]);
+        }
+    }
+
+    int keyCode;
+    const size_t len = current.length();
+    switch ( len )
+    {
+        case 0:
+            wxLogDebug(wxT("No accel key found, accel string ignored."));
+            return false;
+
+        case 1:
+            // it's just a letter
+            keyCode = current[0U];
+
+            // if the key is used with any modifiers, make it an uppercase one
+            // because Ctrl-A and Ctrl-a are the same; but keep it as is if it's
+            // used alone as 'a' and 'A' are different
+            if ( accelFlags != wxACCEL_NORMAL )
+                keyCode = wxToupper(keyCode);
+            break;
+
+        default:
+            keyCode = IsNumberedAccelKey(current, wxTRANSLATE("F"),
+                                         WXK_F1, 1, 12);
+            if ( !keyCode )
+            {
+                for ( size_t n = 0; n < WXSIZEOF(wxKeyNames); n++ )
+                {
+                    const wxKeyName& kn = wxKeyNames[n];
+                    if ( CompareAccelString(current, kn.name) )
+                    {
+                        keyCode = kn.code;
+                        break;
+                    }
+                }
+            }
+
+            if ( !keyCode )
+                keyCode = IsNumberedAccelKey(current, wxTRANSLATE("KP_"),
+                                             WXK_NUMPAD0, 0, 9);
+            if ( !keyCode )
+                keyCode = IsNumberedAccelKey(current, wxTRANSLATE("SPECIAL"),
+                                             WXK_SPECIAL1, 1, 20);
+
+            if ( !keyCode )
+            {
+                wxLogDebug(wxT("Unrecognized accel key '%s', accel string ignored."),
+                           current.c_str());
+                return false;
+            }
+    }
+
+
+    wxASSERT_MSG( keyCode, _T("logic error: should have key code here") );
+
+    if ( flagsOut )
+        *flagsOut = accelFlags;
+    if ( keyOut )
+        *keyOut = keyCode;
+
+    return true;
+}
+
+/* static */
+wxAcceleratorEntry *wxAcceleratorEntry::Create(const wxString& str)
+{
+    int flags,
+        keyCode;
+    if ( !ParseAccel(str, &flags, &keyCode) )
+        return NULL;
+
+    return new wxAcceleratorEntry(flags, keyCode);
+}
+
+bool wxAcceleratorEntry::FromString(const wxString& str)
+{
+    return ParseAccel(str, &m_flags, &m_keyCode);
+}
+
+wxString wxAcceleratorEntry::ToString() const
+{
+    wxString text;
+
+    int flags = GetFlags();
+    if ( flags & wxACCEL_ALT )
+        text += _("Alt-");
+    if ( flags & wxACCEL_CTRL )
+        text += _("Ctrl-");
+    if ( flags & wxACCEL_SHIFT )
+        text += _("Shift-");
+
+    const int code = GetKeyCode();
+
+    if ( code >= WXK_F1 && code <= WXK_F12 )
+        text << _("F") << code - WXK_F1 + 1;
+    else if ( code >= WXK_NUMPAD0 && code <= WXK_NUMPAD9 )
+        text << _("KP_") << code - WXK_NUMPAD0;
+    else if ( code >= WXK_SPECIAL1 && code <= WXK_SPECIAL20 )
+        text << _("SPECIAL") << code - WXK_SPECIAL1 + 1;
+    else // check the named keys
+    {
+        size_t n;
+        for ( n = 0; n < WXSIZEOF(wxKeyNames); n++ )
+        {
+            const wxKeyName& kn = wxKeyNames[n];
+            if ( code == kn.code )
+            {
+                text << wxGetTranslation(kn.name);
+                break;
+            }
+        }
+
+        if ( n == WXSIZEOF(wxKeyNames) )
+        {
+            // must be a simple key
+            if (
+#if !wxUSE_UNICODE
+                 isascii(code) &&
+#endif // ANSI
+                    wxIsalnum(code) )
+            {
+                text << (wxChar)code;
+            }
+            else
+            {
+                wxFAIL_MSG( wxT("unknown keyboard accelerator code") );
+            }
+        }
+    }
+
+    return text;
+}
+
+wxAcceleratorEntry *wxGetAccelFromString(const wxString& label)
+{
+    return wxAcceleratorEntry::Create(label);
+}
+
+#endif // wxUSE_ACCEL
+
 
 // ----------------------------------------------------------------------------
 // wxMenuItem
@@ -61,8 +377,6 @@ wxMenuItemBase::wxMenuItemBase(wxMenu *parentMenu,
                                const wxString& help,
                                wxItemKind kind,
                                wxMenu *subMenu)
-              : m_text(text),
-                m_help(help)
 {
     wxASSERT_MSG( parentMenu != NULL, wxT("menuitem should have a menu") );
 
@@ -76,6 +390,9 @@ wxMenuItemBase::wxMenuItemBase(wxMenu *parentMenu,
         m_id = wxNewId();
     if (m_id == wxID_SEPARATOR)
         m_kind = wxITEM_SEPARATOR;
+
+    SetText(text);
+    SetHelp(help);
 }
 
 wxMenuItemBase::~wxMenuItemBase()
@@ -85,238 +402,9 @@ wxMenuItemBase::~wxMenuItemBase()
 
 #if wxUSE_ACCEL
 
-static inline bool CompareAccelString(const wxString& str, const wxChar *accel)
-{
-#if wxUSE_INTL
-    return str == accel || str == wxGetTranslation(accel);
-#else
-    return str == accel;
-#endif
-}
-
-// return wxAcceleratorEntry for the given menu string or NULL if none
-// specified
-wxAcceleratorEntry *wxGetAccelFromString(const wxString& label)
-{
-    // wxPrintf( wxT("label %s\n"), label.c_str() );
-
-    // check for accelerators: they are given after '\t'
-    int posTab = label.Find(wxT('\t'));
-    if ( posTab != wxNOT_FOUND ) {
-        // parse the accelerator string
-        int keyCode = 0;
-        int accelFlags = wxACCEL_NORMAL;
-        wxString current;
-        for ( size_t n = (size_t)posTab + 1; n < label.Len(); n++ ) {
-            if ( (label[n] == '+') || (label[n] == '-') ) {
-                if ( CompareAccelString(current, wxTRANSLATE("ctrl")) )
-                    accelFlags |= wxACCEL_CTRL;
-                else if ( CompareAccelString(current, wxTRANSLATE("alt")) )
-                    accelFlags |= wxACCEL_ALT;
-                else if ( CompareAccelString(current, wxTRANSLATE("shift")) )
-                    accelFlags |= wxACCEL_SHIFT;
-                else {
-                    // we may have "Ctrl-+", for example, but we still want to
-                    // catch typos like "Crtl-A" so only give the warning if we
-                    // have something before the current '+' or '-', else take
-                    // it as a literal symbol
-                    if ( current.empty() )
-                    {
-                        current += label[n];
-
-                        // skip clearing it below
-                        continue;
-                    }
-                    else
-                    {
-                        wxLogDebug(wxT("Unknown accel modifier: '%s'"),
-                                   current.c_str());
-                    }
-                }
-
-                current.clear();
-            }
-            else {
-                current += (wxChar) wxTolower(label[n]);
-            }
-        }
-
-        if ( current.empty() ) {
-            wxLogDebug(wxT("No accel key found, accel string ignored."));
-        }
-        else {
-            if ( current.Len() == 1 ) {
-                // it's a letter
-                keyCode = current[0U];
-
-                // Only call wxToupper if control, alt, or shift is held down,
-                // otherwise lower case accelerators won't work.
-                if (accelFlags != wxACCEL_NORMAL) {
-                    keyCode = wxToupper(keyCode);
-                }
-            }
-            else {
-                // is it a function key?
-                if ( current[0U] == 'f' && wxIsdigit(current[1U]) &&
-                     (current.Len() == 2 ||
-                     (current.Len() == 3 && wxIsdigit(current[2U]))) ) {
-                    keyCode = WXK_F1 + wxAtoi(current.c_str() + 1) - 1;
-                }
-                else {
-                    // several special cases
-                    current.MakeUpper();
-                    if ( current == wxT("DEL") )
-                        keyCode = WXK_DELETE;
-                    else if ( current == wxT("DELETE") )
-                        keyCode = WXK_DELETE;
-                    else if ( current == wxT("BACK") )
-                        keyCode = WXK_BACK;
-                    else if ( current == wxT("INS") )
-                        keyCode = WXK_INSERT;
-                    else if ( current == wxT("INSERT") )
-                        keyCode = WXK_INSERT;
-                    else if ( current == wxT("ENTER") || current == wxT("RETURN") )
-                        keyCode = WXK_RETURN;
-                    else if ( current == wxT("PGUP") )
-                        keyCode = WXK_PRIOR;
-                    else if ( current == wxT("PGDN") )
-                        keyCode = WXK_NEXT;
-                    else if ( current == wxT("LEFT") )
-                        keyCode = WXK_LEFT;
-                    else if ( current == wxT("RIGHT") )
-                        keyCode = WXK_RIGHT;
-                    else if ( current == wxT("UP") )
-                        keyCode = WXK_UP;
-                    else if ( current == wxT("DOWN") )
-                        keyCode = WXK_DOWN;
-                    else if ( current == wxT("HOME") )
-                        keyCode = WXK_HOME;
-                    else if ( current == wxT("END") )
-                        keyCode = WXK_END;
-                    else if ( current == wxT("SPACE") )
-                        keyCode = WXK_SPACE;
-                    else if ( current == wxT("TAB") )
-                        keyCode = WXK_TAB;
-                    else if ( current == wxT("ESC") || current == wxT("ESCAPE") )
-                        keyCode = WXK_ESCAPE;
-                    else if ( current == wxT("CANCEL") )
-                        keyCode = WXK_CANCEL;
-                    else if ( current == wxT("CLEAR") )
-                        keyCode = WXK_CLEAR;
-                    else if ( current == wxT("MENU") )
-                        keyCode = WXK_MENU;
-                    else if ( current == wxT("PAUSE") )
-                        keyCode = WXK_PAUSE;
-                    else if ( current == wxT("CAPITAL") )
-                        keyCode = WXK_CAPITAL;
-                    else if ( current == wxT("SELECT") )
-                        keyCode = WXK_SELECT;
-                    else if ( current == wxT("PRINT") )
-                        keyCode = WXK_PRINT;
-                    else if ( current == wxT("EXECUTE") )
-                        keyCode = WXK_EXECUTE;
-                    else if ( current == wxT("SNAPSHOT") )
-                        keyCode = WXK_SNAPSHOT;
-                    else if ( current == wxT("HELP") )
-                        keyCode = WXK_HELP;
-                    else if ( current == wxT("ADD") )
-                        keyCode = WXK_ADD;
-                    else if ( current == wxT("SEPARATOR") )
-                        keyCode = WXK_SEPARATOR;
-                    else if ( current == wxT("SUBTRACT") )
-                        keyCode = WXK_SUBTRACT;
-                    else if ( current == wxT("DECIMAL") )
-                        keyCode = WXK_DECIMAL;
-                    else if ( current == wxT("DIVIDE") )
-                        keyCode = WXK_DIVIDE;
-                    else if ( current == wxT("NUM_LOCK") )
-                        keyCode = WXK_NUMLOCK;
-                    else if ( current == wxT("SCROLL_LOCK") )
-                        keyCode = WXK_SCROLL;
-                    else if ( current == wxT("PAGEUP") )
-                        keyCode = WXK_PAGEUP;
-                    else if ( current == wxT("PAGEDOWN") )
-                        keyCode = WXK_PAGEDOWN;
-                    else if ( current == wxT("KP_SPACE") )
-                        keyCode = WXK_NUMPAD_SPACE;
-                    else if ( current == wxT("KP_TAB") )
-                        keyCode = WXK_NUMPAD_TAB;
-                    else if ( current == wxT("KP_ENTER") )
-                        keyCode = WXK_NUMPAD_ENTER;
-                    else if ( current == wxT("KP_HOME") )
-                        keyCode = WXK_NUMPAD_HOME;
-                    else if ( current == wxT("KP_LEFT") )
-                        keyCode = WXK_NUMPAD_LEFT;
-                    else if ( current == wxT("KP_UP") )
-                        keyCode = WXK_NUMPAD_UP;
-                    else if ( current == wxT("KP_RIGHT") )
-                        keyCode = WXK_NUMPAD_RIGHT;
-                    else if ( current == wxT("KP_DOWN") )
-                        keyCode = WXK_NUMPAD_DOWN;
-                    else if ( current == wxT("KP_PRIOR") )
-                        keyCode = WXK_NUMPAD_PRIOR;
-                    else if ( current == wxT("KP_PAGEUP") )
-                        keyCode = WXK_NUMPAD_PAGEUP;
-                    else if ( current == wxT("KP_NEXT;") )
-                        keyCode = WXK_NUMPAD_NEXT;
-                    else if ( current == wxT("KP_PAGEDOWN") )
-                        keyCode = WXK_NUMPAD_PAGEDOWN;
-                    else if ( current == wxT("KP_END") )
-                        keyCode = WXK_NUMPAD_END;
-                    else if ( current == wxT("KP_BEGIN") )
-                        keyCode = WXK_NUMPAD_BEGIN;
-                    else if ( current == wxT("KP_INSERT") )
-                        keyCode = WXK_NUMPAD_INSERT;
-                    else if ( current == wxT("KP_DELETE") )
-                        keyCode = WXK_NUMPAD_DELETE;
-                    else if ( current == wxT("KP_EQUAL") )
-                        keyCode = WXK_NUMPAD_EQUAL;
-                    else if ( current == wxT("KP_MULTIPLY") )
-                        keyCode = WXK_NUMPAD_MULTIPLY;
-                    else if ( current == wxT("KP_ADD") )
-                        keyCode = WXK_NUMPAD_ADD;
-                    else if ( current == wxT("KP_SEPARATOR") )
-                        keyCode = WXK_NUMPAD_SEPARATOR;
-                    else if ( current == wxT("KP_SUBTRACT") )
-                        keyCode = WXK_NUMPAD_SUBTRACT;
-                    else if ( current == wxT("KP_DECIMAL") )
-                        keyCode = WXK_NUMPAD_DECIMAL;
-                    else if ( current == wxT("KP_DIVIDE") )
-                        keyCode = WXK_NUMPAD_DIVIDE;
-                    else if ( current == wxT("WINDOWS_LEFT") )
-                        keyCode = WXK_WINDOWS_LEFT;
-                    else if ( current == wxT("WINDOWS_RIGHT") )
-                        keyCode = WXK_WINDOWS_RIGHT;
-                    else if ( current == wxT("WINDOWS_MENU") )
-                        keyCode = WXK_WINDOWS_MENU;
-                    else if ( current == wxT("COMMAND") )
-                        keyCode = WXK_COMMAND;
-                    else if ( current.Left(3) == wxT("KP_") && wxIsdigit(current[3U]) )
-                        keyCode = WXK_NUMPAD0 + wxAtoi(current.c_str() + 3);
-                    else if ( current.Left(7) == wxT("SPECIAL") && wxIsdigit(current[7U]) )
-                        keyCode = WXK_SPECIAL1 + wxAtoi(current.c_str() + 7) - 1;
-                    else
-                    {
-                        wxLogDebug(wxT("Unrecognized accel key '%s', accel string ignored."),
-                                   current.c_str());
-                        return NULL;
-                    }
-                }
-            }
-        }
-
-        if ( keyCode ) {
-            // we do have something
-            return new wxAcceleratorEntry(accelFlags, keyCode);
-        }
-    }
-
-    return (wxAcceleratorEntry *)NULL;
-}
-
 wxAcceleratorEntry *wxMenuItemBase::GetAccel() const
 {
-    return wxGetAccelFromString(GetText());
+    return wxAcceleratorEntry::Create(GetText());
 }
 
 void wxMenuItemBase::SetAccel(wxAcceleratorEntry *accel)
@@ -325,52 +413,42 @@ void wxMenuItemBase::SetAccel(wxAcceleratorEntry *accel)
     if ( accel )
     {
         text += wxT('\t');
-
-        int flags = accel->GetFlags();
-        if ( flags & wxACCEL_ALT )
-            text += wxT("Alt-");
-        if ( flags & wxACCEL_CTRL )
-            text += wxT("Ctrl-");
-        if ( flags & wxACCEL_SHIFT )
-            text += wxT("Shift-");
-
-        int code = accel->GetKeyCode();
-        switch ( code )
-        {
-            case WXK_F1:
-            case WXK_F2:
-            case WXK_F3:
-            case WXK_F4:
-            case WXK_F5:
-            case WXK_F6:
-            case WXK_F7:
-            case WXK_F8:
-            case WXK_F9:
-            case WXK_F10:
-            case WXK_F11:
-            case WXK_F12:
-                text << wxT('F') << code - WXK_F1 + 1;
-                break;
-
-            // if there are any other keys wxGetAccelFromString() may return,
-            // we should process them here
-
-            default:
-                if ( wxIsalnum(code) )
-                {
-                    text << (wxChar)code;
-
-                    break;
-                }
-
-                wxFAIL_MSG( wxT("unknown keyboard accel") );
-        }
+        text += accel->ToString();
     }
 
     SetText(text);
 }
 
 #endif // wxUSE_ACCEL
+
+void wxMenuItemBase::SetText(const wxString& str)
+{
+    m_text = str;
+
+    if ( m_text.empty() && !IsSeparator() )
+    {
+        wxASSERT_MSG( wxIsStockID(GetId()),
+                      wxT("A non-stock menu item with an empty label?") );
+        m_text = wxGetStockLabel(GetId(), wxSTOCK_WITH_ACCELERATOR |
+                                          wxSTOCK_WITH_MNEMONIC);
+    }
+}
+
+void wxMenuItemBase::SetHelp(const wxString& str)
+{
+    m_help = str;
+
+    if ( m_help.empty() && !IsSeparator() && wxIsStockID(GetId()) )
+    {
+        // get a stock help string
+        m_help = wxGetStockHelpString(GetId());
+    }
+}
+
+wxString wxMenuItemBase::GetLabelText(const wxString& label)
+{
+    return GetLabelFromText(label);
+}
 
 bool wxMenuBase::ms_locked = true;
 
@@ -392,8 +470,6 @@ void wxMenuBase::Init(long style)
 wxMenuBase::~wxMenuBase()
 {
     WX_CLEAR_LIST(wxMenuItemList, m_items);
-
-    // Actually, in GTK, the submenus have to get deleted first.
 }
 
 // ----------------------------------------------------------------------------
@@ -1061,5 +1137,29 @@ wxString wxMenuBarBase::GetHelpString(int id) const
 
     return item->GetHelp();
 }
+
+void wxMenuBarBase::UpdateMenus( void )
+{
+    wxEvtHandler* source;
+    wxMenu* menu;
+    int nCount = GetMenuCount();
+    for (int n = 0; n < nCount; n++)
+    {
+        menu = GetMenu( n );
+        if (menu != NULL)
+        {
+            source = menu->GetEventHandler();
+            if (source != NULL)
+                menu->UpdateUI( source );
+        }
+    }
+}
+
+// Get the text only, from the label
+wxString wxMenuBarBase::GetMenuLabelText(size_t pos) const
+{
+    return wxMenuItem::GetLabelText(((wxMenuBar*)this)->GetMenuLabel(pos));
+}
+
 
 #endif // wxUSE_MENUS

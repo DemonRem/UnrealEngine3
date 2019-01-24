@@ -5,7 +5,7 @@
 #             having special comment markers in them will be update using
 #             include/wx/setup_inc.h contents
 # Created:    2005-01-15
-# RCS-ID:     $Id: update-setup-h,v 1.10 2005/07/30 00:29:41 VZ Exp $
+# RCS-ID:     $Id: update-setup-h 35915 2005-10-17 17:40:36Z ABX $
 # Copyright:  (c) 2005 Vadim Zeitlin <vadim@wxwindows.org>
 # Licence:    wxWindows licence
 ##############################################################################
@@ -79,6 +79,9 @@ fi
 update_single_setup_h include/wx/msw/setup0.h
 update_single_setup_h include/wx/msw/wince/setup.h
 update_single_setup_h include/wx/mac/setup0.h
+update_single_setup_h include/wx/palmos/setup0.h
+update_single_setup_h include/wx/os2/setup0.h
+update_single_setup_h include/wx/motif/setup0.h
 update_single_setup_h setup.h.in
 
 exit $rc

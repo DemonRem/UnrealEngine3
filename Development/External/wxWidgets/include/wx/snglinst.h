@@ -5,17 +5,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     08.06.01
-// RCS-ID:      $Id: snglinst.h,v 1.11 2004/09/22 14:38:29 ABX Exp $
+// RCS-ID:      $Id: snglinst.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_SNGLINST_H_
 #define _WX_SNGLINST_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "snglinst.h"
-#endif
 
 #if wxUSE_SNGLINST_CHECKER
 
@@ -59,7 +55,7 @@ private:
     void Init() { m_impl = NULL; }
 
     // the implementation details (platform specific)
-    class WXDLLIMPEXP_BASE wxSingleInstanceCheckerImpl *m_impl;
+    class WXDLLIMPEXP_FWD_BASE wxSingleInstanceCheckerImpl *m_impl;
 
     DECLARE_NO_COPY_CLASS(wxSingleInstanceChecker)
 };

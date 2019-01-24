@@ -1,32 +1,28 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/pen.cpp
+// Name:        src/msw/pen.cpp
 // Purpose:     wxPen
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: pen.cpp,v 1.35 2005/07/22 17:13:46 ABX Exp $
+// RCS-ID:      $Id: pen.cpp 44818 2007-03-15 09:40:24Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "pen.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-#include <stdio.h>
-#include "wx/setup.h"
-#include "wx/list.h"
-#include "wx/utils.h"
-#include "wx/app.h"
 #include "wx/pen.h"
+
+#ifndef WX_PRECOMP
+    #include <stdio.h>
+    #include "wx/list.h"
+    #include "wx/utils.h"
+    #include "wx/app.h"
 #endif
 
 #include "wx/msw/private.h"
@@ -127,7 +123,7 @@ bool wxPen::RealizeResource()
    // Join style, Cap style, Pen Stippling
 #if !defined(__WXMICROWIN__) && !defined(__WXWINCE__)
    // Only NT can display dashed or dotted lines with width > 1
-   if ( os != wxWINDOWS_NT &&
+   if ( os != wxOS_WINDOWS_NT &&
            (M_PENDATA->m_style == wxDOT ||
             M_PENDATA->m_style == wxLONG_DASH ||
             M_PENDATA->m_style == wxSHORT_DASH ||
@@ -176,9 +172,9 @@ bool wxPen::RealizeResource()
            case wxSTIPPLE:
                logb.lbStyle = BS_PATTERN ;
                if (M_PENDATA->m_stipple.Ok())
-                   logb.lbHatch = (LONG)M_PENDATA->m_stipple.GetHBITMAP();
+                   logb.lbHatch = (wxUIntPtr)M_PENDATA->m_stipple.GetHBITMAP();
                else
-                   logb.lbHatch = (LONG)0;
+                   logb.lbHatch = (wxUIntPtr)0;
                break;
            case wxBDIAGONAL_HATCH:
                logb.lbStyle = BS_HATCHED;
@@ -229,25 +225,14 @@ bool wxPen::RealizeResource()
            real_dash = (wxMSWDash*)NULL;
        }
 
-       // Win32s doesn't have ExtCreatePen function...
-       if (os==wxWINDOWS_NT || os==wxWIN95)
-       {
-           M_PENDATA->m_hPen =
-             (WXHPEN) ExtCreatePen( ms_style,
-                                    M_PENDATA->m_width,
-                                    &logb,
-                                    M_PENDATA->m_style == wxUSER_DASH
-                                      ? M_PENDATA->m_nbDash
-                                      : 0,
-                                    (LPDWORD)real_dash );
-       }
-       else
-       {
-           M_PENDATA->m_hPen =
-              (WXHPEN) CreatePen( wx2msPenStyle(M_PENDATA->m_style),
-                                  M_PENDATA->m_width,
-                                  ms_colour );
-       }
+       M_PENDATA->m_hPen =
+         (WXHPEN) ExtCreatePen( ms_style,
+                                M_PENDATA->m_width,
+                                &logb,
+                                M_PENDATA->m_style == wxUSER_DASH
+                                  ? M_PENDATA->m_nbDash
+                                  : 0,
+                                (LPDWORD)real_dash );
 
        delete [] real_dash;
    }
@@ -393,12 +378,10 @@ int wx2msPenStyle(int wx_style)
             return PS_NULL;
 
         case wxUSER_DASH:
-            // if (wxGetOsVersion()==wxWINDOWS_NT || wxGetOsVersion()==wxWIN95)
-                return PS_USERSTYLE;
+            return PS_USERSTYLE;
     }
 #else
     wxUnusedVar(wx_style);
 #endif
     return PS_SOLID;
 }
-

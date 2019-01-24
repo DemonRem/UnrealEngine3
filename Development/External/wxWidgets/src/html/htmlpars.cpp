@@ -1,29 +1,25 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        htmlpars.cpp
+// Name:        src/html/htmlpars.cpp
 // Purpose:     wxHtmlParser class (generic parser)
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: htmlpars.cpp,v 1.48 2005/06/06 16:46:55 ABX Exp $
+// RCS-ID:      $Id: htmlpars.cpp 55388 2008-08-31 13:59:55Z VS $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "htmlpars.h"
-#endif
-
 #include "wx/wxprec.h"
 
-#include "wx/defs.h"
-#if wxUSE_HTML && wxUSE_STREAMS
-
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
+#if wxUSE_HTML && wxUSE_STREAMS
+
 #ifndef WXPRECOMP
+    #include "wx/dynarray.h"
     #include "wx/log.h"
     #include "wx/intl.h"
+    #include "wx/app.h"
 #endif
 
 #include "wx/tokenzr.h"
@@ -32,7 +28,6 @@
 #include "wx/fontmap.h"
 #include "wx/html/htmldefs.h"
 #include "wx/html/htmlpars.h"
-#include "wx/dynarray.h"
 #include "wx/arrimpl.cpp"
 
 #ifdef __WXWINCE__
@@ -40,7 +35,6 @@
 #endif
 
 // DLL options compatibility check:
-#include "wx/app.h"
 WX_CHECK_BUILD_OPTIONS("wxHTML")
 
 const wxChar *wxTRACE_HTML_DEBUG = _T("htmldebug");
@@ -57,7 +51,7 @@ public:
 };
 
 WX_DECLARE_OBJARRAY(wxHtmlTextPiece, wxHtmlTextPieces);
-WX_DEFINE_OBJARRAY(wxHtmlTextPieces);
+WX_DEFINE_OBJARRAY(wxHtmlTextPieces)
 
 class wxHtmlParserState
 {
@@ -140,7 +134,7 @@ void wxHtmlParser::CreateDOMTree()
 {
     wxHtmlTagsCache cache(m_Source);
     m_TextPieces = new wxHtmlTextPieces;
-    CreateDOMSubTree(NULL, 0, m_Source.Length(), &cache);
+    CreateDOMSubTree(NULL, 0, m_Source.length(), &cache);
     m_CurTextPiece = 0;
 }
 
@@ -277,7 +271,7 @@ void wxHtmlParser::DoParsing()
 {
     m_CurTag = m_Tags;
     m_CurTextPiece = 0;
-    DoParsing(0, m_Source.Length());
+    DoParsing(0, m_Source.length());
 }
 
 void wxHtmlParser::DoParsing(int begin_pos, int end_pos)
@@ -356,7 +350,7 @@ void wxHtmlParser::AddTagHandler(wxHtmlTagHandler *handler)
     handler->SetParser(this);
 }
 
-void wxHtmlParser::PushTagHandler(wxHtmlTagHandler *handler, wxString tags)
+void wxHtmlParser::PushTagHandler(wxHtmlTagHandler *handler, const wxString& tags)
 {
     wxStringTokenizer tokenizer(tags, wxT(", "));
     wxString key;
@@ -437,11 +431,26 @@ bool wxHtmlParser::RestoreState()
     return true;
 }
 
+wxString wxHtmlParser::GetInnerSource(const wxHtmlTag& tag)
+{
+    return GetSource()->Mid(tag.GetBeginPos(),
+                            tag.GetEndPos1() - tag.GetBeginPos());
+}
+
 //-----------------------------------------------------------------------------
 // wxHtmlTagHandler
 //-----------------------------------------------------------------------------
 
 IMPLEMENT_ABSTRACT_CLASS(wxHtmlTagHandler,wxObject)
+
+void wxHtmlTagHandler::ParseInnerSource(const wxString& source)
+{
+    // It is safe to temporarily change the source being parsed,
+    // provided we restore the state back after parsing
+    m_Parser->SetSourceAndSaveState(source);
+    m_Parser->DoParsing();
+    m_Parser->RestoreState();
+}
 
 
 //-----------------------------------------------------------------------------
@@ -488,15 +497,17 @@ wxString wxHtmlEntitiesParser::Parse(const wxString& input)
     const wxChar *in_str = input.c_str();
     wxString output;
 
-    output.reserve(input.length());
-
     for (c = in_str, last = in_str; *c != wxT('\0'); c++)
     {
         if (*c == wxT('&'))
         {
+            if ( output.empty() )
+                output.reserve(input.length());
+
             if (c - last > 0)
                 output.append(last, c - last);
-            if (++c == wxT('\0')) break;
+            if ( *++c == wxT('\0') )
+                break;
 
             wxString entity;
             const wxChar *ent_s = c;
@@ -521,6 +532,8 @@ wxString wxHtmlEntitiesParser::Parse(const wxString& input)
             }
         }
     }
+    if (last == in_str) // common case: no entity
+        return input;
     if (*last != wxT('\0'))
         output.append(last);
     return output;
@@ -558,6 +571,9 @@ wxChar wxHtmlEntitiesParser::GetCharForCode(unsigned code)
 wxChar wxHtmlEntitiesParser::GetEntityChar(const wxString& entity)
 {
     unsigned code = 0;
+
+    if (entity.empty())
+      return 0; // invalid entity reference
 
     if (entity[0] == wxT('#'))
     {
@@ -838,11 +854,24 @@ wxChar wxHtmlEntitiesParser::GetEntityChar(const wxString& entity)
             while (substitutions[substitutions_cnt].code != 0)
                 substitutions_cnt++;
 
-        wxHtmlEntityInfo *info;
+        wxHtmlEntityInfo *info = NULL;
+#ifdef __WXWINCE__
+        // bsearch crashes under WinCE for some reason
+        size_t i;
+        for (i = 0; i < substitutions_cnt; i++)
+        {
+            if (entity == substitutions[i].name)
+            {
+                info = & substitutions[i];
+                break;
+            }
+        }
+#else
         info = (wxHtmlEntityInfo*) bsearch(entity.c_str(), substitutions,
                                            substitutions_cnt,
                                            sizeof(wxHtmlEntityInfo),
                                            wxHtmlEntityCompare);
+#endif
         if (info)
             code = info->code;
     }

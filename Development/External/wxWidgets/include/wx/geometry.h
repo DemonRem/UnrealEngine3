@@ -4,17 +4,13 @@
 // Author:      Stefan Csomor
 // Modified by:
 // Created:     08/05/99
-// RCS-ID:
+// RCS-ID:      $Id: geometry.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1999 Stefan Csomor
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_GEOMETRY_H_
 #define _WX_GEOMETRY_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "geometry.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -24,16 +20,8 @@
 #include "wx/gdicmn.h"
 #include "wx/math.h"
 
-#ifdef __WXMSW__
-    #define wxMulDivInt32( a , b , c ) ::MulDiv( a , b , c )
-#elif defined( __WXMAC__ )
-    #define wxMulDivInt32( a , b , c ) ( (wxInt32) ( ( (wxInt64)(a) * (wxInt64)(b) ) / (wxInt64)(c) ) )
-#else
-    #define wxMulDivInt32( a , b , c ) ((wxInt32)((a)*(((wxDouble)b)/((wxDouble)c))))
-#endif
-
-class WXDLLIMPEXP_BASE wxDataInputStream;
-class WXDLLIMPEXP_BASE wxDataOutputStream;
+class WXDLLIMPEXP_FWD_BASE wxDataInputStream;
+class WXDLLIMPEXP_FWD_BASE wxDataOutputStream;
 
 // clipping from Cohen-Sutherland
 
@@ -169,7 +157,7 @@ inline wxDouble wxPoint2DInt::GetDistance( const wxPoint2DInt &pt ) const
 
 inline wxDouble wxPoint2DInt::GetDistanceSquare( const wxPoint2DInt &pt ) const
 {
-    return ( (pt.m_x-m_x)*(pt.m_x-m_x) + (pt.m_y-m_y)*(pt.m_y-m_y) );
+    return ( (wxDouble)(pt.m_x-m_x)*(pt.m_x-m_x) + (wxDouble)(pt.m_y-m_y)*(pt.m_y-m_y) );
 }
 
 inline wxInt32 wxPoint2DInt::GetDotProduct( const wxPoint2DInt &vec ) const
@@ -391,6 +379,11 @@ inline void wxPoint2DDouble::SetVectorLength( wxDouble length )
     m_y = (m_y * length / before) ;
 }
 
+inline void wxPoint2DDouble::Normalize()
+{
+    SetVectorLength( 1 );
+}
+
 inline wxDouble wxPoint2DDouble::GetDistance( const wxPoint2DDouble &pt ) const
 {
     return sqrt( GetDistanceSquare( pt ) );
@@ -453,12 +446,12 @@ inline wxPoint2DDouble& wxPoint2DDouble::operator/=(const wxPoint2DDouble& pt)
 
 inline bool wxPoint2DDouble::operator==(const wxPoint2DDouble& pt) const
 {
-    return m_x == pt.m_x && m_y == pt.m_y;
+    return wxIsSameDouble(m_x, pt.m_x) && wxIsSameDouble(m_y, pt.m_y);
 }
 
 inline bool wxPoint2DDouble::operator!=(const wxPoint2DDouble& pt) const
 {
-    return m_x != pt.m_x || m_y != pt.m_y;
+    return !(*this == pt);
 }
 
 inline wxPoint2DDouble operator+(const wxPoint2DDouble& pt1 , const wxPoint2DDouble& pt2)
@@ -594,9 +587,9 @@ public:
         { return ( ( ( m_x <= rect.m_x ) && ( rect.m_x + rect.m_width <= m_x + m_width ) ) &&
                 ( ( m_y <= rect.m_y ) && ( rect.m_y + rect.m_height <= m_y + m_height ) ) ); }
     inline bool IsEmpty() const
-        { return ( m_width <= 0 || m_height <= 0 ); }
+        { return m_width <= 0 || m_height <= 0; }
     inline bool HaveEqualSize( const wxRect2DDouble &rect ) const
-        { return ( rect.m_width == m_width && rect.m_height == m_height ); }
+        { return wxIsSameDouble(rect.m_width, m_width) && wxIsSameDouble(rect.m_height, m_height); }
 
     inline void Inset( wxDouble x , wxDouble y )
         { m_x += x; m_y += y; m_width -= 2 * x; m_height -= 2 * y; }
@@ -631,9 +624,9 @@ public:
                 m_width *= ((wxDouble)num)/((wxDouble)denum); m_height *= ((wxDouble)num)/((wxDouble)denum);}
 
     wxRect2DDouble& operator = (const wxRect2DDouble& rect);
-    inline bool operator == (const wxRect2DDouble& rect)
-        { return (m_x==rect.m_x && m_y==rect.m_y && m_width==rect.m_width && m_height==rect.m_height); }
-    inline bool operator != (const wxRect2DDouble& rect)
+    inline bool operator == (const wxRect2DDouble& rect) const
+        { return wxIsSameDouble(m_x, rect.m_x) && wxIsSameDouble(m_y, rect.m_y) && HaveEqualSize(rect); }
+    inline bool operator != (const wxRect2DDouble& rect) const
         { return !(*this == rect); }
 
     wxDouble  m_x;

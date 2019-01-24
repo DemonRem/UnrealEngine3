@@ -4,7 +4,7 @@
 // Author:      Julian Smart, Vadim Zeitlin
 // Modified by:
 // Created:     23.07.99
-// RCS-ID:      $Id: spinbutt.h,v 1.34 2005/05/31 09:18:17 JS Exp $
+// RCS-ID:      $Id: spinbutt.h 37066 2006-01-23 03:27:34Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -74,12 +74,14 @@ protected:
 
 #if defined(__WXUNIVERSAL__)
     #include "wx/univ/spinbutt.h"
-#elif defined(__WXMSW__) && defined(__WIN95__)
+#elif defined(__WXMSW__)
     #include "wx/msw/spinbutt.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/spinbutt.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/spinbutt.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/spinbutt.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/spinbutt.h"
 #elif defined(__WXCOCOA__)

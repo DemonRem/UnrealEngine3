@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
-// Encapsulation of memory aquisition and release.
+// Encapsulation of memory acquisition and release.
 //
 // Owner: Jamie Redmond
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxMemory_H__
@@ -33,6 +33,13 @@ enum FxMemoryAllocationType
 /// proper FxMemoryAllocationPolicy on the stack, and pass it to FxSDKStartup().
 struct FxMemoryAllocationPolicy
 {
+	/// The function signature for user allocation.
+	typedef void* (FX_CALL *FxUserAllocateFunc)(FxSize numBytes);
+	/// The function signature for debug user allocation.
+	typedef void* (FX_CALL *FxUserAllocateDebugFunc)(FxSize numBytes, const FxChar* system);
+	/// The function signature for user free.
+	typedef void  (FX_CALL *FxUserFreeFunc)(void* ptr, FxSize n);
+
 	/// Default constructor.  This will initialize the memory allocation policy
 	/// to the default FaceFX SDK memory allocation policy.  The default policy
 	/// will either use the global new / delete operators or malloc() / free()
@@ -58,9 +65,8 @@ struct FxMemoryAllocationPolicy
 	/// \note If inAllocationType is MAT_Custom, inAllocate, inAllocateDebug,
 	/// and inFree should all be non-NULL function pointers.
 	FxMemoryAllocationPolicy(FxMemoryAllocationType inAllocationType,
-        FxBool inbUseMemoryPools, void* (*inAllocate)(FxSize numBytes),
-		void* (*inAllocateDebug)(FxSize numBytes, const FxChar* system),
-		void  (*inFree)(void* ptr, FxSize n));
+        FxBool inbUseMemoryPools, FxUserAllocateFunc inAllocate,
+		FxUserAllocateDebugFunc inAllocateDebug, FxUserFreeFunc inFree);
 
 	/// Copy constructor.
 	FxMemoryAllocationPolicy(const FxMemoryAllocationPolicy& other);
@@ -70,21 +76,21 @@ struct FxMemoryAllocationPolicy
 	/// Destructor.
 	~FxMemoryAllocationPolicy();
 
+	/// A pointer to the user-defined memory allocation function used under
+	/// the memory allocation policy.
+	FxUserAllocateFunc userAllocate;
+	/// A pointer to the user-defined debug memory allocation function used
+	/// under the memory allocation policy.
+	FxUserAllocateDebugFunc userAllocateDebug;
+	/// A pointer to the user-defined memory free function used under the
+	/// memory allocation policy.
+	FxUserFreeFunc userFree;
 	/// The type of memory allocation used under the memory allocation policy.
 	FxMemoryAllocationType allocationType;
 	/// FxTrue if the FaceFX SDK should create and use memory pools under the
 	/// memory allocation policy.  FxFalse if no memory pools should be created
 	/// and used.
 	FxBool bUseMemoryPools;
-	/// A pointer to the user-defined memory allocation function used under
-	/// the memory allocation policy.
-	void* (*userAllocate)(FxSize numBytes);
-	/// A pointer to the user-defined debug memory allocation function used
-	/// under the memory allocation policy.
-	void* (*userAllocateDebug)(FxSize numBytes, const FxChar* system);
-	/// A pointer to the user-defined memory free function used under the
-	/// memory allocation policy.
-	void  (*userFree)(void* ptr, FxSize n);
 };
 
 /// Starts up the memory system.

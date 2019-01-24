@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: sashtest.cpp,v 1.18 2005/08/23 15:54:35 ABX Exp $
+// RCS-ID:      $Id: sashtest.cpp 35281 2005-08-23 15:54:39Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////

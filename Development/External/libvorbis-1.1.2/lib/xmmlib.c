@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: SSE Function Library
- last mod: $Id: xmmlib.c,v 1.4 2005-07-08 15:00:00+09 blacksword Exp $
 
  ********************************************************************/
 
@@ -19,39 +18,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
+#include <assert.h>
+#include "misc.h"
 #include "xmmlib.h"
 
-#if	defined(__SSE__)
-_MM_ALIGN16 const unsigned long PCS_NNRR[4] = { 0x80000000, 0x80000000, 0x00000000, 0x00000000 };
-_MM_ALIGN16 const unsigned long PCS_NRNR[4] = { 0x80000000, 0x00000000, 0x80000000, 0x00000000 };
-_MM_ALIGN16 const unsigned long PCS_NRRN[4] = { 0x00000000, 0x80000000, 0x80000000, 0x00000000 };
-_MM_ALIGN16 const unsigned long PCS_NRRR[4] = { 0x80000000, 0x80000000, 0x80000000, 0x00000000 };
-_MM_ALIGN16 const unsigned long PCS_RNRN[4] = { 0x00000000, 0x80000000, 0x00000000, 0x80000000 };
-_MM_ALIGN16 const unsigned long PCS_RRNN[4] = { 0x00000000, 0x00000000, 0x80000000, 0x80000000 };
-_MM_ALIGN16 const unsigned long PCS_RNNR[4] = { 0x80000000, 0x00000000, 0x00000000, 0x80000000 };
+#if	defined( __SSE__ )
 _MM_ALIGN16 const unsigned long PCS_RRRR[4] = { 0x80000000, 0x80000000, 0x80000000, 0x80000000 };
-_MM_ALIGN16 const unsigned long PCS_NNNR[4] = { 0x80000000, 0x00000000, 0x00000000, 0x00000000 };
 _MM_ALIGN16 const unsigned long PABSMASK[4] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF };
-
-_MM_ALIGN16 const unsigned long PMASKTABLE[4 * 16] =
-{
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000,
-	0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000,
-	0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000,
-	0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,
-	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF,
-	0xFFFFFFFF, 0x00000000, 0x00000000, 0xFFFFFFFF,
-	0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF,
-	0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF,
-	0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF,
-	0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF,
-	0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
-};
+_MM_ALIGN16 const unsigned long PMASKTABLE[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
 
 const __m128 PFV_0    = { 0.0f, 0.0f, 0.0f, 0.0f };
 const __m128 PFV_1    = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -61,6 +35,18 @@ const __m128 PFV_8    = { 8.0f, 8.0f, 8.0f, 8.0f };
 const __m128 PFV_INIT = { 0.0f, 1.0f, 2.0f, 3.0f };
 const __m128 PFV_0P5  = { 0.5f, 0.5f, 0.5f, 0.5f };
 const __m128 PFV_M0P5 = {-0.5f,-0.5f,-0.5f,-0.5f };
+
+const __m128 PCS_NNRR2 = { -1.0f, -1.0f, 1.0f, 1.0f };
+const __m128 PCS_NRNR2 = { -1.0f, 1.0f, -1.0f, 1.0f };
+const __m128 PCS_NRRN2 = { 1.0f, -1.0f, -1.0f, 1.0f };
+const __m128 PCS_NRRR2 = { -1.0f, -1.0f, -1.0f, 1.0f };
+const __m128 PCS_RNRN2 = { 1.0f, -1.0f, 1.0f, -1.0f };
+const __m128 PCS_RRNN2 = { 1.0f, 1.0f, -1.0f, -1.0f };
+const __m128 PCS_NNNR2 = { -1.0f, 1.0f, 1.0f, 1.0f };
+const __m128 PCS_RNNR2 = { -1.0f, 1.0f, 1.0f, -1.0f };
+const __m128 PCS_RRRR2 = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+const __m128 ConstMax = { 32767.0f, 32767.0f, 32767.0f, 32767.0f };
 
 #endif /* defined(__SSE__) */
 
@@ -143,16 +129,20 @@ void* xmm_calloc( size_t nitems, size_t size )
 
 void* xmm_align( void* address )
 {
-	long work = ( long )address;
+	size_t work = ( size_t )address;
 	work = ( work + 15 ) & ~15;
 	address = ( void* )work;
 
 	return( address );
 }
 
+#if	defined(__SSE__)
 void xmm_copy_forward( float* d, float* s, int count )
 {
 	int	i;
+
+	assert( ( ( ( int )s ) & 0xf ) == 0 );
+	assert( ( ( ( int )d ) & 0xf ) == 0 );
 
 	for( i = 0; i < count; i += 32 )
 	{
@@ -185,6 +175,9 @@ void xmm_copy_backward( float* d, float* s, int count )
 {
 	int	i;
 
+	assert( ( ( ( int )s ) & 0xf ) == 0 );
+	assert( ( ( ( int )d ) & 0xf ) == 0 );
+
 	for( i = 0; i < count; i += 32 )
 	{
 		__m128	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7;
@@ -211,3 +204,71 @@ void xmm_copy_backward( float* d, float* s, int count )
 		d -= 32;
 	}
 }
+#endif /* defined(__SSE__) */
+
+#ifdef DEBUG_MALLOC
+
+#include <Windows.h>
+
+static int RunningTotal = 0;
+
+void _VDBG_OutputDebug( wchar_t* heading, long bytes, char* file, long line )
+{
+	wchar_t filename[256];
+	wchar_t temp[256];
+
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, file, -1, filename, 256 );	
+	swprintf_s( temp, 256, L"%s: %d (%s:%d) [%d]\r\n", heading, bytes, filename, line, RunningTotal );
+	OutputDebugString( temp );
+}
+
+void* _VDBG_malloc( long bytes, char* file, long line )
+{
+	void* address;
+
+	RunningTotal += bytes;
+
+	_VDBG_OutputDebug( L"Malloc", bytes, file, line );
+	address = _aligned_malloc( bytes, 16 );
+
+	return( address );
+}
+
+void* _VDBG_calloc( long bytes, char* file, long line )
+{
+	void* address;
+
+	RunningTotal += bytes;
+
+	_VDBG_OutputDebug( L"Calloc", bytes, file, line );
+
+	address = _aligned_malloc( bytes, 16 );
+	memset( address, 0, bytes );
+
+	return( address );
+}
+
+void* _VDBG_realloc( void* ptr, long bytes, char* file, long line )
+{
+	void* address;
+
+	RunningTotal += bytes;
+
+	_VDBG_OutputDebug( L"Realloc", bytes, file, line );
+
+	address = _aligned_realloc( ptr, bytes, 16 );
+	return( address );
+}
+
+void _VDBG_free( void* ptr, char* file, long line )
+{
+	_VDBG_OutputDebug( L"Free", 0, file, line );
+
+	RunningTotal -= _aligned_msize( ptr, 16, 0 );
+	_aligned_free( ptr );
+}
+
+#endif
+
+// end
+

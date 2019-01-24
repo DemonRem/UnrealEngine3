@@ -1,23 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        m_pre.cpp
+// Name:        src/html/m_pre.cpp
 // Purpose:     wxHtml module for <PRE> ... </PRE> tag (code citation)
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: m_pre.cpp,v 1.30 2004/09/27 19:15:06 ABX Exp $
+// RCS-ID:      $Id: m_pre.cpp 53318 2008-04-23 11:54:05Z VS $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation
-#endif
-
 #include "wx/wxprec.h"
 
-#include "wx/defs.h"
-#if wxUSE_HTML && wxUSE_STREAMS
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
+
+#if wxUSE_HTML && wxUSE_STREAMS
 
 #ifndef WXPRECOMP
 #endif
@@ -32,11 +28,13 @@
 FORCE_LINK_ME(m_pre)
 
 // replaces '\t', ' ' and '\n' with HTML markup:
-static wxString LINKAGEMODE HtmlizeWhitespaces(const wxString& str)
+static wxString LINKAGEMODE HtmlizeLinebreaks(const wxString& str)
 {
     wxString out;
+    out.reserve(str.length()); // we'll certainly need at least that
+
     size_t len = str.Len();
-    size_t linepos = 0;
+
     for (size_t i = 0; i < len; i++)
     {
         switch (str[i])
@@ -45,29 +43,14 @@ static wxString LINKAGEMODE HtmlizeWhitespaces(const wxString& str)
                 while (i < len && str[i] != wxT('>'))
                 {
                     out << str[i++];
-                    linepos++;
                 }
                 out << wxT('>');
-                linepos++;
-                break;
-            case wxT(' '):
-                out << wxT("&nbsp;");
-                linepos++;
                 break;
             case wxT('\n'):
                 out << wxT("<br>");
-                linepos = 0;
-                break;
-            case wxT('\t'):
-                {
-                    for (size_t j = 8 - linepos % 8; j > 0; j--)
-                        out << wxT("&nbsp;");
-                    linepos += 8 - linepos % 8;
-                }
                 break;
             default:
                 out << str[i];
-                linepos++;
                 break;
         }
     }
@@ -87,13 +70,16 @@ TAG_HANDLER_BEGIN(PRE, "PRE")
     {
         wxHtmlContainerCell *c;
 
-        int fixed = m_WParser->GetFontFixed(),
-            italic = m_WParser->GetFontItalic(),
-            underlined = m_WParser->GetFontUnderlined(),
-            bold = m_WParser->GetFontBold(),
-            fsize = m_WParser->GetFontSize();
+        const int fixed = m_WParser->GetFontFixed();
+        const int italic = m_WParser->GetFontItalic();
+        const int underlined = m_WParser->GetFontUnderlined();
+        const int bold = m_WParser->GetFontBold();
+        const int fsize = m_WParser->GetFontSize();
+        const wxHtmlWinParser::WhitespaceMode whitespace =
+            m_WParser->GetWhitespaceMode();
 
         c = m_WParser->GetContainer();
+        m_WParser->SetWhitespaceMode(wxHtmlWinParser::Whitespace_Pre);
         m_WParser->SetFontUnderlined(false);
         m_WParser->SetFontBold(false);
         m_WParser->SetFontItalic(false);
@@ -108,19 +94,18 @@ TAG_HANDLER_BEGIN(PRE, "PRE")
         c->SetAlignHor(wxHTML_ALIGN_LEFT);
         c->SetIndent(m_WParser->GetCharHeight(), wxHTML_INDENT_TOP);
 
-        wxString srcMid =
-            m_WParser->GetSource()->Mid(tag.GetBeginPos(),
-                                        tag.GetEndPos1() - tag.GetBeginPos());
-        // It is safe to temporarily change the source being parsed,
-        // provided we restore the state back after parsing
-        m_Parser->SetSourceAndSaveState(HtmlizeWhitespaces(srcMid));
-        m_Parser->DoParsing();
-        m_Parser->RestoreState();
+        wxString srcMid = m_WParser->GetInnerSource(tag);
+
+        // setting Whitespace_Pre mode takes care of spaces and TABs, but
+        // not linebreaks, so we have to translate them into <br> by
+        // calling HtmlizeLinebreaks() here
+        ParseInnerSource(HtmlizeLinebreaks(srcMid));
 
         m_WParser->CloseContainer();
         m_WParser->CloseContainer();
         c = m_WParser->OpenContainer();
 
+        m_WParser->SetWhitespaceMode(whitespace);
         m_WParser->SetFontUnderlined(underlined);
         m_WParser->SetFontBold(bold);
         m_WParser->SetFontItalic(italic);

@@ -2,14 +2,15 @@
 #define NX_FOUNDATION_NXALLOCATOR_DEFAULT
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
   @{
 */
+
 
 #include "Nx.h"
 #include "NxUserAllocator.h"
@@ -35,6 +36,7 @@ class NxAllocatorDefault
 		*/
 		NX_INLINE void* malloc(size_t size, NxMemoryType type)
 			{
+			NX_UNREFERENCED_PARAMETER(type);
 			return ::malloc(size);
 			}
 
@@ -51,14 +53,21 @@ class NxAllocatorDefault
 		*/
 		NX_INLINE void* mallocDEBUG(size_t size, const char* fileName, int line, const char* className, NxMemoryType type)
 			{
+			NX_UNREFERENCED_PARAMETER(type);
+			NX_UNREFERENCED_PARAMETER(className);
 #ifdef _DEBUG
 	#if defined(WIN32) && NX_DEBUG_MALLOC
 			return ::_malloc_dbg(size, _NORMAL_BLOCK, fileName, line);
 	#else
+			NX_UNREFERENCED_PARAMETER(fileName);
+			NX_UNREFERENCED_PARAMETER(line);
 	// TODO: insert a Linux Debugger Function
 			return ::malloc(size);
 	#endif
 #else
+			NX_UNREFERENCED_PARAMETER(fileName);
+			NX_UNREFERENCED_PARAMETER(line);
+			NX_UNREFERENCED_PARAMETER(size);
 			NX_ASSERT(0);//Don't use debug malloc for release mode code!
 			return 0;
 #endif
@@ -95,14 +104,15 @@ class NxAllocatorDefault
 		*/
 		NX_INLINE void check(void* memory)
 			{
+			NX_UNREFERENCED_PARAMETER(memory);
 			}
 	};
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

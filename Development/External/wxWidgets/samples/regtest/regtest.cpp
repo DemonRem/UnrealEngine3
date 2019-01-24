@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     03.04.98
-// RCS-ID:      $Id: regtest.cpp,v 1.23 2005/05/23 10:48:27 ABX Exp $
+// RCS-ID:      $Id: regtest.cpp 44480 2007-02-12 16:36:41Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -181,7 +181,7 @@ class RegFrame : public wxFrame
 {
 public:
     // ctor & dtor
-    RegFrame(wxFrame *parent, wxChar *title, int x, int y, int w, int h);
+    RegFrame(wxFrame *parent, const wxChar *title, int x, int y, int w, int h);
     virtual ~RegFrame();
 
     // callbacks
@@ -233,7 +233,7 @@ enum
     Menu_Delete,
     Menu_Info,
 
-    Ctrl_RegTree  = 200,
+    Ctrl_RegTree  = 200
 };
 
 // ----------------------------------------------------------------------------
@@ -259,9 +259,10 @@ END_EVENT_TABLE()
 #if DO_REGTEST
 
 BEGIN_EVENT_TABLE(RegTreeCtrl, wxTreeCtrl)
-    EVT_TREE_DELETE_ITEM   (Ctrl_RegTree, RegTreeCtrl::OnDeleteItem)
-    EVT_TREE_ITEM_EXPANDING(Ctrl_RegTree, RegTreeCtrl::OnItemExpanding)
-    EVT_TREE_SEL_CHANGED   (Ctrl_RegTree, RegTreeCtrl::OnSelChanged)
+    EVT_TREE_DELETE_ITEM    (Ctrl_RegTree, RegTreeCtrl::OnDeleteItem)
+    EVT_TREE_ITEM_EXPANDING (Ctrl_RegTree, RegTreeCtrl::OnItemExpanding)
+    EVT_TREE_ITEM_COLLAPSING(Ctrl_RegTree, RegTreeCtrl::OnItemExpanding)
+    EVT_TREE_SEL_CHANGED    (Ctrl_RegTree, RegTreeCtrl::OnSelChanged)
 
     EVT_TREE_BEGIN_LABEL_EDIT(Ctrl_RegTree, RegTreeCtrl::OnBeginEdit)
     EVT_TREE_END_LABEL_EDIT  (Ctrl_RegTree, RegTreeCtrl::OnEndEdit)
@@ -331,7 +332,7 @@ bool RegApp::OnInit()
 // RegFrame
 // ----------------------------------------------------------------------------
 
-RegFrame::RegFrame(wxFrame *parent, wxChar *title, int x, int y, int w, int h)
+RegFrame::RegFrame(wxFrame *parent, const wxChar *title, int x, int y, int w, int h)
         : wxFrame(parent, wxID_ANY, title, wxPoint(x, y), wxSize(w, h))
 {
     // this reduces flicker effects
@@ -710,7 +711,7 @@ void RegTreeCtrl::OnSelChanged(wxTreeEvent& event)
 void RegTreeCtrl::OnItemExpanding(wxTreeEvent& event)
 {
     TreeNode *pNode = GetNode(event);
-    bool bExpanding = event.GetKeyCode() == wxTREE_EXPAND_EXPAND;
+    bool bExpanding = event.GetEventType() == wxEVT_COMMAND_TREE_ITEM_EXPANDING;
 
     // expansion might take some time
     wxSetCursor(*wxHOURGLASS_CURSOR);

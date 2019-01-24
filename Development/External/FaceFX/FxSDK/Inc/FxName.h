@@ -4,7 +4,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxName_H__
@@ -12,6 +12,8 @@
 
 #include "FxPlatform.h"
 #include "FxString.h"
+#include "FxStringHash.h"
+#include "FxList.h"
 
 namespace OC3Ent
 {
@@ -71,7 +73,7 @@ public:
 	/// should not be called in-game for performance reasons.  This is generally
 	/// a FaceFX Studio-only operation.
 	/// \note Internal use only.
-	void Rename( const FxChar* name );
+	FxBool Rename( const FxChar* name );
 
 	/// Returns the number of names in the name table.
 	static FxSize FX_CALL GetNumNames( void );
@@ -91,11 +93,7 @@ public:
 	/// table has not been created.
 	static FxSize FX_CALL GetNumReferences( FxSize index );
 
-	/// Returns basic statistics from the underlying name hash.  This method
-	/// will only return valid results when using a library built with
-	/// FX_TRACK_NAME_STATS defined in FxPlatform.h.  This is the case by 
-	/// default as you need to explicitly disable name table statistics 
-	/// gathering in FxPlatform.h.
+	/// Returns basic statistics from the underlying name hash.
 	/// \param numCollisions The total number of collisions that have occurred
 	/// in the name hash.
 	/// \param numNamesAdded The total number of names that have been added to
@@ -109,8 +107,6 @@ public:
 	/// name hash structure.  This does not include the memory usage of the
 	/// actual name table.  This total includes stack space as well as heap 
 	/// space used.
-	/// \note If FX_TRACK_NAME_STATS was not defined when building the library
-	/// this function will set all values to zero.
 	static void FX_CALL GetNameStats( FxSize& numCollisions, FxSize& numNamesAdded,
 		                              FxSize& numProbes, FxSize& numHashBins, 
 							          FxSize& numUsedHashBins, FxSize& memUsed );
@@ -130,6 +126,13 @@ private:
 	void _addNameToTable( const FxChar* name );
 	/// Safely removes a reference to a name.
 	void _safeRemoveRef( void );
+
+	/// The global name hash.  The name hash is simply an auxiliary structure that 
+	/// sits conceptually in front of the name table itself providing name lookup
+	/// in O(1) time.  It is very fast to determine if a name is already in the 
+	/// name table or not.  The only time any memory is allocated is when the name
+	/// is not already in the table and therefore needs to be added.
+	static FxStringHash<FxRefString**, FxDefaultHashPrecisionBits, FxList> _hashTable;
 
 	/// The reference counted string representing the name.
 	mutable FxRefString** _ppRefString;

@@ -5,7 +5,7 @@
 // Modified by: ABX - 19/12/2004 : possibility of horizontal orientation
 //                               : wxWidgets coding standards
 // Created:     22/06/2004
-// RCS-ID:      $Id: foldpanelbar.cpp,v 1.7 2005/07/28 23:23:27 VZ Exp $
+// RCS-ID:      $Id: foldpanelbar.cpp 34972 2005-07-28 23:23:27Z VZ $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

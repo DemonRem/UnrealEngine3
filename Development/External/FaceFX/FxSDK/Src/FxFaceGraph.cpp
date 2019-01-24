@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxFaceGraph.h"
@@ -68,7 +68,7 @@ FxFaceGraphNodeJumpList::AddNode( FxFaceGraphNode* pNode )
 	}
 	else
 	{
-		FxAssert( !"FxFaceGraphNodeJumpList node type mismatch!" );
+		FxAssert(!"FxFaceGraphNodeJumpList node type mismatch!");
 	}
 	return retval;
 }
@@ -90,7 +90,7 @@ FxFaceGraphNodeJumpList::RemoveNode( FxFaceGraphNode* pNode )
 	}
 	else
 	{
-		FxAssert( !"FxFaceGraphNodeJumpList node type mismatch!" );
+		FxAssert(!"FxFaceGraphNodeJumpList node type mismatch!");
 	}
 	return FxFalse;
 }
@@ -104,26 +104,39 @@ FxFaceGraphNodeJumpList::Reserve( FxSize numNodes )
 
 FxFaceGraph::FxFaceGraph()
 {
-	_currentTimeNodeJumpListIndex = FxInvalidIndex;
+	_pNodeHash = NULL;
 }
 
 FxFaceGraph::FxFaceGraph( const FxFaceGraph& other )
 	: Super(other)
 {
+	_pNodeHash = NULL;
 	_clone(other);
 }
 
 FxFaceGraph& FxFaceGraph::operator=( const FxFaceGraph& other )
 {
 	if( this == &other ) return *this;
-	Super::operator=(other);
-	_clone(other);
+ 	Super::operator=(other);
+	if( _pNodeHash )
+	{
+		delete _pNodeHash;
+	}
+	_pNodeHash = NULL;
+ 	_clone(other);
 	return *this;
 }
 
 FxFaceGraph::~FxFaceGraph()
 {
 	Clear();
+
+	// Clean up the node hash if it exists.
+	if( _pNodeHash )
+	{
+		delete _pNodeHash;
+		_pNodeHash = NULL;
+	}
 }
 
 void FxFaceGraph::Clear( void )
@@ -139,11 +152,20 @@ void FxFaceGraph::Clear( void )
 		pNode = NULL;
 	}
 	_nodes.Clear();
+	if( _pNodeHash )
+	{
+		_pNodeHash->Clear();
+	}
 	_jumpLists.Clear();
 }
 
 FxBool FxFaceGraph::AddNode( FxFaceGraphNode* pNode )
 {
+	if( !_pNodeHash )
+	{
+		_pNodeHash = new FxStringHash<FxFaceGraphNode*, 11>();
+	}
+	FxAssert(_pNodeHash);
 	FxBool retval = FxFalse;
 	if( pNode )
 	{
@@ -151,6 +173,7 @@ FxBool FxFaceGraph::AddNode( FxFaceGraphNode* pNode )
 		if( !alreadyInFaceGraph )
 		{
 			_nodes.PushBack(pNode);
+			_pNodeHash->Insert(pNode->GetNameAsCstr(), pNode);
 			_addNodeType(pNode);
 			FxSize jumpListIndex = _findNodeType(pNode->GetClassDesc());
 			if( FxInvalidIndex != jumpListIndex )
@@ -165,11 +188,13 @@ FxBool FxFaceGraph::AddNode( FxFaceGraphNode* pNode )
 
 FxBool FxFaceGraph::RemoveNode( const FxName& name )
 {
+	FxAssert(_pNodeHash);
 	FxBool retval = FxFalse;
 	FxFaceGraphNode* nodeToDelete = _findNode(name);
 	if( nodeToDelete )
 	{
 		_preRemoveNode(nodeToDelete);
+		_pNodeHash->Remove(nodeToDelete->GetNameAsCstr());
 		FxSize index = _nodes.Find(nodeToDelete);
 		FxSize size = nodeToDelete->GetClassDesc()->GetSize();
 		nodeToDelete->~FxFaceGraphNode();
@@ -184,6 +209,44 @@ FxBool FxFaceGraph::RemoveNode( const FxName& name )
 FxFaceGraphNode* FxFaceGraph::FindNode( const FxName& name )
 {
 	return _findNode(name);
+}
+
+FxBool FxFaceGraph::RenameNode( const FxName& currName, const FxName newName )
+{
+	FxFaceGraphNode* pCurrNode = _findNode(currName);
+	FxFaceGraphNode* pDesiredNode = _findNode(newName);
+	
+	// Abort if either the current node doesn't exist in the graph or if the
+	// desired node already exists in the graph.
+	if( !pCurrNode || pDesiredNode )
+	{
+		return FxFalse;
+	}
+
+	// Remove the node from the hash, set it's new name, and rehash it.
+	_pNodeHash->Remove(pCurrNode->GetNameAsCstr());
+	pCurrNode->SetName(newName);
+	_pNodeHash->Insert(pCurrNode->GetNameAsCstr(), pCurrNode);
+
+	// Patch up any outputs.
+	FxSize numOutputs = pCurrNode->GetNumOutputs();
+	for( FxSize i = 0; i < numOutputs; ++i )
+	{
+		FxFaceGraphNode* outputNode = pCurrNode->GetOutput(i);
+		FxSize numLinks = outputNode->GetNumInputLinks();
+		for( FxSize j = 0; j < numLinks; ++j )
+		{
+			FxFaceGraphNodeLink link = outputNode->GetInputLink(j);
+			if( link.GetNodeName() == currName )
+			{
+				// Update the name stored in the link.
+				link.SetNode(pCurrNode);
+				outputNode->ModifyInputLink(j, link);
+			}
+		}
+	}
+
+	return FxTrue;
 }
 
 FxSize FxFaceGraph::CountNodes( const FxClass* fgNodeClass )
@@ -214,6 +277,11 @@ FxFaceGraph::Link( const FxName& toNode, const FxName& fromNode,
 	const FxLinkFn* pLinkFn = FxLinkFn::FindLinkFunction(linkFn);
 	if( pToNode && pFromNode && pLinkFn )
 	{
+		// Prevent self linkage.
+		if( pToNode == pFromNode )
+		{
+			return LEC_Cycle;
+		}
 		// Prevent duplicate input links (even if they have different
 		// link functions).  Allowing such links would complicate the code and
 		// the operation duplicate links would accomplish can also be
@@ -236,20 +304,26 @@ FxFaceGraph::Link( const FxName& toNode, const FxName& fromNode,
 		}
 		else
 		{
-			FxFaceGraphNodeLink link(fromNode, pFromNode, linkFn, pLinkFn, linkFnParams);
+			FxFaceGraphNodeLink link(fromNode, pFromNode, linkFn, pLinkFn->GetType(), linkFnParams);
 			if( FxFalse == pToNode->AddInputLink(link) )
 			{
 				// The toNode refused to add another link.
 				return LEC_Refused;
 			}
 			pFromNode->_outputs.PushBack(pToNode);
-			if( _hasCycles() )
+			// If pToNode has no outputs or pFromNode has no inputs, then a 
+			// cycle can't possibly be created so don't check for them for 
+			// increased performance on large and complicated face graphs.
+			if( (pToNode->_outputs.Length() > 0) && (pFromNode->_inputs.Length() > 0) )
 			{
-				// If the link creates cycles in the graph, remove it and return
-				// the error.
-				pToNode->RemoveInputLink(pToNode->GetNumInputLinks()-1);
-				pFromNode->_outputs.Remove(pFromNode->_outputs.Length()-1);
-				return LEC_Cycle;
+				if( pToNode->_hasCycles() )
+				{
+					// If the link creates cycles in the graph, remove it and 
+					// return the error.
+					pToNode->RemoveInputLink(pToNode->GetNumInputLinks()-1);
+					pFromNode->_outputs.Remove(pFromNode->_outputs.Length()-1);
+					return LEC_Cycle;
+				}
 			}
 			// The link was added with no errors.
 			return LEC_None;
@@ -390,10 +464,24 @@ void FxFaceGraph::Serialize( FxArchive& arc )
 
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxFaceGraph);
-	arc << version;
+	FxUInt16 version = arc.SerializeClassVersion("FxFaceGraph");
 
 	arc << _nodes;
+
+	if( arc.IsLoading() )
+	{
+		FxSize numNodes = _nodes.Length();
+		if( numNodes > 0 && !_pNodeHash ) 
+		{
+			_pNodeHash = new FxStringHash<FxFaceGraphNode*, 11>();
+		}
+		FxAssert(_pNodeHash);
+		for( FxSize i = 0; i < numNodes; ++i )
+		{
+			FxAssert(_nodes[i]);
+			_pNodeHash->Insert(_nodes[i]->GetNameAsCstr(), _nodes[i]);
+		}
+	}
 
 	if( version >= 1 )
 	{
@@ -434,6 +522,7 @@ void FxFaceGraph::Serialize( FxArchive& arc )
 void FxFaceGraph::
 ChangeNodeType( const FxName& nodeToChangeTypeOf, const FxClass* pNewTypeClassDesc )
 {
+	FxAssert(_pNodeHash);
 	if( pNewTypeClassDesc && pNewTypeClassDesc->IsKindOf(FxFaceGraphNode::StaticClass()) )
 	{
 		FxFaceGraphNode* pNode = _findNode(nodeToChangeTypeOf);
@@ -454,10 +543,12 @@ ChangeNodeType( const FxName& nodeToChangeTypeOf, const FxClass* pNewTypeClassDe
 					if( _nodes[i] == pNode )
 					{
 						FxSize size = pNode->GetClassDesc()->GetSize();
+						_pNodeHash->Remove(pNode->GetNameAsCstr());
 						pNode->~FxFaceGraphNode();
 						FxFree(pNode, size);
 						pNode = NULL;
 						_nodes[i] = pNewNode;
+						_pNodeHash->Insert(pNewNode->GetNameAsCstr(), pNewNode);
 					}
 				}
 				// Relink the face graph.
@@ -469,27 +560,42 @@ ChangeNodeType( const FxName& nodeToChangeTypeOf, const FxClass* pNewTypeClassDe
 	}
 }
 
-FxFaceGraphNode* FxFaceGraph::
-_findNode( const FxName& name, FxArray<FxFaceGraphNode*>::iterator* fgNodeIter )
+void FxFaceGraph::NotifyRenamed( const char* oldName, const char* newName )
 {
-	FxArray<FxFaceGraphNode*>::iterator curr = _nodes.Begin();
-	FxArray<FxFaceGraphNode*>::iterator end  = _nodes.End();
-	for( ; curr != end; ++curr )
+	FxAssert(_pNodeHash);
+	// This is called after a rename has taken place, so a node might have been
+	// renamed out from under the hash. Update the hash accordingly.
+	FxFaceGraphNode* pNode = NULL;
+
+	// Can't use _findNode since that uses the node hash.
+	// Do it the old-fashioned way.
+	FxSize numNodes = _nodes.Length();
+	for( FxSize i = 0; i < numNodes; ++i )
 	{
-		FxFaceGraphNode* pNode = (*curr);
-		if( pNode )
+		if( _nodes[i]->GetNameAsString() == newName )
 		{
-			if( pNode->GetName() == name )
-			{
-				if( fgNodeIter )
-				{
-					*fgNodeIter = curr;
-				}
-				return pNode;
-			}
+			pNode = _nodes[i];
+			break;
 		}
 	}
-	return NULL;
+
+	if( pNode )
+	{
+		_pNodeHash->Remove(oldName);
+		_pNodeHash->Insert(newName, pNode);
+	}
+}
+
+FxFaceGraphNode* FxFaceGraph::
+_findNode( const FxName& name )
+{
+	FxFaceGraphNode* pRetNode = NULL;
+	if( _pNodeHash )
+	{
+		// If the node isn't found in the hash, pRetNode is still NULL.
+		_pNodeHash->Find(name.GetAsCstr(), pRetNode);
+	}
+	return pRetNode;
 }
 
 void FxFaceGraph::_preRemoveNode( FxFaceGraphNode* nodeToDelete )
@@ -608,13 +714,16 @@ void FxFaceGraph::_createJumpLists( FxBool shouldClearJumpLists )
 			_jumpLists[jumpListIndex].AddNode(pNode);
 		}
 	}
-	_currentTimeNodeJumpListIndex = _findNodeType(FxCurrentTimeNode::StaticClass());
 }
 
 FxBool FxFaceGraph::_hasCycles( void )
 {
-	ClearAllButUserValues();
 	FxSize numNodes = _nodes.Length();
+	for( FxSize i = 0; i < numNodes; ++i )
+	{
+		FxAssert(_nodes[i]);
+		_nodes[i]->_hasBeenVisited = FxFalse;
+	}
 	for( FxSize i = 0; i < numNodes; ++i )
 	{
 		FxAssert(_nodes[i]);

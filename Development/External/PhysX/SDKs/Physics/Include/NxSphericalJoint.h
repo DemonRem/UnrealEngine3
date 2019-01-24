@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXSPHERICALJOINT
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -56,9 +56,10 @@ class NxSphericalJoint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphericalJointDesc saveToDesc()
 	*/
@@ -71,9 +72,10 @@ class NxSphericalJoint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphericalJointDesc loadFromDesc()
 	*/
@@ -82,17 +84,18 @@ class NxSphericalJoint: public NxJoint
 	/**
 	\brief Sets the flags to enable/disable the spring/motor/limit.
 	
-	This is a combination of the bits defined by ::NxRevoluteJointFlag.
+	This is a combination of the bits defined by ::NxSphericalJointFlag.
 
 	\param[in] flags The new value for the joint flags.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
-	@see NxRevoluteJointFlag getFlags()
+	@see NxSphericalJointFlag getFlags()
 	*/
 	virtual void setFlags(NxU32 flags) = 0;
 
@@ -103,11 +106,12 @@ class NxSphericalJoint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
-	@see getFlags() NxRevoluteJointFlag
+	@see getFlags() NxSphericalJointFlag
 	*/
 	virtual NxU32 getFlags() = 0;
 
@@ -118,9 +122,10 @@ class NxSphericalJoint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getProjectionMode() NxJointProjectionMode
 	*/
@@ -133,9 +138,10 @@ class NxSphericalJoint: public NxJoint
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setProjectionMode() NxJointProjectionMode
 	*/
@@ -144,9 +150,9 @@ class NxSphericalJoint: public NxJoint
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2004-10-19
-// RCS-ID:      $Id: stdpaths.cpp,v 1.9 2005/06/15 23:44:18 VZ Exp $
+// RCS-ID:      $Id: stdpaths.cpp 51807 2008-02-15 13:14:49Z VZ $
 // Copyright:   (c) 2004 Vadim Zeitlin <vadim@wxwindows.org>
 // License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,14 +26,14 @@
 
 #if wxUSE_STDPATHS
 
+#include "wx/stdpaths.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/app.h"
+    #include "wx/utils.h"
 #endif //WX_PRECOMP
 
 #include "wx/dynlib.h"
 #include "wx/filename.h"
-
-#include "wx/stdpaths.h"
 
 #include "wx/msw/private.h"
 #include "wx/msw/wrapshl.h"
@@ -50,7 +50,7 @@ typedef HRESULT (WINAPI *SHGetSpecialFolderPath_t)(HWND, LPTSTR, int, BOOL);
 // ----------------------------------------------------------------------------
 
 // used in our wxLogTrace messages
-static const wxChar *TRACE_MASK = _T("stdpaths");
+#define TRACE_MASK _T("stdpaths")
 
 #ifndef CSIDL_APPDATA
     #define CSIDL_APPDATA         0x001a
@@ -68,6 +68,10 @@ static const wxChar *TRACE_MASK = _T("stdpaths");
     #define CSIDL_PROGRAM_FILES   0x0026
 #endif
 
+#ifndef CSIDL_PERSONAL
+    #define CSIDL_PERSONAL        0x0005
+#endif
+
 #ifndef SHGFP_TYPE_CURRENT
     #define SHGFP_TYPE_CURRENT 0
 #endif
@@ -75,7 +79,6 @@ static const wxChar *TRACE_MASK = _T("stdpaths");
 #ifndef SHGFP_TYPE_DEFAULT
     #define SHGFP_TYPE_DEFAULT 1
 #endif
-
 // ----------------------------------------------------------------------------
 // module globals
 // ----------------------------------------------------------------------------
@@ -106,35 +109,46 @@ static ShellFunctions gs_shellFuncs;
 
 static void ResolveShellFunctions()
 {
+#if wxUSE_DYNLIB_CLASS
+
+    // start with the newest functions, fall back to the oldest ones
+#ifdef __WXWINCE__
+    wxString shellDllName(_T("coredll"));
+#else
+    // first check for SHGetFolderPath (shell32.dll 5.0)
+    wxString shellDllName(_T("shell32"));
+#endif
+
+    wxDynamicLibrary dllShellFunctions( shellDllName );
+    if ( !dllShellFunctions.IsLoaded() )
+    {
+        wxLogTrace(TRACE_MASK, _T("Failed to load %s.dll"), shellDllName.c_str() );
+    }
+
     // don't give errors if the functions are unavailable, we're ready to deal
     // with this
     wxLogNull noLog;
 
-    // start with the newest functions, fall back to the oldest ones
-
-    // first check for SHGetFolderPath (shell32.dll 5.0)
-    wxDynamicLibrary dllShell32(_T("shell32"));
-    if ( !dllShell32.IsLoaded() )
-    {
-        wxLogTrace(TRACE_MASK, _T("Failed to load shell32.dll"));
-    }
-
 #if wxUSE_UNICODE
-    static const wchar_t UNICODE_SUFFIX = L'W';
+    #ifdef __WXWINCE__
+        static const wchar_t UNICODE_SUFFIX = L''; // WinCE SH functions don't seem to have 'W'
+    #else
+        static const wchar_t UNICODE_SUFFIX = L'W';
+    #endif
 #else // !Unicode
     static const char UNICODE_SUFFIX = 'A';
 #endif // Unicode/!Unicode
 
     wxString funcname(_T("SHGetFolderPath"));
     gs_shellFuncs.pSHGetFolderPath =
-        (SHGetFolderPath_t)dllShell32.GetSymbol(funcname + UNICODE_SUFFIX);
+        (SHGetFolderPath_t)dllShellFunctions.GetSymbol(funcname + UNICODE_SUFFIX);
 
     // then for SHGetSpecialFolderPath (shell32.dll 4.71)
     if ( !gs_shellFuncs.pSHGetFolderPath )
     {
         funcname = _T("SHGetSpecialFolderPath");
         gs_shellFuncs.pSHGetSpecialFolderPath = (SHGetSpecialFolderPath_t)
-            dllShell32.GetSymbol(funcname + UNICODE_SUFFIX);
+            dllShellFunctions.GetSymbol(funcname + UNICODE_SUFFIX);
     }
 
     // finally we fall back on SHGetSpecialFolderLocation (shell32.dll 4.0),
@@ -144,6 +158,7 @@ static void ResolveShellFunctions()
     // because we also link to it statically, so it's ok
 
     gs_shellFuncs.initialized = true;
+#endif
 }
 
 // ============================================================================
@@ -230,9 +245,39 @@ wxString wxStandardPaths::DoGetDirectory(int csidl)
     return dir;
 }
 
+/* static */
+wxString wxStandardPaths::GetAppDir()
+{
+    wxFileName fn(wxGetFullModuleName());
+
+    // allow running the apps directly from build directory in debug builds
+#ifdef __WXDEBUG__
+    wxString lastdir;
+    if ( fn.GetDirCount() )
+    {
+        lastdir = fn.GetDirs().Last();
+        lastdir.MakeLower();
+        if ( lastdir.Matches(_T("debug*")) || lastdir.Matches(_T("vc_msw*")) )
+            fn.RemoveLastDir();
+    }
+#endif // __WXDEBUG__
+
+    return fn.GetPath();
+}
+
+wxString wxStandardPaths::GetDocumentsDir() const
+{
+    return DoGetDirectory(CSIDL_PERSONAL);
+}
+
 // ----------------------------------------------------------------------------
 // public functions
 // ----------------------------------------------------------------------------
+
+wxString wxStandardPaths::GetExecutablePath() const
+{
+    return wxGetFullModuleName();
+}
 
 wxString wxStandardPaths::GetConfigDir() const
 {
@@ -248,7 +293,7 @@ wxString wxStandardPaths::GetDataDir() const
 {
     // under Windows each program is usually installed in its own directory and
     // so its datafiles are in the same directory as its main executable
-    return wxFileName(wxGetFullModuleName()).GetPath();
+    return GetAppDir();
 }
 
 wxString wxStandardPaths::GetUserDataDir() const
@@ -263,9 +308,10 @@ wxString wxStandardPaths::GetUserLocalDataDir() const
 
 wxString wxStandardPaths::GetPluginsDir() const
 {
-    return wxFileName(wxGetFullModuleName()).GetPath();
+    // there is no standard location for plugins, suppose they're in the same
+    // directory as the .exe
+    return GetAppDir();
 }
-
 
 // ============================================================================
 // wxStandardPathsWin16 implementation

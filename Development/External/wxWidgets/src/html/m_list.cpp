@@ -1,24 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        m_list.cpp
+// Name:        src/html/m_list.cpp
 // Purpose:     wxHtml module for lists
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: m_list.cpp,v 1.30 2005/09/05 17:37:06 ABX Exp $
+// RCS-ID:      $Id: m_list.cpp 38788 2006-04-18 08:11:26Z ABX $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation
-#endif
 
 #include "wx/wxprec.h"
 
-
-#include "wx/defs.h"
-#if wxUSE_HTML && wxUSE_STREAMS
-
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
+
+#if wxUSE_HTML && wxUSE_STREAMS
 
 #ifndef WXPRECOMP
     #include "wx/brush.h"
@@ -258,7 +253,7 @@ TAG_HANDLER_BEGIN(OLULLI, "OL,UL,LI")
             {
                 c->SetAlignHor(wxHTML_ALIGN_RIGHT);
                 wxString markStr;
-                markStr.Printf(wxT("%i."), m_Numbering);
+                markStr.Printf(wxT("%i. "), m_Numbering);
                 c->InsertCell(new wxHtmlWordCell(markStr, *(m_WParser->GetDC())));
             }
             m_WParser->CloseContainer();

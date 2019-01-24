@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2003             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: PCM data vector blocking, windowing and dis/reassembly
- last mod: $Id: block.c 9513 2005-06-26 18:36:49Z giles $
 
  Handle windowing, overlap-add, etc of the PCM vectors.  This is made
  more amusing by Vorbis' current two allowed block sizes.
@@ -25,14 +24,11 @@
 #include "vorbis/codec.h"
 #include "codec_internal.h"
 
-#include "window.h"
 #include "mdct.h"
 #include "lpc.h"
 #include "registry.h"
 #include "misc.h"
-#ifdef __SSE__												/* SSE Optimize */
 #include "xmmlib.h"
-#endif														/* SSE Optimize */
 
 /* pcm accumulator examples (not exhaustive):
 
@@ -380,9 +376,12 @@ void vorbis_dsp_clear( vorbis_dsp_state* v )
 
 			if( b->flr )
 			{
-				for( i = 0; i < ci->floors; i++ )
+				if( ci )
 				{
-					_floor_P[ci->floor_type[i]]->free_look( b->flr[i] );
+					for( i = 0; i < ci->floors; i++ )
+					{
+						_floor_P[ci->floor_type[i]]->free_look( b->flr[i] );
+					}
 				}
 
 				_ogg_free( b->flr );
@@ -390,9 +389,12 @@ void vorbis_dsp_clear( vorbis_dsp_state* v )
 
 			if( b->residue )
 			{
-				for( i = 0; i < ci->residues; i++ )
+				if( ci )
 				{
-					_residue_P[ci->residue_type[i]]->free_look( b->residue[i] );
+					for( i = 0; i < ci->residues; i++ )
+					{
+						_residue_P[ci->residue_type[i]]->free_look( b->residue[i] );
+					}
 				}
 
 				_ogg_free( b->residue );
@@ -400,9 +402,12 @@ void vorbis_dsp_clear( vorbis_dsp_state* v )
 
 			if( b->psy )
 			{
-				for( i = 0; i < ci->psys; i++ )
+				if( ci )
 				{
-					_vp_psy_clear( b->psy + i );
+					for( i = 0; i < ci->psys; i++ )
+					{
+						_vp_psy_clear( b->psy + i );
+					}
 				}
 
 				_ogg_free( b->psy );
@@ -455,11 +460,14 @@ void vorbis_dsp_clear( vorbis_dsp_state* v )
 
 		if( v->pcm )
 		{
-			for( i = 0; i < vi->channels; i++ )
+			if( vi )
 			{
-				if( v->pcm[i] )
+				for( i = 0; i < vi->channels; i++ )
 				{
-					_ogg_free( v->pcm[i] );
+					if( v->pcm[i] )
+					{
+						_ogg_free( v->pcm[i] );
+					}
 				}
 			}
 
@@ -772,8 +780,8 @@ int vorbis_analysis_blockout( vorbis_dsp_state* v, vorbis_block* vb )
 			v->pcm_current -= movementW;
 
 			for( i = 0; i < vi->channels; i++ )
-#ifdef __SSE__											/* SSE Optimize */
 			{
+#ifdef __SSE__											/* SSE Optimize */
 				float* d = ( float* )( v->pcm[i] );
 				float* s = ( float* )( v->pcm[i] + movementW );
 				if( s >= d )
@@ -870,7 +878,7 @@ int vorbis_synthesis_init( vorbis_dsp_state* v, vorbis_info* vi )
 }
 
 #ifdef	__SSE__											/* SSE Optimize */
-STIN void vorbis_synthesis_blockin_pmadd( float* pcm, float* w, float* p, long count )
+STIN void vorbis_synthesis_blockin_pmadd( float* pcm, const float* w, float* p, long count )
 {
 	int	i;
 
@@ -992,7 +1000,7 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 				if( v->W )
 				{
 					/* large/large */
-					float* w = _vorbis_window_get( b->window[1] - hs );
+					const float* w = _vorbis_window_get( b->window[1] - hs );
 					float* pcm = v->pcm[j] + prevCenter;
 					float* p = vb->pcm[j];
 					vorbis_synthesis_blockin_pmadd( pcm, w, p, n1 );
@@ -1000,7 +1008,7 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 				else
 				{
 					/* large/small */
-					float* w = _vorbis_window_get( b->window[0] - hs );
+					const float* w = _vorbis_window_get( b->window[0] - hs );
 					float* pcm = v->pcm[j] + prevCenter + n1 / 2 - n0 / 2;
 					float* p = vb->pcm[j];
 					vorbis_synthesis_blockin_pmadd( pcm, w, p, n0 );
@@ -1011,7 +1019,7 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 				if( v->W )
 				{
 					/* small/large */
-					float* w = _vorbis_window_get( b->window[0] - hs );
+					const float* w = _vorbis_window_get( b->window[0] - hs );
 					float* pcm = v->pcm[j] + prevCenter;
 					float* p = vb->pcm[j] + n1 / 2 - n0 / 2;
 					vorbis_synthesis_blockin_pmadd( pcm, w, p, n0 );
@@ -1020,7 +1028,7 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 				else
 				{
 					/* small/small */
-					float* w = _vorbis_window_get( b->window[0] - hs );
+					const float* w = _vorbis_window_get( b->window[0] - hs );
 					float* pcm = v->pcm[j] + prevCenter;
 					float* p = vb->pcm[j];
 					vorbis_synthesis_blockin_pmadd( pcm, w, p, n0 );
@@ -1028,10 +1036,12 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 			}
 #else														/* SSE Optimize */
 			{
+				int	i;
+
 				if( v->W )
 				{
 					/* large/large */
-					float* w = _vorbis_window_get( b->window[1] - hs );
+					const float* w = _vorbis_window_get( b->window[1] - hs );
 					float* pcm = v->pcm[j] + prevCenter;
 					float* p = vb->pcm[j];
 					for( i = 0; i < n1; i++ )
@@ -1042,7 +1052,7 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 				else
 				{
 					/* large/small */
-					float* w = _vorbis_window_get( b->window[0] - hs );
+					const float* w = _vorbis_window_get( b->window[0] - hs );
 					float* pcm = v->pcm[j] + prevCenter + n1 / 2 - n0 / 2;
 					float* p = vb->pcm[j];
 					for( i = 0; i < n0; i++ )
@@ -1053,10 +1063,12 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 			}
 			else
 			{
+				int	i;
+
 				if( v->W )
 				{
 					/* small/large */
-					float* w = _vorbis_window_get( b->window[0] - hs );
+					const float* w = _vorbis_window_get( b->window[0] - hs );
 					float* pcm = v->pcm[j] + prevCenter;
 					float* p = vb->pcm[j] + n1 / 2 - n0 / 2;
 					for( i = 0; i < n0; i++ )
@@ -1071,7 +1083,7 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 				else
 				{
 					/* small/small */
-					float* w = _vorbis_window_get( b->window[0] - hs );
+					const float* w = _vorbis_window_get( b->window[0] - hs );
 					float* pcm = v->pcm[j] + prevCenter;
 					float* p = vb->pcm[j];
 					for( i = 0; i < n0; i++ )
@@ -1089,6 +1101,8 @@ int vorbis_synthesis_blockin( vorbis_dsp_state* v, vorbis_block* vb )
 #ifdef	__SSE__												/* SSE Optimize */
 				xmm_copy_forward( pcm, p, n );
 #else														/* SSE Optimize */
+				int	i;
+
 				for( i = 0; i < n; i++ )
 				{
 					pcm[i] = p[i];
@@ -1325,7 +1339,7 @@ int vorbis_synthesis_lapout( vorbis_dsp_state* v, float*** pcm )
 	return( n1 + n - v->pcm_returned );
 }
 
-float* vorbis_window( vorbis_dsp_state* v, int W )
+const float* vorbis_window( vorbis_dsp_state* v, int W )
 {
 	vorbis_info* vi = v->vi;
 	codec_setup_info* ci = vi->codec_setup;

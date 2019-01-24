@@ -3,7 +3,7 @@
 // Purpose:     SVG sample
 // Author:      Chris Elliott
 // Modified by:
-// RCS-ID:      $Id: dcsvg.cpp,v 1.7 2004/12/13 20:10:59 ABX Exp $
+// RCS-ID:      $Id: dcsvg.cpp 30993 2004-12-13 20:10:59Z ABX $
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 

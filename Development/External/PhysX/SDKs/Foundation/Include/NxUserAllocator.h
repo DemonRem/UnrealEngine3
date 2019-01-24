@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXUSERALLOCATOR
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -34,12 +34,19 @@ enum NxMemoryType
   NX_MEMORY_ClothMesh,
   NX_MEMORY_WheelShape,
   NX_MEMORY_CollisionMap,
-  NX_MEMORY_CompoundShape,
   NX_MEMORY_ConvexMeshBuilder,
   NX_MEMORY_ConvexMeshRuntime,
   NX_MEMORY_ConvexShape,
   NX_MEMORY_DebugRenderable,
   NX_MEMORY_Edge,
+  NX_MEMORY_Fluid,
+  NX_MEMORY_FluidEmitter,
+  NX_MEMORY_FluidEmitterPressure,
+  NX_MEMORY_FluidEmitterRate,
+  NX_MEMORY_FluidPacketShape,
+  NX_MEMORY_FluidElementRbElementInteraction,
+  NX_MEMORY_FluidIdToIndexMap,
+  NX_MEMORY_FluidParticleQueue,
   NX_MEMORY_FrictionPatch,
   NX_MEMORY_ExtraTrigData,
   NX_MEMORY_JointBreakEvent,
@@ -50,7 +57,7 @@ enum NxMemoryType
   NX_MEMORY_NpMaterial,
   NX_MEMORY_NpCompartment,
   NX_MEMORY_NvJointBreakEvent,
-  NX_MEMORY_NxArraySDK_NameBinding,
+  NX_MEMORY_SortedSet_NameBinding,
   NX_MEMORY_FoundationSDK,
   NX_MEMORY_NxMutex,
   NX_MEMORY_PenetrationMap,
@@ -58,9 +65,8 @@ enum NxMemoryType
   NX_MEMORY_PhysicsSDK,
   NX_MEMORY_PlaneShape,
   NX_MEMORY_Scene,
-  NX_MEMORY_ShapeInstancePair,
-  NX_MEMORY_SIPPool,
-  NX_MEMORY_SIPPoolManager,
+  NX_MEMORY_SceneObjectPools,
+  NX_MEMORY_NPPoolManager,
   NX_MEMORY_SphereShape,
   NX_MEMORY_SpringAndDamperEffector,
   NX_MEMORY_TriangleMesh,
@@ -96,12 +102,10 @@ enum NxMemoryType
   NX_MEMORY_NpD6Joint,
   NX_MEMORY_NpSpringAndDamperEffector,
   NX_MEMORY_NpForceField,
+  NX_MEMORY_NpForceFieldLinearKernel,
+  NX_MEMORY_NpForceFieldShapeGroup,
+  NX_MEMORY_ForceFieldShapeGroups,
   NX_MEMORY_NpFluid,
-/*********************************************************************************
-* Added for Fast Fluid Surface Generation (Unique ID: FAST_FLUID_SURFACE_GENERATION)
-* 2006.1.20 in St.Louis
-*********************************************************************************/
-  NX_MEMORY_NpImplicitScreenMesh,
   NX_MEMORY_PrismaticJoint,
   NX_MEMORY_RevoluteJoint,
   NX_MEMORY_CylindricalJoint,
@@ -113,15 +117,16 @@ enum NxMemoryType
   NX_MEMORY_FixedJoint,
   NX_MEMORY_D6Joint,
   NX_MEMORY_NpFluidEmitter,
-  NX_MEMORY_NpImplicitMesh,
   NX_MEMORY_NpCloth,
   NX_MEMORY_NpClothMesh,
   NX_MEMORY_NpSoftBody,
   NX_MEMORY_NpSoftBodyMesh,
   NX_MEMORY_NpCCDSkeleton,
   NX_MEMORY_SourceCCDSkeleton,
+  NX_MEMORY_CCDTest,
   NX_MEMORY_Array,
   NX_MEMORY_Profiler,
+  NX_MEMORY_ProfilerManager,
   NX_MEMORY_NxTriangle,
   NX_MEMORY_CachedMesh,
   NX_MEMORY_BoundsMirror,
@@ -129,11 +134,12 @@ enum NxMemoryType
   NX_MEMORY_DynamicMirror,
   NX_MEMORY_HashCell,
   NX_MEMORY_RigidSceneZoner,
-  NX_MEMORY_MirroredForceField,
+  NX_MEMORY_MirroredForceFieldGroup,
 
   NX_MEMORY_SolverCoreGeneral,
   NX_MEMORY_SolverCoreSSE,
   NX_MEMORY_NPhaseCore,
+  NX_MEMORY_BroadPhase,
   NX_MEMORY_GroupSolveCoreSingle,
 
   //Low level
@@ -159,12 +165,14 @@ enum NxMemoryType
   NX_MEMORY_PxScene,
   NX_MEMORY_PxActor,
   NX_MEMORY_PxInteraction,
+  NX_MEMORY_PxElement,
   NX_MEMORY_StaticActor,
+  NX_MEMORY_InactiveActor,
   NX_MEMORY_DynamicActor,
   NX_MEMORY_JointInteraction,
-  NX_MEMORY_RawBoundsActor,
+  NX_MEMORY_RawBoundsElement,
   NX_MEMORY_RawBoundsInteraction,
-  NX_MEMORY_PageBoundsActor,
+  NX_MEMORY_PageBoundsElement,
   NX_MEMORY_PageBoundsInteraction,
   
   NX_MEMORY_SoftwareSceneGraphUpdatePCM,
@@ -241,8 +249,7 @@ enum NxMemoryType
   NX_MEMORY_FluidSwRef,						
   NX_MEMORY_NeighborSearchSwRef,			
   NX_MEMORY_ParticlePairStreamSwRef,		
-  NX_MEMORY_SpatialHashSwRef,				
-  NX_MEMORY_NfFluidIdToIndexMap,
+  NX_MEMORY_SpatialHashSwRef,
   NX_MEMORY_NfFluidEmitter,
   NX_MEMORY_NfFluidEmitterPressure,
   NX_MEMORY_NfFluidEmitterRate,
@@ -262,9 +269,6 @@ enum NxMemoryType
   NX_MEMORY_Heap,
   NX_MEMORY_Buddy,
   NX_MEMORY_BuddyList,
-  NX_MEMORY_NfImplicitScreenMesh,
-  NX_MEMORY_NfImplicitScreenMeshPPUInterfaceHw,
-  NX_MEMORY_ImplicitScreenMesh,
 
   /* Fluid DDI mallocs */
   NX_MEMORY_NfFluidControllerFW,
@@ -286,14 +290,13 @@ enum NxMemoryType
   NX_MEMORY_NfFluidPacketHashPackedData,
   NX_MEMORY_NfFluidMemCategory,
   NX_MEMORY_NfFluidTransientBufferSet,
-  NX_MEMORY_NfFluidIDToIndexMap,
-  NX_MEMORY_NfFluidIndexToIDMap,
   NX_MEMORY_NfFluidShapes,
   
   NX_MEMORY_NfFluidTriangleList,
   NX_MEMORY_NfTriangleList,
 
   /* Cloth-DDI objects*/
+  NX_MEMORY_NvClothEvent,
   NX_MEMORY_NfCloth,
   NX_MEMORY_NfClothPPUInterfaceSw,
   NX_MEMORY_NfClothPPUInterfaceHw,
@@ -336,6 +339,12 @@ enum NxMemoryType
 	NX_MEMORY_ConvexMesh,
 	NX_MEMORY_RawBounds,
 	NX_MEMORY_ClothSolverPacket,
+	NX_MEMORY_ClothTearingData,
+	NX_MEMORY_ClothMetal,
+	NX_MEMORY_ClothClothing,
+	NX_MEMORY_ClothHierarchy,
+	NX_MEMORY_ClothFluidCollision,
+	NX_MEMORY_ClothHash,
 	NX_MEMORY_PMapSample,
 // ** Ice Calls!
 	ICE_MEMORY_PERSISTENT,
@@ -413,6 +422,100 @@ enum NxMemoryType
 	ICE_MEMORY_IceRevistedRadix_Ranks,
 	ICE_MEMORY_IceRevistedRadix_Ranks2,
 
+  /* GPU DDI objects */
+  NX_MEMORY_NgArticulation,
+  NX_MEMORY_NgArticulationMaximal,
+  NX_MEMORY_NgBody,
+  NX_MEMORY_NgConvexMapper,
+  NX_MEMORY_NgJoint,
+  NX_MEMORY_NgMaterial,
+  NX_MEMORY_NgPPUDebug,
+  NX_MEMORY_NgPage,
+  NX_MEMORY_NgPageHash,
+  NX_MEMORY_NgPageInstanceMapper,
+  NX_MEMORY_NgPageMapper,
+  NX_MEMORY_NgPhysicsSDK,
+  NX_MEMORY_NgCudaHeapData,
+  NX_MEMORY_NgProfileOutput,
+  NX_MEMORY_NgProjectionTree,
+  NX_MEMORY_NgRBFwPipeline,
+  NX_MEMORY_NgRBSwPipeline,
+  NX_MEMORY_NgRBDebugPipeline,
+  NX_MEMORY_NgScene,
+  NX_MEMORY_NgRBSceneImage,
+  NX_MEMORY_NgShape,
+  NX_MEMORY_NgSyncManager,
+  NX_MEMORY_NgProfile,
+  NX_MEMORY_NgVRDBint,
+  NX_MEMORY_NgRawTriangleMesh,
+  NX_MEMORY_NgFluidMeshPacketHash,
+  NX_MEMORY_NgFluidMeshCuisine,
+  NX_MEMORY_NgParticleQueue,
+  NX_MEMORY_NgShapePageTable,
+  NX_MEMORY_NgRBSwPipelinePCMTable,
+  NX_MEMORY_NgRBSwPipelineSendBuf,
+  NX_MEMORY_NgRBSwPipelineRecvBuf,
+  NX_MEMORY_NgSyncManagerMaterialBM,
+  NX_MEMORY_NgSyncManagerPrevAwakeBM,
+  NX_MEMORY_NgSyncManagerCurrAwakeBM,
+  NX_MEMORY_NgPageInstanceMapperInstancePool,
+  NX_MEMORY_NgConvexMapperConvexPool,
+  NX_MEMORY_NgRBDebugPipelinePCMTable,
+  NX_MEMORY_NgRBDebugPipelineComparatorTable,
+  NX_MEMORY_NgConvexHash,
+  NX_MEMORY_NgFluid,
+  NX_MEMORY_NgFluidIdToIndexMap,
+  NX_MEMORY_NgFluidEmitter,
+  NX_MEMORY_NgFluidEmitterPressure,
+  NX_MEMORY_NgFluidEmitterRate,
+  NX_MEMORY_NgParticleArray,
+  NX_MEMORY_NgSiteData,
+  NX_MEMORY_NgFluidDataPrint,
+  NX_MEMORY_NgShapeList,
+  NX_MEMORY_NgDebugPacketHash,
+  NX_MEMORY_NgFluidTriangle,
+  NX_MEMORY_NgFluidMeshPktNode,
+  NX_MEMORY_NgFluidMeshPktBucket,
+  NX_MEMORY_NgFluidMeshCellNode,
+  NX_MEMORY_NgFluidMeshCellBucket,
+  NX_MEMORY_NgMeshPacketManager,
+  NX_MEMORY_PxcHeapManager,
+  NX_MEMORY_NgHeap,
+  NX_MEMORY_NgBuddy,
+  NX_MEMORY_NgBuddyList,
+  NX_MEMORY_NgImplicitScreenMesh,
+  NX_MEMORY_NgImplicitScreenMeshPPUInterfaceHw,
+  NX_MEMORY_NgFluidControllerFW,
+  NX_MEMORY_NgFluidMeshPacketHashPPU,
+  NX_MEMORY_NgFluidMeshTriangleVector,
+  NX_MEMORY_NgCollisionTable,
+  NX_MEMORY_NgFluidParticleBuffer,
+  NX_MEMORY_NgFluidPacketTable,
+  NX_MEMORY_NgFluidVpePacketTable,
+  NX_MEMORY_NgFluidCellHashTable,
+  NX_MEMORY_NgFluidCellSumHashTable,
+  NX_MEMORY_NgFluidCellHashNode,
+  NX_MEMORY_NgFluidPacketHashNode,
+  NX_MEMORY_NgFluidUpdateBuffer,
+  NX_MEMORY_NgFluidMeshTriangleVectorElts,
+  NX_MEMORY_NNgFluidMeshTriangleVectorElt,
+  NX_MEMORY_NgFluidMeshPktBucketVectorElts,
+  NX_MEMORY_NgFluidMeshPktNodeVectorElts,
+  NX_MEMORY_NgFluidPacketHashPackedData,
+  NX_MEMORY_NgFluidMemCategory,
+  NX_MEMORY_NgFluidTransientBufferSet,
+  NX_MEMORY_NgFluidShapes,
+  NX_MEMORY_NgFluidTriangleList,
+  NX_MEMORY_NgTriangleList,
+  NX_MEMORY_NgCloth,
+  NX_MEMORY_NgClothGPUInterfaceSw,
+  NX_MEMORY_NgClothGPUInterfaceHw,
+  NX_MEMORY_NgClothDataBuffer,
+  NX_MEMORY_NgClothCookBuffer,
+  NX_MEMORY_NxThreadRep,
+  NX_MEMORY_NgClothPreProcessTask,
+  NX_MEMORY_NgClothPostProcessTask,
+
   NX_MEMORY_LAST
 };
 
@@ -472,6 +575,8 @@ class NxUserAllocator
 	*/
 	virtual void* mallocDEBUG(size_t size, const char* fileName, int line, const char* className, NxMemoryType type)
 		{
+		NX_UNREFERENCED_PARAMETER(type);
+		NX_UNREFERENCED_PARAMETER(className);
 		return mallocDEBUG(size, fileName, line);	// Just so we don't break user code
 		}
 
@@ -506,6 +611,7 @@ class NxUserAllocator
 	*/
 	virtual void* malloc(size_t size, NxMemoryType type)
 		{
+		NX_UNREFERENCED_PARAMETER(type);
 		return malloc(size);		// Just so we don't break user code
 		}
 
@@ -551,9 +657,9 @@ class NxUserAllocator
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

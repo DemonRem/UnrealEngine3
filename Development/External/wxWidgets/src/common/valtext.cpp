@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        valtext.cpp
+// Name:        src/common/valtext.cpp
 // Purpose:     wxTextValidator
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: valtext.cpp,v 1.51 2005/02/20 14:38:17 VZ Exp $
+// RCS-ID:      $Id: valtext.cpp 39656 2006-06-09 21:21:53Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "valtext.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -22,6 +18,8 @@
 
 #if wxUSE_VALIDATORS && wxUSE_TEXTCTRL
 
+#include "wx/valtext.h"
+
 #ifndef WX_PRECOMP
   #include <stdio.h>
   #include "wx/textctrl.h"
@@ -29,8 +27,6 @@
   #include "wx/msgdlg.h"
   #include "wx/intl.h"
 #endif
-
-#include "wx/valtext.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -82,7 +78,7 @@ bool wxTextValidator::Copy(const wxTextValidator& val)
 static bool wxIsAlpha(const wxString& val)
 {
     int i;
-    for ( i = 0; i < (int)val.Length(); i++)
+    for ( i = 0; i < (int)val.length(); i++)
     {
         if (!wxIsalpha(val[i]))
             return false;
@@ -93,7 +89,7 @@ static bool wxIsAlpha(const wxString& val)
 static bool wxIsAlphaNumeric(const wxString& val)
 {
     int i;
-    for ( i = 0; i < (int)val.Length(); i++)
+    for ( i = 0; i < (int)val.length(); i++)
     {
         if (!wxIsalnum(val[i]))
             return false;
@@ -275,7 +271,7 @@ bool wxTextValidator::IsNotInCharExcludeList(const wxString& val)
 bool wxTextValidator::IsInCharIncludes(const wxString& val)
 {
     size_t i;
-    for ( i = 0; i < val.Length(); i++)
+    for ( i = 0; i < val.length(); i++)
     {
         if (m_includes.Index((wxString) val[i]) == wxNOT_FOUND)
             return false;
@@ -286,7 +282,7 @@ bool wxTextValidator::IsInCharIncludes(const wxString& val)
 bool wxTextValidator::IsNotInCharExcludes(const wxString& val)
 {
     size_t i;
-    for ( i = 0; i < val.Length(); i++)
+    for ( i = 0; i < val.length(); i++)
     {
        if (m_excludes.Index((wxString) val[i]) != wxNOT_FOUND)
             return false;
@@ -315,7 +311,7 @@ void wxTextValidator::OnChar(wxKeyEvent& event)
               ((m_validatorStyle & wxFILTER_ALPHA) && !wxIsalpha(keyCode)) ||
               ((m_validatorStyle & wxFILTER_ALPHANUMERIC) && !wxIsalnum(keyCode)) ||
               ((m_validatorStyle & wxFILTER_NUMERIC) && !wxIsdigit(keyCode)
-                                && keyCode != '.' && keyCode != ',' && keyCode != '-')
+                                && keyCode != wxT('.') && keyCode != wxT(',') && keyCode != wxT('-') && keyCode != wxT('+') && keyCode != wxT('e') && keyCode != wxT('E'))
              )
            )
         {
@@ -333,11 +329,11 @@ void wxTextValidator::OnChar(wxKeyEvent& event)
 static bool wxIsNumeric(const wxString& val)
 {
     int i;
-    for ( i = 0; i < (int)val.Length(); i++)
+    for ( i = 0; i < (int)val.length(); i++)
     {
         // Allow for "," (French) as well as "." -- in future we should
         // use wxSystemSettings or other to do better localisation
-        if ((!wxIsdigit(val[i])) && (val[i] != '.') && (val[i] != ',') && (val[i] != wxT('e')) && (val[i] != wxT('E')) && (val[i] != wxT('+')) && (val[i] != wxT('-')))
+        if ((!wxIsdigit(val[i])) && (val[i] != wxT('.')) && (val[i] != wxT(',')) && (val[i] != wxT('e')) && (val[i] != wxT('E')) && (val[i] != wxT('+')) && (val[i] != wxT('-')))
             return false;
     }
     return true;

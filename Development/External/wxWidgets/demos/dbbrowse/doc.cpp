@@ -7,15 +7,9 @@
 // Created:     19990808
 // Copyright:   (c) Mark Johnson
 // Licence:     wxWindows license
-// RCS-ID:      $Id: doc.cpp,v 1.27 2005/03/07 22:17:01 JS Exp $
+// RCS-ID:      $Id: doc.cpp 35650 2005-09-23 12:56:45Z MR $
 //----------------------------------------------------------------------------------------
-//-- all #ifdefs that the whole Project needs. -------------------------------------------
-//----------------------------------------------------------------------------------------
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
-//----------------------------------------------------------------------------------------
+
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 //----------------------------------------------------------------------------------------

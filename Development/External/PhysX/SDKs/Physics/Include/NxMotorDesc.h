@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXMOTORDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -32,9 +32,10 @@ Joints which can be motorized:
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxPulleyJoint NxRevoluteJoint
 */
@@ -103,7 +104,11 @@ class NxMotorDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxMotorDesc::NxMotorDesc()
@@ -120,14 +125,16 @@ NX_INLINE NxMotorDesc::NxMotorDesc(NxReal v, NxReal m, NX_BOOL f)
 
 NX_INLINE void NxMotorDesc::setToDefault()
 	{
-	velTarget = NX_MAX_REAL;
+	velTarget = sqrtf(NX_MAX_REAL);
 	maxForce = 0;
 	freeSpin = 0;
 	}
 
-NX_INLINE bool NxMotorDesc::isValid() const
+NX_INLINE NxU32 NxMotorDesc::checkValid() const
 	{
-	return (maxForce >= 0);
+		if(maxForce < 0)
+			return 1;
+		return 0;
 	}
 
 //TODO: the below class is very similar to the above and NxSpringDesc, so it should be merged...
@@ -143,9 +150,10 @@ NX_INLINE bool NxMotorDesc::isValid() const
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Only D6 joint orientation)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 class NxJointDriveDesc
 	{
@@ -192,9 +200,9 @@ class NxJointDriveDesc
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

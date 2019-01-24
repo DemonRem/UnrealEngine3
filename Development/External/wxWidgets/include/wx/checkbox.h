@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     07.09.00
-// RCS-ID:      $Id: checkbox.h,v 1.23 2005/01/25 06:55:06 ABX Exp $
+// RCS-ID:      $Id: checkbox.h 39901 2006-06-30 10:51:44Z VS $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ enum wxCheckBoxState
 };
 
 
-extern WXDLLEXPORT_DATA(const wxChar *) wxCheckBoxNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxCheckBoxNameStr[];
 
 // ----------------------------------------------------------------------------
 // wxCheckBox: a control which shows a label and a box which may be checked
@@ -108,6 +108,15 @@ public:
 
     virtual bool HasTransparentBackground() { return true; }
 
+    // wxCheckBox-specific processing after processing the update event
+    virtual void DoUpdateWindowUI(wxUpdateUIEvent& event)
+    {
+        wxControl::DoUpdateWindowUI(event);
+
+        if ( event.GetSetChecked() )
+            SetValue(event.GetChecked());
+    }
+
 protected:
     virtual void DoSet3StateValue(wxCheckBoxState WXUNUSED(state)) { wxFAIL; }
 
@@ -127,8 +136,10 @@ private:
     #include "wx/msw/checkbox.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/checkbox.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/checkbox.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/checkbox.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/checkbox.h"
 #elif defined(__WXCOCOA__)

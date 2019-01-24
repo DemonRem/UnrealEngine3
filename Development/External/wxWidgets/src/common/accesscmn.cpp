@@ -3,7 +3,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     2003-02-12
-// RCS-ID:      $Id: accesscmn.cpp,v 1.4 2004/05/23 20:51:58 JS Exp $
+// RCS-ID:      $Id: accesscmn.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -11,10 +11,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "accessbase.h"
-#endif
 
 #include "wx/wxprec.h"
 

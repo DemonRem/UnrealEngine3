@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxBone.h"
@@ -54,8 +54,7 @@ void FxBone::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxBone);
-	arc << version;
+	arc.SerializeClassVersion("FxBone");
 
 	arc << _pos << _rot << _scale;
 }

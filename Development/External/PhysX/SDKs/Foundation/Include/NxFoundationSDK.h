@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXFOUNDATIONSDK
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -78,7 +78,7 @@ class NxFoundationSDK
 	*/
 	virtual NxRemoteDebugger* getRemoteDebugger() = 0;
 
-	/**
+	/*
 	creates a profiling zone.  At the moment this is not needed by the user.
 	*/
 	//virtual NxProfilingZone* createProfilingZone(const char * x) = 0;
@@ -90,6 +90,7 @@ class NxFoundationSDK
 	scheme is re-activated.
 	*/
 	virtual void setAllocaThreshold(NxU32 threshold) = 0;
+	virtual void setUserAllocaThreshold(NxU32 threshold) = 0;
 
 	protected:
 	virtual ~NxFoundationSDK(){};
@@ -104,9 +105,9 @@ the same header version as the library was built with.
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

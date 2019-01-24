@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        cspalette.h
+// Name:        contrib/samples/ogl/studio/cspalette.h
 // Purpose:     OGL sample palette
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: cspalette.h,v 1.6 2005/03/31 19:18:23 ABX Exp $
+// RCS-ID:      $Id: cspalette.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,13 +12,9 @@
 #ifndef _STUDIO_CSPALETTE_H_
 #define _STUDIO_CSPALETTE_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface
-#endif
-
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/ogl/ogl.h> // base header of OGL, includes and adjusts wx/deprecated/setup.h
+#include "wx/wx.h"
+#include "wx/string.h"
+#include "wx/ogl/ogl.h" // base header of OGL, includes and adjusts wx/deprecated/setup.h
 
 /*
  * Object editor tool palette

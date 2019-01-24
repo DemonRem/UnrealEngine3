@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        helpwce.h
+// Name:        src/msw/wince/helpwce.cpp
 // Purpose:     Help system: Windows CE help implementation
 // Author:      Julian Smart
 // Modified by:
 // Created:     2003-07-12
-// RCS-ID:      $Id: helpwce.cpp,v 1.8 2005/04/13 18:00:08 JS Exp $
+// RCS-ID:      $Id: helpwce.cpp 41054 2006-09-07 19:01:45Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "helpwce.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -26,11 +22,11 @@
 #include "wx/msw/wince/helpwce.h"
 
 #ifndef WX_PRECOMP
+    #include "wx/msw/missing.h"
     #include "wx/intl.h"
 #endif
 
 #include "wx/msw/private.h"
-#include "wx/msw/missing.h"
 
 IMPLEMENT_DYNAMIC_CLASS(wxWinceHelpController, wxHelpControllerBase)
 
@@ -42,7 +38,7 @@ bool wxWinceHelpController::Initialize(const wxString& filename)
 
 bool wxWinceHelpController::LoadFile(const wxString& file)
 {
-    if (!file.IsEmpty())
+    if (!file.empty())
         m_helpFile = file;
     return true;
 }
@@ -97,7 +93,7 @@ wxString wxWinceHelpController::GetValidFilename(const wxString& file) const
     wxSplitPath(file, & path, & name, & ext);
 
     wxString fullName;
-    if (path.IsEmpty())
+    if (path.empty())
         fullName = name + wxT(".htm");
     else if (path.Last() == wxT('\\'))
         fullName = path + name + wxT(".htm");
@@ -113,10 +109,10 @@ wxString wxWinceHelpController::GetValidFilename(const wxString& file) const
 // View URL
 bool wxWinceHelpController::ViewURL(const wxString& topic)
 {
-    if (m_helpFile.IsEmpty()) return false;
+    if (m_helpFile.empty()) return false;
 
     wxString url( wxT("file:") + GetValidFilename(m_helpFile) );
-    if (!topic.IsEmpty())
+    if (!topic.empty())
         url = url + wxT("#") + topic;
 
     return CreateProcess(wxT("peghelp.exe"),
@@ -125,4 +121,3 @@ bool wxWinceHelpController::ViewURL(const wxString& topic)
 }
 
 #endif // wxUSE_HELP
-

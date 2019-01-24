@@ -4,17 +4,13 @@
 // Author:      Guillermo Rodriguez Garcia, <guille@iies.es>
 // Modified by:
 // Created:     Jan/2000
-// RCS-ID:      $Id: reader.h,v 1.4 2005/01/31 18:18:18 ABX Exp $
+// RCS-ID:      $Id: reader.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2000, Guillermo Rodriguez Garcia
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LIFE_READER_H_
 #define _LIFE_READER_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "reader.h"
-#endif
 
 // for compilers that support precompilation, includes "wx/wx.h"
 #include "wx/wxprec.h"

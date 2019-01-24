@@ -5,14 +5,18 @@
 
 $doUE3Docs           = 1;    # Generate UE3 documentation?
 $doXenonDocs         = 1;    # Generate Xenon-specific documentation?
-$deleteTempFiles     = 1;    # Delete temporary HTML files?
+$doPS3Docs           = 1;    # Generate PS3-specific documentation?
 
+$deleteTempFiles     = 1;    # Delete temporary HTML files?
 $doxygen             = 'c:\\bin\doxygen\\doxygen.exe';
+
 $doxyfileUE3         = 'UnrealEngine3.dox';
 $doxyfileXenon       = 'Xenon.dox';
+$doxyfilePS3         = 'PS3.dox';
 
 $doxyUE3Logfile      = 'latestDoxygenOutput_UE3.log';
 $doxyXenonLogfile    = 'latestDoxygenOutput_Xenon.log';
+$doxyPS3Logfile    = 'latestDoxygenOutput_PS3.log';
 
 ###############################################################################
 # clock/unclock variables
@@ -87,10 +91,18 @@ sub BuildDocs
 		system("$doxygen $doxyfileXenon > $doxyXenonLogfile 2>&1");	
 	}
 
+	if ( $doPS3Docs == 1 )
+	{
+		print "Building PS3-specific documentation . . .\n";
+		system("$doxygen $doxyfilePS3 > $doxyPS3Logfile 2>&1");	
+	}
+
+
 	# Copy off the compiled html files and kill temps.
 	system("copy ..\\Documentation\\html\\UnrealEngine3.chm ..\\Documentation\\");
 	system("copy ..\\Documentation\\html\\Xenon.chm ..\\Documentation\\Xenon\\");
-	
+	system("copy ..\\Documentation\\html\\PS3.chm ..\\Documentation\\PS3\\");	
+
 	if ( $deleteTempFiles == 1 )
 	{
 		system("rmdir /s /q ..\\Documentation\\html\\");

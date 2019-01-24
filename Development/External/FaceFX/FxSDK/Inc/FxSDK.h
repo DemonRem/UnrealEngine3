@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxSDK_H__
@@ -52,10 +52,18 @@ void FX_CALL FxSDKStartup( const FxMemoryAllocationPolicy& allocationPolicy );
 /// This must be called exactly once in your application.
 void FX_CALL FxSDKShutdown( void );
 
-/// Returns the current FaceFX SDK version number.  This version number has been
-/// multiplied by 1000, so for example version 1.0 returns 1000, version 1.1
-/// returns 1100, and so on.
+/// Returns the current FaceFX SDK version number.  This version number is a 
+/// series of four single-digit version (major, minor, bugfix, revision) 
+/// concatenated together. Thus version 1.0 is 1000, version 1.7.1 is 1710, etc.
 FxSize FX_CALL FxSDKGetVersion( void );
+
+/// Converts the given version number into a string. This version number
+/// is in the format: major.minor.bugfix.revision.
+FxString FX_CALL FxSDKConvertVersionToString( FxSize version );
+
+/// Returns the current FaceFX SDK version number as a string. This version 
+/// number is in the format: major.minor.bugfix.revision.
+FxString FX_CALL FxSDKGetVersionString( void );
 
 /// Returns the FaceFX SDK licensee name.
 FxString FX_CALL FxSDKGetLicenseeName( void );
@@ -63,10 +71,14 @@ FxString FX_CALL FxSDKGetLicenseeName( void );
 /// Returns the FaceFX SDK licensee project name.
 FxString FX_CALL FxSDKGetLicenseeProjectName( void );
 
-/// Returns the FaceFX SDK licensee version number.  This version number has
-/// been multiplied by 1000, so for example version 1.0 returns 1000, version 
-/// 1.1 returns 1100, and so on.
+/// Returns the FaceFX SDK licensee version number.  This version number is a 
+/// series of four single-digit version (major, minor, bugfix, revision) 
+/// concatenated together. Thus version 1.0 is 1000, version 1.7.1 is 1710, etc.
 FxSize FX_CALL FxSDKGetLicenseeVersion( void );
+
+/// Returns the current FaceFX SDK licensee version number as a string. This 
+/// version number is in the format: major.minor.bugfix.revision.
+FxString FX_CALL FxSDKGetLicenseeVersionString( void );
 
 /// Returns the FaceFX SDK build id.
 FxString FX_CALL FxSDKGetBuildId( void );

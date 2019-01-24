@@ -3,41 +3,16 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxGenericTargetNode.h"
-#include "FxUtil.h"
 
 namespace OC3Ent
 {
 
 namespace Face
 {
-
-#define kCurrentFxGenericTargetProxyVersion 0
-
-FX_IMPLEMENT_CLASS(FxGenericTargetProxy, kCurrentFxGenericTargetProxyVersion, FxObject)
-
-FxGenericTargetNode* FxGenericTargetProxy::GetParentGenericTargetNode( void )
-{
-	return _pParentGenericTargetNode;
-}
-
-void FxGenericTargetProxy::
-SetParentGenericTargetNode( FxGenericTargetNode* pParentGenericTargetNode )
-{
-	_pParentGenericTargetNode = pParentGenericTargetNode;
-}
-
-FxGenericTargetProxy::FxGenericTargetProxy()
-	: _pParentGenericTargetNode(NULL)
-{
-}
-
-FxGenericTargetProxy::~FxGenericTargetProxy()
-{
-}
 
 #define kCurrentFxGenericTargetNodeVersion 0
 
@@ -55,50 +30,6 @@ void FxGenericTargetNode::CopyData( FxFaceGraphNode* pOther )
 	if( pOther )
 	{
 		Super::CopyData(pOther);
-		FxGenericTargetNode* pGenericTargetNode = FxCast<FxGenericTargetNode>(pOther);
-		if( pGenericTargetNode )
-		{
-			FxGenericTargetProxy* pOldGenericTargetProxy = GetGenericTargetProxy();
-			if( pOldGenericTargetProxy )
-			{
-				FxGenericTargetProxy* pNewGenericTargetProxy = 
-					FxCast<FxGenericTargetProxy>(pOldGenericTargetProxy->GetClassDesc()->ConstructObject());
-				pNewGenericTargetProxy->Copy(pOldGenericTargetProxy);
-				pNewGenericTargetProxy->SetParentGenericTargetNode(pGenericTargetNode);
-				pGenericTargetNode->SetGenericTargetProxy(pNewGenericTargetProxy);
-			}
-		}
-	}
-}
-
-FxGenericTargetProxy* FxGenericTargetNode::GetGenericTargetProxy( void )
-{
-	return _pGenericTargetProxy;
-}
-
-void FxGenericTargetNode::
-SetGenericTargetProxy( FxGenericTargetProxy* pGenericTargetProxy )
-{
-	_deleteGenericTargetProxy();
-	_pGenericTargetProxy = pGenericTargetProxy;
-	_pGenericTargetProxy->SetParentGenericTargetNode(this);
-}
-
-FxBool FxGenericTargetNode::ShouldLink( void ) const
-{
-	return _shouldLink;
-}
-
-void FxGenericTargetNode::SetShouldLink( FxBool shouldLink )
-{
-	_shouldLink = shouldLink;
-}
-
-void FxGenericTargetNode::UpdateTarget( void )
-{
-	if( _pGenericTargetProxy )
-	{
-		_pGenericTargetProxy->Update(Super::GetValue());
 	}
 }
 
@@ -106,32 +37,14 @@ void FxGenericTargetNode::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxGenericTargetNode);
-	arc << version;
+	arc.SerializeClassVersion("FxGenericTargetNode");
 }
 
 FxGenericTargetNode::FxGenericTargetNode()
-	: _pGenericTargetProxy(NULL)
-	, _shouldLink(FxTrue)
-{
-	_isPlaceable = FxFalse;
-}
+{}
 
 FxGenericTargetNode::~FxGenericTargetNode()
-{
-	_deleteGenericTargetProxy();
-}
-
-void FxGenericTargetNode::_deleteGenericTargetProxy( void )
-{
-	if( _pGenericTargetProxy )
-	{
-		const FxSize size = _pGenericTargetProxy->GetClassDesc()->GetSize();
-		_pGenericTargetProxy->Destroy();
-		FxFree(_pGenericTargetProxy, size);
-		_pGenericTargetProxy = NULL;
-	}
-}
+{}
 
 } // namespace Face
 

@@ -2,14 +2,10 @@
 // Name:        editlbox.cpp
 // Purpose:     ListBox with editable items
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: editlbox.cpp,v 1.21 2005/01/14 13:06:52 ABX Exp $
+// RCS-ID:      $Id: editlbox.cpp 39300 2006-05-23 19:30:03Z ABX $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-    #pragma implementation "editlbox.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -228,6 +224,12 @@ void wxEditableListBox::OnEndLabelEdit(wxListEvent& event)
         // add new empty line here so that adding one more line is still
         // possible:
         m_listCtrl->InsertItem(m_listCtrl->GetItemCount(), wxEmptyString);
+
+        // Simulate a wxEVT_COMMAND_LIST_ITEM_SELECTED event for the new item,
+        // so that the buttons are enabled/disabled properly
+        wxListEvent selectionEvent(wxEVT_COMMAND_LIST_ITEM_SELECTED, m_listCtrl->GetId());
+        selectionEvent.m_itemIndex = event.GetIndex();
+        m_listCtrl->GetEventHandler()->ProcessEvent(selectionEvent);
     }
 }
 

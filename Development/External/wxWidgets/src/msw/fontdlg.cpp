@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: fontdlg.cpp,v 1.27 2005/03/22 19:39:54 ABX Exp $
+// RCS-ID:      $Id: fontdlg.cpp 41054 2006-09-07 19:01:45Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "fontdlg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,18 +26,16 @@
 
 #if wxUSE_FONTDLG
 
+#include "wx/fontdlg.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/defs.h"
+    #include "wx/msw/wrapcdlg.h"
     #include "wx/utils.h"
     #include "wx/dialog.h"
+    #include "wx/log.h"
+    #include "wx/cmndata.h"
+    #include "wx/math.h"
 #endif
-
-#include "wx/fontdlg.h"
-#include "wx/msw/wrapcdlg.h"
-
-#include "wx/cmndata.h"
-#include "wx/log.h"
-#include "wx/math.h"
 
 #include <stdlib.h>
 #include <string.h>

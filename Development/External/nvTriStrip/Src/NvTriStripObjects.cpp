@@ -1,5 +1,6 @@
 
 #pragma warning( disable : 4786 )  
+#pragma warning( disable : 4018 )		// warning C4018: '<' : signed/unsigned mismatch
 
 #include <assert.h>
 #include <set>
@@ -88,7 +89,7 @@ bool NvStripifier::AlreadyExists(NvFaceInfo* faceInfo, NvFaceInfoVec& faceInfos)
 // Builds the list of all face and edge infos
 //
 void NvStripifier::BuildStripifyInfo(NvFaceInfoVec &faceInfos, NvEdgeInfoVec &edgeInfos,
-									 const unsigned short maxIndex)
+									 const unsigned int maxIndex)
 {
 	// reserve space for the face infos, but do not resize them.
 	int numIndices = indices.size();
@@ -431,7 +432,7 @@ void NvStripifier::GetSharedVertices(NvFaceInfo *faceA, NvFaceInfo *faceB, int* 
 //
 // Returns vertex of the input face which is "next" in the input index list
 //
-inline int NvStripifier::GetNextIndex(const WordVec &indices, NvFaceInfo *face){
+inline int NvStripifier::GetNextIndex(const UIntVec &indices, NvFaceInfo *face){
 	
 	int numIndices = indices.size();
 	assert(numIndices >= 2);
@@ -557,7 +558,7 @@ bool NvStripInfo::Unique(NvFaceInfoVec& faceVec, NvFaceInfo* face)
 void NvStripInfo::Build(NvEdgeInfoVec &edgeInfos, NvFaceInfoVec &faceInfos)
 {
 	// used in building the strips forward and backward
-	WordVec scratchIndices;
+	UIntVec scratchIndices;
 	
 	// build forward... start with the initial face
 	NvFaceInfoVec forwardFaces, backwardFaces;
@@ -1098,8 +1099,8 @@ void NvStripifier::CreateStrips(const NvStripInfoVec& allStrips, IntVec& stripIn
 // in_indices are the input indices of the mesh to stripify
 // in_cacheSize is the target cache size 
 //
-void NvStripifier::Stripify(const WordVec &in_indices, const int in_cacheSize, 
-							const int in_minStripLength, const unsigned short maxIndex, 
+void NvStripifier::Stripify(const UIntVec &in_indices, const int in_cacheSize, 
+							const int in_minStripLength, const unsigned int maxIndex, 
 							NvStripInfoVec &outStrips, NvFaceInfoVec& outFaceList)
 {
 	meshJump = 0.0f;
@@ -1161,7 +1162,7 @@ bool NvStripifier::IsDegenerate(const NvFaceInfo* face)
 		return false;
 }
 
-bool NvStripifier::IsDegenerate(const unsigned short v0, const unsigned short v1, const unsigned short v2)
+bool NvStripifier::IsDegenerate(const unsigned int v0, const unsigned int v1, const unsigned int v2)
 {
 	if(v0 == v1)
 		return true;

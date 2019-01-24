@@ -6,15 +6,9 @@
 // Created:     19990929
 // Copyright:   (c)
 // Licence:     wxWindows license
-// RCS-ID:      $Id: dbgrid.cpp,v 1.20 2005/01/31 18:09:45 ABX Exp $
+// RCS-ID:      $Id: dbgrid.cpp 35650 2005-09-23 12:56:45Z MR $
 //----------------------------------------------------------------------------------------
-//-- all #ifdefs that the whole Project needs. -------------------------------------------
-//----------------------------------------------------------------------------------------
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
-//----------------------------------------------------------------------------------------
+
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 //----------------------------------------------------------------------------------------

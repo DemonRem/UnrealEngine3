@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXWHEELSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -21,9 +21,10 @@ class NxWheelShapeDesc;
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxWheelShape NxWheelShape.getContact()
 */
@@ -106,9 +107,10 @@ The coordinate frame of the shape is rigidly fixed on the car.
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes (Software fallback for collision)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 <h3>Visualizations</h3>
 \li NX_VISUALIZE_COLLISION_AABBS
@@ -129,9 +131,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxWheelShapeDesc
 	*/
@@ -149,9 +152,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getRadius()
 	*/
@@ -166,9 +170,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSuspensionTravel()
 	*/
@@ -182,9 +187,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setRadius()
 	*/
@@ -197,9 +203,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setSuspensionTravel()
 	*/
@@ -218,9 +225,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSuspension() NxSpringDesc
 	*/
@@ -235,9 +243,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLongitudalTireForceFunction NxTireFunctionDesc
 	*/
@@ -252,9 +261,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLateralTireForceFunction() NxTireFunctionDesc
 	*/
@@ -269,9 +279,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getInverseWheelMass()
 	*/
@@ -284,9 +295,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxWheelShapeFlags getWheelFlags()
 	*/
@@ -299,9 +311,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setSuspension() NxSpringDesc
 	*/
@@ -314,9 +327,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTireFunctionDesc setLongitudalTireForceFunction()
 	*/
@@ -329,9 +343,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTireFunctionDesc setLateralTireForceFunction()
 	*/
@@ -344,9 +359,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setInverseWheelMass()
 	*/
@@ -359,9 +375,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxWheelShapeFlags setWheelFlags()
 	*/
@@ -377,9 +394,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getMotorTorque()
 	*/
@@ -394,9 +412,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getBrakeTorque()
 	*/
@@ -411,9 +430,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSteerAngle()
 	*/
@@ -426,9 +446,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setMotorTorque()
 	*/
@@ -441,9 +462,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setBrakeTorque()
 	*/
@@ -456,9 +478,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setSteerAngle()
 	*/
@@ -480,9 +503,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getAxleSpeed()
 	*/
@@ -497,9 +521,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setAxleSpeed()
 	*/
@@ -520,9 +545,10 @@ class NxWheelShape : public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback for collision)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxWheelContactData NxShape
 	*/
@@ -549,9 +575,9 @@ class NxWheelShape : public NxShape
 
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

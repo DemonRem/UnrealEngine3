@@ -4,17 +4,13 @@
 // Author:      Aleksandras Gluchovas (@Lithuania)
 // Modified by:
 // Created:     23/10/98
-// RCS-ID:      $Id: antiflickpl.h,v 1.6 2003/07/08 20:47:16 VS Exp $
+// RCS-ID:      $Id: antiflickpl.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __ANTIFLICKPL_G__
 #define __ANTIFLICKPL_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "antiflickpl.h"
-#endif
 
 #include "wx/fl/controlbar.h"
 

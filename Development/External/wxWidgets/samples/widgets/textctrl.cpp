@@ -4,7 +4,7 @@
 // Purpose:     part of the widgets sample showing wxTextCtrl
 // Author:      Vadim Zeitlin
 // Created:     27.03.01
-// Id:          $Id: textctrl.cpp,v 1.24 2005/08/28 08:54:55 MBN Exp $
+// Id:          $Id: textctrl.cpp 43755 2006-12-03 13:43:44Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@
 // control ids
 enum
 {
-    TextPage_Reset = 100,
+    TextPage_Reset = wxID_HIGHEST,
 
     TextPage_Set,
     TextPage_Add,
@@ -106,6 +106,7 @@ static const struct ControlValues
 
     bool password;
     bool readonly;
+    bool filename;
 
     WrapStyle wrapStyle;
 
@@ -117,6 +118,7 @@ static const struct ControlValues
     TextLines_Multi,    // multiline
     false,              // not password
     false,              // not readonly
+    false,              // not filename
     WrapStyle_Word,     // wrap on word boundaries
 #ifdef __WXMSW__
     TextKind_Plain      // plain EDIT control
@@ -132,10 +134,14 @@ class TextWidgetsPage : public WidgetsPage
 {
 public:
     // ctor(s) and dtor
-    TextWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist);
+    TextWidgetsPage(WidgetsBookCtrl *book, wxImageList *imaglist);
     virtual ~TextWidgetsPage(){};
 
     virtual wxControl *GetWidget() const { return m_text; }
+    virtual void RecreateWidget() { CreateText(); }
+
+    // lazy creation of the content
+    virtual void CreateContent();
 
 protected:
     // create an info text contorl
@@ -197,7 +203,8 @@ protected:
 
     // the checkboxes controlling text ctrl styles
     wxCheckBox *m_chkPassword,
-               *m_chkReadonly;
+               *m_chkReadonly,
+               *m_chkFilename;
 
     // under MSW we test rich edit controls as well here
 #ifdef __WXMSW__
@@ -328,17 +335,25 @@ END_EVENT_TABLE()
 // implementation
 // ============================================================================
 
-IMPLEMENT_WIDGETS_PAGE(TextWidgetsPage, _T("Text"));
+#if defined(__WXX11__)
+    #define FAMILY_CTRLS NATIVE_CTRLS
+#elif defined(__WXUNIVERSAL__)
+    #define FAMILY_CTRLS UNIVERSAL_CTRLS
+#else
+    #define FAMILY_CTRLS NATIVE_CTRLS
+#endif
+
+IMPLEMENT_WIDGETS_PAGE(TextWidgetsPage, _T("Text"),
+                       FAMILY_CTRLS | EDITABLE_CTRLS
+                       );
 
 // ----------------------------------------------------------------------------
 // TextWidgetsPage creation
 // ----------------------------------------------------------------------------
 
-TextWidgetsPage::TextWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist)
-               : WidgetsPage(book)
+TextWidgetsPage::TextWidgetsPage(WidgetsBookCtrl *book, wxImageList *imaglist)
+               : WidgetsPage(book, imaglist, text_xpm)
 {
-    imaglist->Add(wxBitmap(text_xpm));
-
     // init everything
 #ifdef __WXMSW__
     m_radioKind =
@@ -347,7 +362,8 @@ TextWidgetsPage::TextWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist)
     m_radioTextLines = (wxRadioBox *)NULL;
 
     m_chkPassword =
-    m_chkReadonly = (wxCheckBox *)NULL;
+    m_chkReadonly =
+    m_chkFilename = (wxCheckBox *)NULL;
 
     m_text =
     m_textPosCur =
@@ -365,7 +381,10 @@ TextWidgetsPage::TextWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist)
     m_posLast =
     m_selFrom =
     m_selTo = -2; // not -1 which means "no selection"
+}
 
+void TextWidgetsPage::CreateContent()
+{
     // left pane
     static const wxString modes[] =
     {
@@ -390,6 +409,10 @@ TextWidgetsPage::TextWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist)
     m_chkReadonly = CreateCheckBoxAndAddToSizer(
                         sizerLeft, _T("&Read-only mode")
                     );
+    m_chkFilename = CreateCheckBoxAndAddToSizer(
+                        sizerLeft, _T("&Filename control")
+                    );
+    m_chkFilename->Disable(); // not implemented yet
     sizerLeft->AddSpacer(5);
 
     static const wxString wrap[] =
@@ -536,8 +559,6 @@ TextWidgetsPage::TextWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist)
     sizerTop->Add(m_sizerText, 1, wxGROW | (wxALL & ~wxRIGHT), 10);
 
     SetSizer(sizerTop);
-
-    sizerTop->Fit(this);
 }
 
 // ----------------------------------------------------------------------------
@@ -589,6 +610,7 @@ void TextWidgetsPage::Reset()
 
     m_chkPassword->SetValue(DEFAULTS.password);
     m_chkReadonly->SetValue(DEFAULTS.readonly);
+    m_chkFilename->SetValue(DEFAULTS.filename);
 
     m_radioWrap->SetSelection(DEFAULTS.wrapStyle);
 
@@ -599,7 +621,7 @@ void TextWidgetsPage::Reset()
 
 void TextWidgetsPage::CreateText()
 {
-    int flags = 0;
+    int flags = ms_defaultFlags;
     switch ( m_radioTextLines->GetSelection() )
     {
         default:
@@ -633,7 +655,7 @@ void TextWidgetsPage::CreateText()
             break;
 
         case WrapStyle_Char:
-            flags |= wxTE_LINEWRAP;
+            flags |= wxTE_CHARWRAP;
             break;
 
         case WrapStyle_Best:
@@ -675,6 +697,11 @@ void TextWidgetsPage::CreateText()
     }
 
     m_text = new WidgetsTextCtrl(this, TextPage_Textctrl, valueOld, flags);
+
+#if 0
+    if ( m_chkFilename->GetValue() )
+        ;
+#endif // TODO
 
     // cast to int needed to silence gcc warning about different enums
     m_sizerText->Add(m_text, 1, wxALL |
@@ -855,8 +882,9 @@ void TextWidgetsPage::OnUpdateUIResetButton(wxUpdateUIEvent& event)
 #ifdef __WXMSW__
                   (m_radioKind->GetSelection() != DEFAULTS.textKind) ||
 #endif // __WXMSW__
-                  (m_chkReadonly->GetValue() != DEFAULTS.readonly) ||
                   (m_chkPassword->GetValue() != DEFAULTS.password) ||
+                  (m_chkReadonly->GetValue() != DEFAULTS.readonly) ||
+                  (m_chkFilename->GetValue() != DEFAULTS.filename) ||
                   (m_radioWrap->GetSelection() != DEFAULTS.wrapStyle) );
 }
 

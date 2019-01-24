@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXCONVEXSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -32,9 +32,10 @@ class NxConvexShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxConvexMesh NxConvexMeshDesc NxPhysicsSDK.createConvexMesh()
 	*/
@@ -47,9 +48,10 @@ class NxConvexShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshShapeFlag
 	*/
@@ -72,7 +74,11 @@ class NxConvexShapeDesc : public NxShapeDesc
 
 	\return returns true if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxConvexShapeDesc::NxConvexShapeDesc() : NxShapeDesc(NX_SHAPE_CONVEX)	//constructor sets to default
@@ -90,19 +96,19 @@ NX_INLINE void NxConvexShapeDesc::setToDefault()
 #endif
 	}
 
-NX_INLINE bool NxConvexShapeDesc::isValid() const
+NX_INLINE NxU32 NxConvexShapeDesc::checkValid() const
 	{
-	if(!meshData)	return false;
+	if(!meshData)	return 1;
 #ifdef NX_SUPPORT_CONVEX_SCALE
-	if(scale<=0.0f)	return false;
+	if(scale<=0.0f)	return 2;
 #endif
-	return NxShapeDesc::isValid();
+	return 3*NxShapeDesc::checkValid();
 	}
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

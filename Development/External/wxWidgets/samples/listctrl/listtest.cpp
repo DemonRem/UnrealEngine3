@@ -4,15 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: listtest.cpp,v 1.83 2005/08/29 01:59:36 MW Exp $
+// RCS-ID:      $Id: listtest.cpp 44131 2007-01-07 17:28:18Z KO $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -46,6 +41,8 @@
 #include "wx/listctrl.h"
 #include "wx/timer.h"           // for wxStopWatch
 #include "wx/colordlg.h"        // for wxGetColourFromUser
+#include "wx/settings.h"
+#include "wx/sysopt.h"
 
 #include "listtest.h"
 
@@ -95,6 +92,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(LIST_FREEZE, MyFrame::OnFreeze)
     EVT_MENU(LIST_THAW, MyFrame::OnThaw)
     EVT_MENU(LIST_TOGGLE_LINES, MyFrame::OnToggleLines)
+    EVT_MENU(LIST_MAC_USE_GENERIC, MyFrame::OnToggleMacUseGeneric)
 
     EVT_UPDATE_UI(LIST_SHOW_COL_INFO, MyFrame::OnUpdateShowColInfo)
     EVT_UPDATE_UI(LIST_TOGGLE_MULTI_SEL, MyFrame::OnUpdateToggleMultiSel)
@@ -125,7 +123,12 @@ BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
 
     EVT_LIST_CACHE_HINT(LIST_CTRL, MyListCtrl::OnCacheHint)
 
+#if USE_CONTEXT_MENU
+    EVT_CONTEXT_MENU(MyListCtrl::OnContextMenu)
+#endif
     EVT_CHAR(MyListCtrl::OnChar)
+
+    EVT_RIGHT_DOWN(MyListCtrl::OnRightClick)
 END_EVENT_TABLE()
 
 IMPLEMENT_APP(MyApp)
@@ -151,7 +154,7 @@ int wxCALLBACK MyCompareFunction(long item1, long item2, long WXUNUSED(sortData)
 bool MyApp::OnInit()
 {
   // Create the main frame window
-  MyFrame *frame = new MyFrame(wxT("wxListCtrl Test"), 50, 50, 450, 340);
+  MyFrame *frame = new MyFrame(wxT("wxListCtrl Test"));
 
   // Show the frame
   frame->Show(true);
@@ -162,12 +165,15 @@ bool MyApp::OnInit()
 }
 
 // My frame constructor
-MyFrame::MyFrame(const wxChar *title, int x, int y, int w, int h)
-       : wxFrame(NULL, wxID_ANY, title, wxPoint(x, y), wxSize(w, h))
+MyFrame::MyFrame(const wxChar *title)
+       : wxFrame(NULL, wxID_ANY, title)
 {
     m_listCtrl = NULL;
     m_logWindow = NULL;
     m_smallVirtual = false;
+
+    if (wxSystemSettings::GetScreenType() > wxSYS_SCREEN_SMALL)
+        SetSize(wxSize(450, 340));
 
     // Give it an icon
     SetIcon( wxICON(mondrian) );
@@ -218,6 +224,9 @@ MyFrame::MyFrame(const wxChar *title, int x, int y, int w, int h)
     menuView->Append(LIST_SMALL_ICON_TEXT_VIEW, _T("Small icon &view with text\tF6"));
     menuView->Append(LIST_VIRTUAL_VIEW, _T("&Virtual view\tF7"));
     menuView->Append(LIST_SMALL_VIRTUAL_VIEW, _T("Small virtual vie&w\tF8"));
+#ifdef __WXMAC__
+    menuView->AppendCheckItem(LIST_MAC_USE_GENERIC, _T("Mac: Use Generic Control"));
+#endif
 
     wxMenu *menuList = new wxMenu;
     menuList->Append(LIST_FOCUS_LAST, _T("&Make last item current\tCtrl-L"));
@@ -334,6 +343,11 @@ void MyFrame::OnThaw(wxCommandEvent& WXUNUSED(event))
 void MyFrame::OnToggleLines(wxCommandEvent& event)
 {
     m_listCtrl->SetSingleStyle(wxLC_HRULES | wxLC_VRULES, event.IsChecked());
+}
+
+void MyFrame::OnToggleMacUseGeneric(wxCommandEvent& event)
+{
+    wxSystemOptions::SetOption(wxT("mac.listctrl.always_use_generic"), event.IsChecked());
 }
 
 void MyFrame::OnFocusLast(wxCommandEvent& WXUNUSED(event))
@@ -491,11 +505,19 @@ void MyFrame::InitWithReportItems()
     m_listCtrl->SetItem( item );
 
     m_listCtrl->SetTextColour(*wxBLUE);
-    m_listCtrl->SetBackgroundColour(*wxLIGHT_GREY);
 
     m_listCtrl->SetColumnWidth( 0, wxLIST_AUTOSIZE );
     m_listCtrl->SetColumnWidth( 1, wxLIST_AUTOSIZE );
     m_listCtrl->SetColumnWidth( 2, wxLIST_AUTOSIZE );
+
+    // Set images in columns
+    m_listCtrl->SetItemColumnImage(1, 1, 0);
+
+    wxListItem info;
+    info.SetImage(0);
+    info.SetId(3);
+    info.SetColumn(2);
+    m_listCtrl->SetItem(info);
 
     // test SetItemFont too
     m_listCtrl->SetItemFont(0, *wxITALIC_FONT);
@@ -694,7 +716,7 @@ void MyFrame::OnDeleteAll(wxCommandEvent& WXUNUSED(event))
 {
     wxStopWatch sw;
 
-    size_t itemCount = m_listCtrl->GetItemCount();
+    int itemCount = m_listCtrl->GetItemCount();
 
     m_listCtrl->DeleteAllItems();
 
@@ -810,6 +832,7 @@ void MyListCtrl::OnEndLabelEdit(wxListEvent& event)
 void MyListCtrl::OnDeleteItem(wxListEvent& event)
 {
     LogEvent(event, _T("OnDeleteItem"));
+    wxLogMessage( wxT("Number of items when delete event is sent: %d"), GetItemCount() );
 }
 
 void MyListCtrl::OnDeleteAllItems(wxListEvent& event)
@@ -902,6 +925,12 @@ void MyListCtrl::OnListKeyDown(wxListEvent& event)
             {
                 wxListItem info;
                 info.m_itemId = event.GetIndex();
+                if ( info.m_itemId == -1 )
+                {
+                    // no item
+                    break;
+                }
+
                 GetItem(info);
 
                 wxListItemAttr *attr = info.GetAttributes();
@@ -999,6 +1028,36 @@ void MyListCtrl::OnChar(wxKeyEvent& event)
     }
 }
 
+void MyListCtrl::OnRightClick(wxMouseEvent& event)
+{
+    if ( !event.ControlDown() )
+    {
+        event.Skip();
+        return;
+    }
+
+    int flags;
+    long subitem;
+    long item = HitTest(event.GetPosition(), flags, &subitem);
+
+    wxString where;
+    switch ( flags )
+    {
+        case wxLIST_HITTEST_ABOVE: where = _T("above"); break;
+        case wxLIST_HITTEST_BELOW: where = _T("below"); break;
+        case wxLIST_HITTEST_NOWHERE: where = _T("nowhere near"); break;
+        case wxLIST_HITTEST_ONITEMICON: where = _T("on icon of"); break;
+        case wxLIST_HITTEST_ONITEMLABEL: where = _T("on label of"); break;
+        case wxLIST_HITTEST_ONITEMRIGHT: where = _T("right on"); break;
+        case wxLIST_HITTEST_TOLEFT: where = _T("to the left of"); break;
+        case wxLIST_HITTEST_TORIGHT: where = _T("to the right of"); break;
+        default: where = _T("not clear exactly where on"); break;
+    }
+
+    wxLogMessage(_T("Right double click %s item %ld, subitem %ld"),
+                 where.c_str(), item, subitem);
+}
+
 void MyListCtrl::LogEvent(const wxListEvent& event, const wxChar *eventName)
 {
     wxLogMessage(_T("Item %ld: %s (item text = %s, data = %ld)"),
@@ -1018,9 +1077,15 @@ wxString MyListCtrl::OnGetItemText(long item, long column) const
     }
 }
 
-int MyListCtrl::OnGetItemImage(long WXUNUSED(item)) const
+int MyListCtrl::OnGetItemColumnImage(long item, long column) const
 {
-    return 0;
+    if (!column)
+        return 0;
+
+    if (!(item %3) && column == 1)
+        return 0;
+
+    return -1;
 }
 
 wxListItemAttr *MyListCtrl::OnGetItemAttr(long item) const
@@ -1036,8 +1101,35 @@ void MyListCtrl::InsertItemInReportView(int i)
     SetItemData(tmp, i);
 
     buf.Printf(_T("Col 1, item %d"), i);
-    SetItem(i, 1, buf);
+    SetItem(tmp, 1, buf);
 
     buf.Printf(_T("Item %d in column 2"), i);
-    SetItem(i, 2, buf);
+    SetItem(tmp, 2, buf);
+}
+
+#if USE_CONTEXT_MENU
+void MyListCtrl::OnContextMenu(wxContextMenuEvent& event)
+{
+    wxPoint point = event.GetPosition();
+    // If from keyboard
+    if (point.x == -1 && point.y == -1) {
+        wxSize size = GetSize();
+        point.x = size.x / 2;
+        point.y = size.y / 2;
+    } else {
+        point = ScreenToClient(point);
+    }
+    ShowContextMenu(point);
+}
+#endif
+
+void MyListCtrl::ShowContextMenu(const wxPoint& pos)
+{
+    wxMenu menu;
+
+    menu.Append(wxID_ABOUT, _T("&About"));
+    menu.AppendSeparator();
+    menu.Append(wxID_EXIT, _T("E&xit"));
+
+    PopupMenu(&menu, pos.x, pos.y);
 }

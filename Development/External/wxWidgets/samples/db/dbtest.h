@@ -4,14 +4,10 @@
 // Author:      George Tasker
 // Modified by:
 // Created:     1998
-// RCS-ID:      $Id: dbtest.h,v 1.35 2005/06/02 12:03:58 JS Exp $
+// RCS-ID:      $Id: dbtest.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1998 Remstar International, Inc.
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "dbtest.h"
-#endif
 
 #include "wx/string.h"
 #include "wx/dbtable.h"

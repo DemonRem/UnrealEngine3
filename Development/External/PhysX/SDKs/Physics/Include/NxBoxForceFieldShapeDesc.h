@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXBOXFORCEFIELDSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -12,7 +12,7 @@
 */
 
 #include "Nxp.h"
-
+#include "NxForceFieldShapeDesc.h"
 
 /**
  \brief A descriptor for NxBoxForceFieldShape
@@ -20,9 +20,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxBoxForceFieldShape NxForceFieldShapeDesc NxBoxForceField
 */
@@ -42,9 +43,10 @@ class NxBoxForceFieldShapeDesc : public NxForceFieldShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBoxForceFieldShape.setDimensions() NxBoxForceFieldShape.getDimensions()
 	*/
@@ -65,7 +67,11 @@ class NxBoxForceFieldShapeDesc : public NxForceFieldShapeDesc
 
 	\return True if the current settings are valid
 	*/
-	virtual NX_INLINE bool isValid() const;
+	virtual NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 
 	};
@@ -81,20 +87,20 @@ NX_INLINE void NxBoxForceFieldShapeDesc::setToDefault()
 	dimensions.set(1.0f, 1.0f, 1.0f);	//note: NxBoxShape defaults to x0x0x but this is inconsistent with other shapes that are unity-sized by default.
 	}
 
-NX_INLINE bool NxBoxForceFieldShapeDesc::isValid() const
+NX_INLINE NxU32 NxBoxForceFieldShapeDesc::checkValid() const
 	{
-	if(!dimensions.isFinite())			return false;
-	if(dimensions.x<0.0f)				return false;
-	if(dimensions.y<0.0f)				return false;
-	if(dimensions.z<0.0f)				return false;
-	return NxForceFieldShapeDesc::isValid();
+	if(!dimensions.isFinite())			return 1;
+	if(dimensions.x<0.0f)				return 2;
+	if(dimensions.y<0.0f)				return 3;
+	if(dimensions.z<0.0f)				return 4;
+	return 5*NxForceFieldShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

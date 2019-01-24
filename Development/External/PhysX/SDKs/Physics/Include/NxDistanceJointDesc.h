@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXDISTANCEJOINTDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -20,9 +20,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxDistanceJoint NxJointDesc NxScene.createJoint()
 
@@ -77,24 +78,27 @@ class NxDistanceJointDesc : public NxJointDesc
 	/**
 	\brief (re)sets the structure to the default.	
 
-	\param[in] fromCtor skip redundant operations if called from contructor.
 	*/
-	NX_INLINE void setToDefault(bool fromCtor=false);
+	NX_INLINE virtual void setToDefault();
 	/**
 	\brief Returns true if the descriptor is valid.
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	};
 
 NX_INLINE NxDistanceJointDesc::NxDistanceJointDesc() : NxJointDesc(NX_JOINT_DISTANCE)	//constructor sets to default
 	{
-	setToDefault(true);
+	setToDefault();
 	}
 
-NX_INLINE void NxDistanceJointDesc::setToDefault(bool fromCtor)
+NX_INLINE void NxDistanceJointDesc::setToDefault()
 	{
 	NxJointDesc::setToDefault();
 	maxDistance = 0.0f;
@@ -102,31 +106,28 @@ NX_INLINE void NxDistanceJointDesc::setToDefault(bool fromCtor)
 	//stiffness = 1.0f;
 	flags = 0;
 
-	if (!fromCtor)
-		{
-		//this is redundant if we're being called from the ctor:
-		spring.setToDefault();
-		}
+	//this is redundant if we're being called from the ctor:
+	spring.setToDefault();
 	}
 
-NX_INLINE bool NxDistanceJointDesc::isValid() const
+NX_INLINE NxU32 NxDistanceJointDesc::checkValid() const
 	{
-	if (maxDistance < 0) return false;
-	if (minDistance < 0) return false;
+	if (maxDistance < 0) return 1;
+	if (minDistance < 0) return 2;
 
 	// if both distance constrains are on, the min better be less than or equal to the max.
-	if ((minDistance > maxDistance) && (flags == (NX_DJF_MIN_DISTANCE_ENABLED | NX_DJF_MAX_DISTANCE_ENABLED))) return false;
-//	if (stiffness < 0 || stiffness > 1) return false;
-	if (!spring.isValid()) return false;
+	if ((minDistance > maxDistance) && (flags == (NX_DJF_MIN_DISTANCE_ENABLED | NX_DJF_MAX_DISTANCE_ENABLED))) return 3;
+//	if (stiffness < 0 || stiffness > 1) return 4;
+	if (!spring.isValid()) return 5;
 
-	return NxJointDesc::isValid();
+	return 6*NxJointDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

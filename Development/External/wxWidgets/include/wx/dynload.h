@@ -5,17 +5,13 @@
 //               (derived in part from dynlib.cpp (c) 1998 Guilhem Lavaux)
 // Modified by:
 // Created:      03/12/01
-// RCS-ID:       $Id: dynload.h,v 1.24 2005/01/07 20:03:08 ABX Exp $
+// RCS-ID:       $Id: dynload.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:    (c) 2001 Ron Lee <ron@debian.org>
 // Licence:      wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DYNAMICLOADER_H__
 #define _WX_DYNAMICLOADER_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dynload.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -29,7 +25,7 @@
 #include "wx/hashmap.h"
 #include "wx/module.h"
 
-class WXDLLIMPEXP_BASE wxPluginLibrary;
+class WXDLLIMPEXP_FWD_BASE wxPluginLibrary;
 
 
 WX_DECLARE_STRING_HASH_MAP_WITH_DECL(wxPluginLibrary *, wxDLManifest,
@@ -111,13 +107,6 @@ public:
     static wxPluginLibrary    *LoadLibrary( const wxString &libname,
                                             int flags = wxDL_DEFAULT );
     static bool                UnloadLibrary(const wxString &libname);
-
-        // This is used by wxDllLoader.  It's wrapped in the compatibility
-        // macro because it's of arguable use outside of that.
-
-#if WXWIN_COMPATIBILITY_2_2
-    wxDEPRECATED( static wxPluginLibrary *GetObjectFromHandle(wxDllType handle) );
-#endif
 
         // Instance methods.
 

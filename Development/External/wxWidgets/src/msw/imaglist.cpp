@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: imaglist.cpp,v 1.29 2005/05/31 09:20:31 JS Exp $
+// RCS-ID:      $Id: imaglist.cpp 43786 2006-12-04 02:09:59Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "imaglist.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,28 +24,21 @@
     #pragma hdrstop
 #endif
 
-#if defined(__WIN95__)
-
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
     #include "wx/window.h"
     #include "wx/icon.h"
     #include "wx/dc.h"
     #include "wx/string.h"
     #include "wx/dcmemory.h"
-
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/image.h"
     #include <stdio.h>
 #endif
 
-#include "wx/log.h"
-#include "wx/intl.h"
-#include "wx/image.h"
-
-#include "wx/msw/imaglist.h"
+#include "wx/imaglist.h"
 #include "wx/msw/private.h"
-
-#if defined(__WIN95__) && !(defined(__GNUWIN32_OLD__) && !defined(__CYGWIN10__))
-    #include <commctrl.h>
-#endif
 
 // ----------------------------------------------------------------------------
 // wxWin macros
@@ -214,7 +203,7 @@ bool wxImageList::Replace(int index,
 // Replaces a bitmap and mask from an icon.
 bool wxImageList::Replace(int i, const wxIcon& icon)
 {
-    bool ok = ImageList_ReplaceIcon(GetHImageList(), i, GetHiconOf(icon)) != 0;
+    bool ok = ImageList_ReplaceIcon(GetHImageList(), i, GetHiconOf(icon)) != -1;
     if ( !ok )
     {
         wxLogLastError(wxT("ImageList_ReplaceIcon()"));
@@ -239,15 +228,7 @@ bool wxImageList::Remove(int index)
 bool wxImageList::RemoveAll()
 {
     // don't use ImageList_RemoveAll() because mingw32 headers don't have it
-    int count = ImageList_GetImageCount(GetHImageList());
-    for ( int i = 0; i < count; i++ )
-    {
-        // the image indexes are shifted, so we should always remove the first
-        // one
-        (void)Remove(0);
-    }
-
-    return true;
+    return Remove(-1);
 }
 
 // Draws the given image on a dc at the specified position.
@@ -297,6 +278,7 @@ bool wxImageList::Draw(int index,
 // Get the bitmap
 wxBitmap wxImageList::GetBitmap(int index) const
 {
+#if wxUSE_WXDIB
     int bmp_width = 0, bmp_height = 0;
     GetSize(index, bmp_width, bmp_height);
 
@@ -327,7 +309,9 @@ wxBitmap wxImageList::GetBitmap(int index) const
     image = bitmap.ConvertToImage();
     image.SetMaskColour(r, g, b);
     bitmap = wxBitmap(image);
-    
+#else
+    wxBitmap bitmap;
+#endif
     return bitmap;
 }
 
@@ -339,14 +323,14 @@ wxIcon wxImageList::GetIcon(int index) const
     {
         wxIcon icon;
         icon.SetHICON((WXHICON)hIcon);
-        
+
         int iconW, iconH;
         GetSize(index, iconW, iconH);
         icon.SetSize(iconW, iconH);
-        
+
         return icon;
     }
-    else               
+    else
         return wxNullIcon;
 }
 
@@ -356,6 +340,10 @@ wxIcon wxImageList::GetIcon(int index) const
 
 static HBITMAP GetMaskForImage(const wxBitmap& bitmap, const wxBitmap& mask)
 {
+#if wxUSE_IMAGE
+    wxBitmap bitmapWithMask;
+#endif // wxUSE_IMAGE
+
     HBITMAP hbmpMask;
     wxMask *pMask;
     bool deleteMask = false;
@@ -368,6 +356,23 @@ static HBITMAP GetMaskForImage(const wxBitmap& bitmap, const wxBitmap& mask)
     else
     {
         pMask = bitmap.GetMask();
+
+#if wxUSE_IMAGE
+        // check if we don't have alpha in this bitmap -- we can create a mask
+        // from it (and we need to do it for the older systems which don't
+        // support 32bpp bitmaps natively)
+        if ( !pMask )
+        {
+            wxImage img(bitmap.ConvertToImage());
+            if ( img.HasAlpha() )
+            {
+                img.ConvertAlphaToMask();
+                bitmapWithMask = wxBitmap(img);
+                pMask = bitmapWithMask.GetMask();
+            }
+        }
+#endif // wxUSE_IMAGE
+
         if ( !pMask )
         {
             // use the light grey count as transparent: the trouble here is
@@ -395,6 +400,3 @@ static HBITMAP GetMaskForImage(const wxBitmap& bitmap, const wxBitmap& mask)
 
     return hbmpMaskInv;
 }
-
-#endif // Win95
-

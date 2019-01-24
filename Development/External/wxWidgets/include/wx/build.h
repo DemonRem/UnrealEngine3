@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin, Vaclav Slavik
 // Modified by:
 // Created:     07.05.02
-// RCS-ID:      $Id: build.h,v 1.18 2004/09/09 17:42:29 ABX Exp $
+// RCS-ID:      $Id: build.h 35858 2005-10-09 15:48:42Z MBN $
 // Copyright:   (c) 2002 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,15 +77,15 @@
 #endif
 
 // WXWIN_COMPATIBILITY macros affect presence of virtual functions
-#if WXWIN_COMPATIBILITY_2_2
-    #define __WX_BO_WXWIN_COMPAT_2_2 ",compatible with 2.2"
-#else
-    #define __WX_BO_WXWIN_COMPAT_2_2
-#endif
 #if WXWIN_COMPATIBILITY_2_4
     #define __WX_BO_WXWIN_COMPAT_2_4 ",compatible with 2.4"
 #else
     #define __WX_BO_WXWIN_COMPAT_2_4
+#endif
+#if WXWIN_COMPATIBILITY_2_6
+    #define __WX_BO_WXWIN_COMPAT_2_6 ",compatible with 2.6"
+#else
+    #define __WX_BO_WXWIN_COMPAT_2_6
 #endif
 
 // deriving wxWin containers from STL ones changes them completely:
@@ -101,7 +101,7 @@
     " (" __WX_BO_DEBUG "," __WX_BO_UNICODE \
      __WX_BO_COMPILER \
      __WX_BO_STL \
-     __WX_BO_WXWIN_COMPAT_2_2 __WX_BO_WXWIN_COMPAT_2_4 \
+     __WX_BO_WXWIN_COMPAT_2_4 __WX_BO_WXWIN_COMPAT_2_6 \
      ")"
 
 
@@ -112,13 +112,14 @@
 // Use this macro to check build options. Adding it to a file in DLL will
 // ensure that the DLL checks build options in same way IMPLEMENT_APP() does.
 #define WX_CHECK_BUILD_OPTIONS(libName)                                 \
-    static bool wxCheckBuildOptions()                                   \
+    static struct wxBuildOptionsChecker                                 \
     {                                                                   \
-        wxAppConsole::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE,     \
-                                        libName);                       \
-        return true;                                                    \
-    };                                                                  \
-    static bool gs_buildOptionsCheck = wxCheckBuildOptions();
+        wxBuildOptionsChecker()                                         \
+        {                                                               \
+            wxAppConsole::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, \
+                                            libName);                   \
+        }                                                               \
+    } gs_buildOptionsCheck;
 
 
 #if WXWIN_COMPATIBILITY_2_4

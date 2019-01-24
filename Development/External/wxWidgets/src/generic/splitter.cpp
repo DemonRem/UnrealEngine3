@@ -4,29 +4,28 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: splitter.cpp,v 1.116 2005/08/05 22:34:24 VZ Exp $
+// RCS-ID:      $Id: splitter.cpp 42816 2006-10-31 08:50:17Z RD $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "splitter.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
-
-#if wxUSE_SPLITTER
 
 #ifdef __BORLANDC__
     #pragma hdrstop
 #endif
+
+#if wxUSE_SPLITTER
+
+#include "wx/splitter.h"
 
 #ifndef WX_PRECOMP
     #include "wx/string.h"
     #include "wx/utils.h"
     #include "wx/log.h"
 
+    #include "wx/dcclient.h"
     #include "wx/dcscreen.h"
 
     #include "wx/window.h"
@@ -36,13 +35,7 @@
     #include "wx/settings.h"
 #endif
 
-#ifdef __WXMAC__
-    #include "wx/mac/private.h"
-#endif
-
 #include "wx/renderer.h"
-
-#include "wx/splitter.h"
 
 #include <stdlib.h>
 
@@ -76,7 +69,7 @@ BEGIN_EVENT_TABLE(wxSplitterWindow, wxWindow)
     WX_EVENT_TABLE_CONTROL_CONTAINER(wxSplitterWindow)
 END_EVENT_TABLE()
 
-WX_DELEGATE_TO_CONTROL_CONTAINER(wxSplitterWindow);
+WX_DELEGATE_TO_CONTROL_CONTAINER(wxSplitterWindow, wxWindow)
 
 bool wxSplitterWindow::Create(wxWindow *parent, wxWindowID id,
                                    const wxPoint& pos,
@@ -220,10 +213,10 @@ void wxSplitterWindow::OnMouseEvent(wxMouseEvent& event)
     // following the mouse movement while it drags the sash, without it we only
     // draw the sash at the new position but only resize the windows when the
     // dragging is finished
-#if defined( __WXMAC__ ) && TARGET_API_MAC_OSX == 1
-    bool isLive = true ;
+#if defined( __WXMAC__ ) && defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX == 1
+    bool isLive = true ; // FIXME: why?
 #else
-    bool isLive = (GetWindowStyleFlag() & wxSP_LIVE_UPDATE) != 0;
+    bool isLive = HasFlag(wxSP_LIVE_UPDATE);
 #endif
     if (event.LeftDown())
     {
@@ -296,9 +289,9 @@ void wxSplitterWindow::OnMouseEvent(wxMouseEvent& event)
                 m_windowOne = m_windowTwo;
                 m_windowTwo = (wxWindow *) NULL;
                 OnUnsplit(removedWindow);
-                wxSplitterEvent event(wxEVT_COMMAND_SPLITTER_UNSPLIT, this);
-                event.m_data.win = removedWindow;
-                (void)DoSendEvent(event);
+                wxSplitterEvent eventUnsplit(wxEVT_COMMAND_SPLITTER_UNSPLIT, this);
+                eventUnsplit.m_data.win = removedWindow;
+                (void)DoSendEvent(eventUnsplit);
                 SetSashPositionAndNotify(0);
             }
             else if ( posSashNew == GetWindowSize() )
@@ -307,9 +300,9 @@ void wxSplitterWindow::OnMouseEvent(wxMouseEvent& event)
                 wxWindow *removedWindow = m_windowTwo;
                 m_windowTwo = (wxWindow *) NULL;
                 OnUnsplit(removedWindow);
-                wxSplitterEvent event(wxEVT_COMMAND_SPLITTER_UNSPLIT, this);
-                event.m_data.win = removedWindow;
-                (void)DoSendEvent(event);
+                wxSplitterEvent eventUnsplit(wxEVT_COMMAND_SPLITTER_UNSPLIT, this);
+                eventUnsplit.m_data.win = removedWindow;
+                (void)DoSendEvent(eventUnsplit);
                 SetSashPositionAndNotify(0);
             }
             else
@@ -688,17 +681,25 @@ void wxSplitterWindow::SizeWindows()
         {
             w1 = size1;
             w2 = w - 2*border - sash - w1;
-            h1 =
+            if (w2 < 0)
+                w2 = 0;
             h2 = h - 2*border;
+            if (h2 < 0)
+                h2 = 0;
+            h1 = h2;
             x2 = size2;
             y2 = border;
         }
         else // horz splitter
         {
-            w1 =
             w2 = w - 2*border;
+            if (w2 < 0)
+                w2 = 0;
+            w1 = w2;
             h1 = size1;
             h2 = h - 2*border - sash - h1;
+            if (h2 < 0)
+                h2 = 0;
             x2 = border;
             y2 = size2;
         }
@@ -883,9 +884,9 @@ wxSize wxSplitterWindow::DoGetBestSize() const
     // get best sizes of subwindows
     wxSize size1, size2;
     if ( m_windowOne )
-        size1 = m_windowOne->GetAdjustedBestSize();
+        size1 = m_windowOne->GetEffectiveMinSize();
     if ( m_windowTwo )
-        size2 = m_windowTwo->GetAdjustedBestSize();
+        size2 = m_windowTwo->GetEffectiveMinSize();
 
     // sum them
     //

@@ -1,16 +1,27 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        generic/region.cpp
+// Name:        src/generic/region.cpp
 // Purpose:     generic wxRegion class
 // Author:      David Elliott
 // Modified by:
 // Created:     2004/04/12
-// RCS-ID:      $Id: regiong.cpp,v 1.7 2005/08/28 15:37:54 VZ Exp $
+// RCS-ID:      $Id: regiong.cpp 41444 2006-09-25 18:18:26Z VZ $
 // Copyright:   (c) 2004 David Elliott
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#include "wx/generic/region.h"
-#include "wx/utils.h"
+
+// For compilers that support precompilation, includes "wx.h".
+#include "wx/wxprec.h"
+
+#ifdef __BORLANDC__
+    #pragma hdrstop
+#endif
+
+#include "wx/region.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/utils.h"
+#endif
 
 // ========================================================================
 // Classes to interface with X.org code
@@ -215,7 +226,7 @@ public:
         extents = refData.extents;
     }
 
-    ~wxRegionRefData()
+    virtual ~wxRegionRefData()
     {
         free(rects);
     }
@@ -228,7 +239,7 @@ private:
 // ========================================================================
 // wxRegionGeneric
 // ========================================================================
-//IMPLEMENT_DYNAMIC_CLASS(wxRegionGeneric, wxGDIObject);
+//IMPLEMENT_DYNAMIC_CLASS(wxRegionGeneric, wxGDIObject)
 
 #define M_REGIONDATA ((wxRegionRefData *)m_refData)
 #define M_REGIONDATA_OF(rgn) ((wxRegionRefData *)(rgn.m_refData))
@@ -275,100 +286,72 @@ wxObjectRefData *wxRegionGeneric::CloneRefData(const wxObjectRefData *data) cons
     return new wxRegionRefData(*(wxRegionRefData *)data);
 }
 
-bool wxRegionGeneric::operator== (const wxRegionGeneric& region)
+bool wxRegionGeneric::DoIsEqual(const wxRegion& region) const
 {
-    wxASSERT(m_refData && region.m_refData);
     return REGION::XEqualRegion(M_REGIONDATA,M_REGIONDATA_OF(region));
 }
 
-wxRect wxRegionGeneric::GetBox() const
+bool wxRegionGeneric::DoGetBox(wxCoord& x, wxCoord& y, wxCoord&w, wxCoord &h) const
 {
-    wxASSERT(m_refData);
-    wxRect rect;
-    REGION::XClipBox(M_REGIONDATA,&rect);
-    return rect;
-}
+    if ( !m_refData )
+        return false;
 
-void wxRegionGeneric::GetBox(wxCoord& x, wxCoord& y, wxCoord&w, wxCoord &h) const
-{
-    wxASSERT(m_refData);
     wxRect rect;
     REGION::XClipBox(M_REGIONDATA,&rect);
     x = rect.x;
     y = rect.y;
     w = rect.width;
     h = rect.height;
+    return true;
 }
 
 // ----------------------------------------------------------------------------
 // wxRegionGeneric operations
 // ----------------------------------------------------------------------------
 
-bool wxRegionGeneric::Union(const wxRect& rect)
-/* XUnionRectWithRegion */
+bool wxRegionGeneric::DoUnionWithRect(const wxRect& rect)
 {
-    if (!rect.width || !rect.height)
-        return false;
+    if ( rect.IsEmpty() )
+    {
+        // nothing to do
+        return true;
+    }
 
     AllocExclusive();
     REGION region(rect);
     return REGION::XUnionRegion(&region,M_REGIONDATA,M_REGIONDATA);
 }
 
-bool wxRegionGeneric::Union(const wxRegionGeneric& region)
+bool wxRegionGeneric::DoUnionWithRegion(const wxRegion& region)
 {
     AllocExclusive();
     return REGION::XUnionRegion(M_REGIONDATA_OF(region),M_REGIONDATA,M_REGIONDATA);
 }
 
-bool wxRegionGeneric::Intersect(const wxRect& rect)
-{
-    if (!rect.width || !rect.height)
-        return false;
-    AllocExclusive();
-    REGION region(rect);
-
-    return REGION::XIntersectRegion(&region,M_REGIONDATA,M_REGIONDATA);
-}
-
-bool wxRegionGeneric::Intersect(const wxRegionGeneric& region)
+bool wxRegionGeneric::DoIntersect(const wxRegion& region)
 {
     AllocExclusive();
     return REGION::XIntersectRegion(M_REGIONDATA_OF(region),M_REGIONDATA,M_REGIONDATA);
 }
 
-bool wxRegionGeneric::Subtract(const wxRect& rect)
+bool wxRegionGeneric::DoSubtract(const wxRegion& region)
 {
-    if (!rect.width || !rect.height)
-        return false;
-    AllocExclusive();
-    REGION region(rect);
+    if ( region.IsEmpty() )
+    {
+        // nothing to do
+        return true;
+    }
 
-    return REGION::XSubtractRegion(&region,M_REGIONDATA,M_REGIONDATA);
-}
-
-bool wxRegionGeneric::Subtract(const wxRegionGeneric& region)
-{
     return REGION::XSubtractRegion(M_REGIONDATA_OF(region),M_REGIONDATA,M_REGIONDATA);
 }
 
-bool wxRegionGeneric::Xor(const wxRect& rect)
-{
-    if (!rect.width || !rect.height)
-        return false;
-    AllocExclusive();
-    REGION region(rect);
-
-    return REGION::XXorRegion(&region,M_REGIONDATA,M_REGIONDATA);
-}
-
-bool wxRegionGeneric::Xor(const wxRegionGeneric& region)
+bool wxRegionGeneric::DoXor(const wxRegion& region)
 {
     AllocExclusive();
     return REGION::XXorRegion(M_REGIONDATA_OF(region),M_REGIONDATA,M_REGIONDATA);
 }
 
-bool wxRegionGeneric::Offset(wxCoord x, wxCoord y)
+bool wxRegionGeneric::DoOffset(wxCoord x, wxCoord y)
 {
     AllocExclusive();
     return REGION::XOffsetRegion(M_REGIONDATA, x, y);
@@ -378,35 +361,21 @@ bool wxRegionGeneric::Offset(wxCoord x, wxCoord y)
 // wxRegionGeneric comparison
 // ----------------------------------------------------------------------------
 
-bool wxRegionGeneric::Empty() const
+bool wxRegionGeneric::IsEmpty() const
 {
     wxASSERT(m_refData);
     return REGION::XEmptyRegion(M_REGIONDATA);
 }
 
 // Does the region contain the point (x,y)?
-wxRegionContain wxRegionGeneric::Contains(long x, long y) const
+wxRegionContain wxRegionGeneric::DoContainsPoint(wxCoord x, wxCoord y) const
 {
     wxASSERT(m_refData);
-    return REGION::XPointInRegion(M_REGIONDATA,x,y)?wxInRegion:wxOutRegion;
-}
-
-// Does the region contain the point pt?
-wxRegionContain wxRegionGeneric::Contains(const wxPoint& pt) const
-{
-    wxASSERT(m_refData);
-    return REGION::XPointInRegion(M_REGIONDATA,pt.x,pt.y)?wxInRegion:wxOutRegion;
-}
-
-// Does the region contain the rectangle (x, y, w, h)?
-wxRegionContain wxRegionGeneric::Contains(long x, long y, long w, long h) const
-{
-    wxASSERT(m_refData);
-    return REGION::XRectInRegion(M_REGIONDATA,x,y,w,h);
+    return REGION::XPointInRegion(M_REGIONDATA,x,y) ? wxInRegion : wxOutRegion;
 }
 
 // Does the region contain the rectangle rect?
-wxRegionContain wxRegionGeneric::Contains(const wxRect& rect) const
+wxRegionContain wxRegionGeneric::DoContainsRect(const wxRect& rect) const
 {
     wxASSERT(m_refData);
     return REGION::XRectInRegion(M_REGIONDATA,rect.x,rect.y,rect.width,rect.height);
@@ -415,7 +384,7 @@ wxRegionContain wxRegionGeneric::Contains(const wxRect& rect) const
 // ========================================================================
 // wxRegionIteratorGeneric
 // ========================================================================
-//IMPLEMENT_DYNAMIC_CLASS(wxRegionIteratorGeneric,wxObject);
+//IMPLEMENT_DYNAMIC_CLASS(wxRegionIteratorGeneric,wxObject)
 
 wxRegionIteratorGeneric::wxRegionIteratorGeneric()
 {
@@ -620,14 +589,17 @@ SOFTWARE.
  */
 
 /* Create a new empty region */
-Region REGION::
-XCreateRegion(void)
+Region REGION::XCreateRegion(void)
 {
-    Region temp;
+    Region temp = new REGION;
 
-    if (! (temp = new REGION))
+    if (!temp)
         return (Region) NULL;
-    if (! (temp->rects = ( BOX * )malloc( (unsigned) sizeof( BOX )))) {
+
+    temp->rects = ( BOX * )malloc( (unsigned) sizeof( BOX ));
+
+    if (!temp->rects)
+    {
         free((char *) temp);
         return (Region) NULL;
     }
@@ -640,10 +612,7 @@ XCreateRegion(void)
     return( temp );
 }
 
-bool REGION::
-XClipBox(
-    Region r,
-    wxRect *rect)
+bool REGION::XClipBox(Region r, wxRect *rect)
 {
     rect->x = r->extents.x1;
     rect->y = r->extents.y1;
@@ -876,9 +845,10 @@ miRegionCopy(
             {
                 BOX *prevRects = dstrgn->rects;
 
-                if (! (dstrgn->rects = (BOX *)
+                dstrgn->rects = (BOX *)
                        realloc((char *) dstrgn->rects,
-                               (unsigned) rgn->numRects * (sizeof(BOX)))))
+                               (unsigned) rgn->numRects * (sizeof(BOX)));
+                if (!dstrgn->rects)
                 {
                     free(prevRects);
                     return;
@@ -1145,8 +1115,10 @@ miRegionOp(
      */
     newReg->size = wxMax(reg1->numRects,reg2->numRects) * 2;
 
-    if (! (newReg->rects = (BoxPtr)
-           malloc ((unsigned) (sizeof(BoxRec) * newReg->size)))) {
+    newReg->rects = (BoxPtr)malloc((unsigned) (sizeof(BoxRec) * newReg->size));
+
+    if (!newReg->rects)
+    {
         newReg->size = 0;
         return;
     }
@@ -1775,11 +1747,7 @@ miSubtractO (
  *-----------------------------------------------------------------------
  */
 
-bool REGION::
-XSubtractRegion(
-    Region                   regM,
-    Region                  regS,
-    register Region        regD)
+bool REGION::XSubtractRegion(Region regM, Region regS, register Region regD)
 {
    /* check for trivial reject */
     if ( (!(regM->numRects)) || (!(regS->numRects))  ||
@@ -1803,13 +1771,16 @@ XSubtractRegion(
     return true;
 }
 
-bool REGION::
-XXorRegion(Region sra, Region srb, Region dr)
+bool REGION::XXorRegion(Region sra, Region srb, Region dr)
 {
-    Region tra, trb;
+    Region tra = XCreateRegion();
 
-    if ((! (tra = XCreateRegion())) || (! (trb = XCreateRegion())))
-        return 0;
+    wxCHECK_MSG( tra, false, wxT("region not created") );
+
+    Region trb = XCreateRegion();
+
+    wxCHECK_MSG( trb, false, wxT("region not created") );
+
     (void) XSubtractRegion(sra,srb,tra);
     (void) XSubtractRegion(srb,sra,trb);
     (void) XUnionRegion(tra,trb,dr);
@@ -1822,9 +1793,7 @@ XXorRegion(Region sra, Region srb, Region dr)
  * Check to see if the region is empty.  Assumes a region is passed
  * as a parameter
  */
-bool REGION::
-XEmptyRegion(
-    Region r)
+bool REGION::XEmptyRegion(Region r)
 {
     if( r->numRects == 0 ) return true;
     else  return false;
@@ -1833,8 +1802,7 @@ XEmptyRegion(
 /*
  *        Check to see if two regions are equal
  */
-bool REGION::
-XEqualRegion(Region r1, Region r2)
+bool REGION::XEqualRegion(Region r1, Region r2)
 {
     int i;
 
@@ -1853,10 +1821,7 @@ XEqualRegion(Region r1, Region r2)
     return true;
 }
 
-bool REGION::
-XPointInRegion(
-    Region pRegion,
-    int x, int y)
+bool REGION::XPointInRegion(Region pRegion, int x, int y)
 {
     int i;
 
@@ -1872,11 +1837,10 @@ XPointInRegion(
     return false;
 }
 
-wxRegionContain REGION::
-XRectInRegion(
-    register Region        region,
-    int rx, int ry,
-    unsigned int rwidth, unsigned int rheight)
+wxRegionContain REGION::XRectInRegion(register Region region,
+                                      int rx, int ry,
+                                      unsigned int rwidth,
+                                      unsigned int rheight)
 {
     register BoxPtr pbox;
     register BoxPtr pboxEnd;
@@ -1953,4 +1917,3 @@ XRectInRegion(
     return(partIn ? ((ry < prect->y2) ? wxPartRegion : wxInRegion) :
                 wxOutRegion);
 }
-

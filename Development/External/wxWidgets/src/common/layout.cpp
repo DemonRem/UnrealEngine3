@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        layout.cpp
+// Name:        src/common/layout.cpp
 // Purpose:     Constraint layout system classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: layout.cpp,v 1.30 2005/03/12 20:57:14 RD Exp $
+// RCS-ID:      $Id: layout.cpp 39627 2006-06-08 06:57:39Z ABX $
 // Copyright:   (c) Julian Smart
-// Licence:       wxWindows licence
+// Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 // =============================================================================
@@ -17,36 +17,28 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "layout.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-  #include "wx/defs.h"
+    #pragma hdrstop
 #endif
 
 #if wxUSE_CONSTRAINTS
 
-#ifndef WX_PRECOMP
-  #include "wx/window.h"
-  #include "wx/utils.h"
-  #include "wx/dialog.h"
-  #include "wx/msgdlg.h"
-  #include "wx/intl.h"
-#endif
-
 #include "wx/layout.h"
 
-    IMPLEMENT_DYNAMIC_CLASS(wxIndividualLayoutConstraint, wxObject)
-    IMPLEMENT_DYNAMIC_CLASS(wxLayoutConstraints, wxObject)
+#ifndef WX_PRECOMP
+    #include "wx/window.h"
+    #include "wx/utils.h"
+    #include "wx/dialog.h"
+    #include "wx/msgdlg.h"
+    #include "wx/intl.h"
+#endif
 
+
+IMPLEMENT_DYNAMIC_CLASS(wxIndividualLayoutConstraint, wxObject)
+IMPLEMENT_DYNAMIC_CLASS(wxLayoutConstraints, wxObject)
 
 
 inline void wxGetAsIs(wxWindowBase* win, int* w, int* h)
@@ -55,7 +47,7 @@ inline void wxGetAsIs(wxWindowBase* win, int* w, int* h)
     // The old way.  Works for me.
     win->GetSize(w, h);
 #endif
-    
+
 #if 0
     // Vadim's change.  Breaks wxPython's LayoutAnchors
     win->GetBestSize(w, h);

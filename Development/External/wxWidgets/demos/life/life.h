@@ -4,17 +4,13 @@
 // Author:      Guillermo Rodriguez Garcia, <guille@iies.es>
 // Modified by:
 // Created:     Jan/2000
-// RCS-ID:      $Id: life.h,v 1.9 2005/01/31 18:18:17 ABX Exp $
+// RCS-ID:      $Id: life.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 2000, Guillermo Rodriguez Garcia
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LIFE_APP_H_
 #define _LIFE_APP_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "life.h"
-#endif
 
 // for compilers that support precompilation, includes "wx/wx.h"
 #include "wx/wxprec.h"
@@ -45,7 +41,7 @@ class LifeCanvas : public wxWindow
 public:
     // ctor and dtor
     LifeCanvas(wxWindow* parent, Life* life, bool interactive = true);
-    ~LifeCanvas();
+    virtual ~LifeCanvas();
 
     // view management
     int  GetCellSize() const { return m_cellsize; };
@@ -126,7 +122,7 @@ class LifeFrame : public wxFrame
 public:
     // ctor and dtor
     LifeFrame();
-    ~LifeFrame();
+    virtual ~LifeFrame();
 
     // member functions
     void UpdateInfoText();

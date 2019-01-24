@@ -4,14 +4,10 @@
 // Notes:       Based on htmlhelp.cpp, implementing a monolithic
 //              HTML Help controller class,  by Vaclav Slavik
 // Author:      Harm van der Heijden and Vaclav Slavik
-// RCS-ID:      $Id: helpctrl.cpp,v 1.39 2005/03/24 17:49:56 ABX Exp $
+// RCS-ID:      $Id: helpctrl.cpp 52470 2008-03-13 23:29:27Z VS $
 // Copyright:   (c) Harm van der Heijden and Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "helpctrl.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -27,18 +23,15 @@
     #include "wx/intl.h"
 #endif // WX_PRECOMP
 
-#include "wx/html/helpctrl.h"
 #include "wx/busyinfo.h"
-
-#ifdef __WXGTK__
-    // for the hack in AddGrabIfNeeded()
-    #include "wx/dialog.h"
-#endif // __WXGTK__
+#include "wx/html/helpctrl.h"
+#include "wx/html/helpwnd.h"
+#include "wx/html/helpfrm.h"
+#include "wx/html/helpdlg.h"
 
 #if wxUSE_HELP
     #include "wx/tipwin.h"
 #endif
-
 
 #if wxUSE_LIBMSPACK
 #include "wx/html/forcelnk.h"
@@ -47,9 +40,12 @@ FORCE_LINK(wxhtml_chm_support)
 
 IMPLEMENT_DYNAMIC_CLASS(wxHtmlHelpController, wxHelpControllerBase)
 
-wxHtmlHelpController::wxHtmlHelpController(int style)
+wxHtmlHelpController::wxHtmlHelpController(int style, wxWindow* parentWindow):
+    wxHelpControllerBase(parentWindow)
 {
+    m_helpWindow = NULL;
     m_helpFrame = NULL;
+    m_helpDialog = NULL;
     m_Config = NULL;
     m_ConfigRoot = wxEmptyString;
     m_titleFormat = _("Help: %s");
@@ -60,35 +56,72 @@ wxHtmlHelpController::~wxHtmlHelpController()
 {
     if (m_Config)
         WriteCustomization(m_Config, m_ConfigRoot);
-    if (m_helpFrame)
+    if (m_helpWindow)
         DestroyHelpWindow();
 }
 
 
 void wxHtmlHelpController::DestroyHelpWindow()
 {
-    //if (m_Config) WriteCustomization(m_Config, m_ConfigRoot);
-    if (m_helpFrame)
-        m_helpFrame->Destroy();
+    if (m_FrameStyle & wxHF_EMBEDDED)
+        return;
+
+    // Find top-most parent window
+    // If a modal dialog
+    wxWindow* parent = FindTopLevelWindow();
+    if (parent)
+    {
+        wxDialog* dialog = wxDynamicCast(parent, wxDialog);
+        if (dialog && dialog->IsModal())
+        {
+            dialog->EndModal(wxID_OK);
+        }
+        parent->Destroy();
+        m_helpWindow = NULL;
+    }
+    m_helpDialog = NULL;
+    m_helpFrame = NULL;
 }
 
 void wxHtmlHelpController::OnCloseFrame(wxCloseEvent& evt)
 {
+    if (m_Config)
+        WriteCustomization(m_Config, m_ConfigRoot);
+
     evt.Skip();
 
     OnQuit();
 
-    m_helpFrame->SetController((wxHelpControllerBase*) NULL);
+    if ( m_helpWindow )
+        m_helpWindow->SetController(NULL);
+    m_helpWindow = NULL;
+    m_helpDialog = NULL;
     m_helpFrame = NULL;
 }
 
 void wxHtmlHelpController::SetTitleFormat(const wxString& title)
 {
     m_titleFormat = title;
-    if (m_helpFrame)
-        m_helpFrame->SetTitleFormat(title);
+    wxHtmlHelpFrame* frame = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpFrame);
+    wxHtmlHelpDialog* dialog = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpDialog);
+    if (frame)
+    {
+        frame->SetTitleFormat(title);
+    }
+    else if (dialog)
+        dialog->SetTitleFormat(title);
 }
 
+// Find the top-most parent window
+wxWindow* wxHtmlHelpController::FindTopLevelWindow()
+{
+    wxWindow* parent = m_helpWindow;
+    while (parent && !parent->IsTopLevel())
+    {
+        parent = parent->GetParent();
+    }
+    return parent;
+}
 
 bool wxHtmlHelpController::AddBook(const wxFileName& book_file, bool show_wait_msg)
 {
@@ -114,25 +147,42 @@ bool wxHtmlHelpController::AddBook(const wxString& book, bool show_wait_msg)
 #else
     wxUnusedVar(show_wait_msg);
 #endif
-    if (m_helpFrame)
-        m_helpFrame->RefreshLists();
+    if (m_helpWindow)
+        m_helpWindow->RefreshLists();
     return retval;
 }
 
-
-
-wxHtmlHelpFrame *wxHtmlHelpController::CreateHelpFrame(wxHtmlHelpData *data)
+wxHtmlHelpFrame* wxHtmlHelpController::CreateHelpFrame(wxHtmlHelpData *data)
 {
-    return new wxHtmlHelpFrame(data);
+    wxHtmlHelpFrame* frame = new wxHtmlHelpFrame(data);
+    frame->SetController(this);
+    frame->Create(m_parentWindow, -1, wxEmptyString, m_FrameStyle, m_Config, m_ConfigRoot);
+    frame->SetTitleFormat(m_titleFormat);    
+    m_helpFrame = frame;
+    return frame;
 }
 
-
-void wxHtmlHelpController::CreateHelpWindow()
+wxHtmlHelpDialog* wxHtmlHelpController::CreateHelpDialog(wxHtmlHelpData *data)
 {
-    if (m_helpFrame)
+    wxHtmlHelpDialog* dialog = new wxHtmlHelpDialog(data);
+    dialog->SetController(this);
+    dialog->SetTitleFormat(m_titleFormat);    
+    dialog->Create(m_parentWindow, -1, wxEmptyString, m_FrameStyle);
+    m_helpDialog = dialog;
+    return dialog;
+}
+
+wxWindow* wxHtmlHelpController::CreateHelpWindow()
+{
+    if (m_helpWindow)
     {
-        m_helpFrame->Raise();
-        return ;
+        if (m_FrameStyle & wxHF_EMBEDDED)
+            return m_helpWindow;
+
+        wxWindow* topLevelWindow = FindTopLevelWindow();
+        if (topLevelWindow)
+            topLevelWindow->Raise();
+        return m_helpWindow;
     }
 
     if (m_Config == NULL)
@@ -142,38 +192,46 @@ void wxHtmlHelpController::CreateHelpWindow()
             m_ConfigRoot = _T("wxWindows/wxHtmlHelpController");
     }
 
-    m_helpFrame = CreateHelpFrame(&m_helpData);
-    m_helpFrame->SetController(this);
+    if (m_FrameStyle & wxHF_DIALOG)
+    {
+        wxHtmlHelpDialog* dialog = CreateHelpDialog(&m_helpData);
+        m_helpWindow = dialog->GetHelpWindow();
+    }
+    else if ((m_FrameStyle & wxHF_EMBEDDED) && m_parentWindow)
+    {
+        m_helpWindow = new wxHtmlHelpWindow(m_parentWindow, -1, wxDefaultPosition, wxDefaultSize,
+            wxTAB_TRAVERSAL|wxNO_BORDER, m_FrameStyle, &m_helpData);
+    }
+    else // wxHF_FRAME
+    {
+        wxHtmlHelpFrame* frame = CreateHelpFrame(&m_helpData);
+        m_helpWindow = frame->GetHelpWindow();
+        frame->Show(true);
+    }
 
-    if (m_Config)
-        m_helpFrame->UseConfig(m_Config, m_ConfigRoot);
-
-    m_helpFrame->Create(NULL, wxID_HTML_HELPFRAME, wxEmptyString, m_FrameStyle);
-    m_helpFrame->SetTitleFormat(m_titleFormat);
-
-    m_helpFrame->Show(true);
+    return m_helpWindow;
 }
 
 void wxHtmlHelpController::ReadCustomization(wxConfigBase* cfg, const wxString& path)
 {
     /* should not be called by the user; call UseConfig, and the controller
      * will do the rest */
-    if (m_helpFrame && cfg)
-        m_helpFrame->ReadCustomization(cfg, path);
+    if (m_helpWindow && cfg)
+        m_helpWindow->ReadCustomization(cfg, path);
 }
 
 void wxHtmlHelpController::WriteCustomization(wxConfigBase* cfg, const wxString& path)
 {
     /* typically called by the controllers OnCloseFrame handler */
-    if (m_helpFrame && cfg)
-        m_helpFrame->WriteCustomization(cfg, path);
+    if (m_helpWindow && cfg)
+        m_helpWindow->WriteCustomization(cfg, path);
 }
 
 void wxHtmlHelpController::UseConfig(wxConfigBase *config, const wxString& rootpath)
 {
     m_Config = config;
     m_ConfigRoot = rootpath;
-    if (m_helpFrame) m_helpFrame->UseConfig(config, rootpath);
+    if (m_helpWindow) m_helpWindow->UseConfig(config, rootpath);
     ReadCustomization(config, rootpath);
 }
 
@@ -246,16 +304,25 @@ bool wxHtmlHelpController::DisplayTextPopup(const wxString& text, const wxPoint&
     return false;
 }
 
+void wxHtmlHelpController::SetHelpWindow(wxHtmlHelpWindow* helpWindow)
+{
+    m_helpWindow = helpWindow;
+    if (helpWindow)
+        helpWindow->SetController(this);
+}
+
 void wxHtmlHelpController::SetFrameParameters(const wxString& title,
                                    const wxSize& size,
                                    const wxPoint& pos,
                                    bool WXUNUSED(newFrameEachTime))
 {
     SetTitleFormat(title);
-    if (m_helpFrame)
-    {
-        m_helpFrame->SetSize(pos.x, pos.y, size.x, size.y);
-    }
+    wxHtmlHelpFrame* frame = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpFrame);
+    wxHtmlHelpDialog* dialog = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpDialog);
+    if (frame)
+        frame->SetSize(pos.x, pos.y, size.x, size.y);
+    else if (dialog)
+        dialog->SetSize(pos.x, pos.y, size.x, size.y);
 }
 
 wxFrame* wxHtmlHelpController::GetFrameParameters(wxSize *size,
@@ -264,11 +331,26 @@ wxFrame* wxHtmlHelpController::GetFrameParameters(wxSize *size,
 {
     if (newFrameEachTime)
         (* newFrameEachTime) = false;
-    if (size && m_helpFrame)
-        (* size) = m_helpFrame->GetSize();
-    if (pos && m_helpFrame)
-        (* pos) = m_helpFrame->GetPosition();
-    return m_helpFrame;
+
+    wxHtmlHelpFrame* frame = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpFrame);
+    wxHtmlHelpDialog* dialog = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpDialog);
+    if (frame)
+    {
+        if (size)
+            (* size) = frame->GetSize();
+        if (pos)
+            (* pos) = frame->GetPosition();
+        return frame;
+    }
+    else if (dialog)
+    {
+        if (size)
+            (* size) = dialog->GetSize();
+        if (pos)
+            (* pos) = dialog->GetPosition();
+        return NULL;
+    }
+    return NULL;
 }
 
 bool wxHtmlHelpController::Quit()
@@ -279,59 +361,50 @@ bool wxHtmlHelpController::Quit()
 
 // Make the help controller's frame 'modal' if
 // needed
-void wxHtmlHelpController::AddGrabIfNeeded()
+void wxHtmlHelpController::MakeModalIfNeeded()
 {
-    // So far, wxGTK only
-#ifdef __WXGTK__
-    bool needGrab = false;
-
-    // Check if there are any modal windows present,
-    // in which case we need to add a grab.
-    for ( wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
-          node;
-          node = node->GetNext() )
+    if ((m_FrameStyle & wxHF_EMBEDDED) == 0)
     {
-        wxWindow *win = node->GetData();
-        wxDialog *dialog = wxDynamicCast(win, wxDialog);
-
-        if (dialog && dialog->IsModal())
-            needGrab = true;
+        wxHtmlHelpFrame* frame = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpFrame);
+        wxHtmlHelpDialog* dialog = wxDynamicCast(FindTopLevelWindow(), wxHtmlHelpDialog);
+        if (frame)
+            frame->AddGrabIfNeeded();
+        else if (dialog && (m_FrameStyle & wxHF_MODAL))
+        {
+            dialog->ShowModal();
+        }
     }
-
-    if (needGrab && m_helpFrame)
-        m_helpFrame->AddGrab();
-#endif // __WXGTK__
 }
 
 bool wxHtmlHelpController::Display(const wxString& x)
 {
     CreateHelpWindow();
-    bool success = m_helpFrame->Display(x);
-    AddGrabIfNeeded();
+    bool success = m_helpWindow->Display(x);
+    MakeModalIfNeeded();
     return success;
 }
 
 bool wxHtmlHelpController::Display(int id)
 {
     CreateHelpWindow();
-    bool success = m_helpFrame->Display(id);
-    AddGrabIfNeeded();
+    bool success = m_helpWindow->Display(id);
+    MakeModalIfNeeded();
     return success;
 }
 
 bool wxHtmlHelpController::DisplayContents()
 {
     CreateHelpWindow();
-    bool success = m_helpFrame->DisplayContents();
-    AddGrabIfNeeded();
+    bool success = m_helpWindow->DisplayContents();
+    MakeModalIfNeeded();
     return success;
 }
 
 bool wxHtmlHelpController::DisplayIndex()
 {
     CreateHelpWindow();
-    bool success = m_helpFrame->DisplayIndex();
-    AddGrabIfNeeded();
+    bool success = m_helpWindow->DisplayIndex();
+    MakeModalIfNeeded();
     return success;
 }
 
@@ -339,9 +412,30 @@ bool wxHtmlHelpController::KeywordSearch(const wxString& keyword,
                                          wxHelpSearchMode mode)
 {
     CreateHelpWindow();
-    bool success = m_helpFrame->KeywordSearch(keyword, mode);
-    AddGrabIfNeeded();
+    bool success = m_helpWindow->KeywordSearch(keyword, mode);
+    MakeModalIfNeeded();
     return success;
+}
+
+/*
+ * wxHtmlModalHelp
+ * A convenience class, to use like this:
+ *
+ * wxHtmlModalHelp help(parent, helpFile, topic);
+ */
+
+wxHtmlModalHelp::wxHtmlModalHelp(wxWindow* parent, const wxString& helpFile, const wxString& topic, int style)
+{
+    // Force some mandatory styles
+    style |= wxHF_DIALOG | wxHF_MODAL;
+
+    wxHtmlHelpController controller(style, parent);
+    controller.Initialize(helpFile);
+
+    if (topic.IsEmpty())
+        controller.DisplayContents();
+    else
+        controller.DisplaySection(topic);
 }
 
 #endif // wxUSE_WXHTML_HELP

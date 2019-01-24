@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXFORCEFIELD
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -18,6 +18,7 @@
 class NxEffector;
 class NxForceFieldShape;
 class NxForceFieldShapeDesc;
+
 /**
  \brief A force field effector.
 
@@ -25,14 +26,20 @@ class NxForceFieldShapeDesc;
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxForceFieldDesc, NxScene::createForceField()
 */
+
 class NxForceField
 	{
+	protected:
+	NX_INLINE					NxForceField() : userData(NULL)	{}
+	virtual						~NxForceField()	{}
+
 	public:
 	/**
 	\brief Writes all of the effector's attributes to the description, as well
@@ -42,9 +49,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void saveToDesc(NxForceFieldDesc &desc) = 0;
 
@@ -55,9 +63,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setPose() getActor() NxForceFieldDesc::pose
 	*/
@@ -70,9 +79,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getPose() getActor() NxForceFieldDesc::pose
 	*/
@@ -85,9 +95,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setActor() NxForceFieldDesc::actor
 	*/
@@ -100,13 +111,120 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getActor() NxForceFieldDesc::actor
 	*/
 	virtual void setActor(NxActor * actor) = 0;
+	
+	/**
+	\brief Sets the kernel function which this field will be using  
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void setForceFieldKernel(NxForceFieldKernel * kernel) = 0;
+
+	/**
+	\brief Retrieves the kernel function which this field is using  
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldKernel*			getForceFieldKernel() = 0;
+
+	/**
+	\brief Retrieves the include shape group of this forcefield. Shapes in this group will move with the force field.
+
+	\return NxForceFieldShapeGroup The includeGroup of this force field.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldShapeGroup&		getIncludeShapeGroup() = 0; 
+	
+	/**
+	\brief Adds a force field shape group to this force field to define its volume of activity.
+
+	\param[in] group A force field shape group. See #NxForceFieldShapeGroup
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						addShapeGroup(NxForceFieldShapeGroup& group) = 0;
+
+	/**
+	\brief Removes a force field shape group from this force field.
+
+	\param[in] group A force field shape group. See #NxForceFieldShapeGroup
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						removeShapeGroup(NxForceFieldShapeGroup &) = 0;
+
+	/**
+	\brief Returns the number of force field shape groups of this force field. (not counting the include group)
+
+	\return The Number of force field shape groups. See #NxForceFieldShapeGroup
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxU32						getNbShapeGroups() const = 0; 
+
+	/**
+	\brief Restarts the force field shape groups iterator so that the next call to getNextShape() returns the first shape in the force field.  
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void						resetShapeGroupsIterator() = 0; 
+
+	/**
+	\brief Retrieves the next FF shape group when iterating.
+
+	\return NxForceFieldShapeGroup See #NxForceFieldShapeGroup
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldShapeGroup*		getNextShapeGroup() = 0; 
 
 	/**
 	\brief Retrieves the value set with #setGroup().
@@ -117,9 +235,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroup() NxCollisionGroup
 	*/
@@ -136,9 +255,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroup() NxCollisionGroup
 	*/
@@ -151,9 +271,10 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroupsMask()
 	*/
@@ -166,13 +287,42 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroupsMask()
 	*/
 	virtual void setGroupsMask(NxGroupsMask  mask) = 0; 
+
+	/**
+	\brief Gets the Coordinate space of the field.
+
+	\return NxForceFieldCoordinates See #NxForceFieldCoordinates
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldCoordinates getCoordinates() const					= 0;
+	
+	/**
+	\brief Sets the Coordinate space of the field. Transforms position and velocity of objects into this space prior to kernel evaluation.
+
+	\param[in] coordinates The coordinate system. See #NxForceFieldCoordinates
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void setCoordinates(NxForceFieldCoordinates coordinates)		= 0;
 
 	/**
 	\brief Sets a name string for the object that can be retrieved with getName().
@@ -183,13 +333,14 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
-	virtual void  setName (const char* name)= 0;
+	virtual void  setName (const char* name) = 0;
 
 	/**
 	\brief Retrieves the name string set with setName().
@@ -198,87 +349,153 @@ class NxForceField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
 	virtual const char*  getName () const = 0;
 
-	virtual NxForceFieldCoordinates getCoordinates() const = 0;			//!< Gets the Coordinate space of the field.
-	virtual void setCoordinates(NxForceFieldCoordinates coordinates) = 0;//!< Sets the Coordinate space of the field.
-	virtual NxVec3 getConstant () const= 0;								//!< Gets the constant part of force field function
-	virtual void setConstant (const NxVec3 &) = 0;						//!< Sets the constant part of force field function
-	virtual NxMat33 getPositionMultiplier () const = 0;					//!< Gets the coefficient of force field function position term
-	virtual void setPositionMultiplier (const NxMat33 & ) = 0;			//!< Sets the coefficient of force field function position term
-	virtual NxMat33 getVelocityMultiplier () const = 0;					//!< Gets the coefficient of force field function velocity term
-	virtual void setVelocityMultiplier (const NxMat33 & ) = 0;			//!< Sets the coefficient of force field function velocity term
-	virtual NxVec3 getPositionTarget () const = 0;						//!< Gets the force field position target
-	virtual void setPositionTarget (const NxVec3 & ) = 0;				//!< Sets the force field position target
-	virtual NxVec3 getVelocityTarget () const = 0;						//!< Gets the force field velocity target
-	virtual void setVelocityTarget (const NxVec3 & ) = 0;				//!< Sets the force field velocity target
-	virtual NxVec3 getFalloffLinear() const = 0;						//!< Sets the linear falloff term
-	virtual void setFalloffLinear(const NxVec3 &) = 0;					//!< Sets the linear falloff term
-	virtual NxVec3 getFalloffQuadratic() const = 0;						//!< Sets the quadratic falloff term
-	virtual void setFalloffQuadratic(const NxVec3 &) = 0;				//!< Sets the quadratic falloff term
-	virtual NxVec3 getNoise () const = 0;								//!< Gets the force field noise
-	virtual void setNoise (const NxVec3 & ) = 0;						//!< Sets the force field noise
-	virtual NxReal getTorusRadius () const = 0;							//!< Gets the toroidal radius
-	virtual void setTorusRadius(NxReal) = 0;							//!< Sets the toroidal radius
-
-	virtual	NxReal	getFluidScale()		const	= 0;					//!< Gets the fluid scale factor
-	virtual	void	setFluidScale(NxReal)		= 0;					//!< Sets the fluid scale factor
-	virtual	NxReal	getClothScale()		const	= 0;					//!< Gets the cloth scale factor
-	virtual	void	setClothScale(NxReal)		= 0;					//!< Sets the cloth scale factor
-	virtual	NxReal	getSoftBodyScale()	const	= 0;					//!< Gets the soft body scale factor
-	virtual	void	setSoftBodyScale(NxReal)	= 0;					//!< Sets the soft body scale factor
-	virtual	NxReal	getRigidBodyScale()	const	= 0;					//!< Gets the rigid body scale factor
-	virtual	void	setRigidBodyScale(NxReal)	= 0;					//!< Sets the rigid body scale factor
-
-	virtual NxU32	getFlags () const			= 0;					//!< Gets the flags @see NxForceFieldFlags
-	virtual void	setFlags(NxU32)				= 0;					//!< Sets the flags @see NxForceFieldFlags
 	/**
-	\brief Creates a NxForceFieldShape. 
-	
-	The volume of activity of the force field is defined by the union of all of the force field's shapes' volumes created
-	here without the NX_FFS_EXCLUDE flag set, minus the union of all of the force field's shapes with the NX_FFS_EXCLUDE flag set.
+	\brief Gets the force field scaling type for fluids
 
-	The shapes are owned by the force field and released if the force field is released.
-	
+	\return NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
+
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
-
-	@see releaseShape() NxForceFieldShapeDesc
+	\li WII	 : Yes
 	*/
-	virtual NxForceFieldShape * createShape(const NxForceFieldShapeDesc &) = 0;
+	virtual	NxForceFieldType	getFluidType()		const				= 0;
 	
 	/**
-	\brief Releases the passed force field shape. 
+	\brief Sets the force field scaling type for fluids
 
-	The passed force field shape must previously have been created with this force field's createShape() call.
-	
+	\param[in] t NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
+
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	void				setFluidType(NxForceFieldType t)		= 0;
+	
+	/**
+	\brief Gets the force field scaling type for cloths
 
-	@see createShape() NxBoxForceFieldShapeDesc
-	*/	
-	virtual void releaseShape(const NxForceFieldShape &) = 0;
+	\return NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
 
-	//! Returns the number of shapes in the force field. 
-	virtual NxU32  getNbShapes () const = 0; 
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	*/
+	virtual	NxForceFieldType	getClothType()		const				= 0;
+	
+	/**
+	\brief Sets the force field scaling type for cloths
 
-	//! Restarts the shape iterator so that the next call to getNextShape() returns the first shape in the force field.  
-	virtual void  resetShapesIterator ()= 0; 
+	\param[in] t NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
 
-	//! Retrieves the next shape when iterating.  
-	virtual NxForceFieldShape *  getNextShape ()= 0; 
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	void				setClothType(NxForceFieldType t)		= 0;
+	
+	/**
+	\brief Gets the force field scaling type for soft bodies
+
+	\return NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	NxForceFieldType	getSoftBodyType()	const				= 0;
+
+	/**
+	\brief Sets the force field scaling type for soft bodies
+
+	\param[in] t NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	void				setSoftBodyType(NxForceFieldType t)		= 0;
+
+	/**
+	\brief Gets the force field scaling type for rigid bodies
+
+	\return NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	NxForceFieldType	getRigidBodyType()	const				= 0;
+	
+	/**
+	\brief Sets the force field scaling type for rigid bodies
+
+	\param[in] t NxForceFieldType The force field scaling type for fluids. See #NxForceFieldType
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual	void				setRigidBodyType(NxForceFieldType t)	= 0;
+
+	/**
+	\brief Gets the force field flags @see NxForceFieldFlags
+
+	\return NxForceFieldFlags The force field flags
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxU32	getFlags () const			= 0;
+
+	/**
+	\brief Sets the force field flags @see NxForceFieldFlags
+
+	\param[in] f NxForceFieldFlags The force field flags
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void	setFlags(NxU32 f)				= 0;
 
 	/**
 	\brief Samples the force field. Incoming points & velocities must be in world space. The velocities pointer is optional and can be null. 
@@ -287,22 +504,67 @@ class NxForceField
 	\param[in] points Buffer of sample points
 	\param[in] velocities Buffer of velocities at the sample points
 	\param[out] outForces Buffer for the returned forces
+	\param[out] outTorques Buffer for the returned torques
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
 	*/
-	virtual	void				samplePoints(NxU32 numPoints, const NxVec3* points, const NxVec3* velocities, NxVec3* outForces)	const = 0;
-	};
+	virtual	void				samplePoints(NxU32 numPoints, const NxVec3* points, const NxVec3* velocities, NxVec3* outForces, NxVec3* outTorques)	const = 0;
 
+	/**
+	\brief Retrieves the scene which this force field belongs to.
+
+	\return Owner Scene.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxScene
+	*/
+	virtual		NxScene&		getScene()	const = 0;
+
+	/**
+	\brief Retrieves the force field variety index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldVariety	getForceFieldVariety() const = 0;
+
+	/**
+	\brief Sets the force field variety index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void				setForceFieldVariety(NxForceFieldVariety)  = 0;
+
+
+	//public variables:
+	void*			userData;	//!< user can assign this to whatever, usually to create a 1:1 relationship with a user object.
+
+	};
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

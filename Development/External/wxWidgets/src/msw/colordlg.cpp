@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: colordlg.cpp,v 1.31 2005/07/30 17:07:18 MBN Exp $
+// RCS-ID:      $Id: colordlg.cpp 49973 2007-11-15 16:44:08Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "colordlg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,22 +24,22 @@
     #pragma hdrstop
 #endif
 
+#if wxUSE_COLOURDLG && !(defined(__SMARTPHONE__) && defined(__WXWINCE__))
+
+#include "wx/colordlg.h"
+
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcdlg.h"
     #include <stdio.h>
-    #include "wx/defs.h"
     #include "wx/colour.h"
     #include "wx/gdicmn.h"
     #include "wx/utils.h"
     #include "wx/dialog.h"
+    #include "wx/cmndata.h"
+    #include "wx/math.h"
 #endif
 
-#if wxUSE_COLOURDLG && !(defined(__SMARTPHONE__) && defined(__WXWINCE__))
-
 #include "wx/msw/private.h"
-#include "wx/colordlg.h"
-#include "wx/cmndata.h"
-#include "wx/math.h"
-#include "wx/msw/wrapcdlg.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +69,9 @@ wxColourDialogHookProc(HWND hwnd,
         CHOOSECOLOR *pCC = (CHOOSECOLOR *)lParam;
         wxColourDialog *dialog = (wxColourDialog *)pCC->lCustData;
 
-        ::SetWindowText(hwnd, dialog->GetTitle());
+        const wxString title = dialog->GetTitle();
+        if ( !title.empty() )
+            ::SetWindowText(hwnd, title);
 
         wxPoint pos = dialog->GetPosition();
         if ( pos != wxDefaultPosition )

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/button.cpp
+// Name:        src/msw/button.cpp
 // Purpose:     wxButton
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: button.cpp,v 1.93 2005/05/22 22:53:11 VZ Exp $
+// RCS-ID:      $Id: button.cpp 51575 2008-02-06 19:58:30Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "button.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,19 +26,51 @@
 
 #if wxUSE_BUTTON
 
+#include "wx/button.h"
+
 #ifndef WX_PRECOMP
     #include "wx/app.h"
-    #include "wx/button.h"
     #include "wx/brush.h"
     #include "wx/panel.h"
     #include "wx/bmpbuttn.h"
     #include "wx/settings.h"
     #include "wx/dcscreen.h"
+    #include "wx/dcclient.h"
+    #include "wx/toplevel.h"
 #endif
 
 #include "wx/stockitem.h"
 #include "wx/tokenzr.h"
 #include "wx/msw/private.h"
+
+#if wxUSE_UXTHEME
+    #include "wx/msw/uxtheme.h"
+
+    // no need to include tmschema.h
+    #ifndef BP_PUSHBUTTON
+        #define BP_PUSHBUTTON 1
+
+        #define PBS_NORMAL    1
+        #define PBS_HOT       2
+        #define PBS_PRESSED   3
+        #define PBS_DISABLED  4
+        #define PBS_DEFAULTED 5
+
+        #define TMT_CONTENTMARGINS 3602
+    #endif
+#endif // wxUSE_UXTHEME
+
+#ifndef WM_THEMECHANGED
+    #define WM_THEMECHANGED     0x031A
+#endif
+
+#ifndef ODS_NOACCEL
+    #define ODS_NOACCEL         0x0100
+#endif
+
+#ifndef ODS_NOFOCUSRECT
+    #define ODS_NOFOCUSRECT     0x0200
+#endif
 
 // ----------------------------------------------------------------------------
 // macros
@@ -135,16 +163,16 @@ bool wxButton::Create(wxWindow *parent,
     {
         // On Windows, some buttons aren't supposed to have
         // mnemonics, so strip them out.
-        
-        label = wxGetStockLabel(id 
+
+        label = wxGetStockLabel(id
 #if defined(__WXMSW__) || defined(__WXWINCE__)
                                         , ( id != wxID_OK &&
                                             id != wxID_CANCEL &&
                                             id != wxID_CLOSE )
 #endif
                                 );
-     }
-    
+    }
+
     if ( !CreateControl(parent, id, pos, size, style, validator, name) )
         return false;
 
@@ -170,6 +198,11 @@ bool wxButton::Create(wxWindow *parent,
 
 wxButton::~wxButton()
 {
+    wxTopLevelWindow *tlw = wxDynamicCast(wxGetTopLevelParent(this), wxTopLevelWindow);
+    if ( tlw && tlw->GetTmpDefaultItem() == this )
+    {
+        UnsetTmpDefault();
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -221,7 +254,7 @@ wxSize wxButton::DoGetBestSize() const
 
     wxCoord wBtn,
             hBtn;
-    dc.GetMultiLineTextExtent(GetLabel(), &wBtn, &hBtn);
+    dc.GetMultiLineTextExtent(GetLabelText(), &wBtn, &hBtn);
 
     // add a margin -- the button is wider than just its label
     wBtn += 3*GetCharWidth();
@@ -312,27 +345,55 @@ wxSize wxButtonBase::GetDefaultSize()
 // set this button as the (permanently) default one in its panel
 void wxButton::SetDefault()
 {
-    wxWindow *parent = GetParent();
+    wxTopLevelWindow *tlw = wxDynamicCast(wxGetTopLevelParent(this), wxTopLevelWindow);
 
-    wxCHECK_RET( parent, _T("button without parent?") );
+    wxCHECK_RET( tlw, _T("button without top level window?") );
 
     // set this one as the default button both for wxWidgets ...
-    wxWindow *winOldDefault = parent->SetDefaultItem(this);
+    wxWindow *winOldDefault = tlw->SetDefaultItem(this);
 
     // ... and Windows
     SetDefaultStyle(wxDynamicCast(winOldDefault, wxButton), false);
     SetDefaultStyle(this, true);
 }
 
+// return the top level parent window if it's not being deleted yet, otherwise
+// return NULL
+static wxTopLevelWindow *GetTLWParentIfNotBeingDeleted(wxWindow *win)
+{
+    for ( ;; )
+    {
+        // IsTopLevel() will return false for a wxTLW being deleted, so we also
+        // need the parent test for this case
+        wxWindow * const parent = win->GetParent();
+        if ( !parent || win->IsTopLevel() )
+        {
+            if ( win->IsBeingDeleted() )
+                return NULL;
+
+            break;
+        }
+
+        win = parent;
+    }
+
+    wxASSERT_MSG( win, _T("button without top level parent?") );
+
+    wxTopLevelWindow * const tlw = wxDynamicCast(win, wxTopLevelWindow);
+    wxASSERT_MSG( tlw, _T("logic error in GetTLWParentIfNotBeingDeleted()") );
+
+    return tlw;
+}
+
 // set this button as being currently default
 void wxButton::SetTmpDefault()
 {
-    wxWindow *parent = GetParent();
+    wxTopLevelWindow * const tlw = GetTLWParentIfNotBeingDeleted(GetParent());
+    if ( !tlw )
+        return;
 
-    wxCHECK_RET( parent, _T("button without parent?") );
-
-    wxWindow *winOldDefault = parent->GetDefaultItem();
-    parent->SetTmpDefaultItem(this);
+    wxWindow *winOldDefault = tlw->GetDefaultItem();
+    tlw->SetTmpDefaultItem(this);
 
     SetDefaultStyle(wxDynamicCast(winOldDefault, wxButton), false);
     SetDefaultStyle(this, true);
@@ -341,13 +402,13 @@ void wxButton::SetTmpDefault()
 // unset this button as currently default, it may still stay permanent default
 void wxButton::UnsetTmpDefault()
 {
-    wxWindow *parent = GetParent();
+    wxTopLevelWindow * const tlw = GetTLWParentIfNotBeingDeleted(GetParent());
+    if ( !tlw )
+        return;
 
-    wxCHECK_RET( parent, _T("button without parent?") );
+    tlw->SetTmpDefaultItem(NULL);
 
-    parent->SetTmpDefaultItem(NULL);
-
-    wxWindow *winOldDefault = parent->GetDefaultItem();
+    wxWindow *winOldDefault = tlw->GetDefaultItem();
 
     SetDefaultStyle(this, false);
     SetDefaultStyle(wxDynamicCast(winOldDefault, wxButton), true);
@@ -370,18 +431,13 @@ wxButton::SetDefaultStyle(wxButton *btn, bool on)
         if ( !wxTheApp->IsActive() )
             return;
 
-        // look for a panel-like window
-        wxWindow *win = btn->GetParent();
-        while ( win && !win->HasFlag(wxTAB_TRAVERSAL) )
-            win = win->GetParent();
+        wxWindow * const tlw = wxGetTopLevelParent(btn);
+        wxCHECK_RET( tlw, _T("button without top level window?") );
 
-        if ( win )
-        {
-            ::SendMessage(GetHwndOf(win), DM_SETDEFID, btn->GetId(), 0L);
+        ::SendMessage(GetHwndOf(tlw), DM_SETDEFID, btn->GetId(), 0L);
 
-            // sending DM_SETDEFID also changes the button style to
-            // BS_DEFPUSHBUTTON so there is nothing more to do
-        }
+        // sending DM_SETDEFID also changes the button style to
+        // BS_DEFPUSHBUTTON so there is nothing more to do
     }
 
     // then also change the style as needed
@@ -476,6 +532,27 @@ WXLRESULT wxButton::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
 
         // and continue with processing the message normally as well
     }
+#if wxUSE_UXTHEME
+    else if ( nMsg == WM_THEMECHANGED )
+    {
+        // need to recalculate the best size here
+        // as the theme size might have changed
+        InvalidateBestSize();
+    }
+    else if ( wxUxThemeEngine::GetIfActive() )
+    {
+        // we need to Refresh() if mouse has entered or left window
+        // so we can update the hot tracking state
+        // must use m_mouseInWindow here instead of IsMouseInWindow()
+        // since we need to know the first time the mouse enters the window
+        // and IsMouseInWindow() would return true in this case
+        if ( ( nMsg == WM_MOUSEMOVE && !m_mouseInWindow ) ||
+             nMsg == WM_MOUSELEAVE )
+        {
+            Refresh();
+        }
+    }
+#endif // wxUSE_UXTHEME
 
     // let the base class do all real processing
     return wxControl::MSWWindowProc(nMsg, wParam, lParam);
@@ -669,62 +746,141 @@ static void DrawButtonFrame(HDC hdc, const RECT& rectBtn,
     DeleteObject(hpenBlack);
 }
 
-bool wxButton::MSWOnDraw(WXDRAWITEMSTRUCT *wxdis)
+#if wxUSE_UXTHEME
+static
+void MSWDrawXPBackground(wxButton *button, WXDRAWITEMSTRUCT *wxdis)
 {
     LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT)wxdis;
-
+    HDC hdc = lpDIS->hDC;
+    UINT state = lpDIS->itemState;
     RECT rectBtn;
     CopyRect(&rectBtn, &lpDIS->rcItem);
 
-    COLORREF colBg = wxColourToRGB(GetBackgroundColour()),
-             colFg = wxColourToRGB(GetForegroundColour());
+    wxUxThemeHandle theme(button, L"BUTTON");
+    int iState;
 
+    if ( state & ODS_SELECTED )
+    {
+        iState = PBS_PRESSED;
+    }
+    else if ( button->HasCapture() || button->IsMouseInWindow() )
+    {
+        iState = PBS_HOT;
+    }
+    else if ( state & ODS_FOCUS )
+    {
+        iState = PBS_DEFAULTED;
+    }
+    else if ( state & ODS_DISABLED )
+    {
+        iState = PBS_DISABLED;
+    }
+    else
+    {
+        iState = PBS_NORMAL;
+    }
+
+    // draw parent background if needed
+    if ( wxUxThemeEngine::Get()->IsThemeBackgroundPartiallyTransparent(theme,
+                                                                       BP_PUSHBUTTON,
+                                                                       iState) )
+    {
+        wxUxThemeEngine::Get()->DrawThemeParentBackground(GetHwndOf(button), hdc, &rectBtn);
+    }
+
+    // draw background
+    wxUxThemeEngine::Get()->DrawThemeBackground(theme, hdc, BP_PUSHBUTTON, iState,
+                                                &rectBtn, NULL);
+
+    // calculate content area margins
+    MARGINS margins;
+    wxUxThemeEngine::Get()->GetThemeMargins(theme, hdc, BP_PUSHBUTTON, iState,
+                                            TMT_CONTENTMARGINS, &rectBtn, &margins);
+    RECT rectClient;
+    ::CopyRect(&rectClient, &rectBtn);
+    ::InflateRect(&rectClient, -margins.cxLeftWidth, -margins.cyTopHeight);
+
+    // if focused and !nofocus rect
+    if ( (state & ODS_FOCUS) && !(state & ODS_NOFOCUSRECT) )
+    {
+        DrawFocusRect(hdc, &rectClient);
+    }
+
+    if ( button->UseBgCol() )
+    {
+        COLORREF colBg = wxColourToRGB(button->GetBackgroundColour());
+        HBRUSH hbrushBackground = ::CreateSolidBrush(colBg);
+
+        // don't overwrite the focus rect
+        ::InflateRect(&rectClient, -1, -1);
+        FillRect(hdc, &rectClient, hbrushBackground);
+        ::DeleteObject(hbrushBackground);
+    }
+}
+#endif // wxUSE_UXTHEME
+
+bool wxButton::MSWOnDraw(WXDRAWITEMSTRUCT *wxdis)
+{
+    LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT)wxdis;
     HDC hdc = lpDIS->hDC;
     UINT state = lpDIS->itemState;
+    RECT rectBtn;
+    CopyRect(&rectBtn, &lpDIS->rcItem);
 
-    // first, draw the background
-    HBRUSH hbrushBackground = ::CreateSolidBrush(colBg);
-
-    FillRect(hdc, &rectBtn, hbrushBackground);
-
-    // draw the border for the current state
-    bool selected = (state & ODS_SELECTED) != 0;
-    if ( !selected )
+#if wxUSE_UXTHEME
+    if ( wxUxThemeEngine::GetIfActive() )
     {
-        wxPanel *panel = wxDynamicCast(GetParent(), wxPanel);
-        if ( panel )
+        MSWDrawXPBackground(this, wxdis);
+    }
+    else
+#endif // wxUSE_UXTHEME
+    {
+        COLORREF colBg = wxColourToRGB(GetBackgroundColour());
+
+        // first, draw the background
+        HBRUSH hbrushBackground = ::CreateSolidBrush(colBg);
+        FillRect(hdc, &rectBtn, hbrushBackground);
+        ::DeleteObject(hbrushBackground);
+
+        // draw the border for the current state
+        bool selected = (state & ODS_SELECTED) != 0;
+        if ( !selected )
         {
-            selected = panel->GetDefaultItem() == this;
+            wxTopLevelWindow *tlw = wxDynamicCast(wxGetTopLevelParent(this), wxTopLevelWindow);
+            if ( tlw )
+            {
+                selected = tlw->GetDefaultItem() == this;
+            }
+        }
+        bool pushed = (SendMessage(GetHwnd(), BM_GETSTATE, 0, 0) & BST_PUSHED) != 0;
+
+        DrawButtonFrame(hdc, rectBtn, selected, pushed);
+
+        // if focused and !nofocus rect
+        if ( (state & ODS_FOCUS) && !(state & ODS_NOFOCUSRECT) )
+        {
+            RECT rectFocus;
+            CopyRect(&rectFocus, &rectBtn);
+
+            // I don't know where does this constant come from, but this is how
+            // Windows draws them
+            InflateRect(&rectFocus, -4, -4);
+
+            DrawFocusRect(hdc, &rectFocus);
+        }
+
+        if ( pushed )
+        {
+            // the label is shifted by 1 pixel to create "pushed" effect
+            OffsetRect(&rectBtn, 1, 1);
         }
     }
-    bool pushed = (SendMessage(GetHwnd(), BM_GETSTATE, 0, 0) & BST_PUSHED) != 0;
 
-    DrawButtonFrame(hdc, rectBtn, selected, pushed);
-
-    // draw the focus rect if needed
-    if ( state & ODS_FOCUS )
-    {
-        RECT rectFocus;
-        CopyRect(&rectFocus, &rectBtn);
-
-        // I don't know where does this constant come from, but this is how
-        // Windows draws them
-        InflateRect(&rectFocus, -4, -4);
-
-        DrawFocusRect(hdc, &rectFocus);
-    }
-
-    if ( pushed )
-    {
-        // the label is shifted by 1 pixel to create "pushed" effect
-        OffsetRect(&rectBtn, 1, 1);
-    }
-
-    DrawButtonText(hdc, &rectBtn, GetLabel(),
-                   state & ODS_DISABLED ? GetSysColor(COLOR_GRAYTEXT)
-                                        : colFg);
-
-    ::DeleteObject(hbrushBackground);
+    COLORREF colFg = wxColourToRGB(GetForegroundColour());
+    if ( state & ODS_DISABLED ) colFg = GetSysColor(COLOR_GRAYTEXT) ;
+    wxString label = GetLabel();
+    if ( state & ODS_NOACCEL ) label = GetLabelText() ;
+    DrawButtonText(hdc, &rectBtn, label, colFg);
 
     return true;
 }
@@ -732,4 +888,3 @@ bool wxButton::MSWOnDraw(WXDRAWITEMSTRUCT *wxdis)
 #endif // __WIN32__
 
 #endif // wxUSE_BUTTON
-

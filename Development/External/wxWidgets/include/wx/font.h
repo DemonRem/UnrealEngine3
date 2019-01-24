@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.09.99
-// RCS-ID:      $Id: font.h,v 1.50 2005/05/31 09:18:16 JS Exp $
+// RCS-ID:      $Id: font.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_FONT_H_BASE_
 #define _WX_FONT_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "fontbase.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -28,10 +24,10 @@
 // forward declarations
 // ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxFontData;
-class WXDLLEXPORT wxFontBase;
-class WXDLLEXPORT wxFont;
-class WXDLLEXPORT wxSize;
+class WXDLLIMPEXP_FWD_CORE wxFontData;
+class WXDLLIMPEXP_FWD_CORE wxFontBase;
+class WXDLLIMPEXP_FWD_CORE wxFont;
+class WXDLLIMPEXP_FWD_CORE wxSize;
 
 // ----------------------------------------------------------------------------
 // font constants
@@ -109,8 +105,7 @@ enum
 // wxFontBase represents a font object
 // ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxFontRefData;
-struct WXDLLEXPORT wxNativeFontInfo;
+class WXDLLIMPEXP_FWD_CORE wxNativeFontInfo;
 
 class WXDLLEXPORT wxFontBase : public wxGDIObject
 {
@@ -161,7 +156,8 @@ public:
     static wxFont *New(const wxString& strNativeFontDesc);
 
     // was the font successfully created?
-    bool Ok() const { return m_refData != NULL; }
+    bool Ok() const { return IsOk(); }
+    bool IsOk() const { return m_refData != NULL; }
 
     // comparison
     bool operator == (const wxFont& font) const;
@@ -190,14 +186,14 @@ public:
     virtual void SetFamily( int family ) = 0;
     virtual void SetStyle( int style ) = 0;
     virtual void SetWeight( int weight ) = 0;
-    virtual void SetFaceName( const wxString& faceName ) = 0;
     virtual void SetUnderlined( bool underlined ) = 0;
     virtual void SetEncoding(wxFontEncoding encoding) = 0;
+    virtual bool SetFaceName( const wxString& faceName );
     void SetNativeFontInfo(const wxNativeFontInfo& info)
         { DoSetNativeFontInfo(info); }
 
-    void SetNativeFontInfo(const wxString& info);
-    void SetNativeFontInfoUserDesc(const wxString& info);
+    bool SetNativeFontInfo(const wxString& info);
+    bool SetNativeFontInfoUserDesc(const wxString& info);
 
     // translate the fonts into human-readable string (i.e. GetStyleString()
     // will return "wxITALIC" for an italic font, ...)
@@ -215,10 +211,6 @@ public:
     static void SetDefaultEncoding(wxFontEncoding encoding);
 
 protected:
-    // get the internal data
-    wxFontRefData *GetFontData() const
-        { return (wxFontRefData *)m_refData; }
-
     // the function called by both overloads of SetNativeFontInfo()
     virtual void DoSetNativeFontInfo(const wxNativeFontInfo& info);
 
@@ -237,12 +229,16 @@ private:
     #include "wx/msw/font.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/font.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/font.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/font.h"
 #elif defined(__WXX11__)
     #include "wx/x11/font.h"
 #elif defined(__WXMGL__)
     #include "wx/mgl/font.h"
+#elif defined(__WXDFB__)
+    #include "wx/dfb/font.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/font.h"
 #elif defined(__WXCOCOA__)
@@ -250,12 +246,6 @@ private:
 #elif defined(__WXPM__)
     #include "wx/os2/font.h"
 #endif
-
-// ----------------------------------------------------------------------------
-// macros
-// ----------------------------------------------------------------------------
-
-#define M_FONTDATA GetFontData()
 
 #endif
     // _WX_FONT_H_BASE_

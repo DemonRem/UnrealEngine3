@@ -3,6 +3,7 @@
 // Purpose:     implementation of wxTextBuffer class
 // Created:     14.11.01
 // Author:      Morten Hanssen, Vadim Zeitlin
+// RCS-ID:      $Id: textbuf.cpp 38570 2006-04-05 14:37:47Z VZ $
 // Copyright:   (c) 1998-2001 wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -10,10 +11,6 @@
 // ============================================================================
 // headers
 // ============================================================================
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "textbuf.h"
-#endif
 
 #include  "wx/wxprec.h"
 
@@ -49,7 +46,7 @@ const wxTextFileType wxTextBuffer::typeDefault =
   wxTextFileType_Unix;
 #elif defined(__WXMAC__)
   wxTextFileType_Mac;
-#elif defined(__WXPM__)
+#elif defined(__OS2__)
   wxTextFileType_Os2;
 #else
   wxTextFileType_None;
@@ -135,6 +132,8 @@ wxString wxTextBuffer::Translate(const wxString& text, wxTextFileType type)
 
 #if wxUSE_TEXTBUFFER
 
+wxString wxTextBuffer::ms_eof;
+
 // ----------------------------------------------------------------------------
 // ctors & dtor
 // ----------------------------------------------------------------------------
@@ -182,14 +181,14 @@ bool wxTextBuffer::Create()
     return true;
 }
 
-bool wxTextBuffer::Open(const wxString& strBufferName, wxMBConv& conv)
+bool wxTextBuffer::Open(const wxString& strBufferName, const wxMBConv& conv)
 {
     m_strBufferName = strBufferName;
 
     return Open(conv);
 }
 
-bool wxTextBuffer::Open(wxMBConv& conv)
+bool wxTextBuffer::Open(const wxMBConv& conv)
 {
     // buffer name must be either given in ctor or in Open(const wxString&)
     wxASSERT( !m_strBufferName.empty() );
@@ -251,9 +250,7 @@ wxTextFileType wxTextBuffer::GuessType() const
                                                     ? wxTextFileType_##t1   \
                                                     : wxTextFileType_##t2
 
-        // Watcom C++ doesn't seem to be able to handle the macro
-        // VS: Watcom 11 doesn't have a problem...
-#if !(defined(__WATCOMC__) && (__WATCOMC__ < 1100))
+#if !defined(__WATCOMC__) || wxCHECK_WATCOM_VERSION(1,4)
         if ( nDos > nUnix )
             return GREATER_OF(Dos, Mac);
         else if ( nDos < nUnix )
@@ -273,18 +270,15 @@ wxTextFileType wxTextBuffer::GuessType() const
 
 bool wxTextBuffer::Close()
 {
-    m_aTypes.Clear();
-    m_aLines.Clear();
-    m_nCurLine = 0;
+    Clear();
     m_isOpened = false;
 
     return true;
 }
 
-bool wxTextBuffer::Write(wxTextFileType typeNew, wxMBConv& conv)
+bool wxTextBuffer::Write(wxTextFileType typeNew, const wxMBConv& conv)
 {
     return OnWrite(typeNew, conv);
 }
 
 #endif // wxUSE_TEXTBUFFER
-

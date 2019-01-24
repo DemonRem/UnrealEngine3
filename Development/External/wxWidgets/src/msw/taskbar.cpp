@@ -1,35 +1,28 @@
 /////////////////////////////////////////////////////////////////////////
-// File:        taskbar.cpp
+// File:        src/msw/taskbar.cpp
 // Purpose:     Implements wxTaskBarIcon class for manipulating icons on
 //              the Windows task bar.
 // Author:      Julian Smart
 // Modified by: Vaclav Slavik
 // Created:     24/3/98
-// RCS-ID:      $Id: taskbar.cpp,v 1.46 2005/05/31 09:20:33 JS Exp $
+// RCS-ID:      $Id: taskbar.cpp 50294 2007-11-28 01:59:59Z VZ $
 // Copyright:   (c)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "taskbar.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
-#include "wx/defs.h"
-#include "wx/window.h"
-#include "wx/frame.h"
-#include "wx/utils.h"
-#include "wx/menu.h"
+    #include "wx/window.h"
+    #include "wx/frame.h"
+    #include "wx/utils.h"
+    #include "wx/menu.h"
 #endif
-
-#if defined(__WIN95__)
 
 #include "wx/msw/private.h"
 #include "wx/msw/winundef.h"
@@ -154,7 +147,7 @@ bool wxTaskBarIcon::SetIcon(const wxIcon& icon, const wxString& tooltip)
     m_icon = icon;
     m_strTooltip = tooltip;
 
-    NotifyIconData notifyData((HWND)m_win->GetHWND());
+    NotifyIconData notifyData(GetHwndOf(m_win));
 
     if (icon.Ok())
     {
@@ -162,10 +155,11 @@ bool wxTaskBarIcon::SetIcon(const wxIcon& icon, const wxString& tooltip)
         notifyData.hIcon = GetHiconOf(icon);
     }
 
+    // set NIF_TIP even for an empty tooltip: otherwise it would be impossible
+    // to remove an existing tooltip using this function
+    notifyData.uFlags |= NIF_TIP;
     if ( !tooltip.empty() )
     {
-        notifyData.uFlags |= NIF_TIP;
-//        lstrcpyn(notifyData.szTip, tooltip.c_str(), WXSIZEOF(notifyData.szTip));
         wxStrncpy(notifyData.szTip, tooltip.c_str(), WXSIZEOF(notifyData.szTip));
     }
 
@@ -185,7 +179,7 @@ bool wxTaskBarIcon::RemoveIcon()
 
     m_iconAdded = false;
 
-    NotifyIconData notifyData((HWND)m_win->GetHWND());
+    NotifyIconData notifyData(GetHwndOf(m_win));
 
     return Shell_NotifyIcon(NIM_DELETE, &notifyData) != 0;
 }
@@ -210,13 +204,14 @@ bool wxTaskBarIcon::PopupMenu(wxMenu *menu)
 
     menu->UpdateUI();
 
-    // Work around a WIN32 bug
-    ::SetForegroundWindow((HWND)m_win->GetHWND());
+    // the SetForegroundWindow() and PostMessage() calls are needed to work
+    // around Win32 bug with the popup menus shown for the notifications as
+    // documented at http://support.microsoft.com/kb/q135788/
+    ::SetForegroundWindow(GetHwndOf(m_win));
 
     bool rval = m_win->PopupMenu(menu, 0, 0);
 
-    // Work around a WIN32 bug
-    ::PostMessage((HWND)m_win->GetHWND(), WM_NULL, 0, 0L);
+    ::PostMessage(GetHwndOf(m_win), WM_NULL, 0, 0L);
 
     m_win->PopEventHandler(false);
 
@@ -281,6 +276,7 @@ long wxTaskBarIcon::WindowProc(unsigned int msg,
     {
         m_iconAdded = false;
         SetIcon(m_icon, m_strTooltip);
+        return 0;
     }
 
     // this function should only be called for gs_msg(Restart)Taskbar messages
@@ -329,5 +325,3 @@ long wxTaskBarIcon::WindowProc(unsigned int msg,
 
     return 0;
 }
-
-#endif // __WIN95__

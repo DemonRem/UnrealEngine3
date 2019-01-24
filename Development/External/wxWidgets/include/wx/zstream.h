@@ -1,19 +1,15 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        zstream.h
+// Name:        wx/zstream.h
 // Purpose:     Memory stream classes
 // Author:      Guilhem Lavaux
 // Modified by: Mike Wetherell
 // Created:     11/07/98
-// RCS-ID:      $Id: zstream.h,v 1.31 2004/11/23 14:25:57 RN Exp $
+// RCS-ID:      $Id: zstream.h 54688 2008-07-18 08:06:44Z MW $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 #ifndef _WX_WXZSTREAM_H__
 #define _WX_WXZSTREAM_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "zstream.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -43,6 +39,7 @@ enum {
 class WXDLLIMPEXP_BASE wxZlibInputStream: public wxFilterInputStream {
  public:
   wxZlibInputStream(wxInputStream& stream, int flags = wxZLIB_AUTO);
+  wxZlibInputStream(wxInputStream *stream, int flags = wxZLIB_AUTO);
   virtual ~wxZlibInputStream();
 
   char Peek() { return wxInputStream::Peek(); }
@@ -53,6 +50,9 @@ class WXDLLIMPEXP_BASE wxZlibInputStream: public wxFilterInputStream {
  protected:
   size_t OnSysRead(void *buffer, size_t size);
   wxFileOffset OnSysTell() const { return m_pos; }
+
+ private:
+  void Init(int flags);
 
  protected:
   size_t m_z_size;
@@ -69,6 +69,7 @@ class WXDLLIMPEXP_BASE wxZlibInputStream: public wxFilterInputStream {
 class WXDLLIMPEXP_BASE wxZlibOutputStream: public wxFilterOutputStream {
  public:
   wxZlibOutputStream(wxOutputStream& stream, int level = -1, int flags = wxZLIB_ZLIB);
+  wxZlibOutputStream(wxOutputStream *stream, int level = -1, int flags = wxZLIB_ZLIB);
   virtual ~wxZlibOutputStream() { Close(); }
 
   void Sync() { DoFlush(false); }
@@ -83,6 +84,9 @@ class WXDLLIMPEXP_BASE wxZlibOutputStream: public wxFilterOutputStream {
 
   virtual void DoFlush(bool final);
 
+ private:
+  void Init(int level, int flags);
+
  protected:
   size_t m_z_size;
   unsigned char *m_z_buffer;
@@ -90,6 +94,48 @@ class WXDLLIMPEXP_BASE wxZlibOutputStream: public wxFilterOutputStream {
   wxFileOffset m_pos;
 
   DECLARE_NO_COPY_CLASS(wxZlibOutputStream)
+};
+
+class WXDLLIMPEXP_BASE wxZlibClassFactory: public wxFilterClassFactory
+{
+public:
+    wxZlibClassFactory();
+
+    wxFilterInputStream *NewStream(wxInputStream& stream) const
+        { return new wxZlibInputStream(stream); }
+    wxFilterOutputStream *NewStream(wxOutputStream& stream) const
+        { return new wxZlibOutputStream(stream, -1); }
+    wxFilterInputStream *NewStream(wxInputStream *stream) const
+        { return new wxZlibInputStream(stream); }
+    wxFilterOutputStream *NewStream(wxOutputStream *stream) const
+        { return new wxZlibOutputStream(stream, -1); }
+
+    const wxChar * const *GetProtocols(wxStreamProtocolType type
+                                       = wxSTREAM_PROTOCOL) const;
+
+private:
+    DECLARE_DYNAMIC_CLASS(wxZlibClassFactory)
+};
+
+class WXDLLIMPEXP_BASE wxGzipClassFactory: public wxFilterClassFactory
+{
+public:
+    wxGzipClassFactory();
+
+    wxFilterInputStream *NewStream(wxInputStream& stream) const
+        { return new wxZlibInputStream(stream); }
+    wxFilterOutputStream *NewStream(wxOutputStream& stream) const
+        { return new wxZlibOutputStream(stream, -1, wxZLIB_GZIP); }
+    wxFilterInputStream *NewStream(wxInputStream *stream) const
+        { return new wxZlibInputStream(stream); }
+    wxFilterOutputStream *NewStream(wxOutputStream *stream) const
+        { return new wxZlibOutputStream(stream, -1, wxZLIB_GZIP); }
+
+    const wxChar * const *GetProtocols(wxStreamProtocolType type
+                                       = wxSTREAM_PROTOCOL) const;
+
+private:
+    DECLARE_DYNAMIC_CLASS(wxGzipClassFactory)
 };
 
 #endif

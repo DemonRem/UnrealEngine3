@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dcclient.cpp
+// Name:        src/msw/dcclient.cpp
 // Purpose:     wxClientDC class
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dcclient.cpp,v 1.44 2005/02/16 20:34:26 ABX Exp $
+// RCS-ID:      $Id: dcclient.cpp 39021 2006-05-04 07:57:04Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dcclient.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,13 +24,15 @@
     #pragma hdrstop
 #endif
 
-#include "wx/string.h"
-#include "wx/log.h"
-#include "wx/window.h"
+#include "wx/dcclient.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/string.h"
+    #include "wx/log.h"
+    #include "wx/window.h"
+#endif
 
 #include "wx/msw/private.h"
-
-#include "wx/dcclient.h"
 
 // ----------------------------------------------------------------------------
 // array/list types
@@ -56,7 +54,7 @@ struct WXDLLEXPORT wxPaintDCInfo
 
 #include "wx/arrimpl.cpp"
 
-WX_DEFINE_OBJARRAY(wxArrayDCInfo);
+WX_DEFINE_OBJARRAY(wxArrayDCInfo)
 
 // ----------------------------------------------------------------------------
 // macros
@@ -257,7 +255,7 @@ wxPaintDC::~wxPaintDC()
 
         wxCHECK_RET( info, wxT("existing DC should have a cache entry") );
 
-        if ( !--info->count )
+        if ( --info->count == 0 )
         {
             ::EndPaint(GetHwndOf(m_canvas), &g_paintStruct);
 
@@ -342,7 +340,7 @@ wxPaintDCEx::~wxPaintDCEx()
 
     wxCHECK_RET( info, wxT("existing DC should have a cache entry") );
 
-    if ( !--info->count )
+    if ( --info->count == 0 )
     {
         RestoreDC((HDC) m_hDC, saveState);
         ms_cache.RemoveAt(index);
@@ -357,4 +355,3 @@ wxPaintDCEx::~wxPaintDCEx()
     // prevent the base class dtor from ReleaseDC()ing it again
     m_hDC = 0;
 }
-

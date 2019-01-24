@@ -4,17 +4,13 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     06/10/98
-// RCS-ID:      $Id: rowdragpl.h,v 1.5 2003/07/08 20:47:17 VS Exp $
+// RCS-ID:      $Id: rowdragpl.h 38927 2006-04-26 16:27:20Z PC $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __ROWDRAGPL_G__
 #define __ROWDRAGPL_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "rowdragpl.h"
-#endif
 
 #include "wx/fl/controlbar.h"
 
@@ -130,17 +126,17 @@ protected:
     virtual void DrawRombShades( wxPoint& p1, wxPoint& p2, wxPoint& p3, wxPoint& p4, wxDC& dc );
 
         // Implements 'hard-coded metafile' for Netscape Navigator look.
-    virtual void DrawOrtoRomb( wxRect& inRect, wxDC& dc, wxBrush& bkBrush );
+    virtual void DrawOrtoRomb( wxRect& inRect, wxDC& dc, const wxBrush& bkBrush );
 
         // Implements 'hard-coded metafile' for Netscape Navigator look.
-    virtual void DrawRomb( wxRect& inRect, wxDC& dc, wxBrush& bkBrush );
+    virtual void DrawRomb( wxRect& inRect, wxDC& dc, const wxBrush& bkBrush );
 
         // Implements 'hard-coded metafile' for Netscape Navigator look.
-    virtual void Draw3DRect( wxRect& inRect, wxDC& dc, wxBrush& bkBrush );
+    virtual void Draw3DRect( wxRect& inRect, wxDC& dc, const wxBrush& bkBrush );
 
         // Implements 'hard-coded metafile' for Netscape Navigator look.
     virtual void DrawRectShade( wxRect& inRect, wxDC& dc,
-                                int level, wxPen& upperPen, wxPen& lowerPen );
+                                int level, const wxPen& upperPen, const wxPen& lowerPen );
 
         // Helper for drag and drop.
     virtual void GetRowHintRect( cbRowInfo* pRow, wxRect& rect );

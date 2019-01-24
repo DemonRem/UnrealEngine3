@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxPhonemeMap_H__
@@ -12,6 +12,7 @@
 #include "FxPlatform.h"
 #include "FxObject.h"
 #include "FxPhonemeEnum.h"
+#include "FxMath.h"
 
 namespace OC3Ent
 {
@@ -23,6 +24,11 @@ namespace Face
 class FxPhonToNameMap
 {
 public:
+	/// Tests for equal mapping entries.
+	FxBool operator==( const FxPhonToNameMap& other ) const;
+	/// Tests for non-equal mapping entries.
+	FxBool operator!=( const FxPhonToNameMap& other ) const;
+
 	FxPhoneme phoneme;	///< The phoneme.
 	FxName    name;		///< The track.
 	FxReal    amount;	///< The mapping amount.
@@ -38,6 +44,11 @@ public:
 	FxPhonemeMap();
 	/// Destructor.
 	~FxPhonemeMap();
+
+	/// Returns whether two phoneme mappings are identical.
+	/// \param other The phoneme mapping to compare against.
+	/// \return \p FxTrue if the mappings are identical, \p FxFalse otherwise.
+	FxBool operator==( const FxPhonemeMap& other ) const;
 
 	/// Returns the phoneme mapping information for a phoneme/name pair.
 	/// \param phon The phoneme enumeration.
@@ -108,6 +119,17 @@ protected:
 	FxArray<FxPhonToNameMap> _mapping;
 	FxArray<FxName> _targetNames;
 };
+
+FX_INLINE FxBool FxPhonToNameMap::operator==(const FxPhonToNameMap& other) const
+{
+	return name == other.name && phoneme == other.phoneme && 
+		   FxRealEquality(amount, other.amount);
+}
+
+FX_INLINE FxBool FxPhonToNameMap::operator!=(const FxPhonToNameMap& other) const
+{
+	return !operator==(other);
+}
 
 } // namespace Face
 

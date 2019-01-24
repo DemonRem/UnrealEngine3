@@ -4,22 +4,13 @@
 // Author:      Robert Roebling, Vadim Zeitlin
 // Modified by:
 // Created:     28.12.00
-// RCS-ID:      $Id: filename.h,v 1.63 2005/03/17 17:46:19 ABX Exp $
+// RCS-ID:      $Id: filename.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 2000 Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef   _WX_FILENAME_H_
 #define   _WX_FILENAME_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "filename.h"
-#endif
-
-#ifndef WX_PRECOMP
-    #include  "wx/string.h"
-    #include  "wx/arrstr.h"
-#endif
 
 /*
     TODO:
@@ -28,18 +19,21 @@
     2. more file operations:
         a) chmod()
         b) [acm]time() - get and set
-        c) file size
-        d) file permissions with readable accessors for most common bits
-           such as IsReadable() &c
-        e) rename()?
+        c) rename()?
     3. SameFileAs() function to compare inodes under Unix
  */
 
+#include "wx/arrstr.h"
 #include "wx/filefn.h"
 #include "wx/datetime.h"
+#include "wx/intl.h"
 
 #if wxUSE_FILE
-class WXDLLIMPEXP_BASE wxFile;
+class WXDLLIMPEXP_FWD_BASE wxFile;
+#endif
+
+#if wxUSE_FFILE
+class WXDLLIMPEXP_FWD_BASE wxFFile;
 #endif
 
 // ----------------------------------------------------------------------------
@@ -89,6 +83,11 @@ enum
 {
     wxPATH_MKDIR_FULL    = 0x0001   // create directories recursively
 };
+
+// error code of wxFileName::GetSize()
+extern WXDLLIMPEXP_DATA_BASE(wxULongLong) wxInvalidSize;
+
+
 
 // ----------------------------------------------------------------------------
 // wxFileName: encapsulates a file path
@@ -197,7 +196,28 @@ public:
     bool DirExists() const;
     static bool DirExists( const wxString &dir );
 
-        // VZ: also need: IsDirWritable(), IsFileExecutable() &c (TODO)
+        // checks on most common flags for files/directories;
+        // more platform-specific features (like e.g. Unix permissions) are not
+        // available in wxFileName
+
+    bool IsDirWritable() const { return wxIsWritable(GetPath()); }
+    static bool IsDirWritable(const wxString &path) { return wxDirExists(path) && wxIsWritable(path); }
+
+    bool IsDirReadable() const { return wxIsReadable(GetPath()); }
+    static bool IsDirReadable(const wxString &path) { return wxDirExists(path) && wxIsReadable(path); }
+
+    // NOTE: IsDirExecutable() is not present because the meaning of "executable"
+    //       directory is very platform-dependent and also not so useful
+
+    bool IsFileWritable() const { return wxIsWritable(GetFullPath()); }
+    static bool IsFileWritable(const wxString &path) { return wxFileExists(path) && wxIsWritable(path); }
+
+    bool IsFileReadable() const { return wxIsReadable(GetFullPath()); }
+    static bool IsFileReadable(const wxString &path) { return wxFileExists(path) && wxIsReadable(path); }
+
+    bool IsFileExecutable() const { return wxIsExecutable(GetFullPath()); }
+    static bool IsFileExecutable(const wxString &path) { return wxFileExists(path) && wxIsExecutable(path); }
+
 
     // time functions
 #if wxUSE_DATETIME
@@ -250,14 +270,32 @@ public:
     void AssignHomeDir();
     static wxString GetHomeDir();
 
+        // get the system temporary directory
+    static wxString GetTempDir();
+
+#if wxUSE_FILE || wxUSE_FFILE
+        // get a temp file name starting with the specified prefix
+    void AssignTempFileName(const wxString& prefix);
+    static wxString CreateTempFileName(const wxString& prefix);
+#endif // wxUSE_FILE
+
 #if wxUSE_FILE
         // get a temp file name starting with the specified prefix and open the
         // file passed to us using this name for writing (atomically if
         // possible)
-    void AssignTempFileName(const wxString& prefix, wxFile *fileTemp = NULL);
+    void AssignTempFileName(const wxString& prefix, wxFile *fileTemp);
     static wxString CreateTempFileName(const wxString& prefix,
-                                       wxFile *fileTemp = NULL);
+                                       wxFile *fileTemp);
 #endif // wxUSE_FILE
+
+#if wxUSE_FFILE
+        // get a temp file name starting with the specified prefix and open the
+        // file passed to us using this name for writing (atomically if
+        // possible)
+    void AssignTempFileName(const wxString& prefix, wxFFile *fileTemp);
+    static wxString CreateTempFileName(const wxString& prefix,
+                                       wxFFile *fileTemp);
+#endif // wxUSE_FFILE
 
     // directory creation and removal.
     bool Mkdir( int perm = 0777, int flags = 0);
@@ -443,6 +481,20 @@ public:
                             wxString *path,
                             wxPathFormat format = wxPATH_NATIVE);
 
+    // Filesize
+
+        // returns the size of the given filename
+    wxULongLong GetSize() const;
+    static wxULongLong GetSize(const wxString &file);
+
+        // returns the size in a human readable form
+    wxString GetHumanReadableSize(const wxString &nullsize = wxGetTranslation(_T("Not available")),
+                                  int precision = 1) const;
+    static wxString GetHumanReadableSize(const wxULongLong &sz,
+                                         const wxString &nullsize = wxGetTranslation(_T("Not available")),
+                                         int precision = 1);
+
+
     // deprecated methods, don't use any more
     // --------------------------------------
 
@@ -451,7 +503,7 @@ public:
         { return GetPath(withSep ? wxPATH_GET_SEPARATOR : 0, format); }
 #endif
     wxString GetPathWithSep(wxPathFormat format = wxPATH_NATIVE ) const
-        { return GetPath(wxPATH_GET_SEPARATOR, format); }
+        { return GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR, format); }
 
 private:
     // check whether this dir is valid for Append/Prepend/InsertDir()

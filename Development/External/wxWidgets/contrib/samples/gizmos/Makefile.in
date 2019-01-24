@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.4 2002/12/04 13:53:41 VZ Exp $
+# $Id: Makefile.in 18040 2002-12-04 14:11:26Z VZ $
 
 CONTRIB_SAMPLES=editlbox dynsash dynsash_switch multicell splittree led
 

@@ -1,7 +1,7 @@
 /*
  *  dlf.h
  *
- *  $Id: dlf.h,v 1.4 1999/06/01 15:31:40 VZ Exp $
+ *  $Id: dlf.h 2613 1999-06-01 15:32:12Z VZ $
  *
  *  Dynamic Library Loader (mapping to SVR4)
  *

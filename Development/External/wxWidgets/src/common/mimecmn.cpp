@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/mimecmn.cpp
+// Name:        src/common/mimecmn.cpp
 // Purpose:     classes and functions to manage MIME types
 // Author:      Vadim Zeitlin
 // Modified by:
 //  Chris Elliott (biol75@york.ac.uk) 5 Dec 00: write support for Win32
 // Created:     23.09.98
-// RCS-ID:      $Id: mimecmn.cpp,v 1.40 2005/07/21 16:19:40 ABX Exp $
+// RCS-ID:      $Id: mimecmn.cpp 47027 2007-06-29 18:23:39Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence (part of wxExtra library)
 /////////////////////////////////////////////////////////////////////////////
@@ -18,10 +18,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#ifdef    __GNUG__
-    #pragma implementation "mimetypebase.h"
-#endif
-
 // for compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -31,19 +27,19 @@
 
 #if wxUSE_MIMETYPE
 
+#include "wx/mimetype.h"
+
 #ifndef WX_PRECOMP
-  #include "wx/string.h"
+    #include "wx/dynarray.h"
+    #include "wx/string.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/module.h"
 #endif //WX_PRECOMP
 
-#include "wx/module.h"
-#include "wx/log.h"
 #include "wx/file.h"
 #include "wx/iconloc.h"
-#include "wx/intl.h"
-#include "wx/dynarray.h"
 #include "wx/confbase.h"
-
-#include "wx/mimetype.h"
 
 // other standard headers
 #include <ctype.h>
@@ -67,6 +63,51 @@
 // ============================================================================
 
 // ----------------------------------------------------------------------------
+// wxMimeTypeCommands
+// ----------------------------------------------------------------------------
+
+void
+wxMimeTypeCommands::AddOrReplaceVerb(const wxString& verb, const wxString& cmd)
+{
+    int n = m_verbs.Index(verb, false /* ignore case */);
+    if ( n == wxNOT_FOUND )
+    {
+        m_verbs.Add(verb);
+        m_commands.Add(cmd);
+    }
+    else
+    {
+        m_commands[n] = cmd;
+    }
+}
+
+wxString
+wxMimeTypeCommands::GetCommandForVerb(const wxString& verb, size_t *idx) const
+{
+    wxString s;
+
+    int n = m_verbs.Index(verb);
+    if ( n != wxNOT_FOUND )
+    {
+        s = m_commands[(size_t)n];
+        if ( idx )
+            *idx = n;
+    }
+    else if ( idx )
+    {
+        // different from any valid index
+        *idx = (size_t)-1;
+    }
+
+    return s;
+}
+
+wxString wxMimeTypeCommands::GetVerbCmd(size_t n) const
+{
+    return m_verbs[n] + wxT('=') + m_commands[n];
+}
+
+// ----------------------------------------------------------------------------
 // wxFileTypeInfo
 // ----------------------------------------------------------------------------
 
@@ -85,7 +126,17 @@ wxFileTypeInfo::wxFileTypeInfo(const wxChar *mimeType,
 
     for ( ;; )
     {
+        // icc gives this warning in its own va_arg() macro, argh
+#ifdef __INTELC__
+    #pragma warning(push)
+    #pragma warning(disable: 1684)
+#endif
+
         const wxChar *ext = va_arg(argptr, const wxChar *);
+
+#ifdef __INTELC__
+    #pragma warning(pop)
+#endif
         if ( !ext )
         {
             // NULL terminates the list
@@ -114,7 +165,7 @@ wxFileTypeInfo::wxFileTypeInfo(const wxArrayString& sArray)
 }
 
 #include "wx/arrimpl.cpp"
-WX_DEFINE_OBJARRAY(wxArrayFileTypeInfo);
+WX_DEFINE_OBJARRAY(wxArrayFileTypeInfo)
 
 // ============================================================================
 // implementation of the wrapper classes
@@ -447,6 +498,33 @@ bool wxFileType::SetDefaultIcon(const wxString& cmd, int index)
 #endif
 }
 
+// ----------------------------------------------------------------------------
+// wxMimeTypesManagerFactory
+// ----------------------------------------------------------------------------
+
+wxMimeTypesManagerFactory *wxMimeTypesManagerFactory::m_factory = NULL;
+
+/* static */
+void wxMimeTypesManagerFactory::Set(wxMimeTypesManagerFactory *factory)
+{
+    delete m_factory;
+
+    m_factory = factory;
+}
+
+/* static */
+wxMimeTypesManagerFactory *wxMimeTypesManagerFactory::Get()
+{
+    if ( !m_factory )
+        m_factory = new wxMimeTypesManagerFactory;
+
+    return m_factory;
+}
+
+wxMimeTypesManagerImpl *wxMimeTypesManagerFactory::CreateMimeTypesManagerImpl()
+{
+    return new wxMimeTypesManagerImpl;
+}
 
 // ----------------------------------------------------------------------------
 // wxMimeTypesManager
@@ -455,7 +533,7 @@ bool wxFileType::SetDefaultIcon(const wxString& cmd, int index)
 void wxMimeTypesManager::EnsureImpl()
 {
     if ( !m_impl )
-        m_impl = new wxMimeTypesManagerImpl;
+        m_impl = wxMimeTypesManagerFactory::Get()->CreateMimeTypesManagerImpl();
 }
 
 bool wxMimeTypesManager::IsOfType(const wxString& mimeType,
@@ -494,6 +572,8 @@ wxMimeTypesManager::~wxMimeTypesManager()
 
 bool wxMimeTypesManager::Unassociate(wxFileType *ft)
 {
+    EnsureImpl();
+
 #if defined(__UNIX__) && !defined(__CYGWIN__) && !defined(__WINE__)
     return m_impl->Unassociate(ft);
 #else
@@ -520,7 +600,18 @@ wxFileType *
 wxMimeTypesManager::GetFileTypeFromExtension(const wxString& ext)
 {
     EnsureImpl();
-    wxFileType *ft = m_impl->GetFileTypeFromExtension(ext);
+
+    wxString::const_iterator i = ext.begin();
+    const wxString::const_iterator end = ext.end();
+    wxString extWithoutDot;
+    if ( i != end && *i == '.' )
+        extWithoutDot.assign(++i, ext.end());
+    else
+        extWithoutDot = ext;
+
+    wxCHECK_MSG( !ext.empty(), NULL, _T("extension can't be empty") );
+
+    wxFileType *ft = m_impl->GetFileTypeFromExtension(extWithoutDot);
 
     if ( !ft ) {
         // check the fallbacks
@@ -639,10 +730,12 @@ class wxMimeTypeCmnModule: public wxModule
 {
 public:
     wxMimeTypeCmnModule() : wxModule() { }
+
     virtual bool OnInit() { return true; }
     virtual void OnExit()
     {
-        // this avoids false memory leak allerts:
+        wxMimeTypesManagerFactory::Set(NULL);
+
         if ( gs_mimeTypesManager.m_impl != NULL )
         {
             delete gs_mimeTypesManager.m_impl;

@@ -4,7 +4,7 @@
 // Purpose:     Part of the widgets sample showing wxListbox
 // Author:      Vadim Zeitlin
 // Created:     27.03.01
-// Id:          $Id: listbox.cpp,v 1.18 2005/08/28 08:54:54 MBN Exp $
+// Id:          $Id: listbox.cpp 43755 2006-12-03 13:43:44Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@
 // control ids
 enum
 {
-    ListboxPage_Reset = 100,
+    ListboxPage_Reset = wxID_HIGHEST,
     ListboxPage_Add,
     ListboxPage_AddText,
     ListboxPage_AddSeveral,
@@ -76,9 +76,13 @@ enum
 class ListboxWidgetsPage : public WidgetsPage
 {
 public:
-    ListboxWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist);
+    ListboxWidgetsPage(WidgetsBookCtrl *book, wxImageList *imaglist);
 
     virtual wxControl *GetWidget() const { return m_lbox; }
+    virtual void RecreateWidget() { CreateLbox(); }
+
+    // lazy creation of the content
+    virtual void CreateContent();
 
 protected:
     // event handlers
@@ -141,7 +145,13 @@ protected:
                *m_chkOwnerDraw;
 
     // the listbox itself and the sizer it is in
-    wxListBox *m_lbox;
+#ifdef __WXWINCE__
+    wxListBoxBase
+#else
+    wxListBox
+#endif
+                  *m_lbox;
+
     wxSizer *m_sizerLbox;
 
     // the text entries for "Add/change string" and "Delete" buttons
@@ -192,14 +202,20 @@ END_EVENT_TABLE()
 // implementation
 // ============================================================================
 
-IMPLEMENT_WIDGETS_PAGE(ListboxWidgetsPage, _T("Listbox"));
+#if defined(__WXUNIVERSAL__)
+    #define FAMILY_CTRLS UNIVERSAL_CTRLS
+#else
+    #define FAMILY_CTRLS NATIVE_CTRLS
+#endif
 
-ListboxWidgetsPage::ListboxWidgetsPage(wxBookCtrlBase *book,
+IMPLEMENT_WIDGETS_PAGE(ListboxWidgetsPage, _T("Listbox"),
+                       FAMILY_CTRLS | WITH_ITEMS_CTRLS
+                       );
+
+ListboxWidgetsPage::ListboxWidgetsPage(WidgetsBookCtrl *book,
                                        wxImageList *imaglist)
-                  : WidgetsPage(book)
+                  : WidgetsPage(book, imaglist, listbox_xpm)
 {
-    imaglist->Add(wxBitmap(listbox_xpm));
-
     // init everything
     m_radioSelMode = (wxRadioBox *)NULL;
 
@@ -209,9 +225,13 @@ ListboxWidgetsPage::ListboxWidgetsPage(wxBookCtrlBase *book,
     m_chkSort =
     m_chkOwnerDraw = (wxCheckBox *)NULL;
 
-    m_lbox = (wxListBox *)NULL;
+    m_lbox = NULL;
     m_sizerLbox = (wxSizer *)NULL;
 
+}
+
+void ListboxWidgetsPage::CreateContent()
+{
     /*
        What we create here is a frame having 3 panes: style pane is the
        leftmost one, in the middle the pane with buttons allowing to perform
@@ -314,8 +334,6 @@ ListboxWidgetsPage::ListboxWidgetsPage(wxBookCtrlBase *book,
     Reset();
 
     SetSizer(sizerTop);
-
-    sizerTop->Fit(this);
 }
 
 // ----------------------------------------------------------------------------
@@ -334,7 +352,7 @@ void ListboxWidgetsPage::Reset()
 
 void ListboxWidgetsPage::CreateLbox()
 {
-    int flags = 0;
+    int flags = ms_defaultFlags;
     switch ( m_radioSelMode->GetSelection() )
     {
         default:
@@ -515,12 +533,12 @@ void ListboxWidgetsPage::OnListbox(wxCommandEvent& event)
 
 void ListboxWidgetsPage::OnListboxDClick(wxCommandEvent& event)
 {
-    wxLogMessage( _T("Listbox item %ld double clicked"), event.GetInt() );
+    wxLogMessage( _T("Listbox item %d double clicked"), event.GetInt() );
 }
 
 void ListboxWidgetsPage::OnCheckListbox(wxCommandEvent& event)
 {
-    wxLogMessage( _T("Listbox item %ld toggled"), event.GetInt() );
+    wxLogMessage( _T("Listbox item %d toggled"), event.GetInt() );
 }
 
 void ListboxWidgetsPage::OnCheckOrRadioBox(wxCommandEvent& WXUNUSED(event))

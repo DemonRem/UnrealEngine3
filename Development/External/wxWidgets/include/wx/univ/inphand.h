@@ -5,17 +5,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     18.08.00
-// RCS-ID:      $Id: inphand.h,v 1.12 2004/08/10 13:08:33 ABX Exp $
+// RCS-ID:      $Id: inphand.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2000 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_INPHAND_H_
 #define _WX_UNIV_INPHAND_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "inphand.h"
-#endif
 
 #include "wx/univ/inpcons.h"         // for wxControlAction(s)
 

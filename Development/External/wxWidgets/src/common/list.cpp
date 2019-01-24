@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Name:        list.cpp
+// Name:        src/common/list.cpp
 // Purpose:     wxList implementation
 // Author:      Julian Smart
 // Modified by: VZ at 16/11/98: WX_DECLARE_LIST() and typesafe lists added
 // Created:     04/01/98
-// RCS-ID:      $Id: list.cpp,v 1.55 2005/06/07 18:59:29 ABX Exp $
+// RCS-ID:      $Id: list.cpp 43048 2006-11-04 18:14:50Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // -----------------------------------------------------------------------------
 // headers
 // -----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "list.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -33,7 +29,6 @@
 #include <string.h>
 
 #ifndef WX_PRECOMP
-    #include "wx/defs.h"
     #include "wx/list.h"
 #endif
 
@@ -658,13 +653,19 @@ wxStringList::wxStringList (const wxChar *first, ...)
   {
       Add(s);
 
-      s = va_arg(ap, const wxChar *);
-      //    if (s == NULL)
-#ifdef __WXMSW__
-      if ((int)(long) s == 0)
-#else
-      if ((long) s == 0)
+      // icc gives this warning in its own va_arg() macro, argh
+#ifdef __INTELC__
+    #pragma warning(push)
+    #pragma warning(disable: 1684)
 #endif
+
+      s = va_arg(ap, const wxChar *);
+
+#ifdef __INTELC__
+    #pragma warning(pop)
+#endif
+
+      if ( !s )
           break;
   }
 
@@ -740,25 +741,28 @@ void wxStringList::Sort()
 
 wxNode *wxStringList::Add(const wxChar *s)
 {
-    return (wxNode *)wxStringListBase::Append(MYcopystring(s));
+    return (wxNode *)(wxStringListBase::Node *)
+            wxStringListBase::Append(MYcopystring(s));
 }
 
 wxNode *wxStringList::Prepend(const wxChar *s)
 {
-    return (wxNode *)wxStringListBase::Insert(MYcopystring(s));
+    return (wxNode *)(wxStringListBase::Node *)
+            wxStringListBase::Insert(MYcopystring(s));
 }
 
 #endif // wxLIST_COMPATIBILITY
 
 #else // wxUSE_STL = 1
 
-    #include <wx/listimpl.cpp>
-    WX_DEFINE_LIST(wxObjectList);
+    #include "wx/listimpl.cpp"
+    WX_DEFINE_LIST(wxObjectList)
 
 // with wxUSE_STL wxStringList contains wxString objects, not pointers
-void wxStringListBase::DeleteFunction( const wxString WXUNUSED(X) )
+void _WX_LIST_HELPER_wxStringListBase::DeleteFunction( wxString WXUNUSED(X) )
 {
 }
 
-#endif // !wxUSE_STL
+wxStringListBase::BaseListType wxStringListBase::EmptyList;
 
+#endif // !wxUSE_STL

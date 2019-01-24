@@ -1,30 +1,29 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        effects.cpp
+// Name:        src/common/effects.cpp
 // Purpose:     wxEffects implementation
 // Author:      Julian Smart
 // Modified by:
 // Created:     25/4/2000
-// RCS-ID:      $Id: effects.cpp,v 1.9 2004/09/13 18:03:44 ABX Exp $
+// RCS-ID:      $Id: effects.cpp 42755 2006-10-30 19:41:46Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "effects.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
-#include "wx/gdicmn.h"
-#include "wx/pen.h"
-#include "wx/dcmemory.h"
-#include "wx/settings.h"
 #include "wx/effects.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/dcmemory.h"
+    #include "wx/pen.h"
+    #include "wx/settings.h"
+    #include "wx/gdicmn.h"
+#endif //WX_PRECOMP
 
 /*
  * wxEffects: various 3D effects
@@ -87,16 +86,15 @@ void wxEffects::DrawSunkenEdge(wxDC& dc, const wxRect& rect, int WXUNUSED(border
     dc.SetPen(wxNullPen);
 }
 
-bool wxEffects::TileBitmap(const wxRect& rect, wxDC& dc, wxBitmap& bitmap)
+bool wxEffects::TileBitmap(const wxRect& rect, wxDC& dc, const wxBitmap& bitmap)
 {
-    static bool hiColour = (wxDisplayDepth() >= 16) ;
-
     int w = bitmap.GetWidth();
     int h = bitmap.GetHeight();
 
     wxMemoryDC dcMem;
 
 #if wxUSE_PALETTE
+    static bool hiColour = (wxDisplayDepth() >= 16) ;
     if (bitmap.GetPalette() && !hiColour)
     {
         dc.SetPalette(* bitmap.GetPalette());
@@ -104,7 +102,7 @@ bool wxEffects::TileBitmap(const wxRect& rect, wxDC& dc, wxBitmap& bitmap)
     }
 #endif // wxUSE_PALETTE
 
-    dcMem.SelectObject(bitmap);
+    dcMem.SelectObjectAsSource(bitmap);
 
     int i, j;
     for (i = rect.x; i < rect.x + rect.width; i += w)

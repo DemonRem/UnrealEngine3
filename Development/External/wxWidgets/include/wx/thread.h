@@ -5,7 +5,7 @@
 // Modified by: Vadim Zeitlin (modifications partly inspired by omnithreads
 //              package from Olivetti & Oracle Research Laboratory)
 // Created:     04/13/98
-// RCS-ID:      $Id: thread.h,v 1.73 2004/10/20 01:18:18 ABX Exp $
+// RCS-ID:      $Id: thread.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -21,11 +21,6 @@
 #include "wx/defs.h"
 
 #if wxUSE_THREADS
-
-// only for wxUSE_THREADS - otherwise we'd get undefined symbols
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "thread.h"
-#endif
 
 // Windows headers define it
 #ifdef Yield
@@ -114,11 +109,11 @@ enum wxMutexType
 };
 
 // forward declarations
-class WXDLLIMPEXP_BASE wxThreadHelper;
-class WXDLLIMPEXP_BASE wxConditionInternal;
-class WXDLLIMPEXP_BASE wxMutexInternal;
-class WXDLLIMPEXP_BASE wxSemaphoreInternal;
-class WXDLLIMPEXP_BASE wxThreadInternal;
+class WXDLLIMPEXP_FWD_BASE wxThreadHelper;
+class WXDLLIMPEXP_FWD_BASE wxConditionInternal;
+class WXDLLIMPEXP_FWD_BASE wxMutexInternal;
+class WXDLLIMPEXP_FWD_BASE wxSemaphoreInternal;
+class WXDLLIMPEXP_FWD_BASE wxThreadInternal;
 
 // ----------------------------------------------------------------------------
 // A mutex object is a synchronization object whose state is set to signaled
@@ -329,19 +324,19 @@ public:
     wxCondError Wait();
 
     // exactly as Wait() except that it may also return if the specified
-    // timeout ellapses even if the condition hasn't been signalled: in this
+    // timeout elapses even if the condition hasn't been signalled: in this
     // case, the return value is false, otherwise (i.e. in case of a normal
     // return) it is true
     //
-    // the timeeout parameter specifies a interval that needs to be waited in
-    // milliseconds
+    // the timeout parameter specifies an interval that needs to be waited for
+    // in milliseconds
     wxCondError WaitTimeout(unsigned long milliseconds);
 
     // NB: the associated mutex may or may not be locked by the calling thread
     //
     // this method unblocks one thread if any are blocking on the condition.
     // if no thread is blocking in Wait(), then the signal is NOT remembered
-    // The thread which was blocking on Wait(), will then reacquire the lock
+    // The thread which was blocking on Wait() will then reacquire the lock
     // on the associated mutex object before returning
     wxCondError Signal();
 
@@ -349,20 +344,26 @@ public:
     //
     // this method unblocks all threads if any are blocking on the condition.
     // if no thread is blocking in Wait(), then the signal is NOT remembered
-    // The threads which were blocking on Wait(), will then reacquire the lock
+    // The threads which were blocking on Wait() will then reacquire the lock
     // on the associated mutex object before returning.
     wxCondError Broadcast();
 
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated version, don't use
-    bool Wait(unsigned long milliseconds)
-        { return WaitTimeout(milliseconds) == wxCOND_NO_ERROR; }
+    wxDEPRECATED( bool Wait(unsigned long milliseconds) );
+#endif // WXWIN_COMPATIBILITY_2_6
 
 private:
     wxConditionInternal *m_internal;
 
     DECLARE_NO_COPY_CLASS(wxCondition)
 };
+
+#if WXWIN_COMPATIBILITY_2_6
+    inline bool wxCondition::Wait(unsigned long milliseconds)
+        { return WaitTimeout(milliseconds) == wxCOND_NO_ERROR; }
+#endif // WXWIN_COMPATIBILITY_2_6
 
 // ----------------------------------------------------------------------------
 // wxSemaphore: a counter limiting the number of threads concurrently accessing
@@ -392,7 +393,7 @@ public:
     wxSemaError TryWait();
 
     // same as Wait(), but as a timeout limit, returns wxSEMA_NO_ERROR if the
-    // semaphore was acquired and wxSEMA_TIMEOUT if the timeout has ellapsed
+    // semaphore was acquired and wxSEMA_TIMEOUT if the timeout has elapsed
     wxSemaError WaitTimeout(unsigned long milliseconds);
 
     // increments the semaphore count and signals one of the waiting threads
@@ -441,7 +442,7 @@ public:
         // Returns true if current thread is the main thread.
     static bool IsMain();
 
-        // Release the rest of our time slice leting the other threads run
+        // Release the rest of our time slice letting the other threads run
     static void Yield();
 
         // Sleep during the specified period of time in milliseconds
@@ -507,9 +508,9 @@ public:
     ExitCode Wait();
 
         // kills the thread without giving it any chance to clean up - should
-        // not be used in normal circumstances, use Delete() instead. It is a
-        // dangerous function that should only be used in the most extreme
-        // cases!
+        // not be used under normal circumstances, use Delete() instead.
+        // It is a dangerous function that should only be used in the most
+        // extreme cases!
         //
         // The wxThread object is deleted by Kill() if the thread is
         // detachable, but you still have to delete it manually for joinable
@@ -692,11 +693,12 @@ inline void WXDLLIMPEXP_BASE wxMutexGuiLeave() { }
 
 // macros for entering/leaving critical sections which may be used without
 // having to take them inside "#if wxUSE_THREADS"
-#define wxENTER_CRIT_SECT(cs)
-#define wxLEAVE_CRIT_SECT(cs)
-#define wxCRIT_SECT_DECLARE(cs)
-#define wxCRIT_SECT_DECLARE_MEMBER(cs)
-#define wxCRIT_SECT_LOCKER(name, cs)
+// (the implementation uses dummy structs to force semicolon after the macro)
+#define wxENTER_CRIT_SECT(cs)            do {} while (0)
+#define wxLEAVE_CRIT_SECT(cs)            do {} while (0)
+#define wxCRIT_SECT_DECLARE(cs)          struct wxDummyCS##cs
+#define wxCRIT_SECT_DECLARE_MEMBER(cs)   struct wxDummyCSMember##cs
+#define wxCRIT_SECT_LOCKER(name, cs)     struct wxDummyCSLocker##name
 
 // if there is only one thread, it is always the main one
 inline bool wxIsMainThread() { return true; }
@@ -738,7 +740,7 @@ public:
 
 #if wxUSE_THREADS
 
-#if defined(__WXMSW__) || defined(__WXMAC__) || defined(__WXPM__) || defined(__EMX__)
+#if defined(__WXMSW__) || defined(__WXMAC__) || defined(__OS2__) || defined(__EMX__)
     // unlock GUI if there are threads waiting for and lock it back when
     // there are no more of them - should be called periodically by the main
     // thread
@@ -747,10 +749,8 @@ public:
     // returns true if the main thread has GUI lock
     extern bool WXDLLIMPEXP_BASE wxGuiOwnedByMainThread();
 
-#ifndef __WXPM__
     // wakes up the main thread if it's sleeping inside ::GetMessage()
     extern void WXDLLIMPEXP_BASE wxWakeUpMainThread();
-#endif // !OS/2
 
     // return true if the main thread is waiting for some other to terminate:
     // wxApp then should block all "dangerous" messages
@@ -760,4 +760,3 @@ public:
 #endif // wxUSE_THREADS
 
 #endif // _WX_THREAD_H_
-

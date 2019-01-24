@@ -4,17 +4,13 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     ??/10/98
-// RCS-ID:      $Id: dyntbar.h,v 1.16 2004/07/20 10:08:27 ABX Exp $
+// RCS-ID:      $Id: dyntbar.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __DYNTBAR_G__
 #define __DYNTBAR_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "dyntbar.h"
-#endif
 
 #include "wx/tbarbase.h"
 #include "wx/dynarray.h"

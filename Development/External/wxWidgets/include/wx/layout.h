@@ -1,24 +1,20 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        layout.h
-// Purpose:     Layout classes
+// Name:        wx/layout.h
+// Purpose:     OBSOLETE layout constraint classes, use sizers instead
 // Author:      Julian Smart
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: layout.h,v 1.23 2004/10/18 05:55:41 ABX Exp $
+// RCS-ID:      $Id: layout.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WX_LAYOUTH__
-#define _WX_LAYOUTH__
+#ifndef _WX_LAYOUT_H_
+#define _WX_LAYOUT_H_
 
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "layout.h"
-#endif
 
 #include "wx/object.h"
 
@@ -30,12 +26,14 @@
     #undef Below
 #endif
 
+#if wxUSE_CONSTRAINTS
+
 // ----------------------------------------------------------------------------
 // forward declrations
 // ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxWindowBase;
-class WXDLLEXPORT wxLayoutConstraints;
+class WXDLLIMPEXP_FWD_CORE wxWindowBase;
+class WXDLLIMPEXP_FWD_CORE wxLayoutConstraints;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -73,7 +71,7 @@ public:
 
     // note that default copy ctor and assignment operators are ok
 
-    ~wxIndividualLayoutConstraint(){}
+    virtual ~wxIndividualLayoutConstraint(){}
 
     void Set(wxRelationship rel, wxWindowBase *otherW, wxEdge otherE, int val = 0, int marg = wxLAYOUT_DEFAULT_MARGIN);
 
@@ -176,7 +174,7 @@ public:
 
     // note that default copy ctor and assignment operators are ok
 
-    ~wxLayoutConstraints(){}
+    virtual ~wxLayoutConstraints(){}
 
     bool SatisfyConstraints(wxWindowBase *win, int *noChanges);
     bool AreSatisfied() const
@@ -188,5 +186,6 @@ public:
     DECLARE_DYNAMIC_CLASS(wxLayoutConstraints)
 };
 
-#endif
-    // _WX_LAYOUTH__
+#endif // wxUSE_CONSTRAINTS
+
+#endif // _WX_LAYOUT_H_

@@ -4,7 +4,7 @@
 // Author:      Aleksandras Gluchovas
 // Modified by: Sebastian Haase (June 21, 2001)
 // Created:     24/11/98
-// RCS-ID:      $Id: fl_sample2.cpp,v 1.7 2005/07/22 16:43:04 MR Exp $
+// RCS-ID:      $Id: fl_sample2.cpp 38477 2006-03-31 18:07:22Z ABX $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ MyFrame::MyFrame( wxWindow* parent, const wxChar *title )
     : wxFrame( parent, wxID_ANY, title, wxDefaultPosition,
           wxSize( 700, 500 ),
           wxCLIP_CHILDREN | wxMINIMIZE_BOX | wxMAXIMIZE_BOX |
-          wxTHICK_FRAME   | wxSYSTEM_MENU  | wxCAPTION | wxCLOSE_BOX,
+          wxRESIZE_BORDER   | wxSYSTEM_MENU  | wxCAPTION | wxCLOSE_BOX,
           wxT("freimas") )
 {
 }
@@ -193,4 +193,3 @@ void MyFrame::OnQuit( wxCommandEvent& WXUNUSED(event) )
 
     Close(true);
 }
-

@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        progdlgg.h
+// Name:        src/generic/progdlgg.cpp
 // Purpose:     wxProgressDialog class
-// Author:      Karsten Ballüder
+// Author:      Karsten Ballueder
 // Modified by:
 // Created:     09.05.1999
-// RCS-ID:      $Id: progdlgg.cpp,v 1.93 2005/04/07 14:52:22 ABX Exp $
-// Copyright:   (c) Karsten Ballüder
+// RCS-ID:      $Id: progdlgg.cpp 50711 2007-12-15 02:57:58Z VZ $
+// Copyright:   (c) Karsten Ballueder
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "progdlgg.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -41,10 +37,10 @@
     #include "wx/intl.h"
     #include "wx/dcclient.h"
     #include "wx/timer.h"
+    #include "wx/settings.h"
 #endif
 
-#include "wx/generic/progdlgg.h"
-#include "wx/settings.h"
+#include "wx/progdlg.h"
 
 // ---------------------------------------------------------------------------
 // macros
@@ -145,7 +141,7 @@ wxProgressDialog::wxProgressDialog(wxString const &title,
 
     wxClientDC dc(this);
     dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-    long widthText;
+    long widthText = 0;
     dc.GetTextExtent(message, &widthText, NULL, NULL, NULL, NULL);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -180,7 +176,7 @@ wxProgressDialog::wxProgressDialog(wxString const &title,
     m_display_estimated = m_last_timeupdate = m_break = 0;
     m_ctdelay = 0;
 
-    // if we are going to have at least one label, remmeber it in this var
+    // if we are going to have at least one label, remember it in this var
     wxStaticText *label = NULL;
 
     // also count how many labels we really have
@@ -265,9 +261,7 @@ wxProgressDialog::wxProgressDialog(wxString const &title,
         sizeDlg.y += 2*LAYOUT_MARGIN;
 
         // try to make the dialog not square but rectangular of reasonable width
-        sizeDlg.x = (wxCoord)wxMax(widthText, 4*sizeDlg.y/3);
-        sizeDlg.x *= 3;
-        sizeDlg.x /= 2;
+        sizeDlg.x = (wxCoord)wxMax(3*widthText/2, 4*sizeDlg.y/3);
         SetClientSize(sizeDlg);
     }
 
@@ -312,7 +306,7 @@ wxStaticText *wxProgressDialog::CreateLabel(const wxString& text,
     locsizer->Add(dummy, 1, wxALIGN_LEFT);
     locsizer->Add(label, 1, wxALIGN_LEFT);
     sizer->Add(locsizer, 0, wxALIGN_LEFT | wxTOP | wxLEFT, LAYOUT_MARGIN);
-#elif defined(__WXMSW__) || defined(__WXPM__) || defined(__WXMAC__)
+#elif defined(__WXMSW__) || defined(__WXPM__) || defined(__WXMAC__) || defined(__WXGTK20__)
     // label and time centered in one row
     locsizer->Add(dummy, 1, wxLARGESMALL(wxALIGN_RIGHT,wxALIGN_LEFT));
     locsizer->Add(label, 1, wxALIGN_LEFT | wxLEFT, LAYOUT_MARGIN);
@@ -342,19 +336,10 @@ wxProgressDialog::Update(int value, const wxString& newmsg, bool *skip)
 
     wxASSERT_MSG( value <= m_maximum, wxT("invalid progress value") );
 
-    // fill up the gauge if value == maximum because this means that the dialog
-    // is going to close and the gauge shouldn't be partly empty in this case
-    if ( m_gauge && value <= m_maximum )
-    {
-        m_gauge->SetValue(value == m_maximum ? value : value + 1);
-    }
+    if ( m_gauge )
+        m_gauge->SetValue(value);
 
-    if ( !newmsg.empty() && newmsg != m_msg->GetLabel() )
-    {
-        m_msg->SetLabel(newmsg);
-
-        wxYieldIfNeeded() ;
-    }
+    UpdateMessage(newmsg);
 
     if ( (m_elapsed || m_remaining || m_estimated) && (value != 0) )
     {
@@ -447,22 +432,52 @@ wxProgressDialog::Update(int value, const wxString& newmsg, bool *skip)
             Hide();
         }
     }
-    else
+    else // not at maximum yet
     {
-        // we have to yield because not only we want to update the display but
-        // also to process the clicks on the cancel and skip buttons
-        wxYieldIfNeeded() ;
-
-        if ( (m_skip) && (skip != NULL) && (*skip == false) )
-        {
-            *skip = true;
-            m_skip = false;
-            EnableSkip();
-        }
+        return DoAfterUpdate(skip);
     }
 
     // update the display in case yielding above didn't do it
     Update();
+
+    return m_state != Canceled;
+}
+
+bool wxProgressDialog::Pulse(const wxString& newmsg, bool *skip)
+{
+    wxASSERT_MSG( m_gauge, wxT("cannot update non existent dialog") );
+
+    // show a bit of progress
+    m_gauge->Pulse();
+
+    UpdateMessage(newmsg);
+
+    if (m_elapsed || m_remaining || m_estimated)
+    {
+        unsigned long elapsed = wxGetCurrentTime() - m_timeStart;
+
+        SetTimeLabel(elapsed, m_elapsed);
+        SetTimeLabel((unsigned long)-1, m_estimated);
+        SetTimeLabel((unsigned long)-1, m_remaining);
+    }
+
+    return DoAfterUpdate(skip);
+}
+
+bool wxProgressDialog::DoAfterUpdate(bool *skip)
+{
+    // we have to yield because not only we want to update the display but
+    // also to process the clicks on the cancel and skip buttons
+    wxYieldIfNeeded();
+
+    Update();
+
+    if ( m_skip && skip && !*skip )
+    {
+        *skip = true;
+        m_skip = false;
+        EnableSkip();
+    }
 
     return m_state != Canceled;
 }
@@ -579,10 +594,18 @@ static void SetTimeLabel(unsigned long val, wxStaticText *label)
     if ( label )
     {
         wxString s;
+
+        if (val != (unsigned long)-1)
+        {
         unsigned long hours = val / 3600;
         unsigned long minutes = (val % 3600) / 60;
         unsigned long seconds = val % 60;
         s.Printf(wxT("%lu:%02lu:%02lu"), hours, minutes, seconds);
+        }
+        else
+        {
+            s = _("Unknown");
+        }
 
         if ( s != label->GetLabel() )
             label->SetLabel(s);
@@ -634,6 +657,16 @@ void wxProgressDialog::EnableClose()
             m_btnAbort->SetLabel(_("Close"));
         }
 #endif
+    }
+}
+
+void wxProgressDialog::UpdateMessage(const wxString &newmsg)
+{
+    if ( !newmsg.empty() && newmsg != m_msg->GetLabel() )
+    {
+        m_msg->SetLabel(newmsg);
+
+        wxYieldIfNeeded() ;
     }
 }
 

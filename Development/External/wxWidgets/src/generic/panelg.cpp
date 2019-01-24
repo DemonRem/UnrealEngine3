@@ -4,7 +4,7 @@
 // Author:      Julian Smart, Robert Roebling, Vadim Zeitlin
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: panelg.cpp,v 1.79 2005/04/02 17:41:08 JS Exp $
+// RCS-ID:      $Id: panelg.cpp 40307 2006-07-25 01:31:13Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "panelg.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -34,10 +30,9 @@
     #include "wx/colour.h"
     #include "wx/settings.h"
     #include "wx/log.h"
+    #include "wx/panel.h"
+    #include "wx/containr.h"
 #endif
-
-#include "wx/containr.h"
-#include "wx/panel.h"
 
 // ----------------------------------------------------------------------------
 // wxWin macros
@@ -102,7 +97,7 @@ END_EVENT_TABLE()
 // implementation
 // ============================================================================
 
-WX_DELEGATE_TO_CONTROL_CONTAINER(wxPanel)
+WX_DELEGATE_TO_CONTROL_CONTAINER(wxPanel, wxWindow)
 
 // ----------------------------------------------------------------------------
 // wxPanel creation
@@ -153,7 +148,7 @@ void wxPanel::OnSize(wxSizeEvent& event)
     if (GetAutoLayout())
         Layout();
 #if wxUSE_CONSTRAINTS
-#if defined(__WXPM__)
+#if defined(__WXPM__) && 0
     else
     {
         // Need to properly move child windows under OS/2
@@ -183,4 +178,3 @@ void wxPanel::OnSize(wxSizeEvent& event)
 
     event.Skip();
 }
-

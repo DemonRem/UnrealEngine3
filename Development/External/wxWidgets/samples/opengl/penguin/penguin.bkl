@@ -1,14 +1,18 @@
 <?xml version="1.0" ?>
-<!-- $Id: penguin.bkl,v 1.2 2004/10/14 17:09:43 ABX Exp $ -->
+<!-- $Id: penguin.bkl 41872 2006-10-10 10:04:10Z VS $ -->
 
 <makefile>
 
     <include file="../../../build/bakefiles/common_samples.bkl"/>
+    
+    <if cond="OUT_OF_TREE_MAKEFILES=='1'">
+        <set var="USE_OPENGL">1</set>
+    </if>
 
     <exe id="penguin" template="wx_sample" template_append="wx_append" cond="USE_OPENGL=='1'">
         <sources>
             penguin.cpp
-            lw.cpp
+            dxfrenderer.cpp
             trackball.c
         </sources>
         <wx-lib>gl</wx-lib>
@@ -19,7 +23,7 @@
 
     <wx-data id="data">
         <files>
-            penguin.lwo
+            penguin.dxf.gz
         </files>
     </wx-data>
 

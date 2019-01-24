@@ -4,7 +4,7 @@
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     2002/04/05
-// RCS-ID:      $Id: artbrows.h,v 1.3 2005/03/12 10:33:00 RR Exp $
+// RCS-ID:      $Id: artbrows.h 51246 2008-01-16 12:56:37Z VZ $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -12,16 +12,12 @@
 #ifndef __ARTBROWS_H__
 #define __ARTBROWS_H__
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "artbrows.h"
-#endif
-
 #include "wx/dialog.h"
 #include "wx/artprov.h"
 
-class WXDLLEXPORT wxListCtrl;
-class WXDLLEXPORT wxListEvent;
-class WXDLLEXPORT wxStaticBitmap;
+class WXDLLIMPEXP_FWD_CORE wxListCtrl;
+class WXDLLIMPEXP_FWD_CORE wxListEvent;
+class WXDLLIMPEXP_FWD_CORE wxStaticBitmap;
 
 class wxArtBrowserDialog : public wxDialog
 {

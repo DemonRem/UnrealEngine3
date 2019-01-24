@@ -1,17 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/statbr95.cpp
+// Name:        src/msw/statbr95.cpp
 // Purpose:     native implementation of wxStatusBar
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.04.98
-// RCS-ID:      $Id: statbr95.cpp,v 1.61 2005/09/09 16:29:35 JS Exp $
+// RCS-ID:      $Id: statbr95.cpp 48670 2007-09-14 07:15:51Z JS $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "statbr95.h"
-#endif
 
 // for compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -20,24 +16,24 @@
   #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-  #include "wx/setup.h"
-  #include "wx/frame.h"
-  #include "wx/settings.h"
-  #include "wx/dcclient.h"
-#endif
+#if wxUSE_STATUSBAR && wxUSE_NATIVE_STATUSBAR
 
-#if wxUSE_STATUSBAR && defined(__WIN95__) && wxUSE_NATIVE_STATUSBAR
-
-#include "wx/intl.h"
-#include "wx/log.h"
 #include "wx/statusbr.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
+    #include "wx/frame.h"
+    #include "wx/settings.h"
+    #include "wx/dcclient.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+#endif
 
 #include "wx/msw/private.h"
 #include <windowsx.h>
 
-#if defined(__WIN95__) && !(defined(__GNUWIN32_OLD__) && !defined(__CYGWIN10__))
-    #include <commctrl.h>
+#if wxUSE_UXTHEME
+    #include "wx/msw/uxtheme.h"
 #endif
 
 // ----------------------------------------------------------------------------
@@ -71,6 +67,9 @@ bool wxStatusBar95::Create(wxWindow *parent,
                            const wxString& name)
 {
     wxCHECK_MSG( parent, false, wxT("status bar must have a parent") );
+
+    // Avoid giving the status bar a themed window
+    style = (style & ~wxBORDER_MASK) | wxBORDER_NONE;
 
     SetName(name);
     SetWindowStyleFlag(style);
@@ -193,6 +192,12 @@ void wxStatusBar95::SetStatusText(const wxString& strText, int nField)
     wxCHECK_RET( (nField >= 0) && (nField < m_nFields),
                  _T("invalid statusbar field index") );
 
+    if ( strText == GetStatusText(nField) )
+    {
+       // don't call StatusBar_SetText() to avoid flicker
+       return;
+    }
+
     // Get field style, if any
     int style;
     if (m_statusStyles)
@@ -272,14 +277,27 @@ bool wxStatusBar95::GetFieldRect(int i, wxRect& rect) const
         wxLogLastError(wxT("SendMessage(SB_GETRECT)"));
     }
 
+#if wxUSE_UXTHEME
+    wxUxThemeHandle theme((wxStatusBar95 *)this, L"Status"); // const_cast
+    if ( theme )
+    {
+        // by default Windows has a 2 pixel border to the right of the left
+        // divider (or it could be a bug) but it looks wrong so remove it
+        if ( i != 0 )
+        {
+            r.left -= 2;
+        }
+
+        wxUxThemeEngine::Get()->GetThemeBackgroundContentRect(theme, NULL,
+                                                              1 /* SP_PANE */, 0,
+                                                              &r, &r);
+    }
+#endif
+
     wxCopyRECTToRect(r, rect);
 
     return true;
 }
-
-#ifndef SWP_NOSENDCHANGING
-#define SWP_NOSENDCHANGING 0
-#endif
 
 void wxStatusBar95::DoMoveWindow(int x, int y, int width, int height)
 {
@@ -291,8 +309,14 @@ void wxStatusBar95::DoMoveWindow(int x, int y, int width, int height)
     {
         // parent pos/size isn't deferred so do it now but don't send
         // WM_WINDOWPOSCHANGING since we don't want to change pos/size later
+        // we must use SWP_NOCOPYBITS here otherwise it paints incorrectly
+        // if other windows are size deferred
         ::SetWindowPos(GetHwnd(), NULL, x, y, width, height,
-                       SWP_NOZORDER | SWP_NOSENDCHANGING);
+                       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE
+#ifndef __WXWINCE__
+                       | SWP_NOCOPYBITS | SWP_NOSENDCHANGING
+#endif
+                       );
     }
 
     // adjust fields widths to the new size
@@ -390,5 +414,4 @@ wxStatusBar95::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
     return wxStatusBarBase::MSWWindowProc(nMsg, wParam, lParam);
 }
 
-#endif // __WIN95__ && wxUSE_NATIVE_STATUSBAR
-
+#endif // wxUSE_STATUSBAR && wxUSE_NATIVE_STATUSBAR

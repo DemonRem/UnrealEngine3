@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.02.01
-// RCS-ID:      $Id: gaugecmn.cpp,v 1.8 2004/09/15 13:20:17 ABX Exp $
+// RCS-ID:      $Id: gaugecmn.cpp 41089 2006-09-09 13:36:54Z RR $
 // Copyright:   (c) 2001 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "gaugebase.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -31,9 +27,11 @@
 #ifndef WX_PRECOMP
 #endif //WX_PRECOMP
 
+#if wxUSE_GAUGE
+
 #include "wx/gauge.h"
 
-#if wxUSE_GAUGE
+const wxChar wxGaugeNameStr[] = wxT("gauge");
 
 // ============================================================================
 // implementation
@@ -68,12 +66,15 @@ bool wxGaugeBase::Create(wxWindow *parent,
 
     SetRange(range);
     SetValue(0);
+#if wxGAUGE_EMULATE_INDETERMINATE_MODE
+    m_nDirection = wxRIGHT;
+#endif
 
     return true;
 }
 
 // ----------------------------------------------------------------------------
-// wxGauge range/position
+// wxGauge determinate mode range/position
 // ----------------------------------------------------------------------------
 
 void wxGaugeBase::SetRange(int range)
@@ -94,6 +95,39 @@ void wxGaugeBase::SetValue(int pos)
 int wxGaugeBase::GetValue() const
 {
     return m_gaugePos;
+}
+
+// ----------------------------------------------------------------------------
+// wxGauge indeterminate mode
+// ----------------------------------------------------------------------------
+
+void wxGaugeBase::Pulse()
+{
+#if wxGAUGE_EMULATE_INDETERMINATE_MODE
+    // simulate indeterminate mode
+    int curr = GetValue(), max = GetRange();
+
+    if (m_nDirection == wxRIGHT)
+    {
+        if (curr < max)
+            SetValue(curr + 1);
+        else
+        {
+            SetValue(max - 1);
+            m_nDirection = wxLEFT;
+        }
+    }
+    else
+    {
+        if (curr > 0)
+            SetValue(curr - 1);
+        else
+        {
+            SetValue(1);
+            m_nDirection = wxRIGHT;
+        }
+    }
+#endif
 }
 
 // ----------------------------------------------------------------------------

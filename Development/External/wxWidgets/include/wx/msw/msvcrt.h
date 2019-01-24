@@ -5,7 +5,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     31.01.1999
-// RCS-ID:      $Id: msvcrt.h,v 1.10 2004/07/25 16:47:33 VZ Exp $
+// RCS-ID:      $Id: msvcrt.h 42363 2006-10-24 23:19:12Z VZ $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -49,12 +49,15 @@
 
     #include <crtdbg.h>
 
+    #undef WXDEBUG_NEW
+    #define WXDEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+
     // this define works around a bug with inline declarations of new, see
     //
     //      http://support.microsoft.com/support/kb/articles/Q140/8/58.asp
     //
     // for the details
-    #define new  new( _NORMAL_BLOCK, __FILE__, __LINE__)
+    #define new  WXDEBUG_NEW
 
     #define wxCrtSetDbgFlag(flag) \
         _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | (flag))

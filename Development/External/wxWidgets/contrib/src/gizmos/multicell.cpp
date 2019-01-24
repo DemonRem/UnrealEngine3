@@ -4,16 +4,12 @@
 // Author:      Jonathan Bayer
 // Modified by:
 // Created:
-// RCS-ID:      $Id:
+// RCS-ID:      $Id: multicell.cpp 42046 2006-10-16 09:30:01Z ABX $
 // Copyright:   (c) Jonathan Bayer
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 // This was inspired by the gbsizer class written by Alex Andruschak
-
-#ifdef __GNUG__
-    #pragma implementation "multicell.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -202,7 +198,7 @@ bool wxMultiCellSizer::EnableGridLines(wxWindow *win)
     return true;
 }
 //---------------------------------------------------------------------------
-bool wxMultiCellSizer::SetGridPen(wxPen *pen)
+bool wxMultiCellSizer::SetGridPen(const wxPen *pen)
 {
     m_pen = pen;
     return true;
@@ -655,4 +651,3 @@ void wxMultiCellCanvas :: CalculateConstraints()
 }
 
 /*** End of File ***/
-

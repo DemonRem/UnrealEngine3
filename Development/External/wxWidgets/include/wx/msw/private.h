@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        private.h
+// Name:        wx/msw/private.h
 // Purpose:     Private declarations: as this header is only included by
 //              wxWidgets itself, it may contain identifiers which don't start
 //              with "wx".
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: private.h,v 1.147 2005/08/04 20:31:06 VZ Exp $
+// RCS-ID:      $Id: private.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -21,14 +21,11 @@
     #include "wx/msw/microwin.h"
 #endif
 
-// Include fixes for MSLU:
-#include "wx/msw/mslu.h"
-
 #include "wx/log.h"
 
-class WXDLLEXPORT wxFont;
-class WXDLLEXPORT wxWindow;
-class WXDLLEXPORT wxWindowBase;
+class WXDLLIMPEXP_FWD_CORE wxFont;
+class WXDLLIMPEXP_FWD_CORE wxWindow;
+class WXDLLIMPEXP_FWD_CORE wxWindowBase;
 
 // ---------------------------------------------------------------------------
 // private constants
@@ -166,6 +163,7 @@ extern LONG APIENTRY _EXPORT
 // Intel, Visual Age.
 #if defined(__WXWINCE__)
     #define wxGetOSFHandle(fd) ((HANDLE)fd)
+    #define wxOpenOSFHandle(h, flags) ((int)wxPtrToUInt(h))
 #elif defined(__CYGWIN__)
     #define wxGetOSFHandle(fd) ((HANDLE)get_osfhandle(fd))
 #elif defined(__VISUALC__) \
@@ -175,6 +173,8 @@ extern LONG APIENTRY _EXPORT
    || defined(__MINGW32__) \
    || (defined(__MWERKS__) && defined(__MSL__))
     #define wxGetOSFHandle(fd) ((HANDLE)_get_osfhandle(fd))
+    #define wxOpenOSFHandle(h, flags) (_open_osfhandle(wxPtrToUInt(h), flags))
+    #define wx_fdopen _fdopen
 #endif
 
 // close the handle in the class dtor
@@ -192,10 +192,26 @@ protected:
     HANDLE m_handle;
 };
 
+// a template to make initializing Windows styructs less painful: it zeroes all
+// the struct fields and also sets cbSize member to the correct value (and so
+// can be only used with structures which have this member...)
+template <class T>
+struct WinStruct : public T
+{
+    WinStruct()
+    {
+        ::ZeroMemory(this, sizeof(T));
+
+        // explicit qualification is required here for this to be valid C++
+        this->cbSize = sizeof(T);
+    }
+};
+
+
 #if wxUSE_GUI
 
-#include <wx/gdicmn.h>
-#include <wx/colour.h>
+#include "wx/gdicmn.h"
+#include "wx/colour.h"
 
 // make conversion from wxColour and COLORREF a bit less painful
 inline COLORREF wxColourToRGB(const wxColour& c)
@@ -319,9 +335,7 @@ inline RECT wxGetWindowRect(HWND hwnd)
     RECT rect;
 
     if ( !::GetWindowRect(hwnd, &rect) )
-    {
         wxLogLastError(_T("GetWindowRect"));
-    }
 
     return rect;
 }
@@ -331,9 +345,7 @@ inline RECT wxGetClientRect(HWND hwnd)
     RECT rect;
 
     if ( !::GetClientRect(hwnd, &rect) )
-    {
         wxLogLastError(_T("GetClientRect"));
-    }
 
     return rect;
 }
@@ -341,22 +353,6 @@ inline RECT wxGetClientRect(HWND hwnd)
 // ---------------------------------------------------------------------------
 // small helper classes
 // ---------------------------------------------------------------------------
-
-// a template to make initializing Windows styructs less painful: it zeroes all
-// the struct fields and also sets cbSize member to the correct value (and so
-// can be only used with structures which have this member...)
-template <class T>
-struct WinStruct : public T
-{
-    WinStruct()
-    {
-        ::ZeroMemory(this, sizeof(T));
-
-        // explicit qualification is required here for this to be valid C++
-        this->cbSize = sizeof(T);
-    }
-};
-
 
 // create an instance of this class and use it as the HDC for screen, will
 // automatically release the DC going out of scope
@@ -410,28 +406,48 @@ private:
 // dtor
 class SelectInHDC
 {
+private:
+    void DoInit(HGDIOBJ hgdiobj) { m_hgdiobj = ::SelectObject(m_hdc, hgdiobj); }
+
 public:
-    SelectInHDC(HDC hdc, HGDIOBJ hgdiobj) : m_hdc(hdc)
-        { m_hgdiobj = ::SelectObject(hdc, hgdiobj); }
+    SelectInHDC() : m_hdc(NULL) { }
+    SelectInHDC(HDC hdc, HGDIOBJ hgdiobj) : m_hdc(hdc) { DoInit(hgdiobj); }
 
-   ~SelectInHDC() { ::SelectObject(m_hdc, m_hgdiobj); }
+    void Init(HDC hdc, HGDIOBJ hgdiobj)
+    {
+        wxASSERT_MSG( !m_hdc, _T("initializing twice?") );
 
-   // return true if the object was successfully selected
-   operator bool() const { return m_hgdiobj != 0; }
+        m_hdc = hdc;
+
+        DoInit(hgdiobj);
+    }
+
+    ~SelectInHDC() { if ( m_hdc ) ::SelectObject(m_hdc, m_hgdiobj); }
+
+    // return true if the object was successfully selected
+    operator bool() const { return m_hgdiobj != 0; }
 
 private:
-   HDC m_hdc;
-   HGDIOBJ m_hgdiobj;
+    HDC m_hdc;
+    HGDIOBJ m_hgdiobj;
 
-   DECLARE_NO_COPY_CLASS(SelectInHDC)
+    DECLARE_NO_COPY_CLASS(SelectInHDC)
 };
 
 // a class which cleans up any GDI object
 class AutoGDIObject
 {
 protected:
+    AutoGDIObject() { m_gdiobj = NULL; }
     AutoGDIObject(HGDIOBJ gdiobj) : m_gdiobj(gdiobj) { }
     ~AutoGDIObject() { if ( m_gdiobj ) ::DeleteObject(m_gdiobj); }
+
+    void InitGdiobj(HGDIOBJ gdiobj)
+    {
+        wxASSERT_MSG( !m_gdiobj, _T("initializing twice?") );
+
+        m_gdiobj = gdiobj;
+    }
 
     HGDIOBJ GetObject() const { return m_gdiobj; }
 
@@ -441,7 +457,7 @@ private:
 
 // TODO: all this asks for using a AutoHandler<T, CreateFunc> template...
 
-// a class for temporary pens
+// a class for temporary brushes
 class AutoHBRUSH : private AutoGDIObject
 {
 public:
@@ -449,6 +465,22 @@ public:
         : AutoGDIObject(::CreateSolidBrush(col)) { }
 
     operator HBRUSH() const { return (HBRUSH)GetObject(); }
+};
+
+// a class for temporary fonts
+class AutoHFONT : private AutoGDIObject
+{
+private:
+public:
+    AutoHFONT()
+        : AutoGDIObject() { }
+
+    AutoHFONT(const LOGFONT& lf)
+        : AutoGDIObject(::CreateFontIndirect(&lf)) { }
+
+    void Init(const LOGFONT& lf) { InitGdiobj(::CreateFontIndirect(&lf)); }
+
+    operator HFONT() const { return (HFONT)GetObject(); }
 };
 
 // a class for temporary pens
@@ -519,6 +551,41 @@ private:
     DECLARE_NO_COPY_CLASS(HDCClipper)
 };
 
+// set the given map mode for the life time of this object
+//
+// NB: SetMapMode() is not supported by CE so we also define a helper macro
+//     to avoid using it there
+#ifdef __WXWINCE__
+    #define wxCHANGE_HDC_MAP_MODE(hdc, mm)
+#else // !__WXWINCE__
+    class HDCMapModeChanger
+    {
+    public:
+        HDCMapModeChanger(HDC hdc, int mm)
+            : m_hdc(hdc)
+        {
+            m_modeOld = ::SetMapMode(hdc, mm);
+            if ( !m_modeOld )
+                wxLogLastError(_T("SelectClipRgn"));
+        }
+
+        ~HDCMapModeChanger()
+        {
+            if ( m_modeOld )
+                ::SetMapMode(m_hdc, m_modeOld);
+        }
+
+    private:
+        HDC m_hdc;
+        int m_modeOld;
+
+        DECLARE_NO_COPY_CLASS(HDCMapModeChanger)
+    };
+
+    #define wxCHANGE_HDC_MAP_MODE(hdc, mm) \
+        HDCMapModeChanger wxMAKE_UNIQUE_NAME(wxHDCMapModeChanger)(hdc, mm)
+#endif // __WXWINCE__/!__WXWINCE__
+
 // smart buffeer using GlobalAlloc/GlobalFree()
 class GlobalPtr
 {
@@ -556,9 +623,7 @@ public:
     {
         m_ptr = GlobalLock(hGlobal);
         if ( !m_ptr )
-        {
             wxLogLastError(_T("GlobalLock"));
-        }
     }
 
     ~GlobalPtrLock()
@@ -859,37 +924,27 @@ inline void *wxSetWindowUserData(HWND hwnd, void *data)
 
 #else // __WIN32__
 
-#ifdef __VISUALC__
-    // strangely enough, VC++ 7.1 gives warnings about 32 -> 64 bit conversions
-    // in the functions below, even in spite of the explicit casts
-    #pragma warning(disable:4311)
-    #pragma warning(disable:4312)
-#endif
-
-inline void *wxGetWindowProc(HWND hwnd)
+// note that the casts to LONG_PTR here are required even on 32-bit machines
+// for the 64-bit warning mode of later versions of MSVC (C4311/4312)
+inline WNDPROC wxGetWindowProc(HWND hwnd)
 {
-    return (void *)::GetWindowLong(hwnd, GWL_WNDPROC);
+    return (WNDPROC)(LONG_PTR)::GetWindowLong(hwnd, GWL_WNDPROC);
 }
 
 inline void *wxGetWindowUserData(HWND hwnd)
 {
-    return (void *)::GetWindowLong(hwnd, GWL_USERDATA);
+    return (void *)(LONG_PTR)::GetWindowLong(hwnd, GWL_USERDATA);
 }
 
 inline WNDPROC wxSetWindowProc(HWND hwnd, WNDPROC func)
 {
-    return (WNDPROC)::SetWindowLong(hwnd, GWL_WNDPROC, (LONG)func);
+    return (WNDPROC)(LONG_PTR)::SetWindowLong(hwnd, GWL_WNDPROC, (LONG_PTR)func);
 }
 
 inline void *wxSetWindowUserData(HWND hwnd, void *data)
 {
-    return (void *)::SetWindowLong(hwnd, GWL_USERDATA, (LONG)data);
+    return (void *)(LONG_PTR)::SetWindowLong(hwnd, GWL_USERDATA, (LONG_PTR)data);
 }
-
-#ifdef __VISUALC__
-    #pragma warning(default:4311)
-    #pragma warning(default:4312)
-#endif
 
 #endif // __WIN64__/__WIN32__
 

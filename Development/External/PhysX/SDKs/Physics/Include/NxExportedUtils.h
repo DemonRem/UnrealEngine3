@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXLEGACYEXPORTS
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -34,9 +34,10 @@ They are kept here and exported from the physics SDK DLL for backwards compatibi
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox
 */
@@ -57,9 +58,10 @@ NX_INLINE bool NxBoxContainsPoint(const NxBox& box, const NxVec3& p)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox NxBounds3
 */
@@ -81,9 +83,10 @@ NX_INLINE void NxCreateBox(NxBox& box, const NxBounds3& aabb, const NxMat34& mat
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox NxPlane
 */
@@ -105,9 +108,10 @@ NX_INLINE bool NxComputeBoxPlanes(const NxBox& box, NxPlane* planes)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox
 */
@@ -129,9 +133,10 @@ NX_INLINE bool NxComputeBoxPoints(const NxBox& box, NxVec3* pts)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox
 */
@@ -149,9 +154,10 @@ NX_INLINE bool NxComputeBoxVertexNormals(const NxBox& box, NxVec3* pts)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxComputeBoxPoints
 */
@@ -169,9 +175,10 @@ NX_INLINE const NxU32* NxGetBoxEdges()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxComputeBoxPoints
 */
@@ -189,9 +196,10 @@ NX_INLINE const NxI32* NxGetBoxEdgesAxes()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxComputeBoxPoints
 */
@@ -209,9 +217,10 @@ NX_INLINE const NxU32* NxGetBoxTriangles()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE const NxVec3* NxGetBoxLocalEdgeNormals()
 	{
@@ -237,9 +246,10 @@ Edge ordering:
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxComputeBoxWorldEdgeNormal(const NxBox& box, NxU32 edge_index, NxVec3& world_normal)
 	{
@@ -257,9 +267,10 @@ NX_INLINE void NxComputeBoxWorldEdgeNormal(const NxBox& box, NxU32 edge_index, N
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox NxCapsule NxComputeBoxAroundCapsule
 */
@@ -280,9 +291,10 @@ NX_INLINE void NxComputeCapsuleAroundBox(const NxBox& box, NxCapsule& capsule)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBox
 */
@@ -300,9 +312,10 @@ NX_INLINE bool NxIsBoxAInsideBoxB(const NxBox& a, const NxBox& b)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxComputeBoxPoints()
 */
@@ -321,9 +334,10 @@ NX_INLINE const NxU32* NxGetBoxQuads()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxComputeBoxPoints() NxGetBoxQuads()
 */
@@ -342,9 +356,10 @@ NX_INLINE const NxU32* NxBoxVertexToQuad(NxU32 vertexIndex)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxComputeCapsuleAroundBox
 */
@@ -360,9 +375,10 @@ NX_INLINE void NxComputeBoxAroundCapsule(const NxCapsule& capsule, NxBox& box)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPUPrecision24()
 	{
@@ -376,9 +392,10 @@ NX_INLINE void NxSetFPUPrecision24()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPUPrecision53()
 	{
@@ -392,9 +409,10 @@ NX_INLINE void NxSetFPUPrecision53()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPUPrecision64()
 	{
@@ -408,9 +426,10 @@ NX_INLINE void NxSetFPUPrecision64()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPURoundingChop()
 	{
@@ -424,9 +443,10 @@ NX_INLINE void NxSetFPURoundingChop()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPURoundingUp()
 	{
@@ -440,9 +460,10 @@ NX_INLINE void NxSetFPURoundingUp()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPURoundingDown()
 	{
@@ -456,9 +477,10 @@ NX_INLINE void NxSetFPURoundingDown()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPURoundingNear()
 	{
@@ -474,9 +496,10 @@ NX_INLINE void NxSetFPURoundingNear()
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxSetFPUExceptions(bool b)
 	{
@@ -494,9 +517,10 @@ NX_INLINE void NxSetFPUExceptions(bool b)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE int NxIntChop(const NxF32& f)
 	{
@@ -514,9 +538,10 @@ NX_INLINE int NxIntChop(const NxF32& f)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE int NxIntFloor(const NxF32& f)
 	{
@@ -534,9 +559,10 @@ NX_INLINE int NxIntFloor(const NxF32& f)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE int NxIntCeil(const NxF32& f)
 	{
@@ -556,9 +582,10 @@ NX_INLINE int NxIntCeil(const NxF32& f)
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxRay
 */
@@ -580,9 +607,10 @@ NX_INLINE NxF32 NxComputeDistanceSquared(const NxRay& ray, const NxVec3& point, 
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxSegment
 */
@@ -604,9 +632,10 @@ NX_INLINE NxF32 NxComputeSquareDistance(const NxSegment& seg, const NxVec3& poin
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxSphere NxFastComputeSphere
 */
@@ -629,9 +658,10 @@ The sphere may not be as tight as #NxComputeSphere
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxSphere NxComputeSphere
 */
@@ -651,9 +681,10 @@ NX_INLINE bool NxFastComputeSphere(NxSphere& sphere, unsigned nb_verts, const Nx
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxSphere NxComputeSphere
 */
@@ -673,9 +704,10 @@ NX_INLINE void NxMergeSpheres(NxSphere& merged, const NxSphere& sphere0, const N
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxNormalToTangents(const NxVec3 & n, NxVec3 & t1, NxVec3 & t2)
 	{
@@ -699,9 +731,10 @@ Returns false on failure.
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 
 NX_INLINE bool NxDiagonalizeInertiaTensor(const NxMat33 & denseInertia, NxVec3 & diagonalInertia, NxMat33 & rotation)
@@ -726,9 +759,10 @@ x and b are unit vectors.
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE void NxFindRotationMatrix(const NxVec3 & x, const NxVec3 & b, NxMat33 & M)
 	{
@@ -747,9 +781,10 @@ NX_INLINE void NxFindRotationMatrix(const NxVec3 & x, const NxVec3 & b, NxMat33 
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBounds3
 */
@@ -769,9 +804,10 @@ NX_INLINE void NxComputeBounds(NxVec3& min, NxVec3& max, NxU32 nbVerts, const Nx
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 @see NxBounds3
 */
@@ -793,9 +829,10 @@ NX_INLINE void NxComputeBounds(NxBounds3& bounds, NxU32 nbVerts, const NxVec3* v
 
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 NX_INLINE NxU32 NxCrc32(const void* buffer, NxU32 nbBytes)
 	{
@@ -804,9 +841,9 @@ NX_INLINE NxU32 NxCrc32(const void* buffer, NxU32 nbBytes)
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

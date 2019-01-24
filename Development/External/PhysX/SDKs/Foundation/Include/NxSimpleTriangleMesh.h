@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXSIMPLETRIANGLEMESH
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -33,7 +33,7 @@ enum NxMeshFlags
 	*/
 	NX_MF_FLIPNORMALS		=	(1<<0),
 	NX_MF_16_BIT_INDICES	=	(1<<1),	//<! Denotes the use of 16-bit vertex indices
-	NX_MF_HARDWARE_MESH		=	(1<<2),	//<! The mesh will be used in hardware scenes
+	NX_MF_HARDWARE_MESH		=	(1<<2)	//<! The mesh will be used in hardware scenes
 	};
 
 typedef NxVec3 NxPoint;
@@ -89,7 +89,12 @@ class NxSimpleTriangleMesh
 	/**
 	\brief returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
+
 	};
 
 
@@ -109,15 +114,15 @@ NX_INLINE void NxSimpleTriangleMesh::setToDefault()
 	flags				= 0;
 	}
 
-NX_INLINE bool NxSimpleTriangleMesh::isValid() const
-	{
+NX_INLINE NxU32 NxSimpleTriangleMesh::checkValid() const
+{
 	// Check geometry
 	if(numVertices > 0xffff && flags & NX_MF_16_BIT_INDICES)
-		return false;
+		return 1;
 	if(!points)
-		return false;
+		return 2;
 	if(pointStrideBytes < sizeof(NxPoint))	//should be at least one point's worth of data
-		return false;
+		return 3;
 
 	// Check topology
 	// The triangles pointer is not mandatory
@@ -127,22 +132,22 @@ NX_INLINE bool NxSimpleTriangleMesh::isValid() const
 		if(flags & NX_MF_16_BIT_INDICES)
 			{
 			if((triangleStrideBytes < sizeof(NxU16)*3))
-				return false;
+				return 4;
 			}
 		else
 			{
 			if((triangleStrideBytes < sizeof(NxU32)*3))
-				return false;
+				return 5;
 			}
 		}
-	return true;
+	return 0;
 	}
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

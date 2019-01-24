@@ -4,7 +4,7 @@
 // Author:      Paul Gammans, Roger Gammans
 // Modified by:
 // Created:     11/04/2001
-// RCS-ID:      $Id: gridctrl.h,v 1.15 2005/01/17 21:29:20 ABX Exp $
+// RCS-ID:      $Id: gridctrl.h 48089 2007-08-15 11:46:57Z VZ $
 // Copyright:   (c) The Computer Surgery (paul@compsurg.co.uk)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,28 +12,23 @@
 #ifndef _WX_GENERIC_GRIDCTRL_H_
 #define _WX_GENERIC_GRIDCTRL_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "gridctrl.h"
-#endif
+#include "wx/grid.h"
 
 #if wxUSE_GRID
-
-#include "wx/grid.h"
-#include "wx/string.h"
-#include "wx/arrstr.h"
-#include "wx/datetime.h"
 
 #define wxGRID_VALUE_CHOICEINT    _T("choiceint")
 #define wxGRID_VALUE_DATETIME     _T("datetime")
 
 #if wxUSE_DATETIME
 
+#include "wx/datetime.h"
+
 // the default renderer for the cells containing Time and dates..
 class WXDLLIMPEXP_ADV wxGridCellDateTimeRenderer : public wxGridCellStringRenderer
 {
 public:
-    wxGridCellDateTimeRenderer(wxString outformat = wxDefaultDateTimeFormat,
-                               wxString informat = wxDefaultDateTimeFormat);
+    wxGridCellDateTimeRenderer(const wxString& outformat = wxDefaultDateTimeFormat,
+                               const wxString& informat = wxDefaultDateTimeFormat);
 
     // draw the string right aligned
     virtual void Draw(wxGrid& grid,
@@ -54,7 +49,7 @@ public:
     virtual void SetParameters(const wxString& params);
 
 protected:
-    wxString GetString(wxGrid& grid, int row, int col);
+    wxString GetString(const wxGrid& grid, int row, int col);
 
     wxString m_iformat;
     wxString m_oformat;
@@ -89,7 +84,7 @@ public:
     virtual void SetParameters(const wxString& params);
 
 protected:
-    wxString GetString(wxGrid& grid, int row, int col);
+    wxString GetString(const wxGrid& grid, int row, int col);
 
     wxArrayString m_choices;
 };
@@ -153,13 +148,11 @@ public:
 private:
     wxArrayString GetTextLines( wxGrid& grid,
                                 wxDC& dc,
-                                wxGridCellAttr& attr,
+                                const wxGridCellAttr& attr,
                                 const wxRect& rect,
                                 int row, int col);
 
 };
 
-#endif  // #if wxUSE_GRID
-
-#endif //_WX_GENERIC_GRIDCTRL_H_
-
+#endif  // wxUSE_GRID
+#endif // _WX_GENERIC_GRIDCTRL_H_

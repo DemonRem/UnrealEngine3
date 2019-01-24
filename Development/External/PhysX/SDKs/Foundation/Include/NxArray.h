@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXARRAY
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -23,13 +23,43 @@
 
  Note: the methods of this template are implemented inline in order to avoid the not yet very cross-compileable 'typename' keyword.
 */
+#if defined(__PPCGEKKO__)
+extern NxUserAllocator* NxGetPhysicsSDKAllocator();
+
+class NxUserAllocatorAccess
+	{
+	public:
+		NX_INLINE void* malloc(size_t size, NxMemoryType type)
+			{
+			return NxGetPhysicsSDKAllocator()->malloc(size,type);
+			}
+
+		NX_INLINE void* mallocDEBUG(size_t size, const char* fileName, int line, const char* className, NxMemoryType type)
+			{
+			return NxGetPhysicsSDKAllocator()->mallocDEBUG(size, fileName, line, className, type );
+			}
+
+		NX_INLINE void* realloc(void* memory, size_t size)
+			{
+			return NxGetPhysicsSDKAllocator()->realloc( memory, size );
+			}
+
+		NX_INLINE void free(void* memory)
+			{
+			if ( memory ) NxGetPhysicsSDKAllocator()->free(memory);
+			}
+	};
+
+template<class ElemType, class AllocType = NxUserAllocatorAccess>
+#else
 template<class ElemType, class AllocType = NxAllocatorDefault>
-class NxArray// : public Allocateable
+#endif 
+class NxArray : public AllocType
 	{
 	public:
 	typedef NxArray<ElemType,AllocType> MyType;
-	typedef ElemType * Iterator;
-	typedef const ElemType * ConstIterator;
+	typedef ElemType* Iterator;
+	typedef const ElemType* ConstIterator;
 	/*
 	Same as above with STL compliant syntax.  Deprecated.
 	*/
@@ -207,7 +237,7 @@ class NxArray// : public Allocateable
 	
 	\param x Element to add.
 	*/
-	NX_INLINE void pushBack(const ElemType& x)
+	NX_INLINE void pushBack(ElemType x)
 																		{
 																		//insert(end(), x);
 																		if (memEnd <= last)
@@ -275,10 +305,7 @@ class NxArray// : public Allocateable
 																		{
 																		NX_ASSERT(position<size());
 																		if (position!=size()-1)
-																			{
-																			ElemType& elem = back();
-																			(*this)[position] = elem;
-																			}
+																			(*this)[position] = back();
 																		popBack();
 																		}
 
@@ -302,6 +329,7 @@ class NxArray// : public Allocateable
 																			}
 																		return false;	// Element not found in the array
 																		}
+
 	/**
 	Returns a constant reference to an element in the sequence.
 	*/
@@ -381,7 +409,7 @@ class NxArray// : public Allocateable
 	*/
 	NX_INLINE void insert(Iterator where, unsigned n, const ElemType & x)
 																		{	
-																		ElemType tmp = x;
+																		// ElemType tmp = x;
 
 																		if (n == 0) return;
 																		if (capacity() < size() + n) 
@@ -390,8 +418,13 @@ class NxArray// : public Allocateable
 																			reserve((n + size()) * 2);
 																			where = first + pos;
 																			}
-																		iterator stop = where + n; 
-																		copy(where,last,stop);
+
+																		Iterator stop = where-1;
+																		Iterator f = last - 1;
+																		Iterator p = last - 1 + n;
+																		for (; f != stop; --p, --f)
+																			*p = *f;
+
 																		fill(where,n,x);
 																		last = last + n;
 																		}
@@ -438,20 +471,20 @@ class NxArray// : public Allocateable
 	NX_INLINE ElemType * allocate(size_t n)
 																		{
 #ifdef _DEBUG
-																		return (ElemType *)allocator.mallocDEBUG(n * sizeof(ElemType), (const char *)__FILE__, __LINE__, "ElemType", NX_MEMORY_Generic_Array_Container);
+																			return (ElemType *)AllocType::mallocDEBUG(n * sizeof(ElemType), (const char *)__FILE__, __LINE__, "ElemType", NX_MEMORY_Generic_Array_Container);
 #else
-																		return (ElemType *)allocator.malloc(n * sizeof(ElemType), NX_MEMORY_Generic_Array_Container);
+																		return (ElemType *)AllocType::malloc(n * sizeof(ElemType), NX_MEMORY_Generic_Array_Container);
 #endif
 																		}
 
 	NX_INLINE ElemType * reallocate(size_t n, ElemType *old)
 																		{
-																		return (ElemType *)allocator.realloc(old, n * sizeof(ElemType));
+																		return (ElemType *)AllocType::realloc(old, n * sizeof(ElemType));
 																		}
 
 	NX_INLINE void deallocate(ElemType *p)
 																		{
-																		if(p)	allocator.free(p);
+																			if(p)	AllocType::free(p);
 																		}
 
 	NX_INLINE void destroy(Iterator f, Iterator l)
@@ -463,17 +496,15 @@ class NxArray// : public Allocateable
 																		}
 
 	Iterator first, last, memEnd;
-
-	AllocType allocator;
 	};
 
 
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -12,17 +12,13 @@
 //                the Original Code Paints a Vertical Scroll in wxPagedWindow
 //                which is not needed in this Version. Use true for this.
 // Created:     07/09/98
-// RCS-ID:      $Id: tabpgwin.h,v 1.10 2004/10/05 15:38:01 ABX Exp $
+// RCS-ID:      $Id: tabpgwin.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __TABPGWIN_G__
 #define __TABPGWIN_G__
-
-//#ifdef __GNUG__
-//#pragma interface
-//#endif
 
 #include "wx/defs.h"
 #include "wx/window.h"

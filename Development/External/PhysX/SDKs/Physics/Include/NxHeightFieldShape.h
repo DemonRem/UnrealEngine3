@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXHEIGHTFIELDSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -59,9 +59,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc
 	*/
@@ -74,9 +75,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightField
 	*/
@@ -89,9 +91,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc.heightScale
 	*/
@@ -104,9 +107,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc.rowScale
 	*/
@@ -119,9 +123,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxHeightFieldShapeDesc.columnScale
 	*/
@@ -134,9 +139,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc.heightScale
 	*/
@@ -149,9 +155,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc.rowScale
 	*/
@@ -164,9 +171,10 @@ class NxHeightFieldShape: public NxShape
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc.columnScale
 	*/
@@ -186,9 +194,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangle NxTriangleFlags NxTriangleID
 	*/
@@ -213,9 +222,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxQueryFlags NxScene.overlapAABBShapes() getTriangle()
 	*/
@@ -233,14 +243,15 @@ class NxHeightFieldShape: public NxShape
 
 	\param[in] bounds Bounds to test against. In object or world space depending on #NxQueryFlags. <b>Range:</b> See #NxBounds3
 	\param[in] flags Controls if the bounds are in object or world space and if we return first contact only. See #NxQueryFlags.
-	\param[in] callback Used to return triangles whicj intersect the AABB
+	\param[in] callback Used to return triangles which intersect the AABB
 	\return True if there is an overlap.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxQueryFlags NxScene.overlapAABBShapes() getTriangle() NxUserEntityReport
 	*/
@@ -252,9 +263,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool				isShapePointOnHeightField(NxReal x, NxReal z) const = 0;
 
@@ -264,9 +276,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxReal				getHeightAtShapePoint(NxReal x, NxReal z) const = 0;
 
@@ -280,9 +293,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldShapeDesc.holeMaterial
 	*/
@@ -294,9 +308,10 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxVec3				getNormalAtShapePoint(NxReal x, NxReal z) const = 0;
 	
@@ -306,18 +321,19 @@ class NxHeightFieldShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxVec3				getSmoothNormalAtShapePoint(NxReal x, NxReal z) const = 0;
 	};
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

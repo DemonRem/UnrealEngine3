@@ -4,11 +4,6 @@
 //              Demonstrates embedded controls
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma implementation "test.cpp"
-    #pragma interface "test.cpp"
-#endif
-
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -52,8 +47,15 @@ TAG_HANDLER_PROC(tag)
 
     if (tag.HasParam(wxT("FLOAT"))) fl = ax;
 
-    wnd = new wxTextCtrl(m_WParser->GetWindow(), wxID_ANY, tag.GetParam(wxT("NAME")),
-        wxPoint(0,0), wxSize(ax, ay), wxTE_MULTILINE);
+    wnd = new wxTextCtrl
+              (
+                m_WParser->GetWindowInterface()->GetHTMLWindow(),
+                wxID_ANY,
+                tag.GetParam(wxT("NAME")),
+                wxPoint(0,0),
+                wxSize(ax, ay),
+                wxTE_MULTILINE
+              );
 
     wnd->Show(true);
 
@@ -120,7 +122,7 @@ enum
     Minimal_Forward,
 
     // controls start here (the numbers are, of course, arbitrary)
-    Minimal_Text = 1000,
+    Minimal_Text = 1000
 };
 
 // ----------------------------------------------------------------------------

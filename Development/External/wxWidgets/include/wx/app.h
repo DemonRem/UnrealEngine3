@@ -5,7 +5,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: app.h,v 1.129 2005/06/21 09:56:12 VS Exp $
+// RCS-ID:      $Id: app.h 51592 2008-02-08 08:17:41Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -18,30 +18,19 @@
 // ----------------------------------------------------------------------------
 
 #include "wx/event.h"       // for the base class
-
-#if wxUSE_GUI
-    #include "wx/window.h"  // for wxTopLevelWindows
-
-    #include "wx/vidmode.h"
-#endif // wxUSE_GUI
-
 #include "wx/build.h"
 #include "wx/init.h"        // we must declare wxEntry()
+#include "wx/intl.h"        // for wxLayoutDirection
 
-class WXDLLIMPEXP_BASE wxAppConsole;
-class WXDLLIMPEXP_BASE wxAppTraits;
-class WXDLLIMPEXP_BASE wxCmdLineParser;
-class WXDLLIMPEXP_BASE wxLog;
-class WXDLLIMPEXP_BASE wxMessageOutput;
+class WXDLLIMPEXP_FWD_BASE wxAppConsole;
+class WXDLLIMPEXP_FWD_BASE wxAppTraits;
+class WXDLLIMPEXP_FWD_BASE wxCmdLineParser;
+class WXDLLIMPEXP_FWD_BASE wxLog;
+class WXDLLIMPEXP_FWD_BASE wxMessageOutput;
 
-// wxUSE_EVTLOOP_IN_APP is a temporary hack needed until all ports are updated
-// to use wxEventLoop, otherwise we get linking errors on wxMac, it's going to
-// disappear a.s.a.p.
-#ifdef __WXMAC__
-    #define wxUSE_EVTLOOP_IN_APP 0
-#else
-    #define wxUSE_EVTLOOP_IN_APP 1
-    class WXDLLEXPORT wxEventLoop;
+#if wxUSE_GUI
+    class WXDLLIMPEXP_FWD_BASE wxEventLoop;
+    struct WXDLLIMPEXP_FWD_CORE wxVideoMode;
 #endif
 
 // ----------------------------------------------------------------------------
@@ -115,20 +104,6 @@ public:
     // however extreme care should be taken if you don't want this function to
     // crash.
     virtual void OnFatalException() { }
-
-#if wxUSE_EXCEPTIONS
-    // function called if an uncaught exception is caught inside the main
-    // event loop: it may return true to continue running the event loop or
-    // false to stop it (in the latter case it may rethrow the exception as
-    // well)
-    virtual bool OnExceptionInMainLoop();
-
-    // Called when an unhandled C++ exception occurs inside OnRun(): note that
-    // the exception type is lost by now, so if you really want to handle the
-    // exception you should override OnRun() and put a try/catch around
-    // MainLoop() call there
-    virtual void OnUnhandledException() { }
-#endif // wxUSE_EXCEPTIONS
 
     // Called from wxExit() function, should terminate the application a.s.a.p.
     virtual void Exit();
@@ -237,6 +212,12 @@ public:
     virtual void HandleEvent(wxEvtHandler *handler,
                              wxEventFunction func,
                              wxEvent& event) const;
+
+    // Called when an unhandled C++ exception occurs inside OnRun(): note that
+    // the exception type is lost by now, so if you really want to handle the
+    // exception you should override OnRun() and put a try/catch around
+    // MainLoop() call there or use OnExceptionInMainLoop()
+    virtual void OnUnhandledException() { }
 #endif // wxUSE_EXCEPTIONS
 
     // process all events in the wxPendingEvents list -- it is necessary to
@@ -259,13 +240,22 @@ public:
     // debugging support
     // -----------------
 
+#ifdef __WXDEBUG__
     // this function is called when an assert failure occurs, the base class
     // version does the normal processing (i.e. shows the usual assert failure
     // dialog box)
     //
-    // the arguments are the place where the assert occurred, the text of the
+    // the arguments are the location of the failed assert (func may be empty
+    // if the compiler doesn't support C99 __FUNCTION__), the text of the
     // assert itself and the user-specified message
-#ifdef __WXDEBUG__
+    virtual void OnAssertFailure(const wxChar *file,
+                                 int line,
+                                 const wxChar *func,
+                                 const wxChar *cond,
+                                 const wxChar *msg);
+
+    // old version of the function without func parameter, for compatibility
+    // only, override OnAssertFailure() in the new code
     virtual void OnAssert(const wxChar *file,
                           int line,
                           const wxChar *cond,
@@ -381,12 +371,8 @@ public:
         // (already) be dispatched
     static bool IsMainLoopRunning()
     {
-#if wxUSE_EVTLOOP_IN_APP
         wxAppBase *app = wx_static_cast(wxAppBase *, GetInstance());
         return app && app->m_mainLoop != NULL;
-#else
-        return false;
-#endif
     }
 
         // execute the main GUI loop, the function returns when the loop ends
@@ -430,8 +416,14 @@ public:
         // Returns true if more idle time is requested.
     virtual bool SendIdleEvents(wxWindow* win, wxIdleEvent& event);
 
-        // Perform standard OnIdle behaviour: call from port's OnIdle
-    void OnIdle(wxIdleEvent& event);
+
+#if wxUSE_EXCEPTIONS
+    // Function called if an uncaught exception is caught inside the main
+    // event loop: it may return true to continue running the event loop or
+    // false to stop it (in the latter case it may rethrow the exception as
+    // well)
+    virtual bool OnExceptionInMainLoop();
+#endif // wxUSE_EXCEPTIONS
 
 
     // top level window functions
@@ -446,15 +438,7 @@ public:
         // return the "main" top level window (if it hadn't been set previously
         // with SetTopWindow(), will return just some top level window and, if
         // there are none, will return NULL)
-    virtual wxWindow *GetTopWindow() const
-    {
-        if (m_topWindow)
-            return m_topWindow;
-        else if (wxTopLevelWindows.GetCount() > 0)
-            return wxTopLevelWindows.GetFirst()->GetData();
-        else
-            return (wxWindow *)NULL;
-    }
+    virtual wxWindow *GetTopWindow() const;
 
         // control the exit behaviour: by default, the program will exit the
         // main loop (and so, usually, terminate) when the last top-level
@@ -471,15 +455,16 @@ public:
     // ------------------------------------------------------------------------
 
         // Get display mode that is used use. This is only used in framebuffer
-        // wxWin ports (such as wxMGL).
-    virtual wxVideoMode GetDisplayMode() const { return wxVideoMode(); }
+        // wxWin ports (such as wxMGL or wxDFB).
+    virtual wxVideoMode GetDisplayMode() const;
         // Set display mode to use. This is only used in framebuffer wxWin
-        // ports (such as wxMGL). This method should be called from
+        // ports (such as wxMGL or wxDFB). This method should be called from
         // wxApp::OnInitGui
     virtual bool SetDisplayMode(const wxVideoMode& WXUNUSED(info)) { return true; }
 
         // set use of best visual flag (see below)
-    void SetUseBestVisual( bool flag ) { m_useBestVisual = flag; }
+    void SetUseBestVisual( bool flag, bool forceTrueColour = false ) 
+        { m_useBestVisual = flag; m_forceTrueColour = forceTrueColour; }
     bool GetUseBestVisual() const { return m_useBestVisual; }
 
         // set/get printing mode: see wxPRINT_XXX constants.
@@ -488,6 +473,10 @@ public:
         // printing.
     virtual void SetPrintMode(int WXUNUSED(mode)) { }
     int GetPrintMode() const { return wxPRINT_POSTSCRIPT; }
+
+    // Return the layout direction for the current locale or wxLayout_Default
+    // if it's unknown
+    virtual wxLayoutDirection GetLayoutDirection() const;
 
 
     // command line parsing (GUI-specific)
@@ -506,10 +495,15 @@ public:
     // deactivated
     virtual void SetActive(bool isActive, wxWindow *lastFocus);
 
+#if WXWIN_COMPATIBILITY_2_6
     // OBSOLETE: don't use, always returns true
     //
     // returns true if the program is successfully initialized
-    bool Initialized() { return true; }
+    wxDEPRECATED( bool Initialized() );
+#endif // WXWIN_COMPATIBILITY_2_6
+
+    // perform standard OnIdle behaviour, ensure that this is always called
+    void OnIdle(wxIdleEvent& event);
 
 
 protected:
@@ -520,11 +514,9 @@ protected:
     virtual wxAppTraits *CreateTraits();
 
 
-#if wxUSE_EVTLOOP_IN_APP
     // the main event loop of the application (may be NULL if the loop hasn't
     // been started yet or has already terminated)
     wxEventLoop *m_mainLoop;
-#endif // wxUSE_EVTLOOP_IN_APP
 
     // the main top level window (may be NULL)
     wxWindow *m_topWindow;
@@ -540,16 +532,22 @@ protected:
         Yes
     } m_exitOnFrameDelete;
 
-    // true if the apps whats to use the best visual on systems where
+    // true if the app wants to use the best visual on systems where
     // more than one are available (Sun, SGI, XFree86 4.0 ?)
     bool m_useBestVisual;
+    // force TrueColour just in case "best" isn't TrueColour
+    bool m_forceTrueColour;
 
-    // does any of our windows has focus?
+    // does any of our windows have focus?
     bool m_isActive;
 
 
     DECLARE_NO_COPY_CLASS(wxAppBase)
 };
+
+#if WXWIN_COMPATIBILITY_2_6
+    inline bool wxAppBase::Initialized() { return true; }
+#endif // WXWIN_COMPATIBILITY_2_6
 
 #endif // wxUSE_GUI
 
@@ -566,8 +564,12 @@ protected:
         #include "wx/motif/app.h"
     #elif defined(__WXMGL__)
         #include "wx/mgl/app.h"
-    #elif defined(__WXGTK__)
+    #elif defined(__WXDFB__)
+        #include "wx/dfb/app.h"
+    #elif defined(__WXGTK20__)
         #include "wx/gtk/app.h"
+    #elif defined(__WXGTK__)
+        #include "wx/gtk1/app.h"
     #elif defined(__WXX11__)
         #include "wx/x11/app.h"
     #elif defined(__WXMAC__)
@@ -595,7 +597,7 @@ protected:
 //
 // the cast is safe as in GUI build we only use wxApp, not wxAppConsole, and in
 // console mode it does nothing at all
-#define wxTheApp ((wxApp *)wxApp::GetInstance())
+#define wxTheApp wx_static_cast(wxApp*, wxApp::GetInstance())
 
 // ----------------------------------------------------------------------------
 // global functions
@@ -607,8 +609,15 @@ protected:
 // Force an exit from main loop
 extern void WXDLLIMPEXP_BASE wxExit();
 
+// avoid redeclaring this function here if it had been already declated by
+// wx/utils.h, this results in warnings from g++ with -Wredundant-decls
+#ifndef wx_YIELD_DECLARED
+#define wx_YIELD_DECLARED
+
 // Yield to other apps/messages
 extern bool WXDLLIMPEXP_BASE wxYield();
+
+#endif // wx_YIELD_DECLARED
 
 // Yield to other apps/messages
 extern void WXDLLIMPEXP_BASE wxWakeUpIdle();
@@ -635,7 +644,7 @@ public:
 #define IMPLEMENT_WXWIN_MAIN_CONSOLE \
         int main(int argc, char **argv) { return wxEntry(argc, argv); }
 
-// port-specific header could have defined it already in some special wau
+// port-specific header could have defined it already in some special way
 #ifndef IMPLEMENT_WXWIN_MAIN
     #define IMPLEMENT_WXWIN_MAIN IMPLEMENT_WXWIN_MAIN_CONSOLE
 #endif // defined(IMPLEMENT_WXWIN_MAIN)
@@ -643,9 +652,12 @@ public:
 #ifdef __WXUNIVERSAL__
     #include "wx/univ/theme.h"
 
-    #define IMPLEMENT_WX_THEME_SUPPORT \
-        WX_USE_THEME(win32); \
-        WX_USE_THEME(gtk);
+    #ifdef wxUNIV_DEFAULT_THEME
+        #define IMPLEMENT_WX_THEME_SUPPORT \
+            WX_USE_THEME(wxUNIV_DEFAULT_THEME);
+    #else
+        #define IMPLEMENT_WX_THEME_SUPPORT
+    #endif
 #else
     #define IMPLEMENT_WX_THEME_SUPPORT
 #endif
@@ -661,7 +673,8 @@ public:
     }                                                                       \
     wxAppInitializer                                                        \
         wxTheAppInitializer((wxAppInitializerFunction) wxCreateApp);        \
-    appname& wxGetApp() { return *(appname *)wxTheApp; }
+    DECLARE_APP(appname)                                                    \
+    appname& wxGetApp() { return *wx_static_cast(appname*, wxApp::GetInstance()); }
 
 // Same as IMPLEMENT_APP() normally but doesn't include themes support in
 // wxUniversal builds
@@ -684,5 +697,12 @@ public:
 // function
 #define DECLARE_APP(appname) extern appname& wxGetApp();
 
-#endif // _WX_APP_H_BASE_
 
+// declare the stuff defined by IMPLEMENT_APP() macro, it's not really needed
+// anywhere else but at the very least it suppresses icc warnings about
+// defining extern symbols without prior declaration, and it shouldn't do any
+// harm
+extern wxAppConsole *wxCreateApp();
+extern wxAppInitializer wxTheAppInitializer;
+
+#endif // _WX_APP_H_BASE_

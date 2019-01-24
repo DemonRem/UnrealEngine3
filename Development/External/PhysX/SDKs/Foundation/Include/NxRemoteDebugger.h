@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXREMOTEDEBUGGER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -105,6 +105,9 @@ enum NxRemoteDebuggerObjectType
 	NX_DBG_OBJECTTYPE_CLOTH = 15,
 	NX_DBG_OBJECTTYPE_SOFTBODY = 16,
 	NX_DBG_OBJECTTYPE_FLUID	=	17,
+	NX_DBG_OBJECTTYPE_FORCEFIELD = 18,
+	NX_DBG_OBJECTTYPE_RAYCAST = 19,
+	NX_DBG_OBJECTTYPE_HEIGHTFIELD = 20
 };
 
 //#define NX_DISABLE_REMOTE_DEBUG
@@ -115,7 +118,7 @@ enum NxRemoteDebuggerObjectType
 #include "NxPlane.h"
 #include "NxVec3.h"
 
-#ifdef CORELIB
+#ifdef NX_PHYSX_CORE_EXPORTS
 
 #define NX_DBG_IS_CONNECTED() (NxFoundation::FoundationSDK::getInstance().getRemoteDebugger()->isConnected())
 #define NX_DBG_FRAME_BREAK() NxFoundation::FoundationSDK::getInstance().getRemoteDebugger()->frameBreak();
@@ -160,11 +163,22 @@ public:
 	/**
 	This is called right before the event mask is changed.
 	*/
-	virtual void beforeMaskChange(NxU32 oldMask, NxU32 newMask) {};
+	virtual void beforeMaskChange(NxU32 oldMask, NxU32 newMask)
+	{
+		NX_UNREFERENCED_PARAMETER(oldMask);
+		NX_UNREFERENCED_PARAMETER(newMask);
+	};
 	/**
 	This is called right after the event mask is changed.
 	*/
-	virtual void afterMaskChange(NxU32 oldMask, NxU32 newMask) {};
+	virtual void afterMaskChange(NxU32 oldMask, NxU32 newMask)
+	{
+		NX_UNREFERENCED_PARAMETER(oldMask);
+		NX_UNREFERENCED_PARAMETER(newMask);
+	};
+
+protected:
+	virtual ~NxRemoteDebuggerEventListener(){};
 };
 
 /**
@@ -408,9 +422,9 @@ protected:
 
 /** @} */
 #endif // NX_FOUNDATION_NXREMOTEDEBUGGER
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

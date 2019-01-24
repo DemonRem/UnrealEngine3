@@ -6,9 +6,9 @@
 
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -17,10 +17,27 @@ Particle flags are used to give some additional information about the particles.
 */
 enum NxParticleFlag
 {
+	/**
+	\brief Indicates collision with a static shape
+	*/
 	NX_FP_COLLISION_WITH_STATIC		= (1<<0),	
+
+	/**
+	\brief Indicates collision with a dynamic shape
+	*/
 	NX_FP_COLLISION_WITH_DYNAMIC	= (1<<1),
+
+	/**
+	\brief Indicates that the particle is not within interaction range with other particles
+	\note Meaningless for non-SPH fluids
+	*/
 	NX_FP_SEPARATED					= (1<<2),
-	NX_FP_MOTION_LIMIT_REACHED		= (1<<3),
+
+	/**
+	\brief The velocity is limited according to the maximum distance a particle can move in a timestep
+	\see NxFluidDescBase::motionLimitMultiplier 
+	*/
+	NX_FP_MOTION_LIMIT_REACHED		= (1<<3)
 };
 
 /**
@@ -83,7 +100,7 @@ class NxParticleData
 	/**
 	\brief The pointer to the user-allocated buffer for particle IDs.
 
-	A particle id is represented as a 32-bit unsigned integer. If set the NULL, IDs are not written to.
+	A particle id is represented as a 32-bit unsigned integer. If set to NULL, IDs are not written to.
 	IDs are never read from the user, they are always defined by the SDK.
 	*/
 	NxU32*					bufferId;
@@ -91,7 +108,7 @@ class NxParticleData
 	/**
 	\brief The pointer to the user-allocated buffer for particle flags.
 
-	A particle flags are represented as a 32-bit unsigned integer. If set the NULL, flags are not written to.
+	A particle flags are represented as a 32-bit unsigned integer. If set to NULL, flags are not written to.
 	Flags are never read from the user, they are always defined by the SDK. 
 	Use NxParticleFlag to interpret this data.
 	*/
@@ -181,7 +198,11 @@ class NxParticleData
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -218,28 +239,28 @@ NX_INLINE void NxParticleData::setToDefault()
 	name								= NULL;
 	}
 
-NX_INLINE bool NxParticleData::isValid() const
+NX_INLINE NxU32 NxParticleData::checkValid() const
 	{
-	if (numParticlesPtr && !(bufferPos || bufferVel || bufferLife || bufferDensity || bufferId || bufferCollisionNormal)) return false;
-	if ((bufferPos || bufferVel || bufferLife || bufferDensity || bufferId || bufferCollisionNormal) && !numParticlesPtr) return false;
-	if (bufferPos && !bufferPosByteStride) return false;
-	if (bufferVel && !bufferVelByteStride) return false;
-	if (bufferLife && !bufferLifeByteStride) return false;
-	if (bufferDensity && !bufferDensityByteStride) return false;
-	if (bufferId && !bufferIdByteStride) return false;
-    if (bufferFlag && !bufferFlagByteStride) return false;
-	if (bufferCollisionNormal && !bufferCollisionNormalByteStride) return false;
-	return true;
+	if (numParticlesPtr && !(bufferPos || bufferVel || bufferLife || bufferDensity || bufferId || bufferCollisionNormal)) return 1;
+	if ((bufferPos || bufferVel || bufferLife || bufferDensity || bufferId || bufferCollisionNormal) && !numParticlesPtr) return 2;
+	if (bufferPos && !bufferPosByteStride) return 3;
+	if (bufferVel && !bufferVelByteStride) return 4;
+	if (bufferLife && !bufferLifeByteStride) return 5;
+	if (bufferDensity && !bufferDensityByteStride) return 6;
+	if (bufferId && !bufferIdByteStride) return 7;
+    if (bufferFlag && !bufferFlagByteStride) return 8;
+	if (bufferCollisionNormal && !bufferCollisionNormalByteStride) return 9;
+	return 0;
 	}
 
 /** @} */
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

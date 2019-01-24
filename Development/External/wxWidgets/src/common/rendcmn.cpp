@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/rendcmn.cpp
+// Name:        src/common/rendcmn.cpp
 // Purpose:     wxRendererNative common functions
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     28.07.03
-// RCS-ID:      $Id: rendcmn.cpp,v 1.9 2005/06/13 12:19:20 ABX Exp $
+// RCS-ID:      $Id: rendcmn.cpp 41216 2006-09-14 16:04:18Z ABX $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwindows.org>
 // License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,4 +206,3 @@ wxRendererNative *wxRendererNative::Load(const wxString& name)
 }
 
 #endif // wxUSE_DYNLIB_CLASS
-

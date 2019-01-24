@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        palette.h
+// Name:        contrib/samples/ogl/ogledit/palette.h
 // Purpose:     OGL sample palette
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: palette.h,v 1.6 2004/06/09 16:42:26 ABX Exp $
+// RCS-ID:      $Id: palette.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,14 +12,10 @@
 #ifndef _OGLSAMPLE_PALETTE_H_
 #define _OGLSAMPLE_PALETTE_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface
-#endif
-
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/deprecated/setup.h>
-#include <wx/deprecated/tbarsmpl.h>
+#include "wx/wx.h"
+#include "wx/string.h"
+#include "wx/deprecated/setup.h"
+#include "wx/deprecated/tbarsmpl.h"
 
 /*
  * Object editor tool palette

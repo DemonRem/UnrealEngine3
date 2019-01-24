@@ -5,17 +5,13 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     06/09/98
-// RCS-ID:      $Id: toolwnd.h,v 1.10 2005/02/10 16:35:08 JS Exp $
+// RCS-ID:      $Id: toolwnd.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __TOOLWND_G__
 #define __TOOLWND_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "toolwnd.h"
-#endif
 
 #include "wx/frame.h"
 #include "wx/dynarray.h"

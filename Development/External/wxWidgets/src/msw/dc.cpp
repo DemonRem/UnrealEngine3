@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dc.cpp,v 1.193 2005/09/16 14:53:39 ABX Exp $
+// RCS-ID:      $Id: dc.cpp 49338 2007-10-22 18:07:45Z RD $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dc.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,6 +25,7 @@
 #endif
 
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcdlg.h"
     #include "wx/image.h"
     #include "wx/window.h"
     #include "wx/dc.h"
@@ -39,12 +36,12 @@
     #include "wx/dcmemory.h"
     #include "wx/log.h"
     #include "wx/icon.h"
+    #include "wx/dcprint.h"
+    #include "wx/module.h"
 #endif
 
 #include "wx/sysopt.h"
-#include "wx/dcprint.h"
-#include "wx/module.h"
-#include "wx/dynload.h"
+#include "wx/dynlib.h"
 
 #ifdef wxHAVE_RAW_BITMAP
 #include "wx/rawbmp.h"
@@ -52,13 +49,16 @@
 
 #include <string.h>
 
-#include "wx/msw/wrapcdlg.h"
 #ifndef __WIN32__
     #include <print.h>
 #endif
 
 #ifndef AC_SRC_ALPHA
-#define AC_SRC_ALPHA 1
+    #define AC_SRC_ALPHA 1
+#endif
+
+#ifndef LAYOUT_RTL
+    #define LAYOUT_RTL 1
 #endif
 
 /* Quaternary raster codes */
@@ -135,10 +135,13 @@ static bool AlphaBlt(HDC hdcDst,
                      const wxBitmap& bmpSrc);
 
 #ifdef wxHAVE_RAW_BITMAP
-// our (limited) AlphaBlend() replacement
+
+// our (limited) AlphaBlend() replacement for Windows versions not providing it
 static void
-wxAlphaBlend(HDC hdcDst, int x, int y, int w, int h, int srcX, int srcY, const wxBitmap& bmp);
-#endif
+wxAlphaBlend(HDC hdcDst, int x, int y, int w, int h,
+             int srcX, int srcY, const wxBitmap& bmp);
+
+#endif // wxHAVE_RAW_BITMAP
 
 // ----------------------------------------------------------------------------
 // private classes
@@ -196,6 +199,45 @@ private:
 
     DECLARE_NO_COPY_CLASS(StretchBltModeChanger)
 };
+
+// helper class to cache dynamically loaded libraries and not attempt reloading
+// them if it fails
+class wxOnceOnlyDLLLoader
+{
+public:
+    // ctor argument must be a literal string as we don't make a copy of it!
+    wxOnceOnlyDLLLoader(const wxChar *dllName)
+        : m_dllName(dllName)
+    {
+    }
+
+
+    // return the symbol with the given name or NULL if the DLL not loaded
+    // or symbol not present
+    void *GetSymbol(const wxChar *name)
+    {
+        // we're prepared to handle errors here
+        wxLogNull noLog;
+
+        if ( m_dllName )
+        {
+            m_dll.Load(m_dllName);
+
+            // reset the name whether we succeeded or failed so that we don't
+            // try again the next time
+            m_dllName = NULL;
+        }
+
+        return m_dll.IsLoaded() ? m_dll.GetSymbol(name) : NULL;
+    }
+
+private:
+    wxDynamicLibrary m_dll;
+    const wxChar *m_dllName;
+};
+
+static wxOnceOnlyDLLLoader wxGDI32DLL(_T("gdi32"));
+static wxOnceOnlyDLLLoader wxMSIMG32DLL(_T("msimg32"));
 
 // ===========================================================================
 // implementation
@@ -258,23 +300,6 @@ wxColourChanger::~wxColourChanger()
 // ---------------------------------------------------------------------------
 // wxDC
 // ---------------------------------------------------------------------------
-
-// Default constructor
-wxDC::wxDC()
-{
-    m_canvas = NULL;
-
-    m_oldBitmap = 0;
-    m_oldPen = 0;
-    m_oldBrush = 0;
-    m_oldFont = 0;
-#if wxUSE_PALETTE
-    m_oldPalette = 0;
-#endif // wxUSE_PALETTE
-
-    m_bOwnsDC = false;
-    m_hDC = 0;
-}
 
 wxDC::~wxDC()
 {
@@ -470,6 +495,14 @@ void wxDC::DestroyClippingRegion()
 
     if (m_clipping && m_hDC)
     {
+#if 1
+        // On a PocketPC device (not necessarily emulator), resetting
+        // the clip region as per the old method causes bad display
+        // problems. In fact setting a null region is probably OK
+        // on desktop WIN32 also, since the WIN32 docs imply that the user
+        // clipping region is independent from the paint clipping region.
+        ::SelectClipRgn(GetHdc(), 0);
+#else
         // TODO: this should restore the previous clipping region,
         //       so that OnPaint processing works correctly, and the update
         //       clipping region doesn't get destroyed after the first
@@ -477,6 +510,7 @@ void wxDC::DestroyClippingRegion()
         HRGN rgn = CreateRectRgn(0, 0, 32000, 32000);
         ::SelectClipRgn(GetHdc(), rgn);
         ::DeleteObject(rgn);
+#endif
     }
 
     wxDCBase::DestroyClippingRegion();
@@ -532,9 +566,9 @@ void wxDC::Clear()
         if (!m_selectedBitmap.Ok())
             return;
 
-        rect.left = 0; rect.top = 0;
-        rect.right = m_selectedBitmap.GetWidth();
-        rect.bottom = m_selectedBitmap.GetHeight();
+        rect.left = -m_deviceOriginX; rect.top = -m_deviceOriginY;
+        rect.right = m_selectedBitmap.GetWidth()-m_deviceOriginX;
+        rect.bottom = m_selectedBitmap.GetHeight()-m_deviceOriginY;
     }
 
 #ifndef __WXWINCE__
@@ -702,12 +736,13 @@ void wxDC::DoDrawArc(wxCoord x1, wxCoord y1,
 void wxDC::DoDrawCheckMark(wxCoord x1, wxCoord y1,
                            wxCoord width, wxCoord height)
 {
-    WXMICROWIN_CHECK_HDC
-
+    // cases when we don't have DrawFrameControl()
+#if defined(__SYMANTEC__) || defined(__WXMICROWIN__)
+    return wxDCBase::DoDrawCheckMark(x1, y1, width, height);
+#else // normal case
     wxCoord x2 = x1 + width,
             y2 = y1 + height;
 
-#if defined(__WIN32__) && !defined(__SYMANTEC__) && !defined(__WXMICROWIN__)
     RECT rect;
     rect.left   = x1;
     rect.top    = y1;
@@ -719,25 +754,10 @@ void wxDC::DoDrawCheckMark(wxCoord x1, wxCoord y1,
 #else
     DrawFrameControl(GetHdc(), &rect, DFC_MENU, DFCS_MENUCHECK);
 #endif
-#else // Symantec-MicroWin
-    // draw a cross
-    HPEN blackPen = ::CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-    HPEN whiteBrush = (HPEN)::GetStockObject(WHITE_BRUSH);
-    HPEN hPenOld = (HPEN)::SelectObject(GetHdc(), blackPen);
-    HPEN hBrushOld = (HPEN)::SelectObject(GetHdc(), whiteBrush);
-    ::SetROP2(GetHdc(), R2_COPYPEN);
-    Rectangle(GetHdc(), x1, y1, x2, y2);
-    MoveToEx(GetHdc(), x1, y1, NULL);
-    LineTo(GetHdc(), x2, y2);
-    MoveToEx(GetHdc(), x2, y1, NULL);
-    LineTo(GetHdc(), x1, y2);
-    ::SelectObject(GetHdc(), hPenOld);
-    ::SelectObject(GetHdc(), hBrushOld);
-    ::DeleteObject(blackPen);
-#endif // Win32/Symantec-MicroWin
 
     CalcBoundingBox(x1, y1);
     CalcBoundingBox(x2, y2);
+#endif // Microwin/Normal
 }
 
 void wxDC::DoDrawPoint(wxCoord x, wxCoord y)
@@ -910,7 +930,7 @@ void wxDC::DoDrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord height)
         // transparent pen) one pixel smaller in both directions and we want them
         // to have the same size regardless of which pen is used - adjust
 
-        // I wonder if this shouldn´t be done after the LOG2DEV() conversions. RR.
+        // I wonder if this shouldnt be done after the LOG2DEV() conversions. RR.
         if ( m_pen.GetStyle() == wxTRANSPARENT )
         {
             // Apparently not needed for WinCE (see e.g. Life! demo)
@@ -1103,6 +1123,17 @@ void wxDC::DoDrawEllipticArc(wxCoord x,wxCoord y,wxCoord w,wxCoord h,double sa,d
     rx2 += (int)(100.0 * abs(w) * cos(ea));
     ry2 -= (int)(100.0 * abs(h) * m_signY * sin(ea));
 
+    // Swap start and end positions if the end angle is less than the start angle.
+    if (ea < sa) {
+	int temp;
+	temp = rx2;
+	rx2 = rx1;
+	rx1 = temp;
+	temp = ry2;
+	ry2 = ry1;
+	ry1 = temp;
+    }
+
     // draw pie with NULL_PEN first and then outline otherwise a line is
     // drawn from the start and end points to the centre
     HPEN hpenOld = (HPEN) ::SelectObject(GetHdc(), (HPEN) ::GetStockObject(NULL_PEN));
@@ -1225,7 +1256,8 @@ void wxDC::DoDrawBitmap( const wxBitmap &bmp, wxCoord x, wxCoord y, bool useMask
             // Rather than reproduce wxDC::Blit, let's do it at the wxWin API
             // level
             wxMemoryDC memDC;
-            memDC.SelectObject(bmp);
+
+            memDC.SelectObjectAsSource(bmp);
 
             Blit(x, y, width, height, &memDC, 0, 0, wxCOPY, useMask);
 
@@ -1480,7 +1512,7 @@ void wxDC::SetFont(const wxFont& font)
         else // selected ok
         {
             if ( !m_oldFont )
-                m_oldFont = (WXHPEN)hfont;
+                m_oldFont = (WXHFONT)hfont;
 
             m_font = font;
         }
@@ -1573,7 +1605,7 @@ void wxDC::SetBrush(const wxBrush& brush)
         else // selected ok
         {
             if ( !m_oldBrush )
-                m_oldBrush = (WXHPEN)hbrush;
+                m_oldBrush = (WXHBRUSH)hbrush;
 
             m_brush = brush;
         }
@@ -1731,10 +1763,42 @@ void wxDC::DoGetTextExtent(const wxString& string, wxCoord *x, wxCoord *y,
     }
 
     SIZE sizeRect;
-    TEXTMETRIC tm;
+    const size_t len = string.length();
+    if ( !::GetTextExtentPoint32(GetHdc(), string, len, &sizeRect) )
+    {
+        wxLogLastError(_T("GetTextExtentPoint32()"));
+    }
 
-    ::GetTextExtentPoint32(GetHdc(), string, string.length(), &sizeRect);
-    GetTextMetrics(GetHdc(), &tm);
+#if !defined(_WIN32_WCE) || (_WIN32_WCE >= 400)
+    // the result computed by GetTextExtentPoint32() may be too small as it
+    // accounts for under/overhang of the first/last character while we want
+    // just the bounding rect for this string so adjust the width as needed
+    // (using API not available in 2002 SDKs of WinCE)
+    if ( len > 0 )
+    {
+        ABC width;
+        const wxChar chFirst = *string.begin();
+        if ( ::GetCharABCWidths(GetHdc(), chFirst, chFirst, &width) )
+        {
+            if ( width.abcA < 0 )
+                sizeRect.cx -= width.abcA;
+
+            if ( len > 1 )
+            {
+                const wxChar chLast = *string.rbegin();
+                ::GetCharABCWidths(GetHdc(), chLast, chLast, &width);
+            }
+            //else: we already have the width of the last character
+
+            if ( width.abcC < 0 )
+                sizeRect.cx -= width.abcC;
+        }
+        //else: GetCharABCWidths() failed, not a TrueType font?
+    }
+#endif // !defined(_WIN32_WCE) || (_WIN32_WCE >= 400)
+
+    TEXTMETRIC tm;
+    ::GetTextMetrics(GetHdc(), &tm);
 
     if (x)
         *x = sizeRect.cx;
@@ -1761,14 +1825,14 @@ bool wxDC::DoGetPartialTextExtents(const wxString& text, wxArrayInt& widths) con
     static int maxWidth = -1;
     int fit = 0;
     SIZE sz = {0,0};
-    int stlen = text.Length();
+    int stlen = text.length();
 
     if (maxLenText == -1)
     {
         // Win9x and WinNT+ have different limits
         int version = wxGetOsVersion();
-        maxLenText = version == wxWINDOWS_NT ? 65535 : 8192;
-        maxWidth =   version == wxWINDOWS_NT ? INT_MAX : 32767;
+        maxLenText = version == wxOS_WINDOWS_NT ? 65535 : 8192;
+        maxWidth =   version == wxOS_WINDOWS_NT ? INT_MAX : 32767;
     }
 
     widths.Empty();
@@ -2218,7 +2282,7 @@ bool wxDC::DoBlit(wxCoord xdest, wxCoord ydest,
                                      ds.dsBm.bmBits,
                                      (LPBITMAPINFO)&ds.dsBmih,
                                      DIB_RGB_COLORS,
-                                     SRCCOPY
+                                     dwRop
                                      ) == (int)GDI_ERROR )
                 {
                     // On Win9x this API fails most (all?) of the time, so
@@ -2286,12 +2350,14 @@ bool wxDC::DoBlit(wxCoord xdest, wxCoord ydest,
     return success;
 }
 
-void wxDC::DoGetSize(int *w, int *h) const
+void wxDC::GetDeviceSize(int *width, int *height) const
 {
     WXMICROWIN_CHECK_HDC
 
-    if ( w ) *w = ::GetDeviceCaps(GetHdc(), HORZRES);
-    if ( h ) *h = ::GetDeviceCaps(GetHdc(), VERTRES);
+    if ( width )
+        *width = ::GetDeviceCaps(GetHdc(), HORZRES);
+    if ( height )
+        *height = ::GetDeviceCaps(GetHdc(), VERTRES);
 }
 
 void wxDC::DoGetSizeMM(int *w, int *h) const
@@ -2499,32 +2565,8 @@ static bool AlphaBlt(HDC hdcDst,
                                         HDC,int,int,int,int,
                                         BLENDFUNCTION);
 
-    // bitmaps can be drawn only from GUI thread so there is no need to
-    // protect this static variable from multiple threads
-    static bool s_triedToLoad = false;
-    static AlphaBlend_t pfnAlphaBlend = NULL;
-    if ( !s_triedToLoad )
-    {
-        s_triedToLoad = true;
-
-        // don't give errors about the DLL being unavailable, we're
-        // prepared to handle this
-        wxLogNull nolog;
-
-        wxDynamicLibrary dll(_T("msimg32.dll"));
-        if ( dll.IsLoaded() )
-        {
-            pfnAlphaBlend = (AlphaBlend_t)dll.GetSymbol(_T("AlphaBlend"));
-            if ( pfnAlphaBlend )
-            {
-                // we must keep the DLL loaded if we want to be able to
-                // call AlphaBlend() so just never unload it at all, not a
-                // big deal
-                dll.Detach();
-            }
-        }
-    }
-
+    static AlphaBlend_t
+        pfnAlphaBlend = (AlphaBlend_t)wxMSIMG32DLL.GetSymbol(_T("AlphaBlend"));
     if ( pfnAlphaBlend )
     {
         BLENDFUNCTION bf;
@@ -2543,6 +2585,8 @@ static bool AlphaBlt(HDC hdcDst,
 
         wxLogLastError(_T("AlphaBlend"));
     }
+#else
+    wxUnusedVar(hdcSrc);
 #endif // defined(AC_SRC_OVER)
 
     // AlphaBlend() unavailable of failed: use our own (probably much slower)
@@ -2564,14 +2608,16 @@ static bool AlphaBlt(HDC hdcDst,
 #ifdef wxHAVE_RAW_BITMAP
 
 static void
-wxAlphaBlend(HDC hdcDst, int xDst, int yDst, int w, int h, int srcX, int srcY, const wxBitmap& bmpSrc)
+wxAlphaBlend(HDC hdcDst, int xDst, int yDst,
+             int w, int h,
+             int srcX, int srcY, const wxBitmap& bmpSrc)
 {
     // get the destination DC pixels
     wxBitmap bmpDst(w, h, 32 /* force creating RGBA DIB */);
     MemoryHDC hdcMem;
     SelectInHDC select(hdcMem, GetHbitmapOf(bmpDst));
 
-    if ( !::BitBlt(hdcMem, 0, 0, w, h, hdcDst, 0, 0, SRCCOPY) )
+    if ( !::BitBlt(hdcMem, 0, 0, w, h, hdcDst, xDst, yDst, SRCCOPY) )
     {
         wxLogLastError(_T("BitBlt"));
     }
@@ -2621,3 +2667,110 @@ wxAlphaBlend(HDC hdcDst, int xDst, int yDst, int w, int h, int srcX, int srcY, c
 }
 
 #endif // #ifdef wxHAVE_RAW_BITMAP
+
+void wxDC::DoGradientFillLinear (const wxRect& rect,
+                                 const wxColour& initialColour,
+                                 const wxColour& destColour,
+                                 wxDirection nDirection)
+{
+    // use native function if we have compile-time support it and can load it
+    // during run-time (linking to it statically would make the program
+    // unusable on earlier Windows versions)
+#if defined(GRADIENT_FILL_RECT_H) && wxUSE_DYNLIB_CLASS
+    typedef BOOL
+        (WINAPI *GradientFill_t)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+    static GradientFill_t pfnGradientFill =
+        (GradientFill_t)wxMSIMG32DLL.GetSymbol(_T("GradientFill"));
+
+    if ( pfnGradientFill )
+    {
+        GRADIENT_RECT grect;
+        grect.UpperLeft = 0;
+        grect.LowerRight = 1;
+
+        // invert colours direction if not filling from left-to-right or
+        // top-to-bottom
+        int firstVertex = nDirection == wxNORTH || nDirection == wxWEST ? 1 : 0;
+
+        // one vertex for upper left and one for upper-right
+        TRIVERTEX vertices[2];
+
+        vertices[0].x = rect.GetLeft();
+        vertices[0].y = rect.GetTop();
+        vertices[1].x = rect.GetRight()+1;
+        vertices[1].y = rect.GetBottom()+1;
+
+        vertices[firstVertex].Red = (COLOR16)(initialColour.Red() << 8);
+        vertices[firstVertex].Green = (COLOR16)(initialColour.Green() << 8);
+        vertices[firstVertex].Blue = (COLOR16)(initialColour.Blue() << 8);
+        vertices[firstVertex].Alpha = 0;
+        vertices[1 - firstVertex].Red = (COLOR16)(destColour.Red() << 8);
+        vertices[1 - firstVertex].Green = (COLOR16)(destColour.Green() << 8);
+        vertices[1 - firstVertex].Blue = (COLOR16)(destColour.Blue() << 8);
+        vertices[1 - firstVertex].Alpha = 0;
+
+        if ( (*pfnGradientFill)
+             (
+                GetHdc(),
+                vertices,
+                WXSIZEOF(vertices),
+                &grect,
+                1,
+                nDirection == wxWEST || nDirection == wxEAST
+                    ? GRADIENT_FILL_RECT_H
+                    : GRADIENT_FILL_RECT_V
+             ) )
+        {
+            // skip call of the base class version below
+            return;
+        }
+
+        wxLogLastError(_T("GradientFill"));
+    }
+#endif // wxUSE_DYNLIB_CLASS
+
+    wxDCBase::DoGradientFillLinear(rect, initialColour, destColour, nDirection);
+}
+
+static DWORD wxGetDCLayout(HDC hdc)
+{
+    typedef DWORD (WINAPI *GetLayout_t)(HDC);
+    static GetLayout_t
+        pfnGetLayout = (GetLayout_t)wxGDI32DLL.GetSymbol(_T("GetLayout"));
+
+    return pfnGetLayout ? pfnGetLayout(hdc) : (DWORD)-1;
+}
+
+wxLayoutDirection wxDC::GetLayoutDirection() const
+{
+    DWORD layout = wxGetDCLayout(GetHdc());
+
+    if ( layout == (DWORD)-1 )
+        return wxLayout_Default;
+
+    return layout & LAYOUT_RTL ? wxLayout_RightToLeft : wxLayout_LeftToRight;
+}
+
+void wxDC::SetLayoutDirection(wxLayoutDirection dir)
+{
+    typedef DWORD (WINAPI *SetLayout_t)(HDC, DWORD);
+    static SetLayout_t
+        pfnSetLayout = (SetLayout_t)wxGDI32DLL.GetSymbol(_T("SetLayout"));
+    if ( !pfnSetLayout )
+        return;
+
+    if ( dir == wxLayout_Default )
+    {
+        dir = wxTheApp->GetLayoutDirection();
+        if ( dir == wxLayout_Default )
+            return;
+    }
+
+    DWORD layout = wxGetDCLayout(GetHdc());
+    if ( dir == wxLayout_RightToLeft )
+        layout |= LAYOUT_RTL;
+    else
+        layout &= ~LAYOUT_RTL;
+
+    pfnSetLayout(GetHdc(), layout);
+}

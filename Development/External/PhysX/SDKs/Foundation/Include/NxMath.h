@@ -2,29 +2,26 @@
 #define NX_FOUNDATION_NXMATH
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
   @{
 */
-
+#ifdef __PPCGEKKO__
+#include "wii/NxMath_Wii.h"
+#else
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>	//for rand()
 
-#ifdef _XBOX
-#include <ppcintrinsics.h> //for fpmin,fpmax, sqrt etc
-#endif
-
 #include "Nx.h"
-#include "NxFPU.h"
 
 #ifdef log2
 #undef log2
-#endif
+#endif 
 
 //constants
 static const NxF64 NxPiF64		= 3.141592653589793;
@@ -508,23 +505,15 @@ NX_INLINE NxI32 NxMath::sign(NxI32 a)
 	return (a >= 0) ? 1 : -1;
 	}
 
-NX_INLINE NxF32 NxMath::max(NxF32 a,NxF32 b)
-	{
-#ifdef _XBOX
-	return (NxF32)fpmax(a, b);
-#else
-	return (a < b) ? b : a;
+#if defined(WIN32)
+#include "win/NxMath_WIN.h"
+#elif defined(__linux__) || defined(__APPLE__) || defined(ANDROID)
+#include "linux/NxMath_LINUX.h"
+#elif defined(_XBOX)
+#include "xbox360/NxMath_XBOX.h"
+#elif defined(__CELLOS_LV2__)
+#include "ps3/NxMath_PS3.h"
 #endif
-	}
-
-NX_INLINE NxF64 NxMath::max(NxF64 a,NxF64 b)
-	{
-#ifdef _XBOX
-	return (NxF64)fpmax(a, b);
-#else
-	return (a < b) ? b : a;
-#endif
-	}
 
 NX_INLINE NxI32 NxMath::max(NxI32 a,NxI32 b)
 	{
@@ -539,24 +528,6 @@ NX_INLINE NxU32 NxMath::max(NxU32 a,NxU32 b)
 NX_INLINE NxU16 NxMath::max(NxU16 a,NxU16 b)
 	{
 	return (a < b) ? b : a;
-	}
-
-NX_INLINE NxF32 NxMath::min(NxF32 a,NxF32 b)
-	{
-#ifdef _XBOX
-	return (NxF32)fpmin(a, b);
-#else
-	return (a < b) ? a : b;
-#endif
-	}
-
-NX_INLINE NxF64 NxMath::min(NxF64 a,NxF64 b)
-	{
-#ifdef _XBOX
-	return (NxF64)fpmin(a, b);
-#else
-	return (a < b) ? a : b;
-#endif
 	}
 
 NX_INLINE NxI32 NxMath::min(NxI32 a,NxI32 b)
@@ -624,16 +595,6 @@ NX_INLINE NxI32 NxMath::clamp(NxI32 v, NxI32 hi, NxI32 low)
 		return v;
 	}
 
-NX_INLINE NxF32 NxMath::sqrt(NxF32 a)
-	{
-	return ::sqrtf(a);
-	}
-
-NX_INLINE NxF64 NxMath::sqrt(NxF64 a)
-	{
-	return ::sqrt(a);
-	}
-
 NX_INLINE NxF32 NxMath::recipSqrt(NxF32 a)
 	{
 	return 1.0f/::sqrtf(a);
@@ -643,6 +604,7 @@ NX_INLINE NxF64 NxMath::recipSqrt(NxF64 a)
 	{
 	return 1.0/::sqrt(a);
 	}
+
 
 NX_INLINE NxF32 NxMath::pow(NxF32 x, NxF32 y)
 	{
@@ -739,7 +701,7 @@ NX_INLINE NxF64 NxMath::cos(NxF64 a)
 // Calling fsincos instead of fsin+fcos
 NX_INLINE void NxMath::sinCos(NxF32 f, NxF32& s, NxF32& c)
 	{
-#ifdef WIN32
+#if defined(WIN32) && !defined(_WIN64)
 		NxF32 localCos, localSin;
 		NxF32 local = f;
 		_asm	fld		local
@@ -936,31 +898,12 @@ NX_INLINE int NxMath::hash32(int key)
 	return key;
 	}
 
-
-NX_INLINE bool NxMath::isFinite(NxF32 f)
-	{
-	#if defined(_MSC_VER)
-	return (0 == ((_FPCLASS_SNAN | _FPCLASS_QNAN | _FPCLASS_NINF | _FPCLASS_PINF) & _fpclass(f) ));
-	#else
-	return true;
-	#endif
-	
-	}
-
-NX_INLINE bool NxMath::isFinite(NxF64 f)
-	{
-	#if defined(_MSC_VER)
-	return (0 == ((_FPCLASS_SNAN | _FPCLASS_QNAN | _FPCLASS_NINF | _FPCLASS_PINF) & _fpclass(f) ));
-	#else
-	return true;
-	#endif
-	}
-
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+#endif
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     23/07/98
-// RCS-ID:      $Id: minifram.h,v 1.4 2004/06/01 16:15:59 ABX Exp $
+// RCS-ID:      $Id: minifram.h 42618 2006-10-29 14:53:37Z RR $
 // Copyright:   (c) Julian Smart and Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -41,6 +41,10 @@ public:
 
     void OnCloseWindow(wxCloseEvent& event);
     void OnReparent(wxCommandEvent& event);
+    void OnSetSize_150_150(wxCommandEvent &event);
+    void OnSetSize_200_200(wxCommandEvent &event);
+    void OnSetMaxSize_150_150(wxCommandEvent &event);
+    void OnSetMaxSize_300_300(wxCommandEvent &event);
     
 DECLARE_EVENT_TABLE()
 };

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- $Id: opengl.bkl,v 1.8 2003/09/09 22:10:14 VS Exp $ -->
+<!-- $Id: opengl.bkl 23457 2003-09-09 22:15:25Z VS $ -->
 
 <makefile>
     

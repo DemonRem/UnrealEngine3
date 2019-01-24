@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxQuat_H__
@@ -65,6 +65,13 @@ public:
 	FxQuat operator*( const FxReal scalar ) const;
 	/// Multiplies this quaternion by a scalar.
 	const FxQuat& operator*=( const FxReal scalar );
+
+	/// Divides the quaternion by a scalar.  Note that scalar is not checked
+	/// for zero.
+	FxQuat operator/( const FxReal scalar ) const;
+	/// Divides this quaternion by a scalar.  Note that scalar is not checked
+	/// for zero.
+	const FxQuat& operator/=( const FxReal scalar );
 
 	void ToEuler( FxReal& yaw, FxReal& pitch, FxReal& roll )
 	{
@@ -166,6 +173,17 @@ FX_INLINE FxQuat FxQuat::operator*( const FxReal scalar ) const
 FX_INLINE const FxQuat& FxQuat::operator*=( const FxReal scalar )
 {
 	*this = *this * scalar;
+	return *this;
+}
+
+FX_INLINE FxQuat FxQuat::operator/( const FxReal scalar ) const
+{
+	return FxQuat(w / scalar, x / scalar, y / scalar, z / scalar);
+}
+
+FX_INLINE const FxQuat& FxQuat::operator/=( const FxReal scalar )
+{
+	*this = *this / scalar;
 	return *this;
 }
 

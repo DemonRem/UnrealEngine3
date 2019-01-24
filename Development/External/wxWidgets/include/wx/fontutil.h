@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     05.11.99
-// RCS-ID:      $Id: fontutil.h,v 1.37 2005/07/22 16:56:23 ABX Exp $
+// RCS-ID:      $Id: fontutil.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 #ifndef _WX_FONTUTIL_H_
 #define _WX_FONTUTIL_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "fontutil.h"
-#endif
-
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
@@ -30,7 +26,8 @@
     #include "wx/msw/wrapwin.h"
 #endif
 
-struct WXDLLEXPORT wxNativeEncodingInfo;
+class WXDLLIMPEXP_FWD_BASE wxArrayString;
+struct WXDLLIMPEXP_FWD_CORE wxNativeEncodingInfo;
 
 #if defined(_WX_X_FONTLIKE)
 
@@ -68,11 +65,9 @@ enum wxXLFDField
 // functions, the user code can only get the objects of this type from
 // somewhere and pass it somewhere else (possibly save them somewhere using
 // ToString() and restore them using FromString())
-//
-// NB: it is a POD currently for max efficiency but if it continues to grow
-//     further it might make sense to make it a real class with virtual methods
-struct WXDLLEXPORT wxNativeFontInfo
+class WXDLLEXPORT wxNativeFontInfo
 {
+public:
 #if wxUSE_PANGO
     PangoFontDescription *description;
 #elif defined(_WX_X_FONTLIKE)
@@ -199,9 +194,16 @@ public:
     void SetStyle(wxFontStyle style);
     void SetWeight(wxFontWeight weight);
     void SetUnderlined(bool underlined);
-    void SetFaceName(wxString facename);
+    bool SetFaceName(const wxString& facename);
     void SetFamily(wxFontFamily family);
     void SetEncoding(wxFontEncoding encoding);
+
+    // sets the first facename in the given array which is found
+    // to be valid. If no valid facename is given, sets the
+    // first valid facename returned by wxFontEnumerator::GetFacenames().
+    // Does not return a bool since it cannot fail.
+    void SetFaceName(const wxArrayString &facenames);
+
 
     // it is important to be able to serialize wxNativeFontInfo objects to be
     // able to store them (in config file, for example)
@@ -236,13 +238,5 @@ extern bool wxTestFontEncoding(const wxNativeEncodingInfo& info);
 #ifdef _WX_X_FONTLIKE
     #include "wx/unix/fontutil.h"
 #endif // X || GDK
-
-// ----------------------------------------------------------------------------
-// font-related functions (MGL)
-// ----------------------------------------------------------------------------
-
-#ifdef __WXMGL__
-    #include "wx/mgl/fontutil.h"
-#endif // __WXMGL__
 
 #endif // _WX_FONTUTIL_H_

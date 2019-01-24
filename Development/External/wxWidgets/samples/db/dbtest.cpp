@@ -4,7 +4,7 @@
 // Author:      George Tasker
 // Modified by:
 // Created:     1998
-// RCS-ID:      $Id: dbtest.cpp,v 1.61 2004/12/28 22:27:45 GT Exp $
+// RCS-ID:      $Id: dbtest.cpp 39402 2006-05-28 23:32:12Z VZ $
 // Copyright:   (c) 1998 Remstar International, Inc.
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,10 +20,6 @@
 
  *  SYNOPSIS END
  */
-
-#ifdef __GNUG__
-#pragma implementation "dbtest.h"
-#endif
 
 #include  "wx/wxprec.h"
 
@@ -1716,7 +1712,7 @@ bool CeditorDlg::Initialize()
 
 void CeditorDlg::OnSelectPict()
 {
-    wxFileDialog dlg(this, wxT("Choose an image file less than 60K"), wxEmptyString, wxEmptyString, wxT("JPEG files (*.jpg)|*.jpg|GIF files (*.gif)|*.gif|BMP files (*.bmp)|*.bmp|All Files (*.*)|*.*"), wxOPEN);
+    wxFileDialog dlg(this, wxT("Choose an image file less than 60K"), wxEmptyString, wxEmptyString, wxT("JPEG files (*.jpg)|*.jpg|GIF files (*.gif)|*.gif|BMP files (*.bmp)|*.bmp|All Files (*.*)|*.*"), wxFD_OPEN);
 
     if (dlg.ShowModal() == wxID_OK)
     {
@@ -2923,7 +2919,7 @@ m_pImage(NULL)
 
         if(m_pImage->Ok())
         {
-            m_pBmp = new wxBitmap(m_pImage);
+            m_pBmp = new wxBitmap(*m_pImage);
             m_pDisplayBmp = new wxStaticBitmap(this, IMAGE_DIALOG_STATIC_BMP, *m_pBmp, wxPoint(5,5), wxDefaultSize);
 
             SetSize(m_pBmp->GetWidth() + 10, m_pBmp->GetHeight() + 30);

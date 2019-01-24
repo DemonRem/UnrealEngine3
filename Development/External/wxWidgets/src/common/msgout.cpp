@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/msgout.cpp
+// Name:        src/common/msgout.cpp
 // Purpose:     wxMessageOutput implementation
 // Author:      Mattia Barbon
 // Modified by:
 // Created:     17.07.02
-// RCS-ID:      $Id: msgout.cpp,v 1.34 2005/06/15 22:03:49 VZ Exp $
+// RCS-ID:      $Id: msgout.cpp 38920 2006-04-26 08:21:31Z ABX $
 // Copyright:   (c) the wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,17 +16,6 @@
 // ---------------------------------------------------------------------------
 // headers
 // ---------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA) && !defined(__EMX__)
-// Some older compilers (such as EMX) cannot handle
-// #pragma interface/implementation correctly, iff
-// #pragma implementation is used in _two_ translation
-// units (as created by e.g. event.cpp compiled for
-// libwx_base and event.cpp compiled for libwx_gui_core).
-// So we must not use those pragmas for those compilers in
-// such files.
-    #pragma implementation "msgout.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -40,6 +29,7 @@
     #include "wx/ffile.h"
     #include "wx/app.h"
     #include "wx/intl.h"
+    #include "wx/log.h"
     #if wxUSE_GUI
         #include "wx/msgdlg.h"
     #endif // wxUSE_GUI
@@ -47,8 +37,6 @@
 
 #include "wx/msgout.h"
 #include "wx/apptrait.h"
-#include "wx/log.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -232,4 +220,3 @@ void wxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 }
 
 #endif // wxUSE_GUI
-

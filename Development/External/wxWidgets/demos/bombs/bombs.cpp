@@ -4,14 +4,10 @@
 // Author:      P. Foggia 1996
 // Modified by: Wlodzimierz Skiba (ABX) since 2003
 // Created:     1996
-// RCS-ID:      $Id: bombs.cpp,v 1.12 2005/05/10 19:22:05 ABX Exp $
+// RCS-ID:      $Id: bombs.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 1996 P. Foggia
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#   pragma implementation
-#endif
 
 #include "wx/wxprec.h"
 

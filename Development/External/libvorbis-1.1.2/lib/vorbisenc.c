@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: simple programmatic interface for encoder mode setup
- last mod: $Id: vorbisenc.c 9033 2005-03-04 04:33:03Z msmith $
 
  ********************************************************************/
 
@@ -26,9 +25,8 @@
 
 #include "os.h"
 #include "misc.h"
-#ifdef __SSE__
 #include "xmmlib.h"
-#endif
+
 
 /* careful with this; it's using static array sizing to make managing all the modes a little less annoying.  If we use a residue backend
    with > 12 partition types, or a different division of iteration, this needs to be updated. */

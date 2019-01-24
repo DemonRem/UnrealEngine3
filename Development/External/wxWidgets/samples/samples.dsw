@@ -1,9 +1,9 @@
 Microsoft Developer Studio Workspace File, Format Version 6.00
-# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE! 
 
 ###############################################################################
 
-Project: "calendar"=.\calendar\calendar.dsp - Package Owner=<4>
+Project: "artprov"=.\artprov\artprov.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,19 @@ Package=<4>
 
 ###############################################################################
 
-Project: "artprov"=.\artprov\artprov.dsp - Package Owner=<4>
+Project: "animate"=.\animate\anitest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "aui"=.\aui\auidemo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -39,7 +51,31 @@ Package=<4>
 
 ###############################################################################
 
+Project: "calendar"=.\calendar\calendar.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "checklst"=.\checklst\checklst.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "collpane"=.\collpane\collpane.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -64,6 +100,18 @@ Package=<4>
 ###############################################################################
 
 Project: "controls"=.\controls\controls.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "dataview"=.\dataview\dataview.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -411,7 +459,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ipcclient"=.\ipc\ipc_client.dsp - Package Owner=<4>
+Project: "ipcclient"=.\ipc\ipc_ipcclient.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -423,7 +471,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ipcserver"=.\ipc\ipc_server.dsp - Package Owner=<4>
+Project: "ipcserver"=.\ipc\ipc_ipcserver.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -472,6 +520,18 @@ Package=<4>
 ###############################################################################
 
 Project: "mdi"=.\mdi\mdi.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "mediaplayer"=.\mediaplayer\mediaplayer.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -628,6 +688,18 @@ Package=<4>
 ###############################################################################
 
 Project: "regtest"=.\regtest\regtest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "richtext"=.\richtext\richtext.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -832,6 +904,18 @@ Package=<4>
 ###############################################################################
 
 Project: "wizard"=.\wizard\wizard.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "xrcdemo"=.\xrc\xrcdemo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXCONVEXMESHDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -54,23 +54,11 @@ enum NxConvexFlags
 	NX_CF_INFLATE_CONVEX	=	(1<<3),
 
 	/**
-	\brief Uses legacy hull algorithm, which doesn't inflate convex according to skin width
-
-	\note This flag is only used in combination with NX_CF_COMPUTE_CONVEX, and must not be used for convex meshes to be simulated in HW.
-
-	\deprecated This cooking method is not compatible with the PhysX HW simulation and should not be used.
-	\warning Legacy function
-
-	@see NxCookingParams
-	*/
-	NX_CF_USE_LEGACY_COOKER	=	(1<<4),
-
-	/**
 	\brief Instructs cooking to save normals uncompressed.  The cooked hull data will be larger, but will load faster.
 
 	@see NxCookingParams
 	*/
-	NX_CF_USE_UNCOMPRESSED_NORMALS	=	(1<<5),
+	NX_CF_USE_UNCOMPRESSED_NORMALS	=	(1<<5)
 	};
 
 typedef NxVec3 NxPoint;
@@ -92,9 +80,10 @@ class NxConvexMeshDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Max limit of 32 vertices for hardware rigid bodies)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32 numVertices;
 	
@@ -102,15 +91,16 @@ class NxConvexMeshDesc
 	\brief Number of triangles.
 
 	Hardware rigid body scenes have a limit of 32 faces per convex.
-	Fluid scenes have a limit of 64 triangles per convex.
+	Fluid scenes have a limit of 64 faces per cooked convex for dynamic actors.
 
 	<b>Default:</b> 0
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Max 32 faces)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32 numTriangles;
 	
@@ -121,9 +111,10 @@ class NxConvexMeshDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32 pointStrideBytes;
 	
@@ -134,9 +125,10 @@ class NxConvexMeshDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32 triangleStrideBytes;
 
@@ -148,9 +140,10 @@ class NxConvexMeshDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	const void* points;
 
@@ -171,9 +164,10 @@ class NxConvexMeshDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxConvexFlags.NX_CF_16_BIT_INDICES
 	*/
@@ -186,9 +180,10 @@ class NxConvexMeshDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32 flags;
 
@@ -205,7 +200,11 @@ class NxConvexMeshDesc
 
 	\return True if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxConvexMeshDesc::NxConvexMeshDesc()	//constructor sets to default
@@ -224,16 +223,16 @@ NX_INLINE void NxConvexMeshDesc::setToDefault()
 	flags				= 0;
 	}
 
-NX_INLINE bool NxConvexMeshDesc::isValid() const
+NX_INLINE NxU32 NxConvexMeshDesc::checkValid() const
 	{
 	// Check geometry
 	if(numVertices < 3 ||	//at least 1 trig's worth of points
 		(numVertices > 0xffff && flags & NX_CF_16_BIT_INDICES))
-		return false;
+		return 1;
 	if(!points)
-		return false;
+		return 2;
 	if(pointStrideBytes < sizeof(NxPoint))	//should be at least one point's worth of data
-		return false;
+		return 3;
 
 	// Check topology
 	// The triangles pointer is not mandatory: the vertex cloud is enough to define the convex hull.
@@ -241,33 +240,33 @@ NX_INLINE bool NxConvexMeshDesc::isValid() const
 		{
 		// Indexed mesh
 		if(numTriangles < 2)	//some algos require at least 2 trigs
-			return false;
+			return 4;
 		if(flags & NX_CF_16_BIT_INDICES)
 			{
 			if((triangleStrideBytes < sizeof(NxU16)*3))
-				return false;
+				return 5;
 			}
 		else
 			{
 			if((triangleStrideBytes < sizeof(NxU32)*3))
-				return false;
+				return 6;
 			}
 		}
 	else
 		{
 		// We can compute the hull from the vertices
 		if(!(flags & NX_CF_COMPUTE_CONVEX))
-			return false;	// If the mesh is convex and we're not allowed to compute the hull,
+			return 7;	// If the mesh is convex and we're not allowed to compute the hull,
 							// you have to provide it completely (geometry & topology).
 		}
-	return true;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

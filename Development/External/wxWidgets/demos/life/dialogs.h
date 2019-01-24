@@ -4,17 +4,13 @@
 // Author:      Guillermo Rodriguez Garcia, <guille@iies.es>
 // Modified by:
 // Created:     Jan/2000
-// RCS-ID:      $Id: dialogs.h,v 1.6 2004/05/25 11:14:49 JS Exp $
+// RCS-ID:      $Id: dialogs.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 2000, Guillermo Rodriguez Garcia
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LIFE_DIALOGS_H_
 #define _LIFE_DIALOGS_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "dialogs.h"
-#endif
 
 // for compilers that support precompilation, includes "wx/wx.h"
 #include "wx/wxprec.h"
@@ -41,7 +37,7 @@ class LifeSamplesDialog : public wxDialog
 public:
     // ctor and dtor
     LifeSamplesDialog(wxWindow *parent);
-    ~LifeSamplesDialog();
+    virtual ~LifeSamplesDialog();
 
     // members
     const LifePattern& GetPattern();

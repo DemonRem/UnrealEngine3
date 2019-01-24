@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/icon.cpp
+// Name:        src/msw/icon.cpp
 // Purpose:     wxIcon class
 // Author:      Julian Smart
 // Modified by: 20.11.99 (VZ): don't derive from wxBitmap any more
 // Created:     04/01/98
-// RCS-ID:      $Id: icon.cpp,v 1.35 2004/09/17 22:09:23 VZ Exp $
+// RCS-ID:      $Id: icon.cpp 39551 2006-06-04 15:51:39Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "icon.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,7 +25,6 @@
 #endif
 
 #ifndef WX_PRECOMP
-    #include "wx/defs.h"
     #include "wx/list.h"
     #include "wx/utils.h"
     #include "wx/app.h"
@@ -149,10 +144,15 @@ bool wxIcon::LoadFile(const wxString& filename,
 
     if ( !handler )
     {
-        // say something?
-        return false;
+        // load via wxBitmap which, in turn, uses wxImage allowing us to
+        // support more formats
+        wxBitmap bmp;
+        if ( !bmp.LoadFile(filename, type) )
+            return false;
+
+        CopyFromBitmap(bmp);
+        return true;
     }
 
     return handler->Load(this, filename, type, desiredWidth, desiredHeight);
 }
-

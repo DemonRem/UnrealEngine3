@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/init.cpp
+// Name:        src/common/init.cpp
 // Purpose:     initialisation for the library
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.10.99
-// RCS-ID:      $Id: init.cpp,v 1.58 2005/06/13 12:19:20 ABX Exp $
+// RCS-ID:      $Id: init.cpp 51336 2008-01-22 13:59:45Z SC $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -20,27 +20,26 @@
 #include "wx/wxprec.h"
 
 #ifdef    __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif  //__BORLANDC__
 
 #ifndef WX_PRECOMP
     #include "wx/app.h"
-    #include "wx/debug.h"
     #include "wx/filefn.h"
     #include "wx/log.h"
     #include "wx/thread.h"
     #include "wx/intl.h"
+    #include "wx/module.h"
 #endif
 
 #include "wx/init.h"
 
 #include "wx/ptr_scpd.h"
-#include "wx/module.h"
 #include "wx/except.h"
 
-//@UE3: Unreal Engine 3 doesn't link against the debug runtime CRT in debug builds and we statically link against wxWidgets so we can't use
-//@UE3: functionality of the debug runtime
-//OLD: #if defined(__WXMSW__) && defined(__WXDEBUG__)
+// @UE3 2007-16-11: UE3 doesn't link against the debug runtime CRT in debug builds and we statically link against wxWidgets so we can't use
+//                  functionality of the debug runtime
+// OLD:		#if defined(__WXMSW__) && defined(__WXDEBUG__)
 #if 0
     #include "wx/msw/msvcrt.h"
 
@@ -180,13 +179,27 @@ static struct InitData
 static void ConvertArgsToUnicode(int argc, char **argv)
 {
     gs_initData.argv = new wchar_t *[argc + 1];
+    int wargc = 0;
     for ( int i = 0; i < argc; i++ )
     {
-        gs_initData.argv[i] = wxStrdup(wxConvLocal.cMB2WX(argv[i]));
+#ifdef __DARWIN__
+        wxWCharBuffer buf(wxConvFileName->cMB2WX(argv[i]));
+#else
+        wxWCharBuffer buf(wxConvLocal.cMB2WX(argv[i]));
+#endif
+        if ( !buf )
+        {
+            wxLogWarning(_("Command line argument %d couldn't be converted to Unicode and will be ignored."),
+                         i);
+        }
+        else // converted ok
+        {
+            gs_initData.argv[wargc++] = wxStrdup(buf);
+        }
     }
 
-    gs_initData.argc = argc;
-    gs_initData.argv[argc] = NULL;
+    gs_initData.argc = wargc;
+    gs_initData.argv[wargc] = NULL;
 }
 
 static void FreeConvertedArgs()
@@ -214,12 +227,15 @@ static void FreeConvertedArgs()
 static bool DoCommonPreInit()
 {
 #if wxUSE_LOG
+    // Reset logging in case we were cleaned up and are being reinitialized.
+    wxLog::DoCreateOnDemand();
+
     // install temporary log sink: we can't use wxLogGui before wxApp is
     // constructed and if we use wxLogStderr, all messages during
     // initialization simply disappear under Windows
     //
     // note that we will delete this log target below
-    wxLog::SetActiveTarget(new wxLogBuffer);
+    delete wxLog::SetActiveTarget(new wxLogBuffer);
 #endif // wxUSE_LOG
 
     return true;
@@ -323,7 +339,7 @@ bool wxEntryStart(int& argc, char **argv)
 {
     ConvertArgsToUnicode(argc, argv);
 
-    if ( !wxEntryStart(argc, gs_initData.argv) )
+    if ( !wxEntryStart(gs_initData.argc, gs_initData.argv) )
     {
         FreeConvertedArgs();
 
@@ -359,15 +375,16 @@ static void DoCommonPostCleanup()
 {
     wxModule::CleanUpModules();
 
-    wxClassInfo::CleanUp();
-
     // we can't do this in wxApp itself because it doesn't know if argv had
     // been allocated
 #if wxUSE_UNICODE
     FreeConvertedArgs();
 #endif // wxUSE_UNICODE
 
-    // Note: check for memory leaks is now done via wxDebugContextDumpDelayCounter
+    // use Set(NULL) and not Get() to avoid creating a message output object on
+    // demand when we just want to delete it
+    delete wxMessageOutput::Set(NULL);
+
 #if wxUSE_LOG
     // and now delete the last logger as well
     delete wxLog::SetActiveTarget(NULL);
@@ -384,8 +401,12 @@ void wxEntryCleanup()
     {
         wxTheApp->CleanUp();
 
-        delete wxTheApp;
+        // reset the global pointer to it to NULL before destroying it as in
+        // some circumstances this can result in executing the code using
+        // wxTheApp and using half-destroyed object is no good
+        wxAppConsole * const app = wxApp::GetInstance();
         wxApp::SetInstance(NULL);
+        delete app;
     }
 
 
@@ -451,7 +472,7 @@ int wxEntry(int& argc, char **argv)
 {
     ConvertArgsToUnicode(argc, argv);
 
-    return wxEntry(argc, gs_initData.argv);
+    return wxEntry(gs_initData.argc, gs_initData.argv);
 }
 
 #endif // wxUSE_UNICODE
@@ -477,9 +498,8 @@ void wxUninitialize()
 {
     wxCRIT_SECT_LOCKER(lockInit, gs_initData.csInit);
 
-    if ( !--gs_initData.nInitCount )
+    if ( --gs_initData.nInitCount == 0 )
     {
         wxEntryCleanup();
     }
 }
-

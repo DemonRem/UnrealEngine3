@@ -2,9 +2,9 @@
 #define NX_COOKING_H
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -29,7 +29,9 @@ class NxTriangle;
 		{
 		PLATFORM_PC,
 		PLATFORM_XENON,
-		PLATFORM_PLAYSTATION3
+		PLATFORM_PLAYSTATION3,
+		PLATFORM_GAMECUBE,
+		PLATFORM_WII = PLATFORM_GAMECUBE
 		};
 
 	/**
@@ -54,8 +56,7 @@ class NxTriangle;
 		/**
 		\brief Skin width for convexes
 
-		Specifies the amount to inflate the convex mesh by when the new convex hull generator is used
-		(the skinWidth is ignored when using the legacy convex hull generator, enable with NX_CF_USE_LEGACY_COOKER).
+		Specifies the amount to inflate the convex mesh by when the new convex hull generator is used.
 
 		Inflating the mesh allows the user to hide interpenetration errors by increasing the size of the
 		collision mesh with respect to the size of the rendered geometry.
@@ -109,7 +110,7 @@ class NxTriangle;
 	objects.
 
 	Please note that this also initializes the Foundation SDK. This is not an issue, unless you are linking
-	the AGEIA PhysX SDK using static libraries. When you are using static libraries, the cooking library
+	the NVIDIA PhysX SDK using static libraries. When you are using static libraries, the cooking library
 	will share the same Foundation SDK as the rest of the application and this you will have to consider
 	when initializing the cooking library. In statically linked applications, you should specify the same
 	allocator and error stream to NxInitCooking() and NxCreatePhysicsSDK(). You are not compelled to
@@ -152,9 +153,6 @@ class NxTriangle;
 	NxCookTriangleMesh() and NxCookConvexMesh() allow a mesh description to be cooked into a binary stream
 	suitable for loading and performing collision detection at runtime.
 
-	NxCookConvex requires the input mesh to form a closed convex volume. This allows more efficient and robust
-	collision detection.
-
 	\note #NxInitCooking() must be called before attempting to cook a mesh. NxCloseCooking() should be called
 	when the application has finished using the cooking library.
 
@@ -180,6 +178,9 @@ class NxTriangle;
 
 	NxCookTriangleMesh() and NxCookConvexMesh() allow a mesh description to be cooked into a binary stream
 	suitable for loading and performing collision detection at runtime.
+
+	NxCookConvex requires the input mesh to form a closed convex volume. This allows more efficient and robust
+	collision detection. The input mesh is not validated to make sure that the mesh is convex.
 
 	\note #NxInitCooking() must be called before attempting to cook a mesh. NxCloseCooking() should be called
 	when the application has finished using the cooking library.
@@ -280,7 +281,7 @@ public:
 	objects.
 
 	Please note that this also initializes the Foundation SDK. This is not an issue, unless you are linking
-	the AGEIA PhysX SDK using static libraries. When you are using static libraries, the cooking library
+	the NVIDIA PhysX SDK using static libraries. When you are using static libraries, the cooking library
 	will share the same Foundation SDK as the rest of the application and this you will have to consider
 	when initializing the cooking library. In statically linked applications, you should specify the same
 	allocator and error stream to NxInitCooking() and NxCreatePhysicsSDK(). You are not compelled to
@@ -404,9 +405,11 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
+
 
 	@see NxPMap NxTriangleMesh.loadPMap() NxConvexShape.loadPMap() NxReleasePMap
 	*/
@@ -424,9 +427,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPMap NxTriangleMesh.loadPMap() NxConvexShape.loadPMap() NxCreatePMap
 	*/
@@ -459,9 +463,9 @@ public:
 
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

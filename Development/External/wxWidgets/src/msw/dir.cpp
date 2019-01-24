@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     08.12.99
-// RCS-ID:      $Id: dir.cpp,v 1.18 2005/06/10 17:53:16 ABX Exp $
+// RCS-ID:      $Id: dir.cpp 42910 2006-11-01 15:29:58Z JS $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dir.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -200,7 +196,7 @@ bool wxDirData::Read(wxString *filename)
 #ifdef __WIN32__
         DWORD err = ::GetLastError();
 
-        if ( err != ERROR_FILE_NOT_FOUND )
+        if ( err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES )
         {
             wxLogSysError(err, _("Can not enumerate files in directory '%s'"),
                           m_dirname.c_str());
@@ -378,9 +374,15 @@ extern bool
 wxGetDirectoryTimes(const wxString& dirname,
                     FILETIME *ftAccess, FILETIME *ftCreate, FILETIME *ftMod)
 {
+#ifdef __WXWINCE__
+    // FindFirst() is going to fail
+    wxASSERT_MSG( !dirname.empty(),
+                  _T("incorrect directory name format in wxGetDirectoryTimes") );
+#else
     // FindFirst() is going to fail
     wxASSERT_MSG( !dirname.empty() && dirname.Last() != _T('\\'),
                   _T("incorrect directory name format in wxGetDirectoryTimes") );
+#endif
 
     FIND_STRUCT fs;
     FIND_DATA fd = FindFirst(dirname, &fs);

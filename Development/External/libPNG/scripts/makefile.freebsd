@@ -1,5 +1,5 @@
 # makefile for libpng under FreeBSD
-# Copyright (C) 2002 Glenn Randers-Pehrson and Andrey A. Chernov
+# Copyright (C) 2002, 2007 Glenn Randers-Pehrson and Andrey A. Chernov
 # For conditions of distribution and use, see copyright notice in png.h
 
 PREFIX?=        /usr/local
@@ -24,14 +24,14 @@ SYMLINKS=       libpng/png.h ${INCSDIR}/../png.h \
 LDADD+=         -lm -lz
 DPADD+=         ${LIBM} ${LIBZ}
 
-CFLAGS+= -I. -DPNG_USE_PNGGCCRD
+CFLAGS+= -I.
 .if (${MACHINE_ARCH} != "i386")
-CFLAGS+= -DPNG_NO_ASSEMBLER_CODE
+CFLAGS+= -DPNG_NO_MMX_CODE
 .endif
 
 SRCS=	png.c pngset.c pngget.c pngrutil.c pngtrans.c pngwutil.c \
 	pngread.c pngrio.c pngwio.c pngwrite.c pngrtran.c \
-	pngwtran.c pngmem.c pngerror.c pngpread.c pnggccrd.c
+	pngwtran.c pngmem.c pngerror.c pngpread.c
 
 pngtest: pngtest.o libpng.a
 	${CC} ${CFLAGS} -L. -static -o pngtest pngtest.o -lpng -lz -lm

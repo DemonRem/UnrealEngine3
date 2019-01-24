@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NX_ACTOR
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -84,9 +84,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene
 	*/
@@ -106,9 +107,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorDesc NxActorDescBase
 	*/
@@ -124,9 +126,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
@@ -139,9 +142,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
@@ -184,9 +188,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGlobalPose() setGlobalPosition() setGlobalOrientation() getGlobalPose()
 	*/
@@ -203,9 +208,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalPose() setGlobalOrientation() getGlobalPosition()
 	*/
@@ -222,9 +228,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalPose() setGlobalPosition() getGlobalOrientation() setGlobalOrientationQuat()
 	*/
@@ -241,9 +248,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalOrientation() getGlobalOrientation() setGlobalPose()
 	*/
@@ -258,9 +266,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalPose() getGlobalPosition() getGlobalOrientation()
 	*/
@@ -275,9 +284,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGlobalPosition() getGlobalPose() getGlobalOrientation()
 	*/
@@ -292,9 +302,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGlobalOrientationQuat() setGlobalOrientation() getGlobalPose() getGlobalPosition()
 	*/
@@ -309,9 +320,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGlobalOrientation() setGlobalOrientation() getGlobalPose() getGlobalPosition()
 	*/
@@ -350,9 +362,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see moveGlobalPosition() moveGlobalOrientation() moveGlobalOrientationQuat() NxBodyFlag raiseBodyFlag() NxBodyDesc.flags
 	*/
@@ -369,9 +382,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see moveGlobalPose() moveGlobalOrientation() moveGlobalOrientationQuat() NxBodyFlag raiseBodyFlag() NxBodyDesc.flags
 	*/
@@ -391,9 +405,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see moveGlobalOrientationQuat() moveGlobalPosition() moveGlobalPose() NxBodyFlag raiseBodyFlag() NxBodyDesc.flags
 	*/
@@ -410,9 +425,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see moveGlobalPosition() moveGlobalPose() NxBodyFlag raiseBodyFlag() NxBodyDesc.flags
 	*/
@@ -460,17 +476,15 @@ class NxActor
 	\li #NxTriangleMeshShape
 	\li #NxPlaneShape
 
-	In addition mesh pages must be mapped into PPU memory for hardware scenes. No collision detection will be performed
-	with portions of the mesh which have not been mapped to PPU memory. See #NxTriangleMeshShape.mapPageInstance()
-
 	\param[in] desc The descriptor for the new shape. See e.g. #NxSphereShapeDesc.
 	\return The newly create shape.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback in some cases)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape NxShapeDesc
 	@see NxBoxShape NxCapsuleShape NxConvexShape NxPlaneShape NxSphereShape NxTriangleMeshShape NxWheelShape
@@ -490,9 +504,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape
 	@see NxBoxShape NxCapsuleShape NxConvexShape NxPlaneShape NxSphereShape NxTriangleMeshShape NxWheelShape
@@ -511,9 +526,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape getShapes()
 	*/
@@ -533,9 +549,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape getNbShapes() createShape() releaseShape()
 	*/
@@ -560,9 +577,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroup() NxActorGroup
 	*/
@@ -575,9 +593,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroup() NxActorGroup
 	*/
@@ -623,9 +642,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorFlag clearActorFlag() readActorFlag() NxActorDesc.flags
 	*/
@@ -642,9 +662,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorFlag raiseActorFlag() readActorFlag() NxActorDesc.flags
 	*/
@@ -661,9 +682,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorFlag raiseActorFlag() clearActorFlag() NxActorDesc.flags
 	*/
@@ -674,7 +696,7 @@ class NxActor
 	callbacks to be called again for any pairs involving this actor. Use this method
 	when you wish to change the filtering policy of an actor that may already be in contact
 	with other actors.
-
+	
 	@see NxUserActorPairFiltering
 	*/
 	virtual		void			resetUserActorPairFiltering() = 0;
@@ -687,9 +709,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc
 	*/
@@ -720,9 +743,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassOffsetLocalPosition() setCMassOffsetLocalOrientation() setCMassOffsetGlobalPose()
 	@see NxBodyDesc.massLocalPose
@@ -745,9 +769,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassOffsetLocalPose() setCMassOffsetLocalOrientation() setCMassOffsetGlobalPose()
 	@see NxBodyDesc.massLocalPose
@@ -767,9 +792,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassOffsetLocalPose() setCMassOffsetLocalPosition() setCMassOffsetGlobalPose()
 	@see NxBodyDesc.massLocalPose
@@ -793,9 +819,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassOffsetGlobalPosition() setCMassOffsetGlobalOrientation()
 	@see NxBodyDesc.massLocalPose
@@ -818,9 +845,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassOffsetGlobalPose() setCMassOffsetGlobalOrientation()
 	@see NxBodyDesc.massLocalPose
@@ -840,9 +868,10 @@ class NxActor
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassOffsetGlobalPose() setCMassOffsetGlobalPosition() 
 	@see NxBodyDesc.massLocalPose
@@ -863,9 +892,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassGlobalPosition() setCMassGlobalOrientation() getCMassLocalPose()
 	@see NxBodyDesc.massLocalPose
@@ -885,9 +915,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassGlobalPose() setCMassGlobalOrientation() getCMassLocalPose()
 	@see NxBodyDesc.massLocalPose
@@ -907,9 +938,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCMassGlobalPose() setCMassGlobalPosition() getCMassLocalPose()
 	@see NxBodyDesc.massLocalPose
@@ -925,9 +957,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCMassLocalPosition() getCMassLocalOrientation() getCMassGlobalPose()
 	@see NxBodyDesc.massLocalPose
@@ -943,9 +976,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCMassLocalPose() getCMassLocalOrientation() getCMassGlobalPose()
 	@see NxBodyDesc.massLocalPose
@@ -961,9 +995,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCMassLocalPose() getCMassLocalPosition() getCMassGlobalPose()
 	@see NxBodyDesc.massLocalPose
@@ -979,9 +1014,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCMassGlobalPosition() getCMassGlobalOrientation() getCMassLocalPose()
 	@see NxBodyDesc.massLocalPose
@@ -997,9 +1033,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCMassGlobalPose() getCMassGlobalOrientation() getCMassLocalPose()
 	@see NxBodyDesc.massLocalPose
@@ -1015,9 +1052,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCMassGlobalPose() getCMassGlobalPosition() getCMassLocalPose()
 	@see NxBodyDesc.massLocalPose
@@ -1038,9 +1076,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getMass() NxBodyDesc.mass setMassSpaceInertiaTensor() updateMassFromShapes()
 	*/
@@ -1055,9 +1094,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setMass() NxBodyDesc.mass setMassSpaceInertiaTensor()
 	*/
@@ -1079,9 +1119,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc.massSpaceInertia getMassSpaceInertia() setMass() setCMassOffsetLocalPose()
 	*/
@@ -1099,9 +1140,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc.massSpaceInertia setMassSpaceInertiaTensor() setMass() CMassOffsetLocalPose()
 	*/
@@ -1116,9 +1158,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGlobalInertiaTensorInverse() NxBodyDesc.massSpaceInertia setMassSpaceInertiaTensor()
 	*/
@@ -1133,9 +1176,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGlobalInertiaTensor() NxBodyDesc.massSpaceInertia setMassSpaceInertiaTensor()
 	*/
@@ -1169,15 +1213,18 @@ class NxActor
 	\param[in] density Density scale factor of the shapes belonging to the actor. <b>Range:</b> [0,inf)
 	\param[in] totalMass Total mass of the actor(or zero). <b>Range:</b> [0,inf)
 
+	\return True if successful.
+
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActorDesc NxBodyDesc NxBodyDesc.mass NxActorDesc.density NxActorDesc.lockCOM
 	*/
-	virtual		void			updateMassFromShapes(NxReal density, NxReal totalMass)		= 0;
+	virtual		bool			updateMassFromShapes(NxReal density, NxReal totalMass)		= 0;
 
 //@}
 /************************************************************************************************/
@@ -1198,9 +1245,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLinearDamping() setAngularDamping() NxBodyDesc.linearDamping
 	*/
@@ -1215,9 +1263,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLinearDamping() getAngularDamping() NxBodyDesc.linearDamping
 	*/
@@ -1238,9 +1287,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getAngularDamping() NxBodyDesc.angularDamping setLinearDamping()
 	*/
@@ -1255,9 +1305,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setAngularDamping() NxBodyDesc.angularDamping getLinearDamping()
 	*/
@@ -1284,9 +1335,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLinearVelocity() setAngularVelocity() NxBodyDesc.linearVelocity
 	*/
@@ -1306,9 +1358,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getAngularVelocity() setLinearVelocity() NxBodyDesc.angularVelocity
 	*/
@@ -1323,9 +1376,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLinearVelocity() getAngularVelocity() NxBodyDesc.linearVelocity
 	*/
@@ -1340,9 +1394,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setAngularVelocity() getLinearVelocity() NxBodyDesc.angularVelocity
 	*/
@@ -1371,9 +1426,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getMaxAngularVelocity() NxBodyDesc.maxAngularVelocity
 	*/
@@ -1388,9 +1444,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setMaxAngularVelocity NxBodyDesc.maxAngularVelocity
 	*/
@@ -1421,9 +1478,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCCDMotionThreshold NxParameter
 	*/
@@ -1438,9 +1496,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setCCDMotionThreshold NxParameter
 	*/
@@ -1468,9 +1527,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLinearMomentum() setAngularMomentum()
 	*/
@@ -1491,9 +1551,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getAngularMomentum() setLinearMomentum() 
 	*/
@@ -1510,9 +1571,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setLinearMomentum() getAngularMomentum()
 	*/
@@ -1529,9 +1591,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setAngularMomentum() getLinearMomentum() 
 	*/
@@ -1566,9 +1629,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	@see addForceAtLocalPos() addLocalForceAtPos() addLocalForceAtLocalPos() addForce() addLocalForce()
@@ -1596,9 +1660,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	@see addForceAtPos() addLocalForceAtPos() addLocalForceAtLocalPos() addForce() addLocalForce()
@@ -1626,9 +1691,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	@see addForceAtPos() addForceAtLocalPos() addLocalForceAtLocalPos() addForce() addLocalForce()
@@ -1656,9 +1722,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	@see addForceAtPos() addForceAtLocalPos() addLocalForceAtPos() addForce() addLocalForce()
@@ -1682,9 +1749,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	@see addForceAtPos() addForceAtLocalPos() addLocalForceAtPos() addLocalForceAtLocalPos() addLocalForce()
@@ -1708,9 +1776,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	@see addForceAtPos() addForceAtLocalPos() addLocalForceAtPos() addLocalForceAtLocalPos() addForce()
@@ -1732,9 +1801,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode addLocalTorque() addForce()
 	*/
@@ -1755,9 +1825,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode addTorque() addForce()
 	*/
@@ -1773,9 +1844,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	\return The kinetic energy of the actor.
 	*/
@@ -1798,9 +1870,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getLocalPointVelocity() NxBodyDesc.linearVelocity NxBodyDesc.angularVelocity
 	*/
@@ -1817,9 +1890,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getPointVelocity() NxBodyDesc.linearVelocity NxBodyDesc.angularVelocity
 	*/
@@ -1847,9 +1921,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() getSleepEnergyThreshold()
 	*/
@@ -1871,9 +1946,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep()  getSleepEnergyThreshold()
 	*/
@@ -1892,9 +1968,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() setSleepLinearVelocity() setSleepEnergyThreshold() getSleepEnergyThreshold()
 	*/
@@ -1919,9 +1996,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() setSleepEnergyThreshold() getSleepEnergyThreshold()
 	*/
@@ -1938,9 +2016,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() setSleepAngularVelocity() setSleepEnergyThreshold() getSleepEnergyThreshold()
 	*/
@@ -1964,9 +2043,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
     @see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() setSleepLinearVelocity() setSleepEnergyThreshold() getSleepEnergyThreshold()
 	*/
@@ -1983,9 +2063,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() setSleepAngularVelocity() NxBodyDesc.sleepEnergyThreshold
 	*/
@@ -2009,9 +2090,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepEnergyThreshold() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp() putToSleep() setSleepLinearVelocity() setSleepAngularVelocity() NxBodyDesc.sleepEnergyThreshold
 	*/
@@ -2029,9 +2111,10 @@ class NxActor
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() putToSleep()
 	*/
@@ -2048,9 +2131,10 @@ class NxActor
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isGroupSleeping() isSleeping() getSleepLinearVelocity() getSleepAngularVelocity() wakeUp()
 	*/
@@ -2069,9 +2153,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial (supports NX_BF_KINEMATIC, NX_BF_DISABLE_GRAVITY)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyFlag clearBodyFlag() readBodyFlag() NxBodyDesc.flags
 	*/
@@ -2090,9 +2175,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial (supports NX_BF_KINEMATIC, NX_BF_DISABLE_GRAVITY)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyFlag raiseBodyFlag() readBodyFlag() NxBodyDesc.flags
 	*/
@@ -2109,9 +2195,10 @@ class NxActor
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial (supports NX_BF_KINEMATIC, NX_BF_DISABLE_GRAVITY)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyFlag raiseBodyFlag() clearBodyFlag() NxBodyDesc.flags
 	*/
@@ -2131,9 +2218,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyDesc saveToDesc() getShape()
 	*/
@@ -2152,9 +2240,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getSolverIterationCount() NxBodyDesc.solverIterationCount
 	*/
@@ -2171,7 +2260,7 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
 
@@ -2179,6 +2268,106 @@ class NxActor
 	*/
 	virtual		NxU32			getSolverIterationCount() const = 0;
 
+	/**
+	\brief Retrieves the impulse threshold for contact reports.
+
+	The contact report threshold is an impulse threshold (I=F*dt=m*dv). If the impulse between 
+	two actors exceeds this threshold for either of the two actors, a contact report 
+	will be generated according to the union of both actors' contact report threshold flags.
+	See #getContactReportFlags().
+
+	The actor must be dynamic. The threshold used for a collision between a dynamic actor
+	and the static environment is the threshold of the dynamic actor, and all contacts with
+	static actors are summed to find the total normal force.
+
+	\return Impulse threshold for contact reports.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setContactReportThreshold getContactReportFlags NxContactPairFlag NxBodyDesc::contactReportThreshold
+	*/
+	virtual NxReal					getContactReportThreshold() const = 0;
+
+	/**
+	\brief Sets the impulse threshold for contact reports.
+
+	See #getContactReportThreshold().
+
+	The actor must be dynamic.
+
+	\param[in] threshold Impulse threshold for contact reports. <b>Range:</b> (0,inf)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getContactReportThreshold getContactReportFlags NxContactPairFlag NxBodyDesc::contactReportThreshold
+	*/
+	virtual void					setContactReportThreshold(NxReal threshold) = 0;
+
+	/**
+	\brief Retrieves the actor's contact report flags.
+
+	See #setContactReportFlags().
+
+	\return The contact reporting flags associated with this actor.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setContactReportFlags NxContactPairFlag NxActorDesc::contactReportFlags
+	*/
+	virtual NxU32					getContactReportFlags() const = 0;
+
+	/**
+	\brief Sets the actor's contact report flags.
+
+	These flags are used to determine the kind of report that is generated for interactions with other
+	actors.
+
+	The following flags are permitted:
+
+	NX_NOTIFY_ON_START_TOUCH
+	NX_NOTIFY_ON_END_TOUCH
+	NX_NOTIFY_ON_TOUCH	
+	NX_NOTIFY_ON_IMPACT
+	NX_NOTIFY_ON_ROLL
+	NX_NOTIFY_ON_SLIDE
+	NX_NOTIFY_FORCE
+	NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD
+	NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD
+	NX_NOTIFY_ON_TOUCH_FORCE_THRESHOLD
+
+	Please note: If the actor is part of an interacting pair for which the contact report generation
+	is controlled already through any other mechanism (for example by use of NxScene::setActorPairFlags)
+	then the union of all the specified contact report flags will be used to generate the report.
+
+	See #getContactReportFlags().
+
+	\param[in] flags Flags to control contact reporting. See #NxContactPairFlag.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getContactReportFlags NxContactPairFlag NxActorDesc::contactReportFlags
+	*/
+	virtual void					setContactReportFlags(NxU32 flags) = 0;
 
 #if NX_SUPPORT_SWEEP_API
 	/**
@@ -2205,9 +2394,10 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSweepQueryHit NxSweepFlags NxUserEntityReport NxScene
 	*/
@@ -2219,13 +2409,40 @@ class NxActor
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartment
 	*/
 	virtual NxCompartment *			getCompartment() const = 0;
+
+	/**
+	\brief Retrieves the actor's force field material index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	*/
+	virtual NxForceFieldMaterial	getForceFieldMaterial() const = 0;
+
+	/**
+	\brief Sets the actor's force field material index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	*/
+	virtual void					setForceFieldMaterial(NxForceFieldMaterial)  = 0;
 
 	//public variables:
 				void*			userData;	//!< user can assign this to whatever, usually to create a 1:1 relationship with a user object.
@@ -2233,9 +2450,9 @@ class NxActor
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

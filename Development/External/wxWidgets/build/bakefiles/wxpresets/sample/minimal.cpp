@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: minimal.cpp,v 1.1 2005/01/27 22:47:37 VS Exp $
+// RCS-ID:      $Id: minimal.cpp 31612 2005-01-27 22:47:37Z VS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

@@ -4,33 +4,26 @@
 // Author:      Julian Smart
 // Modified by: Ron Lee
 // Created:     04/01/98
-// RCS-ID:      $Id: object.cpp,v 1.95 2005/09/17 20:58:55 VZ Exp $
+// RCS-ID:      $Id: object.cpp 40111 2006-07-15 22:21:44Z MW $
 // Copyright:   (c) 1998 Julian Smart
 //              (c) 2001 Ron Lee <ron@debian.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "object.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
-    #include "wx/hash.h"
     #include "wx/object.h"
+    #include "wx/hash.h"
+    #include "wx/memory.h"
 #endif
 
 #include <string.h>
-
-#if (defined(__WXDEBUG__) && wxUSE_MEMORY_TRACING) || wxUSE_DEBUG_CONTEXT
-#include "wx/memory.h"
-#endif
 
 #if defined(__WXDEBUG__) || wxUSE_DEBUG_CONTEXT
     #if defined(__VISAGECPP__)
@@ -212,21 +205,30 @@ wxClassInfo *wxClassInfo::FindClass(const wxChar *className)
     }
 }
 
-void wxClassInfo::CleanUp()
-{
-    if ( sm_classTable )
-    {
-        delete sm_classTable;
-        sm_classTable = NULL;
-    }
-}
+// This function wasn't written to be reentrant but there is a possiblity of
+// reentrance if something it does causes a shared lib to load and register
+// classes. On Solaris this happens when the wxHashTable is newed, so the first
+// part of the function has been modified to handle it, and a wxASSERT checks
+// against reentrance in the remainder of the function.
 
 void wxClassInfo::Register()
 {
     if ( !sm_classTable )
     {
-        sm_classTable = new wxHashTable(wxKEY_STRING);
+        wxHashTable *classTable = new wxHashTable(wxKEY_STRING);
+
+        // check for reentrance
+        if ( sm_classTable )
+            delete classTable;
+        else
+            sm_classTable = classTable;
     }
+
+#ifdef __WXDEBUG__
+    // reentrance guard - see note above
+    static int entry = 0;
+    wxASSERT_MSG(++entry == 1, _T("wxClassInfo::Register() reentrance"));
+#endif
 
     // Using IMPLEMENT_DYNAMIC_CLASS() macro twice (which may happen if you
     // link any object module twice mistakenly, or link twice against wx shared
@@ -242,6 +244,10 @@ void wxClassInfo::Register()
     );
 
     sm_classTable->Put(m_className, (wxObject *)this);
+
+#ifdef __WXDEBUG__
+    --entry;
+#endif
 }
 
 void wxClassInfo::Unregister()
@@ -287,15 +293,6 @@ wxObject *wxCreateDynamicObject(const wxChar *name)
 // wxObject
 // ----------------------------------------------------------------------------
 
-// Initialize ref data from another object (needed for copy constructor and
-// assignment operator)
-void wxObject::InitFrom(const wxObject& other)
-{
-    m_refData = other.m_refData;
-    if ( m_refData )
-        m_refData->m_count++;
-}
-
 void wxObject::Ref(const wxObject& clone)
 {
 #if defined(__WXDEBUG__) || wxUSE_DEBUG_CONTEXT
@@ -323,7 +320,7 @@ void wxObject::UnRef()
     {
         wxASSERT_MSG( m_refData->m_count > 0, _T("invalid ref data count") );
 
-        if ( !--m_refData->m_count )
+        if ( --m_refData->m_count == 0 )
             delete m_refData;
         m_refData = NULL;
     }

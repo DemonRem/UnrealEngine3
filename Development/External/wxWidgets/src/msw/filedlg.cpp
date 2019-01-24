@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: filedlg.cpp,v 1.77 2005/05/22 12:10:54 JS Exp $
+// RCS-ID:      $Id: filedlg.cpp 55207 2008-08-23 17:49:04Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "filedlg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,26 +26,25 @@
 
 #if wxUSE_FILEDLG && !(defined(__SMARTPHONE__) && defined(__WXWINCE__))
 
+#include "wx/filedlg.h"
+
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcdlg.h"
+    #include "wx/msw/missing.h"
     #include "wx/utils.h"
     #include "wx/msgdlg.h"
-    #include "wx/filedlg.h"
     #include "wx/filefn.h"
     #include "wx/intl.h"
     #include "wx/log.h"
     #include "wx/app.h"
+    #include "wx/math.h"
 #endif
-
-#include "wx/msw/wrapcdlg.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 #include "wx/filename.h"
 #include "wx/tokenzr.h"
-#include "wx/math.h"
-
-#include "wx/msw/missing.h"
 
 // ----------------------------------------------------------------------------
 // constants
@@ -88,35 +83,34 @@ wxFileDialogHookFunction(HWND      hDlg,
                          WPARAM    WXUNUSED(wParam),
                          LPARAM    lParam)
 {
-    HWND   hwndDialog;
-    hwndDialog = ::GetParent( hDlg );
-    switch (iMsg)
+    switch ( iMsg )
     {
-        case WM_DESTROY:
+        case WM_NOTIFY:
             {
-                RECT dlgRect;
-                GetWindowRect( hwndDialog, & dlgRect );
-                gs_rectDialog.x = dlgRect.left;
-                gs_rectDialog.y = dlgRect.top;
-                gs_rectDialog.width = dlgRect.right - dlgRect.left;
-                gs_rectDialog.height = dlgRect.bottom - dlgRect.top;
+                OFNOTIFY *pNotifyCode = wx_reinterpret_cast(OFNOTIFY *, lParam);
+                if ( pNotifyCode->hdr.code == CDN_INITDONE )
+                {
+                    // note that we need to move the parent window: hDlg is a
+                    // child of it when OFN_EXPLORER is used
+                    ::SetWindowPos
+                      (
+                        ::GetParent(hDlg),
+                        HWND_TOP,
+                        gs_rectDialog.x, gs_rectDialog.y,
+                        0, 0,
+                        SWP_NOZORDER | SWP_NOSIZE
+                      );
+                 }
             }
             break;
 
-        case WM_NOTIFY:
-            {
-                OFNOTIFY *   pNotifyCode;
-                pNotifyCode = (LPOFNOTIFY) lParam;
-                if (CDN_INITDONE == (pNotifyCode->hdr).code)
-                {
-                    SetWindowPos( hwndDialog, HWND_TOP,
-                                  gs_rectDialog.x,
-                                  gs_rectDialog.y,
-                                  gs_rectDialog.width,
-                                  gs_rectDialog.height,
-                                  SWP_NOZORDER|SWP_NOSIZE);
-                 }
-            }
+        case WM_DESTROY:
+            // reuse the position used for the dialog the next time by default
+            //
+            // NB: at least under Windows 2003 this is useless as after the
+            //     first time it's shown the dialog always remembers its size
+            //     and position itself and ignores any later SetWindowPos calls
+            wxCopyRECTToRect(wxGetWindowRect(::GetParent(hDlg)), gs_rectDialog);
             break;
     }
 
@@ -134,13 +128,14 @@ wxFileDialog::wxFileDialog(wxWindow *parent,
                            const wxString& defaultFileName,
                            const wxString& wildCard,
                            long style,
-                           const wxPoint& pos)
+                           const wxPoint& pos,
+                           const wxSize& sz,
+                           const wxString& name)
             : wxFileDialogBase(parent, message, defaultDir, defaultFileName,
-                               wildCard, style, pos)
+                               wildCard, style, pos, sz, name)
 
 {
-    if ( ( m_dialogStyle & wxMULTIPLE ) && ( m_dialogStyle & wxSAVE ) )
-        m_dialogStyle &= ~wxMULTIPLE;
+    // NB: all style checks are done by wxFileDialogBase::Create
 
     m_bMovedWindow = false;
 
@@ -182,33 +177,91 @@ void wxFileDialog::SetPath(const wxString& path)
         m_fileName << _T('.') << ext;
 }
 
-void wxFileDialog::DoGetPosition( int *x, int *y ) const
+void wxFileDialog::DoGetPosition(int *x, int *y) const
 {
-    *x = gs_rectDialog.x;
-    *y = gs_rectDialog.y;
+    if ( x )
+        *x = gs_rectDialog.x;
+    if ( y )
+        *y = gs_rectDialog.y;
 }
 
 
 void wxFileDialog::DoGetSize(int *width, int *height) const
 {
-    *width  = gs_rectDialog.width;
-    *height = gs_rectDialog.height;
+    if ( width )
+        *width = gs_rectDialog.width;
+    if ( height )
+        *height = gs_rectDialog.height;
 }
 
-void wxFileDialog::DoMoveWindow(int x, int y, int WXUNUSED(width), int WXUNUSED(height))
+void wxFileDialog::DoMoveWindow(int x, int y, int WXUNUSED(w), int WXUNUSED(h))
 {
     m_bMovedWindow = true;
 
     gs_rectDialog.x = x;
     gs_rectDialog.y = y;
 
-    /*
-        The width and height can not be set by the programmer
-        its just not possible.  But the program can get the
-        size of the Dlg after it has been shown, in case they need
-        that data.
-    */
+    // size of the dialog can't be changed because the controls are not laid
+    // out correctly then
 }
+
+// helper used below in ShowModal(): style is used to determine whether to show
+// the "Save file" dialog (if it contains wxFD_SAVE bit) or "Open file" one;
+// returns true on success or false on failure in which case err is filled with
+// the CDERR_XXX constant
+static bool DoShowCommFileDialog(OPENFILENAME *of, long style, DWORD *err)
+{
+    if ( style & wxFD_SAVE ? GetSaveFileName(of) : GetOpenFileName(of) )
+        return true;
+
+    if ( err )
+    {
+#ifdef __WXWINCE__
+        // according to MSDN, CommDlgExtendedError() should work under CE as
+        // well but apparently in practice it doesn't (anybody has more
+        // details?)
+        *err = GetLastError();
+#else
+        *err = CommDlgExtendedError();
+#endif
+    }
+
+    return false;
+}
+
+// We want to use OPENFILENAME struct version 5 (Windows 2000/XP) but we don't
+// know if the OPENFILENAME declared in the currently used headers is a V5 or
+// V4 (smaller) one so we try to manually extend the struct in case it is the
+// old one.
+//
+// We don't do this on Windows CE nor under Win64, however, as there are no
+// compilers with old headers for these architectures
+#if defined(__WXWINCE__) || defined(__WIN64__)
+    typedef OPENFILENAME wxOPENFILENAME;
+
+    static const DWORD gs_ofStructSize = sizeof(OPENFILENAME);
+#else // !__WXWINCE__ || __WIN64__
+    #define wxTRY_SMALLER_OPENFILENAME
+
+    struct wxOPENFILENAME : public OPENFILENAME
+    {
+        // fields added in Windows 2000/XP comdlg32.dll version
+        void *pVoid;
+        DWORD dw1;
+        DWORD dw2;
+    };
+
+    // hardcoded sizeof(OPENFILENAME) in the Platform SDK: we have to do it
+    // because sizeof(OPENFILENAME) in the headers we use when compiling the
+    // library could be less if _WIN32_WINNT is not >= 0x500
+    static const DWORD wxOPENFILENAME_V5_SIZE = 88;
+
+    // this is hardcoded sizeof(OPENFILENAME_NT4) from Platform SDK
+    static const DWORD wxOPENFILENAME_V4_SIZE = 76;
+
+    // always try the new one first
+    static DWORD gs_ofStructSize = wxOPENFILENAME_V5_SIZE;
+#endif // __WXWINCE__ || __WIN64__/!...
 
 int wxFileDialog::ShowModal()
 {
@@ -225,13 +278,13 @@ int wxFileDialog::ShowModal()
 
 #if WXWIN_COMPATIBILITY_2_4
     long msw_flags = 0;
-    if ( (m_dialogStyle & wxHIDE_READONLY) || (m_dialogStyle & wxSAVE) )
+    if ( HasFdFlag(wxHIDE_READONLY) || HasFdFlag(wxFD_SAVE) )
         msw_flags |= OFN_HIDEREADONLY;
 #else
     long msw_flags = OFN_HIDEREADONLY;
 #endif
 
-    if ( m_dialogStyle & wxFILE_MUST_EXIST )
+    if ( HasFdFlag(wxFD_FILE_MUST_EXIST) )
         msw_flags |= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
     /*
         If the window has been moved the programmer is probably
@@ -239,12 +292,7 @@ int wxFileDialog::ShowModal()
         or hook function so that we can actually adjust the position.
         Without moving or centering the dlg, it will just stay
         in the upper left of the frame, it does not center
-        automatically..  One additional note, when the hook is
-        enabled, the PLACES BAR in the dlg (shown on later versions
-        of windows (2000 and XP) will automatically be turned off
-        according to the MSDN docs.  This is normal.  If the
-        programmer needs the PLACES BAR (left side of dlg) they
-        just shouldn't move or center the dlg.
+        automatically.
     */
     if (m_bMovedWindow) // we need these flags.
     {
@@ -254,42 +302,33 @@ int wxFileDialog::ShowModal()
 #endif
     }
 
-    if (m_dialogStyle & wxMULTIPLE )
+    if ( HasFdFlag(wxFD_MULTIPLE) )
     {
         // OFN_EXPLORER must always be specified with OFN_ALLOWMULTISELECT
         msw_flags |= OFN_EXPLORER | OFN_ALLOWMULTISELECT;
     }
 
-    // if wxCHANGE_DIR flag is not given we shouldn't change the CWD which the
-    // standard dialog does by default
-    if ( !(m_dialogStyle & wxCHANGE_DIR) )
+    // if wxFD_CHANGE_DIR flag is not given we shouldn't change the CWD which the
+    // standard dialog does by default (notice that under NT it does it anyhow,
+    // OFN_NOCHANGEDIR or not, see below)
+    if ( !HasFdFlag(wxFD_CHANGE_DIR) )
     {
         msw_flags |= OFN_NOCHANGEDIR;
     }
 
-    if ( m_dialogStyle & wxOVERWRITE_PROMPT )
+    if ( HasFdFlag(wxFD_OVERWRITE_PROMPT) )
     {
         msw_flags |= OFN_OVERWRITEPROMPT;
     }
 
-    OPENFILENAME of;
+    wxOPENFILENAME of;
     wxZeroMemory(of);
 
-    // the OPENFILENAME struct has been extended in newer version of
-    // comcdlg32.dll, but as we don't use the extended fields anyhow, set
-    // the struct size to the old value - otherwise, the programs compiled
-    // with new headers will not work with the old libraries
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
-    of.lStructSize       = sizeof(OPENFILENAME) -
-                           (sizeof(void *) + 2*sizeof(DWORD));
-#else // old headers
-    of.lStructSize       = sizeof(OPENFILENAME);
-#endif
-
+    of.lStructSize       = gs_ofStructSize;
     of.hwndOwner         = hWnd;
     of.lpstrTitle        = WXSTRINGCAST m_message;
     of.lpstrFileTitle    = titleBuffer;
-    of.nMaxFileTitle     = wxMAXFILE + 1 + wxMAXEXT;    // Windows 3.0 and 3.1
+    of.nMaxFileTitle     = wxMAXFILE + 1 + wxMAXEXT;
 
     // Convert forward slashes to backslashes (file selector doesn't like
     // forward slashes) and also squeeze multiple consecutive slashes into one
@@ -352,7 +391,7 @@ int wxFileDialog::ShowModal()
     }
 
     // Replace | with \0
-    for (i = 0; i < filterBuffer.Len(); i++ ) {
+    for (i = 0; i < filterBuffer.length(); i++ ) {
         if ( filterBuffer.GetChar(i) == wxT('|') ) {
             filterBuffer[i] = wxT('\0');
         }
@@ -370,11 +409,11 @@ int wxFileDialog::ShowModal()
     of.nMaxFile  = wxMAXPATH;
 
     // we must set the default extension because otherwise Windows would check
-    // for the existing of a wrong file with wxOVERWRITE_PROMPT (i.e. if the
+    // for the existing of a wrong file with wxFD_OVERWRITE_PROMPT (i.e. if the
     // user types "foo" and the default extension is ".bar" we should force it
     // to check for "foo.bar" existence and not "foo")
     wxString defextBuffer; // we need it to be alive until GetSaveFileName()!
-    if (m_dialogStyle & wxSAVE)
+    if (HasFdFlag(wxFD_SAVE))
     {
         const wxChar* extension = filterBuffer;
         int maxFilter = (int)(of.nFilterIndex*2L) - 1;
@@ -386,43 +425,59 @@ int wxFileDialog::ShowModal()
         defextBuffer = AppendExtension(wxT("a"), extension);
         if (defextBuffer.StartsWith(wxT("a.")))
         {
-            defextBuffer.Mid(2);
+            defextBuffer = defextBuffer.Mid(2); // remove "a."
             of.lpstrDefExt = defextBuffer.c_str();
         }
     }
 
+    // store off before the standard windows dialog can possibly change it
+    const wxString cwdOrig = wxGetCwd();
+
     //== Execute FileDialog >>=================================================
 
-    bool success = (m_dialogStyle & wxSAVE ? GetSaveFileName(&of)
-                                           : GetOpenFileName(&of)) != 0;
+    DWORD errCode;
+    bool success = DoShowCommFileDialog(&of, m_windowStyle, &errCode);
 
-    DWORD errCode = CommDlgExtendedError();
-
-#ifdef __WIN32__
-    if (!success && (errCode == CDERR_STRUCTSIZE))
+    if ( !success && errCode == FNERR_INVALIDFILENAME && of.lpstrFile[0] )
     {
-        // The struct size has changed so try a smaller or bigger size
+        // this can happen if the default file name is invalid, try without it now
+        of.lpstrFile[0] = _T('\0');
+        success = DoShowCommFileDialog(&of, m_windowStyle, &errCode);
+    }
 
-        int oldStructSize = of.lStructSize;
-        of.lStructSize       = oldStructSize - (sizeof(void *) + 2*sizeof(DWORD));
-        success = (m_dialogStyle & wxSAVE) ? (GetSaveFileName(&of) != 0)
-                                            : (GetOpenFileName(&of) != 0);
-        errCode = CommDlgExtendedError();
+#ifdef wxTRY_SMALLER_OPENFILENAME
+    // the system might be too old to support the new version file dialog
+    // boxes, try with the old size
+    if ( !success && errCode == CDERR_STRUCTSIZE &&
+            of.lStructSize != wxOPENFILENAME_V4_SIZE )
+    {
+        of.lStructSize = wxOPENFILENAME_V4_SIZE;
 
-        if (!success && (errCode == CDERR_STRUCTSIZE))
+        success = DoShowCommFileDialog(&of, m_windowStyle, &errCode);
+
+        if ( success || !errCode )
         {
-            of.lStructSize       = oldStructSize + (sizeof(void *) + 2*sizeof(DWORD));
-            success = (m_dialogStyle & wxSAVE) ? (GetSaveFileName(&of) != 0)
-                                            : (GetOpenFileName(&of) != 0);
+            // use this struct size for subsequent dialogs
+            gs_ofStructSize = of.lStructSize;
         }
     }
-#endif // __WIN32__
+#endif // wxTRY_SMALLER_OPENFILENAME
 
     if ( success )
     {
+        // GetOpenFileName will always change the current working directory on
+        // (according to MSDN) "Windows NT 4.0/2000/XP" because the flag
+        // OFN_NOCHANGEDIR has no effect.  If the user did not specify
+        // wxFD_CHANGE_DIR let's restore the current working directory to what it
+        // was before the dialog was shown.
+        if ( msw_flags & OFN_NOCHANGEDIR )
+        {
+            wxSetWorkingDirectory(cwdOrig);
+        }
+
         m_fileNames.Empty();
 
-        if ( ( m_dialogStyle & wxMULTIPLE ) &&
+        if ( ( HasFdFlag(wxFD_MULTIPLE) ) &&
 #if defined(OFN_EXPLORER)
              ( fileNameBuffer[of.nFileOffset-1] == wxT('\0') )
 #else
@@ -435,7 +490,7 @@ int wxFileDialog::ShowModal()
             i = of.nFileOffset;
             m_fileName = &fileNameBuffer[i];
             m_fileNames.Add(m_fileName);
-            i += m_fileName.Len() + 1;
+            i += m_fileName.length() + 1;
 
             while (fileNameBuffer[i] != wxT('\0'))
             {
@@ -476,8 +531,8 @@ int wxFileDialog::ShowModal()
                     extension = extension + wxStrlen( extension ) + 1;
 
                 m_fileName = AppendExtension(fileNameBuffer, extension);
-                wxStrncpy(fileNameBuffer, m_fileName.c_str(), wxMin(m_fileName.Len(), wxMAXPATH-1));
-                fileNameBuffer[wxMin(m_fileName.Len(), wxMAXPATH-1)] = wxT('\0');
+                wxStrncpy(fileNameBuffer, m_fileName.c_str(), wxMin(m_fileName.length(), wxMAXPATH-1));
+                fileNameBuffer[wxMin(m_fileName.length(), wxMAXPATH-1)] = wxT('\0');
             }
 
             m_path = fileNameBuffer;
@@ -486,24 +541,22 @@ int wxFileDialog::ShowModal()
             m_dir = wxPathOnly(fileNameBuffer);
         }
     }
+#ifdef __WXDEBUG__
     else
     {
         // common dialog failed - why?
-#ifdef __WXDEBUG__
-        DWORD dwErr = CommDlgExtendedError();
-        if ( dwErr != 0 )
+        if ( errCode != 0 )
         {
-            // this msg is only for developers
+            // this msg is only for developers so don't translate it
             wxLogError(wxT("Common dialog failed with error code %0lx."),
-                       dwErr);
+                       errCode);
         }
         //else: it was just cancelled
-#endif
     }
+#endif // __WXDEBUG__
 
     return success ? wxID_OK : wxID_CANCEL;
 
 }
 
 #endif // wxUSE_FILEDLG && !(__SMARTPHONE__ && __WXWINCE__)
-

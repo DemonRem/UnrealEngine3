@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        ogledit.cpp
+// Name:        contrib/samples/ogl/ogledit/ogledit.cpp
 // Purpose:     OGLEdit sample app
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: ogledit.cpp,v 1.10 2005/03/31 19:18:15 ABX Exp $
+// RCS-ID:      $Id: ogledit.cpp 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -21,7 +17,7 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+#include "wx/wx.h"
 #endif
 
 #if !wxUSE_DOC_VIEW_ARCHITECTURE
@@ -33,8 +29,8 @@
 #include "doc.h"
 #include "view.h"
 
-#if defined(__WXGTK__) || defined(__WXX11__) || defined(__WXMOTIF__) || defined(__WXMAC__)
-#include "ogl.xpm"
+#ifndef __WXMSW__
+    #include "ogl.xpm"
 #endif
 
 // A macro needed for some compilers (AIX) that need 'main' to be defined
@@ -212,4 +208,3 @@ MyFrame *GetMainFrame(void)
 {
   return wxGetApp().frame;
 }
-

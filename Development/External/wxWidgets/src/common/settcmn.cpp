@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/settcmn.cpp
+// Name:        src/common/settcmn.cpp
 // Purpose:     common (to all ports) wxWindow functions
 // Author:      Robert Roebling
-// RCS-ID:      $Id: settcmn.cpp,v 1.10 2005/01/04 19:28:31 ABX Exp $
+// RCS-ID:      $Id: settcmn.cpp 39310 2006-05-24 07:16:32Z ABX $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -15,10 +15,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "settings.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -26,10 +22,10 @@
     #pragma hdrstop
 #endif
 
+#include "wx/settings.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/defs.h"
     #include "wx/utils.h"
-    #include "wx/settings.h"
 #endif //WX_PRECOMP
 
 // ----------------------------------------------------------------------------

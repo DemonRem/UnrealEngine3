@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2004-10-19
-// RCS-ID:      $Id: wrapshl.h,v 1.1 2004/10/19 16:43:43 VZ Exp $
+// RCS-ID:      $Id: wrapshl.h 40367 2006-07-29 19:19:50Z VZ $
 // Copyright:   (c) 2004 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -19,6 +19,8 @@
 #endif
 
 #include <shlobj.h>
+
+#include "wx/msw/winundef.h"
 
 // ----------------------------------------------------------------------------
 // wxItemIdList implements RAII on top of ITEMIDLIST
@@ -76,6 +78,13 @@ private:
 
     DECLARE_NO_COPY_CLASS(wxItemIdList)
 };
+
+// enable autocompleting filenames in the text control with given HWND
+//
+// this only works on systems with shlwapi.dll 5.0 or later
+//
+// implemented in src/msw/utilsgui.cpp
+extern bool wxEnableFileNameAutoComplete(HWND hwnd);
 
 #endif // _WX_MSW_WRAPSHL_H_
 

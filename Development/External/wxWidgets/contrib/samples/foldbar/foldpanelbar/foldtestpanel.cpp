@@ -5,14 +5,10 @@
 // Modified by: ABX - 19/12/2004 : possibility of horizontal orientation
 //                               : wxWidgets coding standards
 // Created:     18/06/2004
-// RCS-ID:      $Id: foldtestpanel.cpp,v 1.3 2004/12/10 12:00:59 ABX Exp $
+// RCS-ID:      $Id: foldtestpanel.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma implementation "foldtestpanel.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"

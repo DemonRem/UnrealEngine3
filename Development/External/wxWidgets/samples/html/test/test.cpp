@@ -3,15 +3,10 @@
 // Purpose:     wxHtml testing example
 // Author:      Vaclav Slavik
 // Created:     1999-07-07
-// RCS-ID:      $Id: test.cpp,v 1.33 2005/09/05 18:07:00 ABX Exp $
+// RCS-ID:      $Id: test.cpp 52178 2008-02-28 18:44:24Z JS $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma implementation
-    #pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -33,6 +28,8 @@
 #include "wx/fs_inet.h"
 #include "wx/filedlg.h"
 #include "wx/utils.h"
+#include "wx/clipbrd.h"
+#include "wx/dataobj.h"
 
 #include "../../sample.xpm"
 
@@ -58,6 +55,11 @@ public:
                                              wxString *WXUNUSED(redirect)) const;
 
 private:
+    void OnClipboardEvent(wxClipboardTextEvent& event);
+
+#if wxUSE_CLIPBOARD
+    DECLARE_EVENT_TABLE()
+#endif // wxUSE_CLIPBOARD
     DECLARE_NO_COPY_CLASS(MyHtmlWindow)
 };
 
@@ -71,10 +73,15 @@ public:
     // event handlers (these functions should _not_ be virtual)
     void OnQuit(wxCommandEvent& event);
     void OnPageOpen(wxCommandEvent& event);
-    void OnDefaultBrowser(wxCommandEvent& event);
+    void OnDefaultLocalBrowser(wxCommandEvent& event);
+    void OnDefaultWebBrowser(wxCommandEvent& event);
     void OnBack(wxCommandEvent& event);
     void OnForward(wxCommandEvent& event);
     void OnProcessor(wxCommandEvent& event);
+
+    void OnHtmlLinkClicked(wxHtmlLinkEvent& event);
+    void OnHtmlCellHover(wxHtmlCellEvent &event);
+    void OnHtmlCellClicked(wxHtmlCellEvent &event);
 
 private:
     MyHtmlWindow *m_Html;
@@ -109,7 +116,8 @@ enum
 {
     // menu items
     ID_PageOpen = wxID_HIGHEST,
-    ID_DefaultBrowser,
+    ID_DefaultLocalBrowser,
+    ID_DefaultWebBrowser,
     ID_Back,
     ID_Forward,
     ID_Processor
@@ -122,10 +130,15 @@ enum
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(wxID_EXIT,  MyFrame::OnQuit)
     EVT_MENU(ID_PageOpen, MyFrame::OnPageOpen)
-    EVT_MENU(ID_DefaultBrowser, MyFrame::OnDefaultBrowser)
+    EVT_MENU(ID_DefaultLocalBrowser, MyFrame::OnDefaultLocalBrowser)
+    EVT_MENU(ID_DefaultWebBrowser, MyFrame::OnDefaultWebBrowser)
     EVT_MENU(ID_Back, MyFrame::OnBack)
     EVT_MENU(ID_Forward, MyFrame::OnForward)
     EVT_MENU(ID_Processor, MyFrame::OnProcessor)
+
+    EVT_HTML_LINK_CLICKED(wxID_ANY, MyFrame::OnHtmlLinkClicked)
+    EVT_HTML_CELL_HOVER(wxID_ANY, MyFrame::OnHtmlCellHover)
+    EVT_HTML_CELL_CLICKED(wxID_ANY, MyFrame::OnHtmlCellClicked)
 END_EVENT_TABLE()
 
 IMPLEMENT_APP(MyApp)
@@ -177,7 +190,8 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     wxMenu *menuNav = new wxMenu;
 
     menuFile->Append(ID_PageOpen, _("&Open HTML page..."));
-    menuFile->Append(ID_DefaultBrowser, _("&Open current page with default browser"));
+    menuFile->Append(ID_DefaultLocalBrowser, _("&Open current page with default browser"));
+    menuFile->Append(ID_DefaultWebBrowser, _("Open a &web page with default browser"));
     menuFile->AppendSeparator();
     menuFile->Append(ID_Processor, _("&Remove bold attribute"),
                      wxEmptyString, wxITEM_CHECK);
@@ -221,6 +235,17 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     m_Html->ReadCustomization(wxConfig::Get());
     m_Html->LoadFile(wxFileName(wxT("test.htm")));
     m_Html->AddProcessor(m_Processor);
+
+    wxTextCtrl *text = new wxTextCtrl(this, wxID_ANY, _T(""),
+                                      wxDefaultPosition, wxDefaultSize,
+                                      wxTE_MULTILINE);
+
+    delete wxLog::SetActiveTarget(new wxLogTextCtrl(text));
+
+    wxSizer *sz = new wxBoxSizer(wxVERTICAL);
+    sz->Add(m_Html, 3, wxGROW);
+    sz->Add(text, 1, wxGROW);
+    SetSizer(sz);
 }
 
 
@@ -239,19 +264,28 @@ void MyFrame::OnPageOpen(wxCommandEvent& WXUNUSED(event))
 {
 #if wxUSE_FILEDLG
     wxString p = wxFileSelector(_("Open HTML document"), wxEmptyString,
-        wxEmptyString, wxEmptyString, wxT("HTML files|*.htm"));
+        wxEmptyString, wxEmptyString, wxT("HTML files|*.htm;*.html"));
 
     if (!p.empty())
-        m_Html->LoadPage(p);
+        m_Html->LoadFile(wxFileName(p));
 #endif // wxUSE_FILEDLG
 }
 
-void MyFrame::OnDefaultBrowser(wxCommandEvent& WXUNUSED(event))
+void MyFrame::OnDefaultLocalBrowser(wxCommandEvent& WXUNUSED(event))
 {
     wxString page = m_Html->GetOpenedPage();
     if (!page.empty())
     {
         wxLaunchDefaultBrowser(page);
+    }
+}
+
+void MyFrame::OnDefaultWebBrowser(wxCommandEvent& WXUNUSED(event))
+{
+    wxString page = m_Html->GetOpenedPage();
+    if (!page.empty())
+    {
+        wxLaunchDefaultBrowser(wxT("http://www.google.com"));
     }
 }
 
@@ -277,6 +311,30 @@ void MyFrame::OnProcessor(wxCommandEvent& WXUNUSED(event))
     m_Html->LoadPage(m_Html->GetOpenedPage());
 }
 
+void MyFrame::OnHtmlLinkClicked(wxHtmlLinkEvent &event)
+{
+    wxLogMessage(wxT("The url '%s' has been clicked!"), event.GetLinkInfo().GetHref().c_str());
+
+    // skipping this event the default behaviour (load the clicked URL)
+    // will happen...
+    event.Skip();
+}
+
+void MyFrame::OnHtmlCellHover(wxHtmlCellEvent &event)
+{
+    wxLogMessage(wxT("Mouse moved over cell %p at %d;%d"),
+                 event.GetCell(), event.GetPoint().x, event.GetPoint().y);
+}
+
+void MyFrame::OnHtmlCellClicked(wxHtmlCellEvent &event)
+{
+    wxLogMessage(wxT("Click over cell %p at %d;%d"),
+                 event.GetCell(), event.GetPoint().x, event.GetPoint().y);
+
+    // if we don't skip the event, OnHtmlLinkClicked won't be called!
+    event.Skip();
+}
+
 wxHtmlOpeningStatus MyHtmlWindow::OnOpeningURL(wxHtmlURLType WXUNUSED(type),
                                                const wxString& url,
                                                wxString *WXUNUSED(redirect)) const
@@ -284,3 +342,35 @@ wxHtmlOpeningStatus MyHtmlWindow::OnOpeningURL(wxHtmlURLType WXUNUSED(type),
     GetRelatedFrame()->SetStatusText(url + _T(" lately opened"),1);
     return wxHTML_OPEN;
 }
+
+#if wxUSE_CLIPBOARD
+BEGIN_EVENT_TABLE(MyHtmlWindow, wxHtmlWindow)
+    EVT_TEXT_COPY(wxID_ANY, MyHtmlWindow::OnClipboardEvent)
+END_EVENT_TABLE()
+
+void MyHtmlWindow::OnClipboardEvent(wxClipboardTextEvent& WXUNUSED(event))
+{
+    // explicitly call wxHtmlWindow::CopySelection() method
+    // and show the first 100 characters of the text copied in the status bar
+    if ( CopySelection() )
+    {
+        wxTextDataObject data;
+        if ( wxTheClipboard && wxTheClipboard->Open() && wxTheClipboard->GetData(data) )
+        {
+            const wxString text = data.GetText();
+            const size_t maxTextLength = 100;
+
+            wxLogStatus(wxString::Format(_T("Clipboard: '%s%s'"),
+                        wxString(text, maxTextLength).c_str(),
+                        (text.length() > maxTextLength) ? _T("...")
+                                                        : _T("")));
+
+            wxTheClipboard->Close();
+
+            return;
+        }
+    }
+
+    wxLogStatus(_T("Clipboard: nothing"));
+}
+#endif // wxUSE_CLIPBOARD

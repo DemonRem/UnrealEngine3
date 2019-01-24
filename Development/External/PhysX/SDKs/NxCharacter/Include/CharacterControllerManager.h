@@ -5,13 +5,14 @@
 /** \cond */
 
 #include "NxControllerManager.h"
+#include "CCTDebugRenderer.h"
 
 //Implements the NxControllerManager interface, this class used to be called ControllerManager
 class CharacterControllerManager: public NxControllerManager
 {
 public:
-	CharacterControllerManager(NxUserAllocator* userAlloc);
-	~CharacterControllerManager();
+						CharacterControllerManager(NxUserAllocator* userAlloc);
+	virtual				~CharacterControllerManager();
 
 	NxU32				getNbControllers()	const;
 	NxController*		getController(NxU32 index);
@@ -21,8 +22,12 @@ public:
 	void				purgeControllers();
 	void				updateControllers();
 	void				release();
+	NxDebugRenderable	getDebugData();
+	void				resetDebugData();
 
 	void				printStats();
+
+	CCTDebugData*		debugData;
 protected:
 	ControllerArray*	controllers;
 	NxUserAllocator*	allocator;

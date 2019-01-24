@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXEFFECTORDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -16,7 +16,7 @@
 
 enum NxEffectorType
 	{
-	NX_EFFECTOR_SPRING_AND_DAMPER,
+	NX_EFFECTOR_SPRING_AND_DAMPER
 	};
 
 /**
@@ -26,7 +26,7 @@ enum NxEffectorType
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
 
@@ -49,9 +49,10 @@ class NxEffectorDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	void* userData;
 
@@ -62,9 +63,10 @@ class NxEffectorDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	const char* name;
 
@@ -83,7 +85,11 @@ class NxEffectorDesc
 
 	\return true if the current settings are valid
 	*/
-	virtual NX_INLINE bool isValid() const;
+	virtual NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Retrieves the effector type.
@@ -119,10 +125,10 @@ NX_INLINE void NxEffectorDesc::setToDefault()
 	name = NULL;
 	}
 
-NX_INLINE bool NxEffectorDesc::isValid() const
+NX_INLINE NxU32 NxEffectorDesc::checkValid() const
 	{
 	//nothing
-	return true;	
+	return 0;	
 	}
 NX_INLINE NxEffectorType   NxEffectorDesc::getType()   const   
 	{ 
@@ -133,9 +139,9 @@ NX_INLINE NxEffectorType   NxEffectorDesc::getType()   const
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -1,40 +1,40 @@
 //////////////////////////////////////////////////////////////////////////////
-// Name:        zstream.cpp
+// Name:        src/common/zstream.cpp
 // Purpose:     Compressed stream classes
 // Author:      Guilhem Lavaux
 // Modified by: Mike Wetherell
 // Created:     11/07/98
-// RCS-ID:      $Id: zstream.cpp,v 1.51 2005/05/31 09:19:53 JS Exp $
+// RCS-ID:      $Id: zstream.cpp 42621 2006-10-29 16:47:20Z MW $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "zstream.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_ZLIB && wxUSE_STREAMS
 
 #include "wx/zstream.h"
-#include "wx/utils.h"
-#include "wx/intl.h"
-#include "wx/log.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/utils.h"
+#endif
+
 
 // normally, the compiler options should contain -I../zlib, but it is
 // apparently not the case for all MSW makefiles and so, unless we use
 // configure (which defines __WX_SETUP_H__) or it is explicitly overridden by
 // the user (who can define wxUSE_ZLIB_H_IN_PATH), we hardcode the path here
 #if defined(__WXMSW__) && !defined(__WX_SETUP_H__) && !defined(wxUSE_ZLIB_H_IN_PATH)
-   #include "../zlib/zlib.h"
+    #include "../zlib/zlib.h"
 #else
-   #include "zlib.h"
+    #include "zlib.h"
 #endif
 
 enum {
@@ -43,12 +43,89 @@ enum {
     ZSTREAM_AUTO        = 0x20      // auto detect between gzip and zlib
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+// Zlib Class factory
+
+IMPLEMENT_DYNAMIC_CLASS(wxZlibClassFactory, wxFilterClassFactory)
+
+static wxZlibClassFactory g_wxZlibClassFactory;
+
+wxZlibClassFactory::wxZlibClassFactory()
+{
+    if (this == &g_wxZlibClassFactory)
+        PushFront();
+}
+
+const wxChar * const *
+wxZlibClassFactory::GetProtocols(wxStreamProtocolType type) const
+{
+    static const wxChar *mimes[] = { _T("application/x-deflate"), NULL };
+    static const wxChar *encs[] =  { _T("deflate"), NULL };
+    static const wxChar *empty[] = { NULL };
+
+    switch (type) {
+        case wxSTREAM_MIMETYPE:         return mimes;
+        case wxSTREAM_ENCODING:         return encs;
+        default:                        return empty;
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Gzip Class factory
+
+IMPLEMENT_DYNAMIC_CLASS(wxGzipClassFactory, wxFilterClassFactory)
+
+static wxGzipClassFactory g_wxGzipClassFactory;
+
+wxGzipClassFactory::wxGzipClassFactory()
+{
+    if (this == &g_wxGzipClassFactory && wxZlibInputStream::CanHandleGZip())
+        PushFront();
+}
+
+const wxChar * const *
+wxGzipClassFactory::GetProtocols(wxStreamProtocolType type) const
+{
+    static const wxChar *protos[] =     
+        { _T("gzip"), NULL };
+    static const wxChar *mimes[] =     
+        { _T("application/gzip"), _T("application/x-gzip"), NULL };
+    static const wxChar *encs[] = 
+        { _T("gzip"), NULL };
+    static const wxChar *exts[] =    
+        { _T(".gz"), _T(".gzip"), NULL };
+    static const wxChar *empty[] =
+        { NULL };
+
+    switch (type) {
+        case wxSTREAM_PROTOCOL: return protos;
+        case wxSTREAM_MIMETYPE: return mimes;
+        case wxSTREAM_ENCODING: return encs;
+        case wxSTREAM_FILEEXT:  return exts;
+        default:                return empty;
+    }
+}
+
+
 //////////////////////
 // wxZlibInputStream
 //////////////////////
 
 wxZlibInputStream::wxZlibInputStream(wxInputStream& stream, int flags)
   : wxFilterInputStream(stream)
+{
+    Init(flags);
+}
+
+wxZlibInputStream::wxZlibInputStream(wxInputStream *stream, int flags)
+  : wxFilterInputStream(stream)
+{
+    Init(flags);
+}
+
+void wxZlibInputStream::Init(int flags)
 {
   m_inflate = NULL;
   m_z_buffer = new unsigned char[ZSTREAM_BUFFER_SIZE];
@@ -135,14 +212,17 @@ size_t wxZlibInputStream::OnSysRead(void *buffer, size_t size)
         break;
 
     case Z_STREAM_END:
-      // Unread any data taken from past the end of the deflate stream, so that
-      // any additional data can be read from the underlying stream (the crc
-      // in a gzip for example)
-      if (m_inflate->avail_in) {
-        m_parent_i_stream->Ungetch(m_inflate->next_in, m_inflate->avail_in);
-        m_inflate->avail_in = 0;
+      if (m_inflate->avail_out) {
+        // Unread any data taken from past the end of the deflate stream, so that
+        // any additional data can be read from the underlying stream (the crc
+        // in a gzip for example)
+        if (m_inflate->avail_in) {
+          m_parent_i_stream->Reset();
+          m_parent_i_stream->Ungetch(m_inflate->next_in, m_inflate->avail_in);
+          m_inflate->avail_in = 0;
+        }
+        m_lasterror = wxSTREAM_EOF;
       }
-      m_lasterror = wxSTREAM_EOF;
       break;
 
     case Z_BUF_ERROR:
@@ -189,6 +269,19 @@ wxZlibOutputStream::wxZlibOutputStream(wxOutputStream& stream,
                                        int level,
                                        int flags)
  : wxFilterOutputStream(stream)
+{
+    Init(level, flags);
+}
+
+wxZlibOutputStream::wxZlibOutputStream(wxOutputStream *stream,
+                                       int level,
+                                       int flags)
+ : wxFilterOutputStream(stream)
+{
+    Init(level, flags);
+}
+
+void wxZlibOutputStream::Init(int level, int flags)
 {
   m_deflate = NULL;
   m_z_buffer = new unsigned char[ZSTREAM_BUFFER_SIZE];
@@ -247,7 +340,8 @@ bool wxZlibOutputStream::Close()
   m_deflate = NULL;
    delete[] m_z_buffer;
   m_z_buffer = NULL;
-  return IsOk();
+
+  return wxFilterOutputStream::Close() && IsOk();
  }
 
 void wxZlibOutputStream::DoFlush(bool final)
@@ -284,7 +378,11 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
   wxASSERT_MSG(m_deflate && m_z_buffer, wxT("Deflate stream not open"));
 
   if (!m_deflate || !m_z_buffer)
+  {
+    // notice that this will make IsOk() test just below return false
     m_lasterror = wxSTREAM_WRITE_ERROR;
+  }
+
   if (!IsOk() || !size)
     return 0;
 
@@ -328,4 +426,3 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
 
 #endif
   // wxUSE_ZLIB && wxUSE_STREAMS
-

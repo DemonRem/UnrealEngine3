@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by: VZ at 25.02.00: type safe hashes with WX_DECLARE_HASH()
 // Created:     01/02/97
-// RCS-ID:      $Id: hash.h,v 1.42 2005/06/08 15:17:42 ABX Exp $
+// RCS-ID:      $Id: hash.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_HASH_H__
 #define _WX_HASH_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "hash.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -113,12 +109,12 @@ union wxHashKeyValue
 
 // for some compilers (AIX xlC), defining it as friend inside the class is not
 // enough, so provide a real forward declaration
-class WXDLLIMPEXP_BASE wxHashTableBase;
+class WXDLLIMPEXP_FWD_BASE wxHashTableBase;
 
 class WXDLLIMPEXP_BASE wxHashTableBase_Node
 {
-    friend class WXDLLIMPEXP_BASE wxHashTableBase;
-    typedef class WXDLLIMPEXP_BASE wxHashTableBase_Node _Node;
+    friend class WXDLLIMPEXP_FWD_BASE wxHashTableBase;
+    typedef class WXDLLIMPEXP_FWD_BASE wxHashTableBase_Node _Node;
 public:
     wxHashTableBase_Node( long key, void* value,
                           wxHashTableBase* table );
@@ -158,12 +154,12 @@ class WXDLLIMPEXP_BASE wxHashTableBase
     : public wxObject
 #endif
 {
-    friend class WXDLLIMPEXP_BASE wxHashTableBase_Node;
+    friend class WXDLLIMPEXP_FWD_BASE wxHashTableBase_Node;
 public:
     typedef wxHashTableBase_Node Node;
 
     wxHashTableBase();
-    virtual ~wxHashTableBase() { };
+    virtual ~wxHashTableBase() { }
 
     void Create( wxKeyType keyType = wxKEY_INTEGER,
                  size_t size = wxHASH_SIZE_DEFAULT );
@@ -316,7 +312,7 @@ private:
 
 class WXDLLIMPEXP_BASE wxHashTable_Node : public wxHashTableBase_Node
 {
-    friend class WXDLLIMPEXP_BASE wxHashTable;
+    friend class WXDLLIMPEXP_FWD_BASE wxHashTable;
 public:
     wxHashTable_Node( long key, void* value,
                       wxHashTableBase* table )
@@ -397,8 +393,6 @@ public:
 
     size_t GetCount() const { return wxHashTableBase::GetCount(); }
 protected:
-    virtual void DoDeleteContents( wxHashTableBase_Node* node );
-
     // copy helper
     void DoCopy( const wxHashTable& copy );
 
@@ -406,6 +400,8 @@ protected:
     // m_curr to it and m_currBucket to its bucket
     void GetNextNode( size_t bucketStart );
 private:
+    virtual void DoDeleteContents( wxHashTableBase_Node* node );
+
     // current node
     Node* m_curr;
 
@@ -430,7 +426,7 @@ public:
 
     wxHashTable(int the_key_type = wxKEY_INTEGER,
                 int size = wxHASH_SIZE_DEFAULT);
-    ~wxHashTable();
+    virtual ~wxHashTable();
 
     // copy ctor and assignment operator
     wxHashTable(const wxHashTable& table) : wxObject()
@@ -529,7 +525,7 @@ private:
         eltype *Delete(long key) { return (eltype*)DoDelete(key, key); }      \
         eltype *Delete(long lhash, long key)                                  \
             { return (eltype*)DoDelete(key, lhash); }                         \
-    protected:                                                                \
+    private:                                                                  \
         virtual void DoDeleteContents( wxHashTableBase_Node* node )           \
             { delete (eltype*)node->GetData(); }                              \
                                                                               \
@@ -546,7 +542,7 @@ private:
                   size_t size = wxHASH_SIZE_DEFAULT)                           \
             { Create(keyType, size); }                                         \
                                                                                \
-        ~hashclass() { Destroy(); }                                            \
+        virtual ~hashclass() { Destroy(); }                                            \
                                                                                \
         void Put(long key, long val, eltype *data) { DoPut(key, val, data); }  \
         void Put(long key, eltype *data) { DoPut(key, key, data); }            \

@@ -5,17 +5,13 @@
 // Modified by:
 //  Chris Elliott (biol75@york.ac.uk) 5 Dec 00: write support for Win32
 // Created:     23.09.98
-// RCS-ID:      $Id: mimetype.h,v 1.38 2005/05/31 09:18:16 JS Exp $
+// RCS-ID:      $Id: mimetype.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence (part of wxExtra library)
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MIMETYPE_H_
 #define _WX_MIMETYPE_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "mimetypebase.h"
-#endif // __GNUG__
 
 // ----------------------------------------------------------------------------
 // headers and such
@@ -28,11 +24,12 @@
 // the things we really need
 #include "wx/string.h"
 #include "wx/dynarray.h"
+#include "wx/arrstr.h"
 
 // fwd decls
-class WXDLLIMPEXP_BASE wxIconLocation;
-class WXDLLIMPEXP_BASE wxFileTypeImpl;
-class WXDLLIMPEXP_BASE wxMimeTypesManagerImpl;
+class WXDLLIMPEXP_FWD_BASE wxIconLocation;
+class WXDLLIMPEXP_FWD_BASE wxFileTypeImpl;
+class WXDLLIMPEXP_FWD_BASE wxMimeTypesManagerImpl;
 
 // these constants define the MIME informations source under UNIX and are used
 // by wxMimeTypesManager::Initialize()
@@ -69,6 +66,47 @@ public:
 };
 
 */
+
+// wxMimeTypeCommands stores the verbs defined for the given MIME type with
+// their values
+class WXDLLIMPEXP_BASE wxMimeTypeCommands
+{
+public:
+    wxMimeTypeCommands() {}
+
+    wxMimeTypeCommands(const wxArrayString& verbs,
+                       const wxArrayString& commands)
+        : m_verbs(verbs),
+          m_commands(commands)
+    {
+    }
+
+    // add a new verb with the command or replace the old value
+    void AddOrReplaceVerb(const wxString& verb, const wxString& cmd);
+    void Add(const wxString& s)
+    {
+        m_verbs.Add(s.BeforeFirst(wxT('=')));
+        m_commands.Add(s.AfterFirst(wxT('=')));
+    }
+
+    // access the commands
+    size_t GetCount() const { return m_verbs.GetCount(); }
+    const wxString& GetVerb(size_t n) const { return m_verbs[n]; }
+    const wxString& GetCmd(size_t n) const { return m_commands[n]; }
+
+    bool HasVerb(const wxString& verb) const
+        { return m_verbs.Index(verb) != wxNOT_FOUND; }
+
+    // returns empty string and wxNOT_FOUND in idx if no such verb
+    wxString GetCommandForVerb(const wxString& verb, size_t *idx = NULL) const;
+
+    // get a "verb=command" string
+    wxString GetVerbCmd(size_t n) const;
+
+private:
+    wxArrayString m_verbs;
+    wxArrayString m_commands;
+};
 
 // ----------------------------------------------------------------------------
 // wxFileTypeInfo: static container of information accessed via wxFileType.
@@ -123,7 +161,7 @@ public:
     const wxString& GetDescription() const { return m_desc; }
         // get the array of all extensions
     const wxArrayString& GetExtensions() const { return m_exts; }
-    int GetExtensionsCount() const {return m_exts.GetCount(); }
+    size_t GetExtensionsCount() const {return m_exts.GetCount(); }
         // get the icon info
     const wxString& GetIconFile() const { return m_iconFile; }
     int GetIconIndex() const { return m_iconIndex; }
@@ -165,7 +203,7 @@ WX_DECLARE_USER_EXPORTED_OBJARRAY(wxFileTypeInfo, wxArrayFileTypeInfo,
 
 class WXDLLIMPEXP_BASE wxFileType
 {
-friend class WXDLLIMPEXP_BASE wxMimeTypesManagerImpl;  // it has access to m_impl
+friend class WXDLLIMPEXP_FWD_BASE wxMimeTypesManagerImpl;  // it has access to m_impl
 
 public:
     // An object of this class must be passed to Get{Open|Print}Command. The
@@ -271,6 +309,25 @@ private:
     // the object which implements the real stuff like reading and writing
     // to/from system MIME database
     wxFileTypeImpl *m_impl;
+};
+
+//----------------------------------------------------------------------------
+// wxMimeTypesManagerFactory
+//----------------------------------------------------------------------------
+
+class WXDLLIMPEXP_BASE wxMimeTypesManagerFactory
+{
+public:
+    wxMimeTypesManagerFactory() {}
+    virtual ~wxMimeTypesManagerFactory() {}
+
+    virtual wxMimeTypesManagerImpl *CreateMimeTypesManagerImpl();
+
+    static void Set( wxMimeTypesManagerFactory *factory );
+    static wxMimeTypesManagerFactory *Get();
+    
+private:
+    static wxMimeTypesManagerFactory *m_factory;
 };
 
 // ----------------------------------------------------------------------------

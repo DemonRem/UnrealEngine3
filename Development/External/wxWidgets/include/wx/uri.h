@@ -4,17 +4,13 @@
 // Author:      Ryan Norton
 // Modified By:
 // Created:     07/01/2004
-// RCS-ID:      $Id: uri.h,v 1.12 2005/05/04 18:52:05 JS Exp $
+// RCS-ID:      $Id: uri.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Ryan Norton
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_URI_H_
 #define _WX_URI_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "uri.h"
-#endif
 
 #include "wx/defs.h"
 #include "wx/object.h"

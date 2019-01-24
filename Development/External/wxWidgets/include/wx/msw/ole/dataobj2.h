@@ -5,7 +5,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     21.10.99
-// RCS-ID:      $Id: dataobj2.h,v 1.10 2004/05/23 20:51:35 JS Exp $
+// RCS-ID:      $Id: dataobj2.h 40772 2006-08-23 13:38:45Z VZ $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,8 @@ private:
 class WXDLLEXPORT wxURLDataObject : public wxDataObjectComposite
 {
 public:
-    wxURLDataObject();
+    // initialize with URL in ctor or use SetURL later
+    wxURLDataObject(const wxString& url = wxEmptyString);
 
     // return the URL as string
     wxString GetURL() const;

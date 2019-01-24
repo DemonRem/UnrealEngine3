@@ -6,7 +6,7 @@
 // Created:     19991127
 // Copyright:   (c) Mark Johnson
 // Licence:     wxWindows license
-// RCS-ID:      $Id: dbbrowse.h,v 1.11 2005/01/31 18:09:45 ABX Exp $
+// RCS-ID:      $Id: dbbrowse.h 41020 2006-09-05 20:47:48Z VZ $
 //----------------------------------------------------------------------------------------
 // Define a new frame type
 //----------------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ class MainFrame: public wxFrame
 {
 public:
     MainFrame(wxFrame *frame, wxChar *title,  const wxPoint& pos, const wxSize& size);
-    ~MainFrame(void);
+    virtual ~MainFrame(void);
 
 public:
     // menu callbacks

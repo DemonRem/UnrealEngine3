@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXSCENEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -16,9 +16,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxSceneDesc
 */
@@ -65,8 +66,9 @@ enum NxSimulationType
 	You need to define "maxBounds", "subdivisionLevel" and "upAxis" to use this structure.
 
 	NX_PRUNING_DYNAMIC_AABB_TREE usually provides the fastest queries. However there is a
-	constant per-frame management cost associated with this structure. You do not need to define
-	extra parameters to use it.
+	constant per-frame management cost associated with this structure. You have the option to
+	give a hint on how much work should be done per frame by setting the parameter
+	#NxSceneDesc::dynamicTreeRebuildRateHint.
 
 	NX_PRUNING_STATIC_AABB_TREE is typically used for static objects. It is the same as the
 	dynamic AABB tree, without the per-frame overhead. This is the default choice for static
@@ -79,8 +81,54 @@ enum NxPruningStructure
 	NX_PRUNING_OCTREE,				//!< Using a preallocated loose octree
 	NX_PRUNING_QUADTREE,			//!< Using a preallocated loose quadtree
 	NX_PRUNING_DYNAMIC_AABB_TREE,	//!< Using a dynamic AABB tree
-	NX_PRUNING_STATIC_AABB_TREE,	//!< Using a static AABB tree
+	NX_PRUNING_STATIC_AABB_TREE	//!< Using a static AABB tree
 	};
+
+/**
+\brief Selects a broadphase type.
+*/
+enum NxBroadPhaseType
+{
+	/**
+	\brief A sweep-and-prune (SAP) algorithm to find pairs of potentially colliding shapes.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+    NX_BP_TYPE_SAP_SINGLE,
+
+	/**
+	\brief A multi sweep-and-prune algorithm to find pairs of potentially colliding shapes.
+	
+	Uses a configurable 2D grid to divide the scene space into cells. The potentially overlapping 
+	shape pairs are detected in each cell and the information is merged together. This approach
+	is usually faster than NX_BP_TYPE_SAP_SINGLE in scenarios with many shapes and a high creation/deletion
+	rate of shapes. However, the amount of memory required is considerably higher depending on the
+	number of grid cells used.
+
+	\note The following extra parameters need to be defined:
+	\li NxSceneDesc.maxBounds
+	\li NxSceneDesc.upAxis
+	\li NxSceneDesc.nbGridCellsX
+	\li NxSceneDesc.nbGridCellsY
+
+	\n
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.bpType
+	*/
+    NX_BP_TYPE_SAP_MULTI,
+};
 
 enum NxSceneFlags
 	{
@@ -93,7 +141,7 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : N/A
+	\li GPU  : N/A
 	\li PS3  : N/A
 	\li XB360: N/A
 	*/
@@ -104,9 +152,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NX_AF_DISABLE_COLLISION, NX_SF_DISABLE_COLLISION
 	*/
@@ -124,9 +173,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : No
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.simulate()
 	*/
@@ -147,9 +197,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneDesc NX_SF_SIMULATE_SEPARATE_THREAD
 	*/
@@ -169,9 +220,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SF_ENABLE_ACTIVETRANSFORMS	=0x10,
 
@@ -187,9 +239,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: No
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
+	\li WII	 : No
 	*/
 	NX_SF_RESTRICTED_SCENE				=0x20,
 
@@ -208,9 +261,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SF_DISABLE_SCENE_MUTEX			=0x40,
 
@@ -230,9 +284,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (always active)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SF_FORCE_CONE_FRICTION			=0x80,
 
@@ -245,9 +300,10 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: No
+	\li WII	 : No
 	*/
 	NX_SF_SEQUENTIAL_PRIMARY			=0x80*2,
 
@@ -262,16 +318,45 @@ enum NxSceneFlags
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NX_SF_FLUID_PERFORMANCE_HINT		=0x80*4,
+
+	/**
+	\brief Enables an alternative fluid triangle-mesh collision CUDA kernel which could be signicantly faster in some scenarios.
+
+	<b>Default:</b> False
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
 	*/
-	NX_SF_FLUID_PERFORMANCE_HINT		=0x80*4,
+	NX_SF_ALTERNATIVE_FLUID_TRIANGLE_COLLISION		=0x80*8,
+
+	/**
+	\brief Enables multi-threaded version of force field for fluids.
+
+	<b>Default:</b> False
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : No
+	\li XB360: No
+	*/
+	NX_SF_MULTITHREADED_FORCEFIELD	= 0x80*16
 	
 	};
 
 class NxUserNotify;
 class NxFluidUserNotify;
+class NxClothUserNotify;
+class NxSoftBodyUserNotify;
 class NxUserContactModify;
 class NxUserTriggerReport;
 class NxUserContactReport;
@@ -284,11 +369,15 @@ class NxUserScheduler;
 are used as a hint to the size of the scene, not as a hard limit (i.e. it will be possible
 to create more objects than specified in the scene limits).
 
+The scene limit is used to pre-allocate memory. Specifying values larger than the number
+of required objects will waste memory, or allocation might even fail.
+
 <b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 */
 class NxSceneLimits
 	{
@@ -329,9 +418,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.setGravity()
 	*/
@@ -344,9 +434,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserNotify NxScene.setUserNotify() NxScene.getUserNotify()
 	*/
@@ -358,8 +449,8 @@ class NxSceneDesc
 	<b>Default:</b> NULL
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes
+	\li PC SW: No
+	\li GPU  : No
 	\li PS3  : No
 	\li XB360: No
 
@@ -368,15 +459,48 @@ class NxSceneDesc
 	NxFluidUserNotify*		fluidUserNotify;
 
 	/**
+	\brief Possible notification callback for cloths
+
+	<b>Default:</b> NULL
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothUserNotify NxScene.setClothUserNotify() NxScene.getClothUserNotify()
+	*/
+	NxClothUserNotify*		clothUserNotify;
+
+	/**
+	\brief Possible notification callback for softBodys
+
+	<b>Default:</b> NULL
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxSoftBodyUserNotify NxScene.setSoftBodyUserNotify() NxScene.getSoftBodyUserNotify()
+	*/
+	NxSoftBodyUserNotify*	softBodyUserNotify;
+
+	/**
 	\brief Possible asynchronous callback for contact modification
 
 	<b>Default:</b> NULL
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserContactModify NxScene.setUserContactModify() NxScene.getUserContactModify()
 	*/
@@ -389,9 +513,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserTriggerReport NxScene.setUserTriggerReport() NxScene.getUserTriggerReport()
 	*/
@@ -404,9 +529,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxUserContactReport NxScene.setUserContactReport() NxScene.getUserContactReport()
 	*/
@@ -425,9 +551,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.setTiming() maxIter
 	*/
@@ -440,9 +567,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.setTiming() maxTimestep
 	*/
@@ -455,9 +583,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTimeStepMethod NxScene.setTiming() maxTimestep maxIter
 	*/
@@ -478,9 +607,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxBounds3*				maxBounds;
 
@@ -491,9 +621,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneLimits
 	*/
@@ -506,9 +637,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSimulationType
 	*/
@@ -519,9 +651,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	<b>Default:</b> false
 	*/
@@ -534,9 +667,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see maxBounds
 	*/
@@ -549,9 +683,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial
-	\li PS3  : Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes (however, default value is NX_SF_SIMULATE_SEPARATE_THREAD)
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSceneFlags
 	*/
@@ -568,9 +703,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScheduler NX_SF_ENABLE_MULTITHREAD internalThreadCount
 	*/
@@ -587,15 +723,16 @@ class NxSceneDesc
 	Specifying a value of zero will cause the SDK to choose a platform specific default value:
 
 	\li PC SW - OS default
-	\li PPU - OS default
+	\li GPU - OS default
 	\li PS3 - 256k
 	\li XBox 360 - OS default
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32					simThreadStackSize;
 	
@@ -606,9 +743,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
-	\li XB360: Yes
+	\li XB360: No
+	\li WII	 : Yes
 	*/
 	NxThreadPriority		simThreadPriority;
 
@@ -627,9 +765,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32					simThreadMask;
 
@@ -647,9 +786,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see customScheduler
 	*/
@@ -667,14 +807,15 @@ class NxSceneDesc
 
 	
 	\li PC SW - OS default
-	\li PPU - OS default
+	\li GPU - OS default
 	\li XBox 360 - OS default
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32					workerThreadStackSize;
 
@@ -683,13 +824,11 @@ class NxSceneDesc
 
 	The default is normal priority.
 
-	\note Background worker threads are always assigned low priority.
-
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
-	\li XB360: Yes
+	\li XB360: No
 	*/
 	NxThreadPriority		workerThreadPriority;
 
@@ -708,30 +847,47 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32					threadMask;
 
 	/**
 	\brief Sets the number of SDK managed threads which will be processing background tasks.
 
-	For example the SDK may need to preprocess data to be sent to the PhysX card.
+	For example scene queries can run on these threads or the SDK may need to preprocess data to be sent to the 
+	PhysX card.
 
-	This member is ignored if the application takes over control of the work allocation with a custom scheduler.
+	This member must be set to 0 if the application takes over control of the work allocation with a custom scheduler.
 
 	<b>Default:</b> 0
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see customScheduler
 	*/
 	NxU32					backgroundThreadCount;
+
+	/**
+	\brief Sets the thread priority of the SDK created background threads
+
+	The default is normal priority.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : Yes
+	*/
+	NxThreadPriority		backgroundThreadPriority;
 
 	/**
 	\brief Allows the user to specify which (logical) processor to allocate SDK background threads.
@@ -748,9 +904,10 @@ class NxSceneDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxU32					backgroundThreadMask;
 
@@ -788,17 +945,110 @@ class NxSceneDesc
 	NxPruningStructure		dynamicStructure;
 
 	/**
+	\brief Hint for how much work should be done per simulation frame to rebuild the pruning structure.
+
+	This parameter gives a hint on the distribution of the workload for rebuilding the dynamic AABB tree
+	pruning structure #NX_PRUNING_DYNAMIC_AABB_TREE. It specifies the desired number of simulation frames
+	the rebuild process should take. Higher values will decrease the workload per frame but the pruning
+	structure will get more and more outdated the longer the rebuild takes (which can make
+	scene queries less efficient).
+
+	\note Only used for #NX_PRUNING_DYNAMIC_AABB_TREE pruning structure.
+
+	\note This parameter gives only a hint. The rebuild process might still take more or less time depending on the
+	      number of objects involved.
+
+	<b>Range:</b> [5, inf]<br>
+	<b>Default:</b> 100
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU: Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NxU32					dynamicTreeRebuildRateHint;
+
+	/**
 	\brief Will be copied to NxScene::userData
 
 	<b>Default:</b> NULL
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	void*					userData;
+
+	/**
+	\brief Defines which type of broadphase to use.
+
+	<b>Default:</b> NX_BP_TYPE_SAP_SINGLE
+
+	@see NxBroadPhaseType
+	*/
+	NxBroadPhaseType		bpType;
+
+	/**
+	\brief Defines the number of broadphase cells along the grid x-axis.
+
+	\note Must be power of two. Max is 8 at the moment. The broadphase type must be set to NX_BP_TYPE_SAP_MULTI 
+	for this parameter to have an effect.
+
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.bpType
+	*/
+	NxU32					nbGridCellsX;
+
+	/**
+	\brief Defines the number of broadphase cells along the grid y-axis.
+
+	\note Must be power of two. Max is 8 at the moment. The broadphase type must be set to NX_BP_TYPE_SAP_MULTI 
+	for this parameter to have an effect.
+
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSceneDesc.bpType
+	*/
+	NxU32					nbGridCellsY;
+
+	/**
+	\brief Defines the number of actors required to spawn a separate rigid body solver thread.
+
+	\note Internal multi threading must be enabled (see #NX_SF_ENABLE_MULTITHREAD) for this member to have
+	any effect.
+
+	<b>Default:</b> 32
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Not applicable
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxScene.setSolverBatchSize() NxScene.getSolverBatchSize()
+	*/
+	NxU32					solverBatchSize;
 
 	/**
 	\brief constructor sets to default (no gravity, no ground plane, collision detection on).
@@ -814,7 +1064,11 @@ class NxSceneDesc
 	\brief Returns true if the descriptor is valid.
 	\return true if the current settings are valid (returns always true).
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxSceneDesc::NxSceneDesc()	//constructor sets to default
@@ -827,6 +1081,8 @@ NX_INLINE void NxSceneDesc::setToDefault()
 	gravity.zero();
 	userNotify				= NULL;
 	fluidUserNotify			= NULL;
+	clothUserNotify			= NULL;
+	softBodyUserNotify		= NULL;
 	userTriggerReport		= NULL;
 	userContactReport		= NULL;
 	userContactModify		= NULL;
@@ -842,12 +1098,16 @@ NX_INLINE void NxSceneDesc::setToDefault()
 	groundPlane				= false;
 	boundsPlanes			= false;
 	userData				= NULL;
+#ifdef __CELLOS_LV2__
+	flags				= NX_SF_SIMULATE_SEPARATE_THREAD | NX_SF_SEQUENTIAL_PRIMARY;
+#else
 	flags					= NX_SF_SIMULATE_SEPARATE_THREAD | NX_SF_DISABLE_SCENE_MUTEX;
-
+#endif
 	upAxis					= 0;
 	subdivisionLevel		= 5;
 	staticStructure			= NX_PRUNING_STATIC_AABB_TREE;
 	dynamicStructure		= NX_PRUNING_NONE;
+	dynamicTreeRebuildRateHint = 100;
 
 	internalThreadCount		= 0;
 	backgroundThreadCount	= 0;
@@ -858,48 +1118,69 @@ NX_INLINE void NxSceneDesc::setToDefault()
 
 	workerThreadStackSize	= 0;
 	workerThreadPriority	= NX_TP_NORMAL;
-
+	backgroundThreadPriority= NX_TP_NORMAL;
 
 	simThreadMask			= 0;
 	threadMask				= 0;
 	backgroundThreadMask	= 0;
+
+	bpType					= NX_BP_TYPE_SAP_SINGLE;
+	nbGridCellsX			= 0;
+	nbGridCellsY			= 0;
+
+	solverBatchSize			= 32;
 	}
 
-NX_INLINE bool NxSceneDesc::isValid() const
+NX_INLINE bool NxIsPowerOfTwo(NxU32 n)	{ return ((n&(n-1))==0);	}
+
+NX_INLINE NxU32 NxSceneDesc::checkValid() const
 	{
+	if(bpType==NX_BP_TYPE_SAP_MULTI)
+		{
+		if(!nbGridCellsX || !NxIsPowerOfTwo(nbGridCellsX) || nbGridCellsX>8)
+			return 1;
+		if(!nbGridCellsY || !NxIsPowerOfTwo(nbGridCellsY) || nbGridCellsY>8)
+			return 2;
+		if(!maxBounds)
+			return 3;
+		}
+
 	if(maxTimestep <= 0 || maxIter < 1 || timeStepMethod > NX_NUM_TIMESTEP_METHODS)
-		return false;
+		return 4;
 	if(boundsPlanes && !maxBounds)
-		return false;
+		return 5;
 
 	if(staticStructure!=NX_PRUNING_STATIC_AABB_TREE && staticStructure!=NX_PRUNING_DYNAMIC_AABB_TREE)
-		return false;
+		return 6;
 
 	if(dynamicStructure==NX_PRUNING_OCTREE || dynamicStructure==NX_PRUNING_QUADTREE)
 		{
 		if(!maxBounds)
-			return false;
+			return 7;
 		if(dynamicStructure==NX_PRUNING_QUADTREE)
 			{
 			if(upAxis!=1 && upAxis!=2)
-				return false;
+				return 8;
 			}
 		}
 
+	if (dynamicTreeRebuildRateHint < 5)
+		return 9;
+
 	if((customScheduler!=NULL)&&(internalThreadCount>0))
-		return false;
+		return 10;
 
 	if((customScheduler!=NULL)&&(backgroundThreadCount>0))
-		return false;
+		return 11;
 
-	return true;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

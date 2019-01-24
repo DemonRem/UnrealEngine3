@@ -1,18 +1,14 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        filesys.h
+// Name:        wx/filesys.h
 // Purpose:     class for opening files - virtual file system
 // Author:      Vaclav Slavik
 // Copyright:   (c) 1999 Vaclav Slavik
-// RCS-ID:      $Id: filesys.h,v 1.30 2005/04/08 14:33:56 MW Exp $
+// RCS-ID:      $Id: filesys.h 53135 2008-04-12 02:31:04Z VZ $
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __FILESYS_H__
 #define __FILESYS_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "filesys.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -29,10 +25,11 @@
 #include "wx/stream.h"
 #include "wx/datetime.h"
 #include "wx/filename.h"
+#include "wx/hashmap.h"
 
-class WXDLLIMPEXP_BASE wxFSFile;
-class WXDLLIMPEXP_BASE wxFileSystemHandler;
-class WXDLLIMPEXP_BASE wxFileSystem;
+class WXDLLIMPEXP_FWD_BASE wxFSFile;
+class WXDLLIMPEXP_FWD_BASE wxFileSystemHandler;
+class WXDLLIMPEXP_FWD_BASE wxFileSystem;
 
 //--------------------------------------------------------------------------------
 // wxFSFile
@@ -60,22 +57,36 @@ public:
 #endif // wxUSE_DATETIME
     }
 
-    virtual ~wxFSFile() { if (m_Stream) delete m_Stream; }
+    virtual ~wxFSFile() { delete m_Stream; }
 
-    // returns stream. This doesn't _create_ stream, it only returns
-    // pointer to it.
-    wxInputStream *GetStream() const {return m_Stream;}
+    // returns stream. This doesn't give away ownership of the stream object.
+    wxInputStream *GetStream() const { return m_Stream; }
+
+    // gives away the ownership of the current stream.
+    wxInputStream *DetachStream()
+    {
+        wxInputStream *stream = m_Stream;
+        m_Stream = NULL;
+        return stream;
+    }
+
+    // deletes the current stream and takes ownership of another.
+    void SetStream(wxInputStream *stream)
+    {
+        delete m_Stream;
+        m_Stream = stream;
+    }
 
     // returns file's mime type
-    const wxString& GetMimeType() const {return m_MimeType;}
+    const wxString& GetMimeType() const { return m_MimeType; }
 
     // returns the original location (aka filename) of the file
-    const wxString& GetLocation() const {return m_Location;}
+    const wxString& GetLocation() const { return m_Location; }
 
-    const wxString& GetAnchor() const {return m_Anchor;}
+    const wxString& GetAnchor() const { return m_Anchor; }
 
 #if wxUSE_DATETIME
-    wxDateTime GetModificationTime() const {return m_Modif;}
+    wxDateTime GetModificationTime() const { return m_Modif; }
 #endif // wxUSE_DATETIME
 
 private:
@@ -156,11 +167,19 @@ protected:
 //                  kinds of files (HTPP, FTP, local, tar.gz etc..)
 //--------------------------------------------------------------------------------
 
+// Open Bit Flags
+enum {
+    wxFS_READ = 1,      // Open for reading
+    wxFS_SEEKABLE = 4   // Returned stream will be seekable
+};
+
+WX_DECLARE_VOIDPTR_HASH_MAP_WITH_DECL(wxFileSystemHandler*, wxFSHandlerHash, class WXDLLIMPEXP_BASE);
+
 class WXDLLIMPEXP_BASE wxFileSystem : public wxObject
 {
 public:
     wxFileSystem() : wxObject() { m_FindFileHandler = NULL;}
-    virtual ~wxFileSystem() { }
+    virtual ~wxFileSystem();
 
     // sets the current location. Every call to OpenFile is
     // relative to this location.
@@ -177,7 +196,7 @@ public:
     // It first tries to open the file in relative scope
     // (based on ChangePathTo()'s value) and then as an absolute
     // path.
-    wxFSFile* OpenFile(const wxString& location);
+    wxFSFile* OpenFile(const wxString& location, int flags = wxFS_READ);
 
     // Finds first/next file that matches spec wildcard. flags can be wxDIR for restricting
     // the query to directories or wxFILE for files only or 0 for either.
@@ -185,9 +204,18 @@ public:
     wxString FindFirst(const wxString& spec, int flags = 0);
     wxString FindNext();
 
+    // find a file in a list of directories, returns false if not found
+    bool FindFileInPath(wxString *pStr, const wxChar *path, const wxChar *file);
+
     // Adds FS handler.
     // In fact, this class is only front-end to the FS handlers :-)
     static void AddHandler(wxFileSystemHandler *handler);
+
+    // Removes FS handler
+    static wxFileSystemHandler* RemoveHandler(wxFileSystemHandler *handler);
+
+    // Returns true if there is a handler which can open the given location.
+    static bool HasHandlerForPath(const wxString& location);
 
     // remove all items from the m_Handlers list
     static void CleanUpHandlers();
@@ -200,6 +228,8 @@ public:
 
 
 protected:
+    wxFileSystemHandler *MakeLocal(wxFileSystemHandler *h);
+
     wxString m_Path;
             // the path (location) we are currently in
             // this is path, not file!
@@ -211,6 +241,8 @@ protected:
             // list of FS handlers
     wxFileSystemHandler *m_FindFileHandler;
             // handler that succeed in FindFirst query
+    wxFSHandlerHash m_LocalHandlers;
+            // Handlers local to this instance
 
     DECLARE_DYNAMIC_CLASS(wxFileSystem)
     DECLARE_NO_COPY_CLASS(wxFileSystem)

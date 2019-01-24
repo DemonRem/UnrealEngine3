@@ -4,46 +4,37 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     27.07.98
-// RCS-ID:      $Id: iniconf.cpp,v 1.32 2004/08/27 18:59:37 ABX Exp $
+// RCS-ID:      $Id: iniconf.cpp 41054 2006-09-07 19:01:45Z ABX $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "iniconf.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
-
-#ifndef   WX_PRECOMP
-  #include  "wx/string.h"
-  #include  "wx/intl.h"
-  #include  "wx/event.h"
-  #include  "wx/app.h"
-  #include  "wx/utils.h"
-#endif  //WX_PRECOMP
 
 // Doesn't yet compile in Unicode mode
 
 #if wxUSE_CONFIG && !wxUSE_UNICODE
 
-#include  "wx/dynarray.h"
-#include  "wx/log.h"
+#ifndef   WX_PRECOMP
+    #include "wx/msw/wrapwin.h"
+    #include "wx/dynarray.h"
+    #include "wx/string.h"
+    #include "wx/intl.h"
+    #include "wx/event.h"
+    #include "wx/app.h"
+    #include "wx/utils.h"
+    #include "wx/log.h"
+#endif  //WX_PRECOMP
+
 #include  "wx/config.h"
 #include  "wx/file.h"
 
 #include  "wx/msw/iniconf.h"
-
-// _WINDOWS_ is defined when windows.h is included,
-// __WXMSW__ is defined for MS Windows compilation
-#if       defined(__WXMSW__) && !defined(_WINDOWS_)
-  #include  "wx/msw/wrapwin.h"
-#endif  //windows.h
 
 // ----------------------------------------------------------------------------
 // constants
@@ -68,21 +59,21 @@ wxIniConfig::wxIniConfig(const wxString& strAppName,
            : wxConfigBase(strAppName, strVendor, localFilename, globalFilename, style)
 
 #if 0 // This is too complex for some compilers, e.g. BC++ 5.01
-           : wxConfigBase((strAppName.IsEmpty() && wxTheApp) ? wxTheApp->GetAppName()
+           : wxConfigBase((strAppName.empty() && wxTheApp) ? wxTheApp->GetAppName()
                                                : strAppName,
-                          strVendor.IsEmpty() ? (wxTheApp ? wxTheApp->GetVendorName()
+                          strVendor.empty() ? (wxTheApp ? wxTheApp->GetVendorName()
                                                   : strAppName)
                                       : strVendor,
                           localFilename, globalFilename, style)
 #endif
 {
-    if (strAppName.IsEmpty() && wxTheApp)
+    if (strAppName.empty() && wxTheApp)
         SetAppName(wxTheApp->GetAppName());
-    if (strVendor.IsEmpty() && wxTheApp)
+    if (strVendor.empty() && wxTheApp)
         SetVendorName(wxTheApp->GetVendorName());
 
     m_strLocalFilename = localFilename;
-    if (m_strLocalFilename.IsEmpty())
+    if (m_strLocalFilename.empty())
     {
         m_strLocalFilename = GetAppName() + wxT(".ini");
     }
@@ -111,7 +102,7 @@ void wxIniConfig::SetPath(const wxString& strPath)
 {
   wxArrayString aParts;
 
-  if ( strPath.IsEmpty() ) {
+  if ( strPath.empty() ) {
     // nothing
   }
   else if ( strPath[0u] == wxCONFIG_PATH_SEPARATOR ) {
@@ -143,7 +134,7 @@ void wxIniConfig::SetPath(const wxString& strPath)
 
   // other functions assume that all this is true, i.e. there are no trailing
   // underscores at the end except if the group is the root one
-  wxASSERT( (m_strPath.IsEmpty() || m_strPath.Last() != PATH_SEP_REPLACE) &&
+  wxASSERT( (m_strPath.empty() || m_strPath.Last() != PATH_SEP_REPLACE) &&
             (m_strGroup == wxString(PATH_SEP_REPLACE) ||
              m_strGroup.Last() != PATH_SEP_REPLACE) );
 }
@@ -160,7 +151,7 @@ const wxString& wxIniConfig::GetPath() const
   }
   else {
     s_str << m_strGroup;
-    if ( !m_strPath.IsEmpty() )
+    if ( !m_strPath.empty() )
       s_str << wxCONFIG_PATH_SEPARATOR;
     for ( const char *p = m_strPath; *p != '\0'; p++ ) {
       s_str << (*p == PATH_SEP_REPLACE ? wxCONFIG_PATH_SEPARATOR : *p);
@@ -174,7 +165,7 @@ wxString wxIniConfig::GetPrivateKeyName(const wxString& szKey) const
 {
   wxString strKey;
 
-  if ( !m_strPath.IsEmpty() )
+  if ( !m_strPath.empty() )
     strKey << m_strPath << PATH_SEP_REPLACE;
 
   strKey << szKey;
@@ -188,7 +179,7 @@ wxString wxIniConfig::GetKeyName(const wxString& szKey) const
 
   if ( m_strGroup != wxString(PATH_SEP_REPLACE) )
     strKey << m_strGroup << PATH_SEP_REPLACE;
-  if ( !m_strPath.IsEmpty() )
+  if ( !m_strPath.empty() )
     strKey << m_strPath << PATH_SEP_REPLACE;
 
   strKey << szKey;
@@ -203,30 +194,30 @@ wxString wxIniConfig::GetKeyName(const wxString& szKey) const
 // not implemented
 bool wxIniConfig::GetFirstGroup(wxString& WXUNUSED(str), long& WXUNUSED(lIndex)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return false;
+    return false;
 }
 
 bool wxIniConfig::GetNextGroup (wxString& WXUNUSED(str), long& WXUNUSED(lIndex)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return false;
+    return false;
 }
 
 bool wxIniConfig::GetFirstEntry(wxString& WXUNUSED(str), long& WXUNUSED(lIndex)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return false;
+    return false;
 }
 
 bool wxIniConfig::GetNextEntry (wxString& WXUNUSED(str), long& WXUNUSED(lIndex)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return false;
+    return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -236,47 +227,47 @@ bool wxIniConfig::GetNextEntry (wxString& WXUNUSED(str), long& WXUNUSED(lIndex))
 // not implemented
 size_t wxIniConfig::GetNumberOfEntries(bool WXUNUSED(bRecursive)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return (size_t)-1;
+    return (size_t)-1;
 }
 
 size_t wxIniConfig::GetNumberOfGroups(bool WXUNUSED(bRecursive)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return (size_t)-1;
+    return (size_t)-1;
 }
 
 bool wxIniConfig::HasGroup(const wxString& WXUNUSED(strName)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return false;
+    return false;
 }
 
 bool wxIniConfig::HasEntry(const wxString& WXUNUSED(strName)) const
 {
-  wxFAIL_MSG("not implemented");
+    wxFAIL_MSG("not implemented");
 
-  return false;
+    return false;
 }
 
 // is current group empty?
 bool wxIniConfig::IsEmpty() const
 {
-  char szBuf[1024];
+    char szBuf[1024];
 
-  GetPrivateProfileString(m_strGroup, NULL, "",
-                          szBuf, WXSIZEOF(szBuf), m_strLocalFilename);
-  if ( !::IsEmpty(szBuf) )
-    return false;
+    GetPrivateProfileString(m_strGroup, NULL, "",
+                            szBuf, WXSIZEOF(szBuf), m_strLocalFilename);
+    if ( !::IsEmpty(szBuf) )
+        return false;
 
-  GetProfileString(m_strGroup, NULL, "", szBuf, WXSIZEOF(szBuf));
-  if ( !::IsEmpty(szBuf) )
-    return false;
+    GetProfileString(m_strGroup, NULL, "", szBuf, WXSIZEOF(szBuf));
+    if ( !::IsEmpty(szBuf) )
+        return false;
 
-  return true;
+    return true;
 }
 
 // ----------------------------------------------------------------------------

@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: wxexpr.h,v 1.4 2005/05/04 18:57:47 JS Exp $
+// RCS-ID:      $Id: wxexpr.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_WXEXPRH__
 #define _WX_WXEXPRH__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "wxexpr.h"
-#endif
 
 #include "wx/deprecated/setup.h"
 

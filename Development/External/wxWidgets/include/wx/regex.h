@@ -1,26 +1,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        wx/regex.h
 // Purpose:     regular expression matching
-// Author:      Karsten Ballüder
+// Author:      Karsten Ballueder
 // Modified by: VZ at 13.07.01 (integrated to wxWin)
 // Created:     05.02.2000
-// RCS-ID:      $Id: regex.h,v 1.14 2004/09/21 18:15:50 ABX Exp $
-// Copyright:   (c) 2000 Karsten Ballüder <ballueder@gmx.net>
+// RCS-ID:      $Id: regex.h 53135 2008-04-12 02:31:04Z VZ $
+// Copyright:   (c) 2000 Karsten Ballueder <ballueder@gmx.net>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_REGEX_H_
 #define _WX_REGEX_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "regex.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_REGEX
 
-class WXDLLIMPEXP_BASE wxString;
+class WXDLLIMPEXP_FWD_BASE wxString;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -72,7 +68,7 @@ enum
 // wxRegEx: a regular expression
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_BASE wxRegExImpl;
+class WXDLLIMPEXP_FWD_BASE wxRegExImpl;
 
 class WXDLLIMPEXP_BASE wxRegEx
 {
@@ -98,9 +94,13 @@ public:
     // true if matches and false otherwise
     //
     // flags may be combination of wxRE_NOTBOL and wxRE_NOTEOL
+    // len may be the length of text (ignored by most system regex libs)
     //
     // may only be called after successful call to Compile()
     bool Matches(const wxChar *text, int flags = 0) const;
+    bool Matches(const wxChar *text, int flags, size_t len) const;
+    bool Matches(const wxString& text, int flags = 0) const
+        { return Matches(text.c_str(), flags, text.length()); }
 
     // get the start index and the length of the match of the expression
     // (index 0) or a bracketed subexpression (index != 0)

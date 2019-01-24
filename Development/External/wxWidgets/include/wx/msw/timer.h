@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: timer.h,v 1.18 2004/09/07 06:00:52 ABX Exp $
+// RCS-ID:      $Id: timer.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_TIMER_H_
 #define _WX_TIMER_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "timer.h"
-#endif
 
 class WXDLLEXPORT wxTimer : public wxTimerBase
 {
@@ -24,7 +20,7 @@ public:
     wxTimer() { Init(); }
     wxTimer(wxEvtHandler *owner, int id = wxID_ANY) : wxTimerBase(owner, id)
         { Init(); }
-    ~wxTimer();
+    virtual ~wxTimer();
 
     virtual bool Start(int milliseconds = -1, bool oneShot = false);
     virtual void Stop();

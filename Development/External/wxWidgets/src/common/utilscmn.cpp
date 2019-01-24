@@ -1,10 +1,9 @@
-/////////////////////////////////////////////////////////////////////////////
-// Name:        utilscmn.cpp
+// Name:        src/common/utilscmn.cpp
 // Purpose:     Miscellaneous utility functions and classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: utilscmn.cpp,v 1.145 2005/09/05 18:10:46 ABX Exp $
+// RCS-ID:      $Id: utilscmn.cpp 51328 2008-01-22 10:19:39Z VS $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,17 +15,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA) && !defined(__EMX__)
-// Some older compilers (such as EMX) cannot handle
-// #pragma interface/implementation correctly, iff
-// #pragma implementation is used in _two_ translation
-// units (as created by e.g. event.cpp compiled for
-// libwx_base and event.cpp compiled for libwx_gui_core).
-// So we must not use those pragmas for those compilers in
-// such files.
-    #pragma implementation "utils.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -73,7 +61,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(__WATCOMC__)
+#if !wxONLY_WATCOM_EARLIER_THAN(1,4)
     #if !(defined(_MSC_VER) && (_MSC_VER > 800))
         #include <errno.h>
     #endif
@@ -83,7 +71,6 @@
     #include "wx/colordlg.h"
     #include "wx/fontdlg.h"
     #include "wx/notebook.h"
-    #include "wx/frame.h"
     #include "wx/statusbr.h"
 #endif // wxUSE_GUI
 
@@ -93,6 +80,13 @@
 #include "wx/msw/wince/time.h"
 #endif
 
+#ifdef __WXMAC__
+#include "wx/mac/private.h"
+#ifndef __DARWIN__
+#include "InternetConfig.h"
+#endif
+#endif
+
 #if !defined(__MWERKS__) && !defined(__WXWINCE__)
     #include <sys/types.h>
     #include <sys/stat.h>
@@ -100,6 +94,8 @@
 
 #if defined(__WXMSW__)
     #include "wx/msw/private.h"
+    #include "wx/msw/registry.h"
+    #include <shellapi.h> // needed for SHELLEXECUTEINFO
 #endif
 
 #if wxUSE_BASE
@@ -107,11 +103,6 @@
 // ----------------------------------------------------------------------------
 // common data
 // ----------------------------------------------------------------------------
-
-#if WXWIN_COMPATIBILITY_2_2
-    const wxChar *wxInternalErrorStr = wxT("wxWidgets Internal Error");
-    const wxChar *wxFatalErrorStr = wxT("wxWidgets Fatal Error");
-#endif // WXWIN_COMPATIBILITY_2_2
 
 // ============================================================================
 // implementation
@@ -295,20 +286,219 @@ wxString wxGetDataDir()
     return dir;
 }
 
-int wxGetOsVersion(int *verMaj, int *verMin)
+bool wxIsPlatformLittleEndian()
 {
-    // we want this function to work even if there is no wxApp
-    wxConsoleAppTraits traitsConsole;
-    wxAppTraits *traits = wxTheApp ? wxTheApp->GetTraits() : NULL;
-    if ( ! traits )
-        traits = &traitsConsole;
+    // Are we little or big endian? This method is from Harbison & Steele.
+    union
+    {
+        long l;
+        char c[sizeof(long)];
+    } u;
+    u.l = 1;
 
-    wxToolkitInfo& info = traits->GetToolkitInfo();
-    if ( verMaj )
-        *verMaj = info.versionMajor;
-    if ( verMin )
-        *verMin = info.versionMinor;
-    return info.os;
+    return u.c[0] == 1;
+}
+
+
+/*
+ * Class to make it easier to specify platform-dependent values
+ */
+
+wxArrayInt*  wxPlatform::sm_customPlatforms = NULL;
+
+void wxPlatform::Copy(const wxPlatform& platform)
+{
+    m_longValue = platform.m_longValue;
+    m_doubleValue = platform.m_doubleValue;
+    m_stringValue = platform.m_stringValue;
+}
+
+wxPlatform wxPlatform::If(int platform, long value)
+{
+    if (Is(platform))
+        return wxPlatform(value);
+    else
+        return wxPlatform();
+}
+
+wxPlatform wxPlatform::IfNot(int platform, long value)
+{
+    if (!Is(platform))
+        return wxPlatform(value);
+    else
+        return wxPlatform();
+}
+
+wxPlatform& wxPlatform::ElseIf(int platform, long value)
+{
+    if (Is(platform))
+        m_longValue = value;
+    return *this;
+}
+
+wxPlatform& wxPlatform::ElseIfNot(int platform, long value)
+{
+    if (!Is(platform))
+        m_longValue = value;
+    return *this;
+}
+
+wxPlatform wxPlatform::If(int platform, double value)
+{
+    if (Is(platform))
+        return wxPlatform(value);
+    else
+        return wxPlatform();
+}
+
+wxPlatform wxPlatform::IfNot(int platform, double value)
+{
+    if (!Is(platform))
+        return wxPlatform(value);
+    else
+        return wxPlatform();
+}
+
+wxPlatform& wxPlatform::ElseIf(int platform, double value)
+{
+    if (Is(platform))
+        m_doubleValue = value;
+    return *this;
+}
+
+wxPlatform& wxPlatform::ElseIfNot(int platform, double value)
+{
+    if (!Is(platform))
+        m_doubleValue = value;
+    return *this;
+}
+
+wxPlatform wxPlatform::If(int platform, const wxString& value)
+{
+    if (Is(platform))
+        return wxPlatform(value);
+    else
+        return wxPlatform();
+}
+
+wxPlatform wxPlatform::IfNot(int platform, const wxString& value)
+{
+    if (!Is(platform))
+        return wxPlatform(value);
+    else
+        return wxPlatform();
+}
+
+wxPlatform& wxPlatform::ElseIf(int platform, const wxString& value)
+{
+    if (Is(platform))
+        m_stringValue = value;
+    return *this;
+}
+
+wxPlatform& wxPlatform::ElseIfNot(int platform, const wxString& value)
+{
+    if (!Is(platform))
+        m_stringValue = value;
+    return *this;
+}
+
+wxPlatform& wxPlatform::Else(long value)
+{
+    m_longValue = value;
+    return *this;
+}
+
+wxPlatform& wxPlatform::Else(double value)
+{
+    m_doubleValue = value;
+    return *this;
+}
+
+wxPlatform& wxPlatform::Else(const wxString& value)
+{
+    m_stringValue = value;
+    return *this;
+}
+
+void wxPlatform::AddPlatform(int platform)
+{
+    if (!sm_customPlatforms)
+        sm_customPlatforms = new wxArrayInt;
+    sm_customPlatforms->Add(platform);
+}
+
+void wxPlatform::ClearPlatforms()
+{
+    delete sm_customPlatforms;
+    sm_customPlatforms = NULL;
+}
+
+/// Function for testing current platform
+
+bool wxPlatform::Is(int platform)
+{
+#ifdef __WXMSW__
+    if (platform == wxOS_WINDOWS)
+        return true;
+#endif
+#ifdef __WXWINCE__
+    if (platform == wxOS_WINDOWS_CE)
+        return true;
+#endif
+
+#if 0
+
+// FIXME: wxWinPocketPC and wxWinSmartPhone are unknown symbols
+
+#if defined(__WXWINCE__) && defined(__POCKETPC__)
+    if (platform == wxWinPocketPC)
+        return true;
+#endif
+#if defined(__WXWINCE__) && defined(__SMARTPHONE__)
+    if (platform == wxWinSmartPhone)
+        return true;
+#endif
+
+#endif
+
+#ifdef __WXGTK__
+    if (platform == wxPORT_GTK)
+        return true;
+#endif
+#ifdef __WXMAC__
+    if (platform == wxPORT_MAC)
+        return true;
+#endif
+#ifdef __WXX11__
+    if (platform == wxPORT_X11)
+        return true;
+#endif
+#ifdef __UNIX__
+    if (platform == wxOS_UNIX)
+        return true;
+#endif
+#ifdef __WXMGL__
+    if (platform == wxPORT_MGL)
+        return true;
+#endif
+#ifdef __OS2__
+    if (platform == wxOS_OS2)
+        return true;
+#endif
+#ifdef __WXPM__
+    if (platform == wxPORT_PM)
+        return true;
+#endif
+#ifdef __WXCOCOA__
+    if (platform == wxPORT_MAC)
+        return true;
+#endif
+
+    if (sm_customPlatforms && sm_customPlatforms->Index(platform) != wxNOT_FOUND)
+        return true;
+
+    return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -456,24 +646,27 @@ static bool ReadAll(wxInputStream *is, wxArrayString& output)
 
     wxTextInputStream tis(*is);
 
-    bool cont = true;
-    while ( cont )
+    for ( ;; )
     {
         wxString line = tis.ReadLine();
-        if ( is->Eof() )
-            break;
 
+        // check for EOF before other errors as it's not really an error
+        if ( is->Eof() )
+        {
+            // add the last, possibly incomplete, line
+            if ( !line.empty() )
+                output.Add(line);
+            break;
+        }
+
+        // any other error is fatal
         if ( !*is )
-        {
-            cont = false;
-        }
-        else
-        {
-            output.Add(line);
-        }
+            return false;
+
+        output.Add(line);
     }
 
-    return cont;
+    return true;
 }
 #endif // wxUSE_STREAMS
 
@@ -531,189 +724,243 @@ long wxExecute(const wxString& command,
 // Launch default browser
 // ----------------------------------------------------------------------------
 
-bool wxLaunchDefaultBrowser(const wxString& url)
+#include "wx/private/browserhack28.h"
+
+static bool wxLaunchDefaultBrowserBaseImpl(const wxString& url, int flags);
+
+// Use wxLaunchDefaultBrowserBaseImpl by default
+static wxLaunchDefaultBrowserImpl_t s_launchBrowserImpl = &wxLaunchDefaultBrowserBaseImpl;
+
+// Function the GUI library can call to provide a better implementation
+WXDLLIMPEXP_BASE void wxSetLaunchDefaultBrowserImpl(wxLaunchDefaultBrowserImpl_t newImpl)
 {
-    bool success = true;
+    s_launchBrowserImpl = newImpl!=NULL ? newImpl : &wxLaunchDefaultBrowserBaseImpl;
+}
 
-    wxString finalurl = url;
+static bool wxLaunchDefaultBrowserBaseImpl(const wxString& url, int flags)
+{
+    wxUnusedVar(flags);
 
-    //if it isn't a full url, try appending http:// to it
-    if(wxURI(url).IsReference())
-        finalurl = wxString(wxT("http://")) + url;
+#if defined(__WXMSW__)
 
-#if defined(__WXMSW__) && wxUSE_CONFIG_NATIVE
-
-    wxString command;
-
-    // ShellExecute() always opens in the same window,
-    // so do it manually for new window (from Mahogany)
-    wxRegKey key(wxRegKey::HKCR, url.BeforeFirst(':') + wxT("\\shell\\open"));
-    if ( key.Exists() )
+#if wxUSE_IPC
+    if ( flags & wxBROWSER_NEW_WINDOW )
     {
-        wxRegKey keyDDE(key, wxT("DDEExec"));
-        if ( keyDDE.Exists() )
+        // ShellExecuteEx() opens the URL in an existing window by default so
+        // we can't use it if we need a new window
+        wxURI uri(url);
+        wxRegKey key(wxRegKey::HKCR, uri.GetScheme() + _T("\\shell\\open"));
+        if ( !key.Exists() )
         {
-            wxRegKey keyTopic(keyDDE, wxT("topic"));
-            wxString ddeTopic = keyTopic.QueryDefaultValue();
+            // try default browser, it must be registered at least for http URLs
+            key.SetName(wxRegKey::HKCR, _T("http\\shell\\open"));
+        }
 
-            // we only know the syntax of WWW_OpenURL DDE request
-            if ( ddeTopic == wxT("WWW_OpenURL") )
+        if ( key.Exists() )
+        {
+            wxRegKey keyDDE(key, wxT("DDEExec"));
+            if ( keyDDE.Exists() )
             {
-                wxString ddeCmd = keyDDE.QueryDefaultValue();
+                const wxString ddeTopic = wxRegKey(keyDDE, wxT("topic"));
 
-                // this is a bit naive but should work as -1 can't appear
-                // elsewhere in the DDE topic, normally
-                if ( ddeCmd.Replace(wxT("-1"), wxT("0"),
-                                    false /* only first occurence */) == 1 )
+                // we only know the syntax of WWW_OpenURL DDE request for IE,
+                // optimistically assume that all other browsers are compatible
+                // with it
+                wxString ddeCmd;
+                bool ok = ddeTopic == wxT("WWW_OpenURL");
+                if ( ok )
                 {
-                    // and also replace the parameters
-                    if ( ddeCmd.Replace(wxT("%1"), url, false) == 1 )
-                    {
-                        // magic incantation understood by wxMSW
-                        command << wxT("WX_DDE#")
-                                << wxRegKey(key, wxT("command")).QueryDefaultValue() << wxT('#')
-                                << wxRegKey(keyDDE, wxT("application")).QueryDefaultValue()
-                                << wxT('#') << ddeTopic << wxT('#')
-                                << ddeCmd;
-                    }
+                    ddeCmd = keyDDE.QueryDefaultValue();
+                    ok = !ddeCmd.empty();
+                }
+
+                if ( ok )
+                {
+                    // for WWW_OpenURL, the index of the window to open the URL
+                    // in is -1 (meaning "current") by default, replace it with
+                    // 0 which means "new" (see KB article 160957)
+                    ok = ddeCmd.Replace(wxT("-1"), wxT("0"),
+                                        false /* only first occurence */) == 1;
+                }
+
+                if ( ok )
+                {
+                    // and also replace the parameters: the topic should
+                    // contain a placeholder for the URL
+                    ok = ddeCmd.Replace(wxT("%1"), url, false) == 1;
+                }
+
+                if ( ok )
+                {
+                    // try to send it the DDE request now but ignore the errors
+                    wxLogNull noLog;
+
+                    const wxString ddeServer = wxRegKey(keyDDE, wxT("application"));
+                    if ( wxExecuteDDE(ddeServer, ddeTopic, ddeCmd) )
+                        return true;
+
+                    // this is not necessarily an error: maybe browser is
+                    // simply not running, but no matter, in any case we're
+                    // going to launch it using ShellExecuteEx() below now and
+                    // we shouldn't try to open a new window if we open a new
+                    // browser anyhow
                 }
             }
         }
     }
+#endif // wxUSE_IPC
 
-    //Try wxExecute - if it doesn't work or the regkey stuff
-    //above failed, fallback to opening the file in the same
-    //browser window
-    if ( command.empty() || wxExecute(command) == -1)
+    WinStruct<SHELLEXECUTEINFO> sei;
+    sei.lpFile = url.c_str();
+    sei.lpVerb = _T("open");
+    sei.nShow = SW_SHOWNORMAL;
+
+    ::ShellExecuteEx(&sei);
+
+    const int nResult = (int) sei.hInstApp;
+
+    // Firefox returns file not found for some reason, so make an exception
+    // for it
+    if ( nResult > 32 || nResult == SE_ERR_FNF )
     {
-        int nResult; //HINSTANCE error code
-
-#if !defined(__WXWINCE__)
-        // CYGWIN and MINGW may have problems - so load ShellExecute
-        // dynamically
-        typedef HINSTANCE (WINAPI *LPShellExecute)(HWND hwnd, const wxChar* lpOperation,
-                                            const wxChar* lpFile,
-                                            const wxChar* lpParameters,
-                                            const wxChar* lpDirectory,
-                                            INT nShowCmd);
-
-        HINSTANCE hShellDll = ::LoadLibrary(wxT("shell32.dll"));
-        if(hShellDll == NULL)
-            return false;
-
-        LPShellExecute lpShellExecute =
-            (LPShellExecute) ::GetProcAddress(hShellDll,
-            wxString::Format(wxT("ShellExecute%s"),
-
-#if wxUSE_UNICODE
-            wxT("W")
-#else
-            wxT("A")
-#endif
-#ifdef __WXWINCE__
-                             )
-#else
-                             ).mb_str(wxConvLocal)
-#endif
-                             );
-        if(lpShellExecute == NULL)
-            return false;
-
-        // Windows sometimes doesn't open the browser correctly when using mime
-        // types, so do ShellExecute - i.e. start <url> (from James Carroll)
-        nResult = (int) (*lpShellExecute)(NULL, NULL, finalurl.c_str(),
-                                          NULL, wxT(""), SW_SHOWNORMAL);
-        // Unload Shell32.dll
-        ::FreeLibrary(hShellDll);
-#else
-        //Windows CE does not have normal ShellExecute - but it has
-        //ShellExecuteEx all the way back to version 1.0
-
-
-        //Set up the SHELLEXECUTEINFO structure to pass to ShellExecuteEx
-        SHELLEXECUTEINFO sei;
-        sei.cbSize = sizeof(SHELLEXECUTEINFO);
-        sei.dwHotKey = 0;
-        sei.fMask = 0;
-        sei.hIcon = NULL;
-        sei.hInstApp = NULL;
-        sei.hkeyClass = NULL;
-        // Not in WinCE
-#if 0
-        sei.hMonitor = NULL;
-#endif
-        sei.hProcess = NULL;
-        sei.hwnd = NULL;
-        sei.lpClass = NULL;
-        sei.lpDirectory = NULL;
-        sei.lpFile = finalurl.c_str();
-        sei.lpIDList = NULL;
-        sei.lpParameters = NULL;
-        sei.lpVerb = TEXT("open");
-        sei.nShow = SW_SHOWNORMAL;
-
-        //Call ShellExecuteEx
-        ShellExecuteEx(&sei);
-
-        //Get error code
-        nResult = (int) sei.hInstApp;
-#endif
-
-        // Hack for Firefox (returns file not found for some reason)
-        // from Angelo Mandato's wxHyperlinksCtrl
-        // HINSTANCE_ERROR == 32 (HINSTANCE_ERROR does not exist on Windows CE)
-        if (nResult <= 32 && nResult != SE_ERR_FNF)
-            return false;
-
 #ifdef __WXDEBUG__
         // Log something if SE_ERR_FNF happens
-        if(nResult == SE_ERR_FNF)
-            wxLogDebug(wxT("Got SE_ERR_FNF from ShellExecute - maybe FireFox"));
+        if ( nResult == SE_ERR_FNF )
+            wxLogDebug(wxT("SE_ERR_FNF from ShellExecute -- maybe FireFox?"));
+#endif // __WXDEBUG__
+        return true;
+    }
+#elif defined(__WXMAC__)
+    OSStatus err;
+    ICInstance inst;
+    long int startSel;
+    long int endSel;
+
+    err = ICStart(&inst, 'STKA'); // put your app creator code here
+    if (err == noErr)
+    {
+#if !TARGET_CARBON
+        err = ICFindConfigFile(inst, 0, NULL);
 #endif
-    }
-
-#elif wxUSE_MIMETYPE
-
-    // Non-windows way
-    wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension (_T("html"));
-    if (!ft)
-    {
-        wxLogError(_T("No default application can open .html extension"));
-        return false;
-    }
-
-    wxString mt;
-    ft->GetMimeType(&mt);
-
-    wxString cmd;
-    bool ok = ft->GetOpenCommand (&cmd, wxFileType::MessageParameters(finalurl));
-    delete ft;
-
-    if (ok)
-    {
-        if( wxExecute (cmd, wxEXEC_ASYNC) == -1 )
+        if (err == noErr)
         {
-            wxLogError(_T("Failed to launch application for wxLaunchDefaultBrowser"));
-            return false;
+            ConstStr255Param hint = 0;
+            startSel = 0;
+            endSel = url.length();
+            err = ICLaunchURL(inst, hint, url.fn_str(), endSel, &startSel, &endSel);
+            if (err != noErr)
+                wxLogDebug(wxT("ICLaunchURL error %d"), (int) err);
         }
+        ICStop(inst);
+        return true;
     }
     else
     {
-        // fallback to checking for the BROWSER environment variable
-        cmd = wxGetenv(wxT("BROWSER"));
-        if ( cmd.empty() || wxExecute(cmd + wxT(" ") + finalurl) == -1)
-            return false;
+        wxLogDebug(wxT("ICStart error %d"), (int) err);
+        return false;
+    }
+#else 
+    // (non-Mac, non-MSW)
+
+#ifdef __UNIX__
+
+    // Our best best is to use xdg-open from freedesktop.org cross-desktop
+    // compatibility suite xdg-utils
+    // (see http://portland.freedesktop.org/wiki/) -- this is installed on
+    // most modern distributions and may be tweaked by them to handle
+    // distribution specifics. Only if that fails, try to find the right
+    // browser ourselves.
+    wxString path, xdg_open;
+    if ( wxGetEnv(_T("PATH"), &path) &&
+         wxFindFileInPath(&xdg_open, path, _T("xdg-open")) )
+    {
+        if ( wxExecute(xdg_open + _T(" ") + url) )
+            return true;
     }
 
+    wxString desktop = wxTheApp->GetTraits()->GetDesktopEnvironment();
 
-#else // !wxUSE_MIMETYPE && !(WXMSW && wxUSE_NATIVE_CONFIG)
+    // GNOME and KDE desktops have some applications which should be always installed
+    // together with their main parts, which give us the
+    if (desktop == wxT("GNOME"))
+    {
+        wxArrayString errors;
+        wxArrayString output;
 
-    success = false;
-
+        // gconf will tell us the path of the application to use as browser
+        long res = wxExecute( wxT("gconftool-2 --get /desktop/gnome/applications/browser/exec"),
+                              output, errors, wxEXEC_NODISABLE );
+        if (res >= 0 && errors.GetCount() == 0)
+        {
+            wxString cmd = output[0];
+            cmd << _T(' ') << url;
+            if (wxExecute(cmd))
+                return true;
+        }
+    }
+    else if (desktop == wxT("KDE"))
+    {
+        // kfmclient directly opens the given URL
+        if (wxExecute(wxT("kfmclient openURL ") + url))
+            return true;
+    }
 #endif
 
-    //success - hopefully
-    return success;
+    bool ok = false;
+    wxString cmd;
+
+#if wxUSE_MIMETYPE
+    wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(_T("html"));
+    if ( ft )
+    {
+        wxString mt;
+        ft->GetMimeType(&mt);
+
+        ok = ft->GetOpenCommand(&cmd, wxFileType::MessageParameters(url));
+        delete ft;
+    }
+#endif // wxUSE_MIMETYPE
+
+    if ( !ok || cmd.empty() )
+    {
+        // fallback to checking for the BROWSER environment variable
+        cmd = wxGetenv(wxT("BROWSER"));
+        if ( !cmd.empty() )
+            cmd << _T(' ') << url;
+    }
+
+    ok = ( !cmd.empty() && wxExecute(cmd) );
+    if (ok)
+        return ok;
+
+    // no file type for HTML extension
+    wxLogError(_T("No default application configured for HTML files."));
+
+#endif // !wxUSE_MIMETYPE && !__WXMSW__
+    return false;
+}
+
+bool wxLaunchDefaultBrowser(const wxString& urlOrig, int flags)
+{
+    // set the scheme of url to http if it does not have one
+    // RR: This doesn't work if the url is just a local path
+    wxString url(urlOrig);
+    wxURI uri(url);
+    if ( !uri.HasScheme() )
+    {
+        if (wxFileExists(urlOrig))
+            url.Prepend( wxT("file://") );
+        else
+            url.Prepend(wxT("http://"));
+    }
+
+    if(s_launchBrowserImpl(url, flags))
+        return true;
+
+    wxLogSysError(_T("Failed to open URL \"%s\" in default browser."),
+                  url.c_str());
+
+    return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -760,15 +1007,18 @@ wxRegisterId (long id)
     wxCurrentId = id + 1;
 }
 
-#if wxUSE_MENUS
-
 // ----------------------------------------------------------------------------
 // Menu accelerators related functions
 // ----------------------------------------------------------------------------
 
 wxChar *wxStripMenuCodes(const wxChar *in, wxChar *out)
 {
+#if wxUSE_MENUS
     wxString s = wxMenuItem::GetLabelFromText(in);
+#else
+    wxString str(in);
+    wxString s = wxStripMenuCodes(str);
+#endif // wxUSE_MENUS
     if ( out )
     {
         // go smash their buffer if it's not big enough - I love char * params
@@ -784,8 +1034,10 @@ wxChar *wxStripMenuCodes(const wxChar *in, wxChar *out)
     return out;
 }
 
-wxString wxStripMenuCodes(const wxString& in)
+wxString wxStripMenuCodes(const wxString& in, int flags)
 {
+    wxASSERT_MSG( flags, _T("this is useless to call without any flags") );
+
     wxString out;
 
     size_t len = in.length();
@@ -794,7 +1046,7 @@ wxString wxStripMenuCodes(const wxString& in)
     for ( size_t n = 0; n < len; n++ )
     {
         wxChar ch = in[n];
-        if ( ch == _T('&') )
+        if ( (flags & wxStrip_Mnemonics) && ch == _T('&') )
         {
             // skip it, it is used to introduce the accel char (or to quote
             // itself in which case it should still be skipped): note that it
@@ -809,7 +1061,7 @@ wxString wxStripMenuCodes(const wxString& in)
                 ch = in[n];
             }
         }
-        else if ( ch == _T('\t') )
+        else if ( (flags & wxStrip_Accel) && ch == _T('\t') )
         {
             // everything after TAB is accel string, exit the loop
             break;
@@ -820,8 +1072,6 @@ wxString wxStripMenuCodes(const wxString& in)
 
     return out;
 }
-
-#endif // wxUSE_MENUS
 
 // ----------------------------------------------------------------------------
 // Window search functions
@@ -857,12 +1107,12 @@ int
 wxFindMenuItemId (wxFrame * frame, const wxString& menuString, const wxString& itemString)
 {
 #if wxUSE_MENUS
-  wxMenuBar *menuBar = frame->GetMenuBar ();
-  if ( menuBar )
-      return menuBar->FindMenuItem (menuString, itemString);
+    wxMenuBar *menuBar = frame->GetMenuBar ();
+    if ( menuBar )
+        return menuBar->FindMenuItem (menuString, itemString);
 #endif // wxUSE_MENUS
 
-  return wxNOT_FOUND;
+    return wxNOT_FOUND;
 }
 
 // Try to find the deepest child that contains 'pt'.
@@ -904,16 +1154,16 @@ wxWindow* wxFindWindowAtPoint(wxWindow* win, const wxPoint& pt)
 
     wxPoint pos = win->GetPosition();
     wxSize sz = win->GetSize();
-    if (win->GetParent())
+    if ( !win->IsTopLevel() && win->GetParent() )
     {
         pos = win->GetParent()->ClientToScreen(pos);
     }
 
     wxRect rect(pos, sz);
-    if (rect.Inside(pt))
+    if (rect.Contains(pt))
         return win;
-    else
-        return NULL;
+
+    return NULL;
 }
 
 wxWindow* wxGenericFindWindowAtPoint(const wxPoint& pt)
@@ -1028,7 +1278,7 @@ wxString wxGetPasswordFromUser(const wxString& message,
 
 #if wxUSE_COLOURDLG
 
-wxColour wxGetColourFromUser(wxWindow *parent, const wxColour& colInit)
+wxColour wxGetColourFromUser(wxWindow *parent, const wxColour& colInit, const wxString& caption)
 {
     wxColourData data;
     data.SetChooseFull(true);
@@ -1039,6 +1289,8 @@ wxColour wxGetColourFromUser(wxWindow *parent, const wxColour& colInit)
 
     wxColour colRet;
     wxColourDialog dialog(parent, &data);
+    if (!caption.empty())
+        dialog.SetTitle(caption);
     if ( dialog.ShowModal() == wxID_OK )
     {
         colRet = dialog.GetColourData().GetColour();
@@ -1052,7 +1304,7 @@ wxColour wxGetColourFromUser(wxWindow *parent, const wxColour& colInit)
 
 #if wxUSE_FONTDLG
 
-wxFont wxGetFontFromUser(wxWindow *parent, const wxFont& fontInit)
+wxFont wxGetFontFromUser(wxWindow *parent, const wxFont& fontInit, const wxString& caption)
 {
     wxFontData data;
     if ( fontInit.Ok() )
@@ -1062,6 +1314,8 @@ wxFont wxGetFontFromUser(wxWindow *parent, const wxFont& fontInit)
 
     wxFont fontRet;
     wxFontDialog dialog(parent, data);
+    if (!caption.empty())
+        dialog.SetTitle(caption);
     if ( dialog.ShowModal() == wxID_OK )
     {
         fontRet = dialog.GetFontData().GetChosenFont();

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/control.cpp
+// Name:        src/msw/control.cpp
 // Purpose:     wxControl class
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: control.cpp,v 1.102 2005/06/17 20:17:50 VZ Exp $
+// RCS-ID:      $Id: control.cpp 54424 2008-06-29 21:46:29Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "control.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,7 +26,10 @@
 
 #if wxUSE_CONTROLS
 
+#include "wx/control.h"
+
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
     #include "wx/event.h"
     #include "wx/app.h"
     #include "wx/dcclient.h"
@@ -38,18 +37,16 @@
     #include "wx/settings.h"
 #endif
 
-#include "wx/control.h"
+#if wxUSE_LISTCTRL
+    #include "wx/listctrl.h"
+#endif // wxUSE_LISTCTRL
 
-#if wxUSE_NOTEBOOK
-    #include "wx/notebook.h"
-#endif // wxUSE_NOTEBOOK
+#if wxUSE_TREECTRL
+    #include "wx/treectrl.h"
+#endif // wxUSE_TREECTRL
 
 #include "wx/msw/private.h"
 #include "wx/msw/uxtheme.h"
-
-#if defined(__WIN95__) && !(defined(__GNUWIN32_OLD__) && !defined(__CYGWIN10__))
-    #include <commctrl.h>
-#endif
 
 // ----------------------------------------------------------------------------
 // wxWin macros
@@ -165,16 +162,71 @@ bool wxControl::MSWCreateControl(const wxChar *classname,
         return false;
     }
 
+#if !wxUSE_UNICODE
+    // Text labels starting with the character 0xff (which is a valid character
+    // in many code pages) don't appear correctly as CreateWindowEx() has some
+    // special treatment for this case, apparently the strings starting with -1
+    // are not really strings but something called "ordinals". There is no
+    // documentation about it but the fact is that the label gets mangled or
+    // not displayed at all if we don't do this, see #9572.
+    //
+    // Notice that 0xffff is not a valid Unicode character so the problem
+    // doesn't arise in Unicode build.
+    if ( !label.empty() && label[0] == -1 )
+        ::SetWindowText(GetHwnd(), label.c_str());
+#endif // !wxUSE_UNICODE
+
     // install wxWidgets window proc for this window
     SubclassWin(m_hWnd);
 
     // set up fonts and colours
     InheritAttributes();
-    if (!m_hasFont)
-        SetFont(GetDefaultAttributes().font);
+    if ( !m_hasFont )
+    {
+        bool setFont = true;
+
+        wxFont font = GetDefaultAttributes().font;
+
+        // if we set a font for {list,tree}ctrls and the font size is changed in
+        // the display properties then the font size for these controls doesn't
+        // automatically adjust when they receive WM_SETTINGCHANGE
+
+        // FIXME: replace the dynamic casts with virtual function calls!!
+#if wxUSE_LISTCTRL || wxUSE_TREECTRL
+        bool testFont = false;
+#if wxUSE_LISTCTRL
+        if ( wxDynamicCastThis(wxListCtrl) )
+            testFont = true;
+#endif // wxUSE_LISTCTRL
+#if wxUSE_TREECTRL
+        if ( wxDynamicCastThis(wxTreeCtrl) )
+            testFont = true;
+#endif // wxUSE_TREECTRL
+
+        if ( testFont )
+        {
+            // not sure if we need to explicitly set the font here for Win95/NT4
+            // but we definitely can't do it for any newer version
+            // see wxGetCCDefaultFont() in src/msw/settings.cpp for explanation
+            // of why this test works
+
+            // TODO: test Win95/NT4 to see if this is needed or breaks the
+            // font resizing as it does on newer versions
+            if ( font != wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) )
+            {
+                setFont = false;
+            }
+        }
+#endif // wxUSE_LISTCTRL || wxUSE_TREECTRL
+
+        if ( setFont )
+        {
+            SetFont(GetDefaultAttributes().font);
+        }
+    }
 
     // set the size now if no initial size specified
-    SetInitialBestSize(size);
+    SetInitialSize(size);
 
     return true;
 }
@@ -282,7 +334,6 @@ bool wxControl::ProcessCommand(wxCommandEvent& event)
     return GetEventHandler()->ProcessEvent(event);
 }
 
-#ifdef __WIN95__
 bool wxControl::MSWOnNotify(int idCtrl,
                             WXLPARAM lParam,
                             WXLPARAM* result)
@@ -330,7 +381,6 @@ bool wxControl::MSWOnNotify(int idCtrl,
 
     return GetEventHandler()->ProcessEvent(event);
 }
-#endif // Win95
 
 WXHBRUSH wxControl::DoMSWControlColor(WXHDC pDC, wxColour colBg, WXHWND hWnd)
 {
@@ -362,13 +412,14 @@ WXHBRUSH wxControl::DoMSWControlColor(WXHDC pDC, wxColour colBg, WXHWND hWnd)
 
         hbr = (WXHBRUSH)brush->GetResourceHandle();
 
-        // if we use custom background, we should set foreground ourselves too
-        if ( !m_hasFgCol )
-        {
-            ::SetTextColor(hdc, ::GetSysColor(COLOR_WINDOWTEXT));
-        }
-        //else: already set above
     }
+
+    // if we use custom background, we should set foreground ourselves too
+    if ( hbr && !m_hasFgCol )
+    {
+        ::SetTextColor(hdc, ::GetSysColor(COLOR_WINDOWTEXT));
+    }
+    //else: already set above
 
     return hbr;
 }

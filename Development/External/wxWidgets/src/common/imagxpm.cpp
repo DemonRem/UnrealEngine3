@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        imagxpm.cpp
+// Name:        src/common/imagxpm.cpp
 // Purpose:     wxXPMHandler
 // Author:      Vaclav Slavik, Robert Roebling
-// RCS-ID:      $Id: imagxpm.cpp,v 1.18 2005/03/17 23:19:06 VZ Exp $
+// RCS-ID:      $Id: imagxpm.cpp 53477 2008-05-07 07:28:57Z JS $
 // Copyright:   (c) 2001 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -62,28 +62,23 @@ license is as follows:
 %
 */
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "imagxpm.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#  pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#  include "wx/defs.h"
+    #pragma hdrstop
 #endif
 
 #if wxUSE_XPM
 
+#ifndef WX_PRECOMP
+    #include "wx/log.h"
+    #include "wx/intl.h"
+    #include "wx/utils.h"
+#endif
+
 #include "wx/imagxpm.h"
 #include "wx/wfstream.h"
-#include "wx/log.h"
-#include "wx/intl.h"
-#include "wx/utils.h"
 #include "wx/xpmdecod.h"
 
 IMPLEMENT_DYNAMIC_CLASS(wxXPMHandler,wxImageHandler)
@@ -107,36 +102,20 @@ bool wxXPMHandler::LoadFile(wxImage *image,
     return true;
 }
 
-
-static char hexArray[] = "0123456789ABCDEF";
-
-static void DecToHex(int dec, char *buf)
-{
-    int firstDigit = (int)(dec/16.0);
-    int secondDigit = (int)(dec - (firstDigit*16.0));
-    buf[0] = hexArray[firstDigit];
-    buf[1] = hexArray[secondDigit];
-    buf[2] = 0;
-}
-
-
 bool wxXPMHandler::SaveFile(wxImage * image,
                             wxOutputStream& stream, bool WXUNUSED(verbose))
 {
-    wxString tmp;
-    char tmp_c;
-
     // 1. count colours:
     #define MaxCixels  92
     static const char Cixel[MaxCixels+1] =
                          " .XoO+@#$%&*=-;:>,<1234567890qwertyuipasdfghjk"
                          "lzxcvbnmMNBVCZASDFGHJKLPIUYTREWQ!~^/()_`'][{}|";
-    int chars_per_pixel;
-    int cols;
     int i, j, k;
 
-    cols = image->CountColours();
-    chars_per_pixel = 1;
+    wxImageHistogram histogram;
+    int cols = int(image->ComputeHistogram(histogram));
+
+    int chars_per_pixel = 1;
     for ( k = MaxCixels; cols > k; k *= MaxCixels)
         chars_per_pixel++;
 
@@ -149,10 +128,10 @@ bool wxXPMHandler::SaveFile(wxImage * image,
         sName << wxT("_xpm");
     }
 
-    if ( !sName.IsEmpty() )
-        sName = wxString(wxT("/* XPM */\nstatic char *")) + sName;
+    if ( !sName.empty() )
+        sName = wxString(wxT("/* XPM */\nstatic const char *")) + sName;
     else
-        sName = wxT("/* XPM */\nstatic char *xpm_data");
+        sName = wxT("/* XPM */\nstatic const char *xpm_data");
     stream.Write( (const char*) sName.ToAscii(), sName.Len() );
 
     char tmpbuf[200];
@@ -166,9 +145,6 @@ bool wxXPMHandler::SaveFile(wxImage * image,
     stream.Write(tmpbuf, strlen(tmpbuf));
 
     // 3. create color symbols table:
-    wxImageHistogram histogram;
-    image->ComputeHistogram(histogram);
-
     char *symbols_data = new char[cols * (chars_per_pixel+1)];
     char **symbols = new char*[cols];
 
@@ -186,12 +162,10 @@ bool wxXPMHandler::SaveFile(wxImage * image,
         symbols[index] = symbols_data + index * (chars_per_pixel+1);
         char *sym = symbols[index];
 
-        k = index % MaxCixels;
-        sym[0] = Cixel[k];
-        for (j = 1; j < chars_per_pixel; j++)
+        for (j = 0; j < chars_per_pixel; j++)
         {
-            k = ((index - k) / MaxCixels) % MaxCixels;
-            sym[j] = Cixel[k];
+            sym[j] = Cixel[index % MaxCixels];
+            index /= MaxCixels;
         }
         sym[j] = '\0';
 
@@ -203,23 +177,20 @@ bool wxXPMHandler::SaveFile(wxImage * image,
             sprintf( tmpbuf, "\"%s c None\",\n", sym);
         else
         {
-            char rbuf[3];
-            DecToHex( (unsigned char)(key >> 16), rbuf );
-            char gbuf[3];
-            DecToHex( (unsigned char)(key >> 8), gbuf );
-            char bbuf[3];
-            DecToHex( (unsigned char)(key), bbuf );
-            sprintf( tmpbuf, "\"%s c #%s%s%s\",\n", sym, rbuf, gbuf, bbuf );
+            wxByte r = wxByte(key >> 16);
+            wxByte g = wxByte(key >> 8);
+            wxByte b = wxByte(key);
+            sprintf(tmpbuf, "\"%s c #%02X%02X%02X\",\n", sym, r, g, b);
         }
         stream.Write( tmpbuf, strlen(tmpbuf) );
     }
 
-    tmp = wxT("/* pixels */\n");
-    stream.Write( (const char*) tmp.ToAscii(), tmp.Length() );
+    stream.Write("/* pixels */\n", 13);
 
     unsigned char *data = image->GetData();
     for (j = 0; j < image->GetHeight(); j++)
     {
+        char tmp_c;
         tmp_c = '\"'; stream.Write(&tmp_c, 1);
         for (i = 0; i < image->GetWidth(); i++, data += 3)
         {
@@ -233,8 +204,7 @@ bool wxXPMHandler::SaveFile(wxImage * image,
         }
         tmp_c = '\n'; stream.Write(&tmp_c, 1);
     }
-    tmp = wxT("};\n");
-    stream.Write( (const char*) tmp.ToAscii(), 3 );
+    stream.Write("};\n", 3 );
 
     // Clean up:
     delete[] symbols;

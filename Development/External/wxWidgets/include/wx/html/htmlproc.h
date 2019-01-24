@@ -2,19 +2,13 @@
 // Name:        htmlprep.h
 // Purpose:     HTML processor
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: htmlproc.h,v 1.9 2004/09/27 19:06:39 ABX Exp $
+// RCS-ID:      $Id: htmlproc.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2001 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef _WX_HTMLPREP_H_
 #define _WX_HTMLPREP_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "htmlproc.h"
-// (implementation is in htmlwin.cpp, there's no htmlprep.cpp!)
-#endif
 
 #include "wx/defs.h"
 

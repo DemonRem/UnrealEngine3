@@ -17,7 +17,7 @@
 //                     databases operate the same in that respect
 //
 // Created:     9.96
-// RCS-ID:      $Id: db.h,v 1.98 2005/09/16 11:03:48 JS Exp $
+// RCS-ID:      $Id: db.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) 1996 Remstar International, Inc.
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,10 +31,6 @@
 #define OLD_GETCOLUMNS 1
 #define EXPERIMENTAL_WXDB_FUNCTIONS 1
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "db.h"
-#endif
-
 #include "wx/defs.h"
 #include "wx/string.h"
 
@@ -45,12 +41,7 @@
     #if wxUSE_MFC
         #include <afxwin.h>
     #else // !wxUSE_MFC
-        #ifndef STRICT
-            #define STRICT 1
-        #endif
-
-        #include <windows.h>
-        #include "wx/msw/winundef.h"
+        #include "wx/msw/wrapwin.h"
     #endif // wxUSE_MFC/!wxUSE_MFC
 
     // If you use the wxDbCreateDataSource() function with MSW/VC6,
@@ -66,9 +57,8 @@
     //#endif
     #include "odbcinst.h"
 #else
-    #if defined(__WINDOWS__) && ( defined(HAVE_W32API_H) || defined(__BORLANDC__) )
-        #include <windows.h>
-        #include "wx/msw/winundef.h"
+    #if defined(__WINDOWS__) && ( defined(HAVE_W32API_H) || defined(__BORLANDC__)  || defined (__DMC__))
+        #include "wx/msw/wrapwin.h"
     #endif
     extern "C" {
     #if defined(wxUSE_BUILTIN_IODBC) && wxUSE_BUILTIN_IODBC
@@ -83,13 +73,16 @@
           typedef UCHAR SQLTCHAR;
           #endif
         #endif
-    #else
+    #else // !wxUSE_BUILTIN_IODBC
+        // SQL headers define BOOL if it's not defined yet but BOOL is also
+        // defined in many other places on other systems (Motif, at least on
+        // OpenVMS; Cocoa and X11) so prevent the problem by defining it before
+        // including these headers
+        #define BOOL int
         #include <sql.h>
         #include <sqlext.h>
-        //#if wxUSE_UNICODE
-        //    #include <sqlucode.h>
-        //#endif
-    #endif
+        #undef BOOL
+    #endif // wxUSE_BUILTIN_IODBC/!wxUSE_BUILTIN_IODBC
     }
 #endif
 
@@ -162,6 +155,7 @@ const int DB_DATA_TYPE_INTEGER        = 2;
 const int DB_DATA_TYPE_FLOAT          = 3;
 const int DB_DATA_TYPE_DATE           = 4;
 const int DB_DATA_TYPE_BLOB           = 5;
+const int DB_DATA_TYPE_MEMO           = 6;
 
 const int DB_SELECT_KEYFIELDS         = 1;
 const int DB_SELECT_WHERE             = 2;
@@ -332,38 +326,38 @@ class WXDLLIMPEXP_ODBC wxDbConnectInf
         void             FreeHenv();
 
         // Accessors
-        const HENV       &GetHenv()          { return Henv; };
+        const HENV       &GetHenv()          { return Henv; }
 
-        const wxChar    *GetDsn()           { return Dsn; };
+        const wxChar    *GetDsn()           { return Dsn; }
 
-        const wxChar    *GetUid()           { return Uid; };
-        const wxChar    *GetUserID()        { return Uid; };
+        const wxChar    *GetUid()           { return Uid; }
+        const wxChar    *GetUserID()        { return Uid; }
 
-        const wxChar    *GetAuthStr()       { return AuthStr; };
-        const wxChar    *GetPassword()      { return AuthStr; };
+        const wxChar    *GetAuthStr()       { return AuthStr; }
+        const wxChar    *GetPassword()      { return AuthStr; }
 
-        const wxChar    *GetConnectionStr() { return ConnectionStr; };
-        bool             UseConnectionStr() { return useConnectionStr; };
+        const wxChar    *GetConnectionStr() { return ConnectionStr; }
+        bool             UseConnectionStr() { return useConnectionStr; }
 
-        const wxChar    *GetDescription()   { return Description; };
-        const wxChar    *GetFileType()      { return FileType; };
-        const wxChar    *GetDefaultDir()    { return DefaultDir; };
+        const wxChar    *GetDescription()   { return Description; }
+        const wxChar    *GetFileType()      { return FileType; }
+        const wxChar    *GetDefaultDir()    { return DefaultDir; }
 
-        void             SetHenv(const HENV henv)               { Henv = henv; };
+        void             SetHenv(const HENV henv)               { Henv = henv; }
 
         void             SetDsn(const wxString &dsn);
 
         void             SetUserID(const wxString &userID);
-        void             SetUid(const wxString &uid)            { SetUserID(uid); };
+        void             SetUid(const wxString &uid)            { SetUserID(uid); }
 
         void             SetPassword(const wxString &password);
-        void             SetAuthStr(const wxString &authstr)    { SetPassword(authstr); };
+        void             SetAuthStr(const wxString &authstr)    { SetPassword(authstr); }
 
         void             SetConnectionStr(const wxString &connectStr);
 
-        void             SetDescription(const wxString &desc)   { Description   = desc;     };
-        void             SetFileType(const wxString &fileType)  { FileType      = fileType; };
-        void             SetDefaultDir(const wxString &defDir)  { DefaultDir    = defDir;   };
+        void             SetDescription(const wxString &desc)   { Description   = desc;     }
+        void             SetFileType(const wxString &fileType)  { FileType      = fileType; }
+        void             SetDefaultDir(const wxString &defDir)  { DefaultDir    = defDir;   }
 };  // class wxDbConnectInf
 
 
@@ -380,10 +374,10 @@ struct WXDLLIMPEXP_ODBC wxDbSqlTypeInfo
 class WXDLLIMPEXP_ODBC wxDbColFor
 {
 public:
-    wxString       s_Field;              // Formated String for Output
-    wxString       s_Format[7];          // Formated Objects - TIMESTAMP has the biggest (7)
-    wxString       s_Amount[7];          // Formated Objects - amount of things that can be formatted
-    int            i_Amount[7];          // Formated Objects - TT MM YYYY HH MM SS m
+    wxString       s_Field;              // Formatted String for Output
+    wxString       s_Format[7];          // Formatted Objects - TIMESTAMP has the biggest (7)
+    wxString       s_Amount[7];          // Formatted Objects - amount of things that can be formatted
+    int            i_Amount[7];          // Formatted Objects - TT MM YYYY HH MM SS m
     int            i_Nation;             // 0 = timestamp , 1=EU, 2=UK, 3=International, 4=US
     int            i_dbDataType;         // conversion of the 'sqlDataType' to the generic data type used by these classes
     SWORD          i_sqlDataType;
@@ -559,12 +553,13 @@ private:
     wxDbSqlTypeInfo typeInfFloat;
     wxDbSqlTypeInfo typeInfDate;
     wxDbSqlTypeInfo typeInfBlob;
+    wxDbSqlTypeInfo typeInfMemo;
 #endif
 
 public:
 
-    void             setCached(bool cached)  { dbIsCached = cached; };  // This function must only be called by wxDbGetConnection() and wxDbCloseConnections!!!
-    bool             IsCached() { return dbIsCached; };
+    void             setCached(bool cached)  { dbIsCached = cached; }  // This function must only be called by wxDbGetConnection() and wxDbCloseConnections!!!
+    bool             IsCached() { return dbIsCached; }
 
     bool             GetDataTypeInfo(SWORD fSqlType, wxDbSqlTypeInfo &structSQLTypeInfo)
                             { return getDataTypeInfo(fSqlType, structSQLTypeInfo); }
@@ -698,6 +693,7 @@ public:
     wxDbSqlTypeInfo GetTypeInfFloat()      {return typeInfFloat;}
     wxDbSqlTypeInfo GetTypeInfDate()       {return typeInfDate;}
     wxDbSqlTypeInfo GetTypeInfBlob()       {return typeInfBlob;}
+    wxDbSqlTypeInfo GetTypeInfMemo()       {return typeInfMemo;}
 
     // tableName can refer to a table, view, alias or synonym
     bool         TableExists(const wxString &tableName, const wxChar *userID=NULL,
@@ -727,6 +723,9 @@ public:
                               const wxString &optionalParam=wxEmptyString);
 
     bool         FwdOnlyCursors(void)  {return fwdOnlyCursors;}
+
+    // return the string with all special SQL characters escaped
+    wxString     EscapeSqlChars(const wxString& value);
 
     // These two functions are provided strictly for use by wxDbTable.
     // DO NOT USE THESE FUNCTIONS, OR MEMORY LEAKS MAY OCCUR

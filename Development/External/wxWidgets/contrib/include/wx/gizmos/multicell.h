@@ -4,7 +4,7 @@
 // Author:      Jonathan Bayer
 // Modified by:
 // Created:
-// RCS-ID:      $Id: multicell.h,v 1.9 2005/02/25 20:38:11 ABX Exp $
+// RCS-ID:      $Id: multicell.h 38927 2006-04-26 16:27:20Z PC $
 // Copyright:   (c) Jonathan Bayer
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -14,10 +14,6 @@
 
 #ifndef __WX_MULTICELL_H__
 #define __WX_MULTICELL_H__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "multicell.h"
-#endif
 
 #include "wx/gizmos/gizmos.h"
 
@@ -100,7 +96,7 @@ public:
     bool SetColumnWidth(int column, int colSize = 5, bool expandable = false);
     bool SetRowHeight(int row, int rowSize = 5, bool expandable = false);
     bool EnableGridLines(wxWindow *win);
-    bool SetGridPen(wxPen *pen);
+    bool SetGridPen(const wxPen *pen);
     void OnPaint(wxDC& dc);
 
 private:
@@ -117,7 +113,7 @@ private:
     int m_maxWeights;
     wxSize m_defaultCellSize;
     wxWindow *m_win; // usually used for debugging
-    wxPen *m_pen;
+    const wxPen *m_pen;
 
     void DrawGridLines(wxDC& dc);
     void Initialize(wxSize size);

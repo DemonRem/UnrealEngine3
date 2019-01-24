@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     07/07/03
-// RCS-ID:      $Id: afterstd.h,v 1.9 2005/06/19 23:49:27 VZ Exp $
+// RCS-ID:      $Id: afterstd.h 42906 2006-11-01 14:16:42Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,6 +32,9 @@
     #else
         // 'expression' : signed/unsigned mismatch
         #pragma warning(default:4018)
+
+        // 'identifier' : unreferenced formal parameter
+        #pragma warning(default:4100)
 
         // 'conversion' : conversion from 'type1' to 'type2',
         // possible loss of data

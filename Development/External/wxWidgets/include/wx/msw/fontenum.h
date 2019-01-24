@@ -1,20 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        fontenum.h
+// Name:        wx/msw/fontenum.h
 // Purpose:     wxFontEnumerator class for Windows
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: fontenum.h,v 1.6 2004/10/13 14:04:19 ABX Exp $
+// RCS-ID:      $Id: fontenum.h 39461 2006-05-29 21:12:51Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WX_FONTENUM_H_
-#define _WX_FONTENUM_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "fontenum.h"
-#endif
+#ifndef _WX_FONTENUM_MSW_H_
+#define _WX_FONTENUM_MSW_H_
 
 /*
  * wxFontEnumerator: for gathering font information
@@ -41,5 +37,4 @@ protected:
 };
 
 #endif
-  // _WX_FONTENUM_H_
-
+  // _WX_FONTENUM_MSW_H_

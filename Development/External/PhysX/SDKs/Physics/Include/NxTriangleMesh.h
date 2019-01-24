@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXTRIANGLEMESH
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -29,9 +29,6 @@ class NxStream;
 
 It is represented as an indexed triangle list. There are no restrictions on the
 triangle data. 
-
-However, you may use some settings to have the data be treated as a height field.
-See NxTriangleMeshDesc for details.
 
 To avoid duplicating data when you have several instances of a particular 
 mesh positioned differently, you do not use this class to represent a 
@@ -72,9 +69,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	bool				saveToDesc(NxTriangleMeshDesc& desc)	const	= 0;
 
@@ -92,9 +90,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getFormat() getStride() getBase()
 	*/
@@ -109,9 +108,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCount() getStride() getBase()
 	*/
@@ -131,9 +131,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCount() getFormat() getStride()
 	*/
@@ -151,9 +152,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getCount() getFormat() getBase()
 	*/
@@ -167,9 +169,10 @@ class NxTriangleMesh
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxU32				getPageCount() const = 0;
 
@@ -180,9 +183,10 @@ class NxTriangleMesh
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 
 	virtual NxBounds3			getPageBBox(NxU32 pageIndex) const = 0;
@@ -201,9 +205,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMeshDesc.pmap NxPMap
 	*/
@@ -218,9 +223,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMeshDesc.pmap NxPMap loadPMap()
 	*/
@@ -235,9 +241,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMeshDesc.pmap NxPMap loadPMap() hasPMap()
 	*/
@@ -258,9 +265,10 @@ class NxTriangleMesh
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxTriangleMeshDesc.pmap NxPMap loadPMap() hasPMap() getPMapSize()
 	*/
@@ -275,9 +283,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMeshDesc.pmap NxPMap loadPMap() hasPMap() getPMapSize() hasPMap()
 	*/
@@ -293,9 +302,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxStream
 	*/
@@ -311,9 +321,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual	NxMaterialIndex		getTriangleMaterial(NxTriangleID triangleIndex)	const	= 0;
 
@@ -324,9 +335,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxU32				getReferenceCount()					= 0;
 
@@ -339,9 +351,10 @@ class NxTriangleMesh
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual void				getMassInformation(NxReal& mass, NxMat33& localInertia, NxVec3& localCenterOfMass)		const	= 0;
 
@@ -351,9 +364,9 @@ class NxTriangleMesh
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

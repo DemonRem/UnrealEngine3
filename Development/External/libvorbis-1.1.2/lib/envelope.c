@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: PCM data envelope analysis 
- last mod: $Id: envelope.c 8921 2005-02-14 23:03:43Z msmith $
 
  ********************************************************************/
 
@@ -28,9 +27,7 @@
 #include "envelope.h"
 #include "mdct.h"
 #include "misc.h"
-#ifdef __SSE__												/* SSE Optimize */
 #include "xmmlib.h"
-#endif														/* SSE Optimize */
 
 void _ve_envelope_init( envelope_lookup *e, vorbis_info* vi )
 {

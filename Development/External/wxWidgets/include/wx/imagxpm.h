@@ -2,17 +2,13 @@
 // Name:        imaggif.h
 // Purpose:     wxImage XPM handler
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: imagxpm.h,v 1.9 2004/09/16 18:13:25 ABX Exp $
+// RCS-ID:      $Id: imagxpm.h 37393 2006-02-08 21:47:09Z VZ $
 // Copyright:   (c) 2001 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_IMAGXPM_H_
 #define _WX_IMAGXPM_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "imagxpm.h"
-#endif
 
 #include "wx/image.h"
 
@@ -35,6 +31,7 @@ public:
 #if wxUSE_STREAMS
     virtual bool LoadFile( wxImage *image, wxInputStream& stream, bool verbose=true, int index=-1 );
     virtual bool SaveFile( wxImage *image, wxOutputStream& stream, bool verbose=true );
+protected:
     virtual bool DoCanRead( wxInputStream& stream );
 #endif
 

@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxListImpl_H__
@@ -18,6 +18,17 @@ namespace Face
 //------------------------------------------------------------------------------
 // FxList.
 //------------------------------------------------------------------------------
+
+// Handy macro for checking head node validity.
+#define FX_LIST_CHECK_HEAD() \
+	if( !_head ) \
+	{ \
+		_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "ListHead")); \
+		FxDefaultConstruct(_head); \
+		_head->next = _head; \
+		_head->prev = _head; \
+	}
+
 // Constructor.
 template<typename FxListElem>
 FxList<FxListElem>::FxList()
@@ -31,13 +42,13 @@ FxList<FxListElem>::FxList( const FxList<FxListElem>& other )
 	: _head(0)
 	, _size(0)
 {
-	_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "List Head"));
+	_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "ListHead"));
 	FxDefaultConstruct(_head);
 	_head->next = _head;
 	_head->prev = _head;
 
-	Iterator curr = other.Begin();
-	Iterator end  = other.End();
+	ConstIterator curr = other.Begin();
+	ConstIterator end  = other.End();
 	for( ; curr != end; ++curr )
 	{
 		PushBack(*curr);
@@ -53,8 +64,8 @@ FxList<FxListElem>::operator=( const FxList<FxListElem>& other )
 		Clear();
 	}
 
-	Iterator curr = other.Begin();
-	Iterator end  = other.End();
+	ConstIterator curr = other.Begin();
+	ConstIterator end  = other.End();
 	for( ; curr != end; ++curr )
 	{
 		PushBack(*curr);
@@ -74,37 +85,41 @@ FxList<FxListElem>::~FxList()
 	}
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 typename FxList<FxListElem>::Iterator 
-FxList<FxListElem>::Begin( void ) const
+FxList<FxListElem>::Begin( void )
 {
-	if( !_head )
-	{
-		_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "List Head"));
-		FxDefaultConstruct(_head);
-		_head->next = _head;
-		_head->prev = _head;
-	}
+	FX_LIST_CHECK_HEAD();
 	return ++Iterator(_head);
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
+typename FxList<FxListElem>::ConstIterator 
+FxList<FxListElem>::Begin( void ) const
+{
+	FX_LIST_CHECK_HEAD();
+	return ++ConstIterator(_head);
+}
+
+template<typename FxListElem> FX_INLINE
 typename FxList<FxListElem>::Iterator 
+FxList<FxListElem>::End( void )
+{
+	FX_LIST_CHECK_HEAD();
+	return Iterator(_head);
+}
+
+template<typename FxListElem> FX_INLINE
+typename FxList<FxListElem>::ConstIterator 
 FxList<FxListElem>::End( void ) const
 {
-	if( !_head )
-	{
-		_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "List Head"));
-		FxDefaultConstruct(_head);
-		_head->next = _head;
-		_head->prev = _head;
-	}
-	return Iterator(_head);
+	FX_LIST_CHECK_HEAD();
+	return ConstIterator(_head);
 }
 
 template<typename FxListElem>
 typename FxList<FxListElem>::Iterator 
-FxList<FxListElem>::Find( const FxListElem& toFind ) const
+FxList<FxListElem>::Find( const FxListElem& toFind )
 {
 	Iterator finder = Begin();
 	Iterator end    = End();
@@ -116,30 +131,31 @@ FxList<FxListElem>::Find( const FxListElem& toFind ) const
 }
 
 template<typename FxListElem>
+typename FxList<FxListElem>::ConstIterator 
+FxList<FxListElem>::Find( const FxListElem& toFind ) const
+{
+	ConstIterator finder = Begin();
+	ConstIterator end    = End();
+	for( ; finder != end; ++finder )
+	{
+		if( *finder == toFind ) break;
+	}
+	return finder;
+}
+
+template<typename FxListElem> FX_INLINE
 typename FxList<FxListElem>::ReverseIterator
 FxList<FxListElem>::ReverseBegin( void ) const
 {
-	if( !_head )
-	{
-		_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "List Head"));
-		FxDefaultConstruct(_head);
-		_head->next = _head;
-		_head->prev = _head;
-	}
+	FX_LIST_CHECK_HEAD();
 	return ++ReverseIterator(_head);
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 typename FxList<FxListElem>::ReverseIterator
 FxList<FxListElem>::ReverseEnd( void ) const
 {
-	if( !_head )
-	{
-		_head = static_cast<FxListNode*>(FxAlloc(sizeof(FxListNode), "List Head"));
-		FxDefaultConstruct(_head);
-		_head->next = _head;
-		_head->prev = _head;
-	}
+	FX_LIST_CHECK_HEAD();
 	return ReverseIterator(_head);
 }
 
@@ -161,21 +177,21 @@ FxList<FxListElem>::Clear( void )
 	}
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 FxBool
 FxList<FxListElem>::IsEmpty( void ) const
 {
 	return _size == 0;
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 FxSize
 FxList<FxListElem>::Length( void ) const
 {
 	return _size;
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 FxSize
 FxList<FxListElem>::Allocated( void ) const
 {
@@ -183,8 +199,15 @@ FxList<FxListElem>::Allocated( void ) const
 		   + sizeof(_size);
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 FxListElem& 
+FxList<FxListElem>::Back( void )
+{
+	return *--End();
+}
+
+template<typename FxListElem> FX_INLINE
+const FxListElem& 
 FxList<FxListElem>::Back( void ) const
 {
 	return *--End();
@@ -201,11 +224,18 @@ template<typename FxListElem>
 void 
 FxList<FxListElem>::PopBack( void )
 {
-	Remove(--End());
+	RemoveIterator(--End());
 }
 
-template<typename FxListElem>
+template<typename FxListElem> FX_INLINE
 FxListElem& 
+FxList<FxListElem>::Front( void )
+{
+	return *Begin();
+}
+
+template<typename FxListElem> FX_INLINE
+const FxListElem& 
 FxList<FxListElem>::Front( void ) const
 {
 	return *Begin();
@@ -222,7 +252,7 @@ template<typename FxListElem>
 void 
 FxList<FxListElem>::PopFront( void )
 {
-	Remove(Begin());
+	RemoveIterator(Begin());
 }
 
 template<typename FxListElem>
@@ -240,6 +270,13 @@ FxList<FxListElem>::Insert( const FxListElem& element, Iterator iter )
 template<typename FxListElem>
 void
 FxList<FxListElem>::Remove( Iterator iter )
+{
+	RemoveIterator(iter);
+}
+
+template<typename FxListElem>
+void
+FxList<FxListElem>::RemoveIterator( Iterator iter )
 {
 	FxListNode* toRemove = iter.GetNode();
 	FxAssert( toRemove != _head );

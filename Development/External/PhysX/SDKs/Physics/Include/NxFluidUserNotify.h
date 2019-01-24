@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXFLUIDUSERNOTIFY
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -23,7 +23,7 @@ class NxFluid;
 */
 enum NxFluidEventType
 {
-	NX_FET_NO_PARTICLES_LEFT,		//!< There are no particles left.
+	NX_FET_NO_PARTICLES_LEFT		//!< There are no particles left.
 };
 
 
@@ -33,7 +33,7 @@ enum NxFluidEventType
 */
 enum NxFluidEmitterEventType
 {
-	NX_FEET_EMITTER_EMPTY,		//!< The emitter has reached is emission limit NxEmitterDesc::maxParticles.
+	NX_FEET_EMITTER_EMPTY		//!< The emitter has reached is emission limit NxEmitterDesc::maxParticles.
 };
 
 
@@ -59,7 +59,7 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
 
@@ -77,7 +77,7 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
 
@@ -92,9 +92,9 @@ protected:
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

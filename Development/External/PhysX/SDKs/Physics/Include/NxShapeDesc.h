@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -12,6 +12,23 @@
 */
 
 #include "NxShape.h"
+
+
+/**
+\brief Describes the compartment types a rigid body shape might interact with
+*/
+enum NxShapeCompartmentType
+	{
+	NX_COMPARTMENT_SW_RIGIDBODY		= (1<<0),	//!< Software rigid body compartment
+	NX_COMPARTMENT_HW_RIGIDBODY		= (1<<1),	//!< Hardware rigid body compartment
+	NX_COMPARTMENT_SW_FLUID			= (1<<2),	//!< Software fluid compartment
+	NX_COMPARTMENT_HW_FLUID			= (1<<3),	//!< Hardware fluid compartment
+	NX_COMPARTMENT_SW_CLOTH			= (1<<4),	//!< Software cloth compartment
+	NX_COMPARTMENT_HW_CLOTH			= (1<<5),	//!< Hardware cloth compartment
+	NX_COMPARTMENT_SW_SOFTBODY		= (1<<6),	//!< Software softbody compartment
+	NX_COMPARTMENT_HW_SOFTBODY		= (1<<7)	//!< Hardware softbody compartment
+	};
+
 
 /**
 \brief Descriptor for #NxShape class. 
@@ -34,9 +51,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	const NxShapeType		type;
 	public:
@@ -49,9 +67,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape.setLocalPose
 	*/
@@ -64,9 +83,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape.setFlag() NxShapeFlag
 	*/
@@ -79,9 +99,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape.setGroup()
 	*/
@@ -94,9 +115,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene.createMaterial() NxShape.setMaterial()
 	*/
@@ -109,9 +131,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape.setCCDSkeleton() NxPhysicsSDK.createCCDSkeleton()
 	*/	
@@ -128,9 +151,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxReal					density;
 
@@ -143,9 +167,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxReal					mass;
 	
@@ -170,9 +195,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxParameter
 	*/
@@ -186,9 +212,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	void*					userData;
 
@@ -199,9 +226,10 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	const char*				name;
 
@@ -212,11 +240,37 @@ class NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxGroupsMask			groupsMask;
+
+	/**
+	\brief A combination of ::NxShapeCompartmentType values.
+
+	Defines which compartment types the shape should not interact with.
+
+	\note This member is ignored in the following cases:
+
+	\li Explicitly adding the shape, i.e., its actor, to a rigid body compartment.
+	\li Attaching the shape to a fluid emitter.
+	\li Attaching the shape to a cloth.
+	\li Attaching the shape to a soft body.
+
+	<b>Default:</b> 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : No
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxShape.setNonInteractingCompartmentTypes() NxShapeCompartmentType
+	*/
+	NxU32					nonInteractingCompartmentTypes;
 
 	NX_INLINE virtual		~NxShapeDesc();
 	
@@ -230,7 +284,11 @@ class NxShapeDesc
 	
 	\return true if the current settings are valid
 	*/
-	NX_INLINE virtual	bool isValid() const;
+	NX_INLINE virtual	bool isValid() const { return !checkValid(); }
+		/**
+		\brief returns 0 if the current settings are valid
+		*/
+		NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Retrieves the shape type.
@@ -246,6 +304,8 @@ class NxShapeDesc
 	\param[in] shapeType The type of shape this desc is created for.
 	*/
 	NX_INLINE				NxShapeDesc(NxShapeType shapeType);
+
+	NxShapeDesc& operator=( const NxShapeDesc& ) { return *this; };  // DO NOT USE
 	};
 
 NX_INLINE NxShapeDesc::NxShapeDesc(NxShapeType t) : type(t)
@@ -260,7 +320,7 @@ NX_INLINE NxShapeDesc::~NxShapeDesc()
 NX_INLINE void NxShapeDesc::setToDefault()
 	{
 	localPose.id();
-	shapeFlags			= NX_SF_VISUALIZATION;
+	shapeFlags			= NX_SF_VISUALIZATION | NX_SF_CLOTH_TWOWAY | NX_SF_SOFTBODY_TWOWAY;
 	group				= 0;
 	materialIndex		= 0;
 	ccdSkeleton		= NULL;
@@ -273,30 +333,32 @@ NX_INLINE void NxShapeDesc::setToDefault()
 	groupsMask.bits1	= 0;
 	groupsMask.bits2	= 0;
 	groupsMask.bits3	= 0;
+	nonInteractingCompartmentTypes = 0;
 	}
 
-NX_INLINE bool NxShapeDesc::isValid() const
+NX_INLINE NxU32 NxShapeDesc::checkValid() const
 	{
 	if(!localPose.isFinite())
-		return false;
+		return 1;
 	if(group>=32)
-		return false;	// We only support 32 different groups
-	if(shapeFlags&0xffff0000)
-		return false;	// Only 16-bit flags supported here
+		return 2;	// We only support 32 different groups
+	// dsullins: I removed this bogus shapeFlags check because it was preventing core dumps from loading
+	//if(shapeFlags&0xffff0000)
+	//	return 3;	// Only 16-bit flags supported here
 	if(type >= NX_SHAPE_COUNT)
-		return false;
+		return 4;
 	if(materialIndex==0xffff)
-		return false;	// 0xffff is reserved for internal usage
+		return 5;	// 0xffff is reserved for internal usage
 	if (skinWidth != -1 && skinWidth < 0)
-		return false;
-	return true;
+		return 6;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -4,18 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: basicp.h,v 1.8 2004/06/09 16:42:20 ABX Exp $
+// RCS-ID:      $Id: basicp.h 38789 2006-04-18 08:29:15Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _OGL_BASICP_H_
 #define _OGL_BASICP_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "basicp.h"
-#endif
-
 
 #define CONTROL_POINT_SIZE       6
 
@@ -68,12 +63,12 @@ class WXDLLIMPEXP_OGL wxControlPoint: public wxRectangleShape
   inline void SetEraseObject(bool er) { m_eraseObject = er; }
 
 public:
-  int           m_type;
-  double         m_xoffset;
-  double         m_yoffset;
-  wxShape*      m_shape;
-  wxCursor*     m_oldCursor;
-  bool          m_eraseObject; // If true, erases object before dragging handle.
+  int             m_type;
+  double          m_xoffset;
+  double          m_yoffset;
+  wxShape*        m_shape;
+  const wxCursor* m_oldCursor;
+  bool            m_eraseObject; // If true, erases object before dragging handle.
 
 /*
  * Store original top-left, bottom-right coordinates

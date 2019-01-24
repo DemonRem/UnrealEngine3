@@ -5,12 +5,9 @@
 // Created:    1997
 // Updated:    1998
 // Copyright:  (C) 1997, 1998, Guilhem Lavaux
-// CVS Id: $Id: cdunix.cpp,v 1.4 2004/06/16 15:22:59 ABX Exp $
+// CVS Id: $Id: cdunix.cpp 35650 2005-09-23 12:56:45Z MR $
 // License:    wxWindows license
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef __GNUG__
-#pragma implementation "cdunix.h"
-#endif
 
 #include "wx/wxprec.h"
 

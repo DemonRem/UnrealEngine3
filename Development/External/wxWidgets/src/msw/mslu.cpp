@@ -1,28 +1,23 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/mslu.cpp
+// Name:        src/msw/mslu.cpp
 // Purpose:     Fixes for bugs in MSLU
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     2002/02/17
-// RCS-ID:      $Id: mslu.cpp,v 1.20 2005/04/05 16:10:22 ABX Exp $
+// RCS-ID:      $Id: mslu.cpp 42462 2006-10-26 19:06:51Z VZ $
 // Copyright:   (c) 2002 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
-#include <dir.h>
+    #pragma hdrstop
+    #include <dir.h>
 #endif
 
 #ifndef WX_PRECOMP
-    #include "wx/defs.h"
     #include "wx/utils.h"
 #endif
 
@@ -35,7 +30,7 @@
 bool WXDLLIMPEXP_BASE wxUsingUnicowsDll()
 {
 #if wxUSE_UNICODE_MSLU
-    return (wxGetOsVersion() == wxWIN95);
+    return (wxGetOsVersion() == wxOS_WINDOWS_9X);
 #else
     return false;
 #endif
@@ -70,7 +65,7 @@ bool WXDLLIMPEXP_BASE wxUsingUnicowsDll()
     #include <direct.h>
 #endif
 
-// Undef redirection macros defined in wx/msw/mslu.h:
+// Undef redirection macros defined in wx/msw/wrapwin.h:
 #undef DrawStateW
 #undef GetOpenFileNameW
 #undef GetSaveFileNameW
@@ -125,7 +120,7 @@ static void wxFixOPENFILENAME(LPOPENFILENAME ofn)
             ofn->nFileOffset = wxStrlen(ofn->lpstrFile)+1;
         }
     }
-#endif
+#endif // OFN_EXPLORER
 }
 
 WXDLLEXPORT int wxMSLU_GetOpenFileNameW(void *ofn)
@@ -226,6 +221,17 @@ WXDLLIMPEXP_BASE int wxMSLU__wstat(const wxChar *name, struct _stat *buffer)
         return _wstat(name, buffer);
 }
 
+#ifdef __BORLANDC__
+//here _stati64 is defined as stati64, see wx/filefn.h
+#undef _stati64
+WXDLLIMPEXP_BASE int wxMSLU__wstati64(const wxChar *name, struct _stati64 *buffer)
+ {
+     if ( wxUsingUnicowsDll() )
+        return _stati64((const char*)wxConvFile.cWX2MB(name), (stati64 *) buffer);
+    else
+        return _wstati64(name, (stati64 *) buffer);
+}
+#else
 WXDLLIMPEXP_BASE int wxMSLU__wstati64(const wxChar *name, struct _stati64 *buffer)
 {
     if ( wxUsingUnicowsDll() )
@@ -233,6 +239,7 @@ WXDLLIMPEXP_BASE int wxMSLU__wstati64(const wxChar *name, struct _stati64 *buffe
     else
         return _wstati64(name, buffer);
 }
+#endif //__BORLANDC__
 
 #endif // compilers having wopen() &c
 

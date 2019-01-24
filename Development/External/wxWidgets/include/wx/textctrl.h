@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        textctrl.h
+// Name:        wx/textctrl.h
 // Purpose:     wxTextCtrlBase class - the interface of wxTextCtrl
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     13.07.99
-// RCS-ID:      $Id: textctrl.h,v 1.74 2005/06/13 12:19:15 ABX Exp $
+// RCS-ID:      $Id: textctrl.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -15,10 +15,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "textctrlbase.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -48,8 +44,8 @@
     #define NO_TEXT_WINDOW_STREAM
 #endif
 
-class WXDLLEXPORT wxTextCtrl;
-class WXDLLEXPORT wxTextCtrlBase;
+class WXDLLIMPEXP_FWD_CORE wxTextCtrl;
+class WXDLLIMPEXP_FWD_CORE wxTextCtrlBase;
 
 // ----------------------------------------------------------------------------
 // wxTextCtrl types
@@ -66,7 +62,7 @@ typedef long wxTextCoord;
 // constants
 // ----------------------------------------------------------------------------
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxTextCtrlNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxTextCtrlNameStr[];
 
 // this is intentionally not enum to avoid warning fixes with
 // typecasting from enum type to wxTextCoord
@@ -76,10 +72,6 @@ const wxTextCoord wxInvalidTextCoord    = -2;
 // ----------------------------------------------------------------------------
 // wxTextCtrl style flags
 // ----------------------------------------------------------------------------
-
-// the flag bit 0x0001 s free but should be used only for the things which
-// don't make sense for a text control used by wxTextEntryDialog because they
-// would otherwise conflict with wxOK, wxCANCEL, wxCENTRE
 
 #define wxTE_NO_VSCROLL     0x0002
 #define wxTE_AUTO_SCROLL    0x0008
@@ -120,8 +112,10 @@ const wxTextCoord wxInvalidTextCoord    = -2;
 #define wxTE_WORDWRAP       0x0001  // wrap only at words boundaries
 #define wxTE_BESTWRAP       0x0000  // this is the default
 
-// obsolete synonym
-#define wxTE_LINEWRAP       wxTE_CHARWRAP
+#if WXWIN_COMPATIBILITY_2_6
+    // obsolete synonym
+    #define wxTE_LINEWRAP       wxTE_CHARWRAP
+#endif // WXWIN_COMPATIBILITY_2_6
 
 // force using RichEdit version 2.0 or 3.0 instead of 1.0 (default) for
 // wxTE_RICH controls - can be used together with or instead of wxTE_RICH
@@ -133,6 +127,12 @@ const wxTextCoord wxInvalidTextCoord    = -2;
 #else
 #define wxTE_CAPITALIZE     0
 #endif
+
+// ----------------------------------------------------------------------------
+// wxTextCtrl file types
+// ----------------------------------------------------------------------------
+
+#define wxTEXT_TYPE_ANY     0
 
 // ----------------------------------------------------------------------------
 // wxTextCtrl::HitTest return values
@@ -199,6 +199,22 @@ public:
     // operations
     void Init();
 
+    // merges the attributes of the base and the overlay objects and returns
+    // the result; the parameter attributes take precedence
+    //
+    // WARNING: the order of arguments is the opposite of Combine()
+    static wxTextAttr Merge(const wxTextAttr& base, const wxTextAttr& overlay)
+    {
+        return Combine(overlay, base, NULL);
+    }
+
+    // merges the attributes of this object and overlay
+    void Merge(const wxTextAttr& overlay)
+    {
+        *this = Merge(*this, overlay);
+    }
+
+
     // operators
     void operator= (const wxTextAttr& attr);
 
@@ -216,7 +232,7 @@ public:
     bool HasTextColour() const { return m_colText.Ok() && HasFlag(wxTEXT_ATTR_TEXT_COLOUR) ; }
     bool HasBackgroundColour() const { return m_colBack.Ok() && HasFlag(wxTEXT_ATTR_BACKGROUND_COLOUR) ; }
     bool HasFont() const { return m_font.Ok() && HasFlag(wxTEXT_ATTR_FONT) ; }
-    bool HasAlignment() const { return (m_textAlignment != wxTEXT_ALIGNMENT_DEFAULT) || ((m_flags & wxTEXT_ATTR_ALIGNMENT) != 0) ; }
+    bool HasAlignment() const { return (m_textAlignment != wxTEXT_ALIGNMENT_DEFAULT) && ((m_flags & wxTEXT_ATTR_ALIGNMENT) != 0) ; }
     bool HasTabs() const { return (m_flags & wxTEXT_ATTR_TABS) != 0 ; }
     bool HasLeftIndent() const { return (m_flags & wxTEXT_ATTR_LEFT_INDENT) != 0 ; }
     bool HasRightIndent() const { return (m_flags & wxTEXT_ATTR_RIGHT_INDENT) != 0 ; }
@@ -276,13 +292,18 @@ public:
     // --------
 
     wxTextCtrlBase(){}
-    ~wxTextCtrlBase(){}
+    virtual ~wxTextCtrlBase(){}
 
     // accessors
     // ---------
 
     virtual wxString GetValue() const = 0;
-    virtual void SetValue(const wxString& value) = 0;
+    virtual bool IsEmpty() const { return GetValue().empty(); }
+
+    virtual void SetValue(const wxString& value)
+        { DoSetValue(value, SetValue_SendEvent); }
+    virtual void ChangeValue(const wxString& value)
+        { DoSetValue(value); }
 
     virtual wxString GetRange(long from, long to) const;
 
@@ -310,13 +331,24 @@ public:
     virtual void Replace(long from, long to, const wxString& value) = 0;
     virtual void Remove(long from, long to) = 0;
 
-    // load/save the controls contents from/to the file
-    virtual bool LoadFile(const wxString& file);
-    virtual bool SaveFile(const wxString& file = wxEmptyString);
+    // load/save the control's contents from/to a file
+    bool LoadFile(const wxString& file, int fileType = wxTEXT_TYPE_ANY) { return DoLoadFile(file, fileType); }
+    bool SaveFile(const wxString& file = wxEmptyString, int fileType = wxTEXT_TYPE_ANY);
+
+    // implementation for loading/saving
+    virtual bool DoLoadFile(const wxString& file, int fileType);
+    virtual bool DoSaveFile(const wxString& file, int fileType);
 
     // sets/clears the dirty flag
     virtual void MarkDirty() = 0;
     virtual void DiscardEdits() = 0;
+    void SetModified(bool modified)
+    {
+        if ( modified )
+            MarkDirty();
+        else
+            DiscardEdits();
+    }
 
     // set the max number of characters which may be entered in a single line
     // text control
@@ -382,11 +414,6 @@ public:
     virtual void SelectAll();
     virtual void SetEditable(bool editable) = 0;
 
-    // override streambuf method
-#if wxHAS_TEXT_WINDOW_STREAM
-    int overflow(int i);
-#endif // wxHAS_TEXT_WINDOW_STREAM
-
     // stream-like insertion operators: these are always available, whether we
     // were, or not, compiled with streambuf support
     wxTextCtrl& operator<<(const wxString& s);
@@ -396,12 +423,31 @@ public:
     wxTextCtrl& operator<<(double d);
     wxTextCtrl& operator<<(const wxChar c);
 
+    // generate the wxEVT_COMMAND_TEXT_UPDATED event, like SetValue() does
+    void SendTextUpdatedEvent();
+
     // do the window-specific processing after processing the update event
     virtual void DoUpdateWindowUI(wxUpdateUIEvent& event);
 
     virtual bool ShouldInheritColours() const { return false; }
 
 protected:
+    // override streambuf method
+#if wxHAS_TEXT_WINDOW_STREAM
+    int overflow(int i);
+#endif // wxHAS_TEXT_WINDOW_STREAM
+
+    // flags for DoSetValue(): common part of SetValue() and ChangeValue() and
+    // also used to implement WriteText() in wxMSW
+    enum
+    {
+        SetValue_SendEvent = 1,
+        SetValue_SelectionOnly = 2
+    };
+
+    virtual void DoSetValue(const wxString& value, int flags = 0) = 0;
+
+
     // the name of the last file loaded with LoadFile() which will be used by
     // SaveFile() by default
     wxString m_filename;
@@ -410,6 +456,7 @@ protected:
     wxTextAttr m_defaultStyle;
 
     DECLARE_NO_COPY_CLASS(wxTextCtrlBase)
+    DECLARE_ABSTRACT_CLASS(wxTextCtrlBase)
 };
 
 // ----------------------------------------------------------------------------
@@ -426,8 +473,10 @@ protected:
     #include "wx/msw/textctrl.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/textctrl.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/textctrl.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/textctrl.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/textctrl.h"
 #elif defined(__WXCOCOA__)

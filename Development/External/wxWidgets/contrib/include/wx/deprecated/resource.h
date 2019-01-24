@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: resource.h,v 1.6 2005/08/02 21:44:32 MW Exp $
+// RCS-ID:      $Id: resource.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_RESOURCEH__
 #define _WX_RESOURCEH__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "resource.h"
-#endif
 
 #include "wx/setup.h"
 #include "wx/deprecated/setup.h"

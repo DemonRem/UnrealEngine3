@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2001             *
- * by the XIPHOPHORUS Company http://www.xiph.org/                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2007             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: stdio-based convenience library for opening/seeking/decoding
- last mod: $Id: vorbisfile.h 7485 2004-08-05 14:54:23Z thomasvs $
 
  ********************************************************************/
 
@@ -88,42 +87,42 @@ typedef struct OggVorbis_File
 
 } OggVorbis_File;
 
-extern int ov_clear( OggVorbis_File* vf );
-extern int ov_open( FILE* f, OggVorbis_File* vf, char* initial, long ibytes, int sizeof_ov_file );
-extern int ov_open_callbacks( void* datasource, OggVorbis_File* vf, char* initial, long ibytes, ov_callbacks callbacks, int sizeof_ov_file );
+VORBIS_DLL_FUNCTION int ov_clear( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION int ov_open( FILE* f, OggVorbis_File* vf, char* initial, long ibytes, int sizeof_ov_file );
+VORBIS_DLL_FUNCTION int ov_open_callbacks( void* datasource, OggVorbis_File* vf, char* initial, long ibytes, ov_callbacks callbacks, int sizeof_ov_file );
 
-extern int ov_test( FILE* f, OggVorbis_File* vf, char* initial, long ibytes );
-extern int ov_test_callbacks( void* datasource, OggVorbis_File* vf, char* initial, long ibytes, ov_callbacks callbacks );
-extern int ov_test_open( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION int ov_test( FILE* f, OggVorbis_File* vf, char* initial, long ibytes );
+VORBIS_DLL_FUNCTION int ov_test_callbacks( void* datasource, OggVorbis_File* vf, char* initial, long ibytes, ov_callbacks callbacks );
+VORBIS_DLL_FUNCTION int ov_test_open( OggVorbis_File* vf );
 
-extern long ov_bitrate( OggVorbis_File* vf, int i );
-extern long ov_bitrate_instant( OggVorbis_File* vf );
-extern long ov_streams( OggVorbis_File* vf );
-extern long ov_seekable( OggVorbis_File* vf );
-extern long ov_serialnumber( OggVorbis_File* vf, int i );
+VORBIS_DLL_FUNCTION long ov_bitrate( OggVorbis_File* vf, int i );
+VORBIS_DLL_FUNCTION long ov_bitrate_instant( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION long ov_streams( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION long ov_seekable( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION long ov_serialnumber( OggVorbis_File* vf, int i );
 
-extern ogg_int64_t ov_raw_total( OggVorbis_File* vf, int i );
-extern ogg_int64_t ov_pcm_total( OggVorbis_File* vf, int i );
-extern double ov_time_total( OggVorbis_File* vf, int i );
+VORBIS_DLL_FUNCTION ogg_int64_t ov_raw_total( OggVorbis_File* vf, int i );
+VORBIS_DLL_FUNCTION ogg_int64_t ov_pcm_total( OggVorbis_File* vf, int i );
+VORBIS_DLL_FUNCTION double ov_time_total( OggVorbis_File* vf, int i );
 
-extern int ov_raw_seek( OggVorbis_File* vf, ogg_int64_t pos );
-extern int ov_pcm_seek( OggVorbis_File* vf, ogg_int64_t pos );
-extern int ov_pcm_seek_page( OggVorbis_File* vf, ogg_int64_t pos );
-extern int ov_time_seek( OggVorbis_File* vf, double pos );
-extern int ov_time_seek_page( OggVorbis_File* vf, double pos );
+VORBIS_DLL_FUNCTION int ov_raw_seek( OggVorbis_File* vf, ogg_int64_t pos );
+VORBIS_DLL_FUNCTION int ov_pcm_seek( OggVorbis_File* vf, ogg_int64_t pos );
+VORBIS_DLL_FUNCTION int ov_pcm_seek_page( OggVorbis_File* vf, ogg_int64_t pos );
+VORBIS_DLL_FUNCTION int ov_time_seek( OggVorbis_File* vf, double pos );
+VORBIS_DLL_FUNCTION int ov_time_seek_page( OggVorbis_File* vf, double pos );
 
-extern ogg_int64_t ov_raw_tell( OggVorbis_File* vf );
-extern ogg_int64_t ov_pcm_tell( OggVorbis_File* vf );
-extern double ov_time_tell( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION ogg_int64_t ov_raw_tell( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION ogg_int64_t ov_pcm_tell( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION double ov_time_tell( OggVorbis_File* vf );
 
-extern vorbis_info *ov_info( OggVorbis_File* vf, int link );
-extern vorbis_comment *ov_comment( OggVorbis_File* vf, int link );
+VORBIS_DLL_FUNCTION vorbis_info *ov_info( OggVorbis_File* vf, int link );
+VORBIS_DLL_FUNCTION vorbis_comment *ov_comment( OggVorbis_File* vf, int link );
 
-extern long ov_read_float( OggVorbis_File* vf, float*** pcm_channels, int samples, int* bitstream );
-extern long ov_read( OggVorbis_File* vf, char* buffer, int length, int sgned, int* bitstream );
+VORBIS_DLL_FUNCTION long ov_read_float( OggVorbis_File* vf, float*** pcm_channels, int samples, int* bitstream );
+VORBIS_DLL_FUNCTION long ov_read( OggVorbis_File* vf, char* buffer, int length, int sgned, int* bitstream );
 
-extern int ov_halfrate( OggVorbis_File* vf, int flag );
-extern int ov_halfrate_p( OggVorbis_File* vf );
+VORBIS_DLL_FUNCTION int ov_halfrate( OggVorbis_File* vf, int flag );
+VORBIS_DLL_FUNCTION int ov_halfrate_p( OggVorbis_File* vf );
 
 #ifdef __cplusplus
 }

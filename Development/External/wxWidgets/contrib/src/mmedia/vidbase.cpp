@@ -7,16 +7,13 @@
 // Copyright:  (C) 1997, 1998, Guilhem Lavaux
 // License:    wxWindows license
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef __GNUG__
-#pragma implementation "vidbase.h"
-#endif
 
 #include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
-#include <wx/stream.h>
-#include <wx/wfstream.h>
-#include <wx/intl.h>
+#include "wx/stream.h"
+#include "wx/wfstream.h"
+#include "wx/intl.h"
 #endif
 
 #include "wx/mmedia/vidbase.h"

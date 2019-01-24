@@ -6,9 +6,9 @@
 
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -60,7 +60,11 @@ class NxParticleIdData
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -85,22 +89,22 @@ NX_INLINE void NxParticleIdData::setToDefault()
 	name					= NULL;
 	}
 
-NX_INLINE bool NxParticleIdData::isValid() const
+NX_INLINE NxU32 NxParticleIdData::checkValid() const
 	{
-	if (numIdsPtr && !(bufferId)) return false;
-	if (bufferId && !numIdsPtr) return false;
-	if (bufferId && !bufferIdByteStride) return false;
-	return true;
+	if (numIdsPtr && !(bufferId)) return 1;
+	if (bufferId && !numIdsPtr) return 2;
+	if (bufferId && !bufferIdByteStride) return 3;
+	return 0;
 	}
 
 /** @} */
 #endif
 
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND
 

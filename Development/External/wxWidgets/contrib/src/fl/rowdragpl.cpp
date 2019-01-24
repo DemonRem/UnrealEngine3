@@ -4,14 +4,10 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     06/10/98
-// RCS-ID:      $Id: rowdragpl.cpp,v 1.7 2004/06/07 16:02:23 ABX Exp $
+// RCS-ID:      $Id: rowdragpl.cpp 38927 2006-04-26 16:27:20Z PC $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-    #pragma implementation "rowdragpl.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -1048,7 +1044,7 @@ void cbRowDragPlugin::DrawRombShades( wxPoint& p1, wxPoint& p2,
     dc.DrawLine( p4.x, p4.y, p1.x, p1.y );
 }
 
-void cbRowDragPlugin::DrawOrtoRomb( wxRect& inRect, wxDC& dc, wxBrush& bkBrush )
+void cbRowDragPlugin::DrawOrtoRomb( wxRect& inRect, wxDC& dc, const wxBrush& bkBrush )
 {
     dc.SetBrush( bkBrush );
     dc.SetPen( mpLayout->mBlackPen );
@@ -1109,7 +1105,7 @@ void cbRowDragPlugin::DrawOrtoRomb( wxRect& inRect, wxDC& dc, wxBrush& bkBrush )
     dc.SetBrush( wxNullBrush );
 }
 
-void cbRowDragPlugin::DrawRomb( wxRect& inRect, wxDC& dc, wxBrush& bkBrush )
+void cbRowDragPlugin::DrawRomb( wxRect& inRect, wxDC& dc, const wxBrush& bkBrush )
 {
     wxPoint points[4];
 
@@ -1171,7 +1167,7 @@ void cbRowDragPlugin::DrawRomb( wxRect& inRect, wxDC& dc, wxBrush& bkBrush )
 }
 
 void cbRowDragPlugin::DrawRectShade( wxRect& inRect, wxDC& dc, 
-                                     int level, wxPen& upperPen, wxPen& lowerPen )
+                                     int level, const wxPen& upperPen, const wxPen& lowerPen )
 {
     // upper shade
     dc.SetPen( upperPen );
@@ -1196,7 +1192,7 @@ void cbRowDragPlugin::DrawRectShade( wxRect& inRect, wxDC& dc,
     dc.SetBrush( wxNullBrush );
 }
 
-void cbRowDragPlugin::Draw3DRect( wxRect& inRect, wxDC& dc, wxBrush& bkBrush )
+void cbRowDragPlugin::Draw3DRect( wxRect& inRect, wxDC& dc, const wxBrush& bkBrush )
 {
     dc.SetPen( mpLayout->mNullPen );
     dc.SetBrush( bkBrush );

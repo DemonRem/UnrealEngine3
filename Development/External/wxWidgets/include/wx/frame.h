@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     15.11.99
-// RCS-ID:      $Id: frame.h,v 1.55 2005/01/21 18:48:19 ABX Exp $
+// RCS-ID:      $Id: frame.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,21 +16,16 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "framebase.h"
-#endif
-
 #include "wx/toplevel.h"      // the base class
 
 // the default names for various classs
-extern WXDLLEXPORT_DATA(const wxChar*) wxFrameNameStr;
-extern WXDLLEXPORT_DATA(const wxChar*) wxStatusLineNameStr;
-extern WXDLLEXPORT_DATA(const wxChar*) wxToolBarNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxStatusLineNameStr[];
+extern WXDLLEXPORT_DATA(const wxChar) wxToolBarNameStr[];
 
-class WXDLLEXPORT wxFrame;
-class WXDLLEXPORT wxMenuBar;
-class WXDLLEXPORT wxStatusBar;
-class WXDLLEXPORT wxToolBar;
+class WXDLLIMPEXP_FWD_CORE wxFrame;
+class WXDLLIMPEXP_FWD_CORE wxMenuBar;
+class WXDLLIMPEXP_FWD_CORE wxStatusBar;
+class WXDLLIMPEXP_FWD_CORE wxToolBar;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -173,14 +168,11 @@ public:
         { return false; }
 #endif // no wxTopLevelWindowNative
 
+#if wxUSE_MENUS || wxUSE_TOOLBAR
     // show help text (typically in the statusbar); show is false
     // if you are hiding the help, true otherwise
     virtual void DoGiveHelp(const wxString& text, bool show);
-
-#if WXWIN_COMPATIBILITY_2_2
-    // call this to simulate a menu command
-    wxDEPRECATED( bool Command(int winid) );
-#endif // WXWIN_COMPATIBILITY_2_2
+#endif
 
 protected:
     // the frame main menu/status/tool bars
@@ -206,12 +198,12 @@ protected:
     virtual void AttachMenuBar(wxMenuBar *menubar);
 
     wxMenuBar *m_frameMenuBar;
+#endif // wxUSE_MENUS
 
-#if wxUSE_STATUSBAR
+#if wxUSE_STATUSBAR && (wxUSE_MENUS || wxUSE_TOOLBAR)
     // the saved status bar text overwritten by DoGiveHelp()
     wxString m_oldStatusText;
-#endif // wxUSE_STATUSBAR
-#endif // wxUSE_MENUS
+#endif
 
 #if wxUSE_STATUSBAR
     // override to update status bar position (or anything else) when
@@ -251,8 +243,10 @@ protected:
         #include "wx/palmos/frame.h"
     #elif defined(__WXMSW__)
         #include "wx/msw/frame.h"
-    #elif defined(__WXGTK__)
+    #elif defined(__WXGTK20__)
         #include "wx/gtk/frame.h"
+    #elif defined(__WXGTK__)
+        #include "wx/gtk1/frame.h"
     #elif defined(__WXMOTIF__)
         #include "wx/motif/frame.h"
     #elif defined(__WXMAC__)

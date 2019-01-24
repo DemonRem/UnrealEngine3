@@ -6,7 +6,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.08.02
-// RCS-ID:      $Id: execcmn.cpp,v 1.8 2005/08/23 23:12:48 VZ Exp $
+// RCS-ID:      $Id: execcmn.cpp 35289 2005-08-23 23:12:48Z VZ $
 // Copyright:   (c) 2002 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////

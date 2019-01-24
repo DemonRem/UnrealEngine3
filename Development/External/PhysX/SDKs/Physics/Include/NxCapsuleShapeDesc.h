@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXCAPSULESHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -29,9 +29,10 @@ class NxCapsuleShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleShape.setRadius() NxCapsuleShape.setDimensions()
 	*/
@@ -47,9 +48,10 @@ class NxCapsuleShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleShape.setHeight() NxCapsuleShape.setDimensions()
 	*/
@@ -62,9 +64,10 @@ class NxCapsuleShapeDesc : public NxShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleShapeFlag
 	*/
@@ -83,7 +86,11 @@ class NxCapsuleShapeDesc : public NxShapeDesc
 
 	\return True if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxCapsuleShapeDesc::NxCapsuleShapeDesc() : NxShapeDesc(NX_SHAPE_CAPSULE)	//constructor sets to default
@@ -99,20 +106,20 @@ NX_INLINE void NxCapsuleShapeDesc::setToDefault()
 	flags  = 0;
 	}
 
-NX_INLINE bool NxCapsuleShapeDesc::isValid() const
+NX_INLINE NxU32 NxCapsuleShapeDesc::checkValid() const
 	{
-	if(!NxMath::isFinite(radius))	return false;
-	if(radius<=0.0f)				return false;
-	if(!NxMath::isFinite(height))	return false;
-	if(height<=0.0f)				return false;
-	return NxShapeDesc::isValid();
+	if(!NxMath::isFinite(radius))	return 1;
+	if(radius<=0.0f)				return 2;
+	if(!NxMath::isFinite(height))	return 3;
+	if(height<=0.0f)				return 4;
+	return 5*NxShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

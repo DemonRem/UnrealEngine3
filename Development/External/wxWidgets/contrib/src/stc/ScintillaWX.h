@@ -9,7 +9,7 @@
 // Author:      Robin Dunn
 //
 // Created:     13-Jan-2000
-// RCS-ID:      $Id: ScintillaWX.h,v 1.27 2005/03/30 18:39:53 RD Exp $
+// RCS-ID:      $Id: ScintillaWX.h 55221 2008-08-24 04:06:41Z RD $
 // Copyright:   (c) 2000 by Total Control Software
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -27,6 +27,7 @@
 #include "Platform.h"
 
 #include "Scintilla.h"
+#include "CharClassify.h"
 #include "XPM.h"
 #ifdef SCI_LEXER
 #include "SciLexer.h"
@@ -47,7 +48,6 @@
 #include "Document.h"
 #include "Editor.h"
 #include "ScintillaBase.h"
-
 
 //----------------------------------------------------------------------
 
@@ -111,12 +111,12 @@ public:
     virtual void AddToPopUp(const char *label, int cmd = 0, bool enabled = true);
     virtual void ClaimSelection();
 
-    virtual long DefWndProc(unsigned int iMessage,
-                            unsigned long wParam,
-                            long lParam);
-    virtual long WndProc(unsigned int iMessage,
-                         unsigned long wParam,
-                         long lParam);
+    virtual sptr_t DefWndProc(unsigned int iMessage,
+                              uptr_t wParam,
+                              sptr_t lParam);
+    virtual sptr_t WndProc(unsigned int iMessage,
+                           uptr_t wParam,
+                           sptr_t lParam);
 
     virtual void NotifyChange();
     virtual void NotifyParent(SCNotification scn);
@@ -142,6 +142,7 @@ public:
     int  DoKeyDown(const wxKeyEvent& event, bool* consumed);
     void DoTick() { Tick(); }
     void DoOnIdle(wxIdleEvent& evt);
+    void DoStartDrag();
 
 #if wxUSE_DRAG_AND_DROP
     bool DoDropText(long x, long y, const wxString& data);
@@ -173,7 +174,9 @@ private:
 #if wxUSE_DRAG_AND_DROP
     wxSTCDropTarget*    dropTarget;
     wxDragResult        dragResult;
+    wxTimer*            startDragTimer;
 #endif
+
     int                 wheelRotation;
 
     // For use in creating a system caret
@@ -185,7 +188,7 @@ private:
     int sysCaretWidth;
     int sysCaretHeight;
 #endif
-    
+   
     friend class wxSTCCallTip;
 };
 

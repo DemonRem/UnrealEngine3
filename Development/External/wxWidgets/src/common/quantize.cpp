@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        quantize.cpp
+// Name:        src/common/quantize.cpp
 // Purpose:     wxQuantize implementation
 // Author:      Julian Smart
 // Modified by:
 // Created:     22/6/2000
-// RCS-ID:      $Id: quantize.cpp,v 1.22 2005/07/21 16:19:40 ABX Exp $
+// RCS-ID:      $Id: quantize.cpp 39957 2006-07-03 19:02:54Z ABX $
 // Copyright:   (c) Thomas G. Lane, Vaclav Slavik, Julian Smart
 // Licence:     wxWindows licence + JPEG library licence
 /////////////////////////////////////////////////////////////////////////////
@@ -30,10 +30,6 @@
 
 /* modified by Vaclav Slavik for use as jpeglib-independent module */
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "quantize.h"
-#endif
-
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -41,17 +37,17 @@
 #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/palette.h"
-#endif
-
 #if wxUSE_IMAGE
 
-#include "wx/image.h"
 #include "wx/quantize.h"
 
+#ifndef WX_PRECOMP
+    #include "wx/palette.h"
+    #include "wx/image.h"
+#endif
+
 #ifdef __WXMSW__
-#include "wx/msw/private.h"
+    #include "wx/msw/private.h"
 #endif
 
 #include <stdlib.h>
@@ -77,7 +73,7 @@
 
 typedef unsigned short UINT16;
 typedef signed short INT16;
-#if !(defined(__WATCOMC__) && defined(__WXMSW__))
+#if !(defined(__WATCOMC__) && (defined(__WXMSW__) || defined(__WXMOTIF__)))
 typedef signed int INT32;
 #endif
 

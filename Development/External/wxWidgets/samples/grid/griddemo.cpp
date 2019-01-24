@@ -2,8 +2,8 @@
 // Name:        griddemo.cpp
 // Purpose:     Grid control wxWidgets sample
 // Author:      Michael Bedward
-// Modified by:
-// RCS-ID:      $Id: griddemo.cpp,v 1.15 2005/07/22 17:56:27 ABX Exp $
+// Modified by: Santiago Palacios
+// RCS-ID:      $Id: griddemo.cpp 52411 2008-03-09 12:59:26Z VZ $
 // Copyright:   (c) Michael Bedward, Julian Smart, Vadim Zeitlin
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -15,11 +15,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma implementation
-    #pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -73,6 +68,7 @@ BEGIN_EVENT_TABLE( GridFrame, wxFrame )
     EVT_MENU( ID_TOGGLEEDIT, GridFrame::ToggleEditing )
     EVT_MENU( ID_TOGGLEROWSIZING, GridFrame::ToggleRowSizing )
     EVT_MENU( ID_TOGGLECOLSIZING, GridFrame::ToggleColSizing )
+    EVT_MENU( ID_TOGGLECOLMOVING, GridFrame::ToggleColMoving )
     EVT_MENU( ID_TOGGLEGRIDSIZING, GridFrame::ToggleGridSizing )
     EVT_MENU( ID_TOGGLEGRIDDRAGCELL, GridFrame::ToggleGridDragCell )
     EVT_MENU( ID_TOGGLEGRIDLINES, GridFrame::ToggleGridLines )
@@ -114,6 +110,7 @@ BEGIN_EVENT_TABLE( GridFrame, wxFrame )
     EVT_MENU( ID_SELECT_ROW, GridFrame::SelectRow)
     EVT_MENU( ID_SELECT_ALL, GridFrame::SelectAll)
     EVT_MENU( ID_SELECT_UNSELECT, GridFrame::OnAddToSelectToggle)
+    EVT_MENU( ID_SHOW_SELECTION, GridFrame::OnShowSelection)
 
     EVT_MENU( ID_SET_HIGHLIGHT_WIDTH, GridFrame::OnSetHighlightWidth)
     EVT_MENU( ID_SET_RO_HIGHLIGHT_WIDTH, GridFrame::OnSetROHighlightWidth)
@@ -150,6 +147,7 @@ GridFrame::GridFrame()
     viewMenu->Append( ID_TOGGLEEDIT,  _T("&Editable"), wxEmptyString, wxITEM_CHECK );
     viewMenu->Append( ID_TOGGLEROWSIZING, _T("Ro&w drag-resize"), wxEmptyString, wxITEM_CHECK );
     viewMenu->Append( ID_TOGGLECOLSIZING, _T("C&ol drag-resize"), wxEmptyString, wxITEM_CHECK );
+    viewMenu->Append( ID_TOGGLECOLMOVING, _T("Col drag-&move"), wxEmptyString, wxITEM_CHECK );
     viewMenu->Append( ID_TOGGLEGRIDSIZING, _T("&Grid drag-resize"), wxEmptyString, wxITEM_CHECK );
     viewMenu->Append( ID_TOGGLEGRIDDRAGCELL, _T("&Grid drag-cell"), wxEmptyString, wxITEM_CHECK );
     viewMenu->Append( ID_TOGGLEGRIDLINES, _T("&Grid Lines"), wxEmptyString, wxITEM_CHECK );
@@ -196,10 +194,14 @@ GridFrame::GridFrame()
     selectMenu->Append( ID_SELECT_UNSELECT, _T("Add new cells to the selection"),
                         _T("When off, old selection is deselected before ")
                         _T("selecting the new cells"), wxITEM_CHECK );
+    selectMenu->Append( ID_SHOW_SELECTION,
+                        _T("&Show current selection\tCtrl-Alt-S"));
+    selectMenu->AppendSeparator();
     selectMenu->Append( ID_SELECT_ALL, _T("Select all"));
     selectMenu->Append( ID_SELECT_ROW, _T("Select row 2"));
     selectMenu->Append( ID_SELECT_COL, _T("Select col 2"));
     selectMenu->Append( ID_SELECT_CELL, _T("Select cell (3, 1)"));
+    selectMenu->AppendSeparator();
     selectMenu->Append( ID_DESELECT_ALL, _T("Deselect all"));
     selectMenu->Append( ID_DESELECT_ROW, _T("Deselect row 2"));
     selectMenu->Append( ID_DESELECT_COL, _T("Deselect col 2"));
@@ -376,6 +378,7 @@ void GridFrame::SetDefaults()
     GetMenuBar()->Check( ID_TOGGLEEDIT, true );
     GetMenuBar()->Check( ID_TOGGLEROWSIZING, true );
     GetMenuBar()->Check( ID_TOGGLECOLSIZING, true );
+    GetMenuBar()->Check( ID_TOGGLECOLMOVING, false );
     GetMenuBar()->Check( ID_TOGGLEGRIDSIZING, true );
     GetMenuBar()->Check( ID_TOGGLEGRIDDRAGCELL, false );
     GetMenuBar()->Check( ID_TOGGLEGRIDLINES, true );
@@ -427,6 +430,12 @@ void GridFrame::ToggleColSizing( wxCommandEvent& WXUNUSED(ev) )
 {
     grid->EnableDragColSize(
         GetMenuBar()->IsChecked( ID_TOGGLECOLSIZING ) );
+}
+
+void GridFrame::ToggleColMoving( wxCommandEvent& WXUNUSED(ev) )
+{
+    grid->EnableDragColMove(
+        GetMenuBar()->IsChecked( ID_TOGGLECOLMOVING ) );
 }
 
 void GridFrame::ToggleGridSizing( wxCommandEvent& WXUNUSED(ev) )
@@ -780,7 +789,7 @@ void GridFrame::OnAddToSelectToggle(wxCommandEvent& event)
 
 void GridFrame::OnLabelLeftClick( wxGridEvent& ev )
 {
-    logBuf = wxEmptyString;
+    wxString logBuf;
     if ( ev.GetRow() != -1 )
     {
         logBuf << _T("Left click on row label ") << ev.GetRow();
@@ -794,8 +803,10 @@ void GridFrame::OnLabelLeftClick( wxGridEvent& ev )
         logBuf << _T("Left click on corner label");
     }
 
-    if ( ev.ShiftDown() ) logBuf << _T(" (shift down)");
-    if ( ev.ControlDown() ) logBuf << _T(" (control down)");
+    if ( ev.ShiftDown() )
+        logBuf << _T(" (shift down)");
+    if ( ev.ControlDown() )
+        logBuf << _T(" (control down)");
     wxLogMessage( wxT("%s"), logBuf.c_str() );
 
     // you must call event skip if you want default grid processing
@@ -806,10 +817,7 @@ void GridFrame::OnLabelLeftClick( wxGridEvent& ev )
 
 void GridFrame::OnCellLeftClick( wxGridEvent& ev )
 {
-    logBuf = wxEmptyString;
-    logBuf << _T("Left click at row ") << ev.GetRow()
-           << _T(" col ") << ev.GetCol();
-    wxLogMessage( wxT("%s"), logBuf.c_str() );
+    wxLogMessage(_T("Left click at row %d, col %d"), ev.GetRow(), ev.GetCol());
 
     // you must call event skip if you want default grid processing
     // (cell highlighting etc.)
@@ -820,9 +828,7 @@ void GridFrame::OnCellLeftClick( wxGridEvent& ev )
 
 void GridFrame::OnRowSize( wxGridSizeEvent& ev )
 {
-    logBuf = wxEmptyString;
-    logBuf << _T("Resized row ") << ev.GetRowOrCol();
-    wxLogMessage( wxT("%s"), logBuf.c_str() );
+    wxLogMessage(_T("Resized row %d"), ev.GetRowOrCol());
 
     ev.Skip();
 }
@@ -830,17 +836,92 @@ void GridFrame::OnRowSize( wxGridSizeEvent& ev )
 
 void GridFrame::OnColSize( wxGridSizeEvent& ev )
 {
-    logBuf = wxEmptyString;
-    logBuf << _T("Resized col ") << ev.GetRowOrCol();
-    wxLogMessage( wxT("%s"), logBuf.c_str() );
+    wxLogMessage(_T("Resized col %d"), ev.GetRowOrCol());
 
     ev.Skip();
 }
 
 
+void GridFrame::OnShowSelection(wxCommandEvent& WXUNUSED(event))
+{
+    // max number of elements to dump -- otherwise it can take too much time
+    static const size_t countMax = 100;
+
+    bool rows = false;
+
+    switch ( grid->GetSelectionMode() )
+    {
+        case wxGrid::wxGridSelectCells:
+            {
+                const wxGridCellCoordsArray cells(grid->GetSelectedCells());
+                size_t count = cells.size();
+                wxLogMessage(_T("%lu cells selected:"), (unsigned long)count);
+                if ( count > countMax )
+                {
+                    wxLogMessage(_T("[too many selected cells, ")
+                                 _T("showing only the first %lu]"),
+                                 (unsigned long)countMax);
+                    count = countMax;
+                }
+
+                for ( size_t n = 0; n < count; n++ )
+                {
+                    const wxGridCellCoords& c = cells[n];
+                    wxLogMessage(_T("  selected cell %lu: (%d, %d)"),
+                                 (unsigned long)n, c.GetCol(), c.GetRow());
+                }
+            }
+            break;
+
+        case wxGrid::wxGridSelectRows:
+            rows = true;
+            // fall through
+
+        case wxGrid::wxGridSelectColumns:
+            {
+                const wxChar *plural, *single;
+                if ( rows )
+                {
+                    plural = _T("rows");
+                    single = _T("row");
+                }
+                else // columns
+                {
+                    plural = _T("columns");
+                    single = _T("column");
+                }
+
+                // NB: extra parentheses needed to avoid bcc 5.82 errors
+                const wxArrayInt sels((rows ? grid->GetSelectedRows()
+                                            : grid->GetSelectedCols()));
+                size_t count = sels.size();
+                wxLogMessage(_T("%lu %s selected:"),
+                             (unsigned long)count, plural);
+                if ( count > countMax )
+                {
+                    wxLogMessage(_T("[too many selected %s, ")
+                                 _T("showing only the first %lu]"),
+                                 plural, (unsigned long)countMax);
+                    count = countMax;
+                }
+
+                for ( size_t n = 0; n < count; n++ )
+                {
+                    wxLogMessage(_T("  selected %s %lu: %d"),
+                                 single, (unsigned long)n, sels[n]);
+                }
+            }
+            break;
+
+        default:
+            wxFAIL_MSG( _T("unknown wxGrid selection mode") );
+            break;
+    }
+}
+
 void GridFrame::OnSelectCell( wxGridEvent& ev )
 {
-    logBuf = wxEmptyString;
+    wxString logBuf;
     if ( ev.Selecting() )
         logBuf << _T("Selected ");
     else
@@ -851,6 +932,11 @@ void GridFrame::OnSelectCell( wxGridEvent& ev )
            << _T(", ShiftDown: ")<< (ev.ShiftDown() ? 'T':'F')
            << _T(", AltDown: ")<< (ev.AltDown() ? 'T':'F')
            << _T(", MetaDown: ")<< (ev.MetaDown() ? 'T':'F') << _T(" )");
+
+    //Indicate whether this column was moved
+    if ( ((wxGrid *)ev.GetEventObject())->GetColPos( ev.GetCol() ) != ev.GetCol() )
+        logBuf << _T(" *** Column moved, current position: ") << ((wxGrid *)ev.GetEventObject())->GetColPos( ev.GetCol() );
+
     wxLogMessage( wxT("%s"), logBuf.c_str() );
 
     // you must call Skip() if you want the default processing
@@ -860,7 +946,7 @@ void GridFrame::OnSelectCell( wxGridEvent& ev )
 
 void GridFrame::OnRangeSelected( wxGridRangeSelectEvent& ev )
 {
-    logBuf = wxEmptyString;
+    wxString logBuf;
     if ( ev.Selecting() )
         logBuf << _T("Selected ");
     else
@@ -880,24 +966,19 @@ void GridFrame::OnRangeSelected( wxGridRangeSelectEvent& ev )
 
 void GridFrame::OnCellValueChanged( wxGridEvent& ev )
 {
-    logBuf = wxEmptyString;
-    logBuf  << _T("Value changed for cell at")
-            << _T(" row ") << ev.GetRow()
-            << _T(" col ") << ev.GetCol();
+    int row = ev.GetRow(),
+        col = ev.GetCol();
 
-    wxLogMessage( wxT("%s"), logBuf.c_str() );
+    wxLogMessage(_T("Value changed for cell at row %d, col %d: now \"%s\""),
+                 row, col, grid->GetCellValue(row, col).c_str());
 
     ev.Skip();
 }
 
 void GridFrame::OnCellBeginDrag( wxGridEvent& ev )
 {
-    logBuf = wxEmptyString;
-    logBuf  << _T("Got request to drag cell at")
-            << _T(" row ") << ev.GetRow()
-            << _T(" col ") << ev.GetCol();
-
-    wxLogMessage( wxT("%s"), logBuf.c_str() );
+    wxLogMessage(_T("Got request to drag cell at row %d, col %d"),
+                 ev.GetRow(), ev.GetCol());
 
     ev.Skip();
 }
@@ -1364,8 +1445,7 @@ wxString BugsGridTable::GetColLabelValue( int col )
 // ----------------------------------------------------------------------------
 
 BugsGridFrame::BugsGridFrame()
-             : wxFrame(NULL, wxID_ANY, _T("Bugs table"),
-                       wxDefaultPosition, wxSize(500, 300))
+             : wxFrame(NULL, wxID_ANY, _T("Bugs table"))
 {
     wxGrid *grid = new wxGrid(this, wxID_ANY, wxDefaultPosition);
     wxGridTableBase *table = new BugsGridTable();
@@ -1384,8 +1464,6 @@ BugsGridFrame::BugsGridFrame()
     grid->SetColAttr(Col_Id, attrRO);
     grid->SetColAttr(Col_Priority, attrRangeEditor);
     grid->SetColAttr(Col_Severity, attrCombo);
-
-    grid->SetMargins(0, 0);
 
     grid->Fit();
     SetClientSize(grid->GetSize());

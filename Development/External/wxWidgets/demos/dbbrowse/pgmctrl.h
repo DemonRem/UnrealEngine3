@@ -4,7 +4,7 @@
 // Author:      Mark Johnson
 // Modified by: 19990806.mj10777
 // Created:     19991010
-// RCS-ID:      $Id: pgmctrl.h,v 1.8 2005/01/31 18:09:46 ABX Exp $
+// RCS-ID:      $Id: pgmctrl.h 31677 2005-01-31 18:18:18Z ABX $
 // Copyright:   (c) Mark Johnson, Berlin Germany
 // Licence:     wxWindows license
 

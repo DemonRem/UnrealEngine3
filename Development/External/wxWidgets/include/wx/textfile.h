@@ -6,17 +6,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     03.04.98
-// RCS-ID:      $Id: textfile.h,v 1.33 2004/05/23 20:50:25 JS Exp $
+// RCS-ID:      $Id: textfile.h 38570 2006-04-05 14:37:47Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_TEXTFILE_H
 #define _WX_TEXTFILE_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "textfile.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -43,8 +39,8 @@ protected:
     virtual bool OnOpen(const wxString &strBufferName,
                         wxTextBufferOpenMode OpenMode);
     virtual bool OnClose();
-    virtual bool OnRead(wxMBConv& conv);
-    virtual bool OnWrite(wxTextFileType typeNew, wxMBConv& conv);
+    virtual bool OnRead(const wxMBConv& conv);
+    virtual bool OnWrite(wxTextFileType typeNew, const wxMBConv& conv);
 
 private:
 

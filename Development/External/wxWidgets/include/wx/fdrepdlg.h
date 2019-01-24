@@ -12,20 +12,16 @@
 #ifndef _WX_FINDREPLACEDLG_H_
 #define _WX_FINDREPLACEDLG_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "fdrepdlg.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_FINDREPLDLG
 
 #include "wx/dialog.h"
 
-class WXDLLEXPORT wxFindDialogEvent;
-class WXDLLEXPORT wxFindReplaceDialog;
-class WXDLLEXPORT wxFindReplaceData;
-class WXDLLEXPORT wxFindReplaceDialogImpl;
+class WXDLLIMPEXP_FWD_CORE wxFindDialogEvent;
+class WXDLLIMPEXP_FWD_CORE wxFindReplaceDialog;
+class WXDLLIMPEXP_FWD_CORE wxFindReplaceData;
+class WXDLLIMPEXP_FWD_CORE wxFindReplaceDialogImpl;
 
 // ----------------------------------------------------------------------------
 // Flags for wxFindReplaceData.Flags

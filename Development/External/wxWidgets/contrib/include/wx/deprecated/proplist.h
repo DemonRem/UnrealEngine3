@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: proplist.h,v 1.4 2004/09/27 19:24:29 ABX Exp $
+// RCS-ID:      $Id: proplist.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -41,10 +41,6 @@
 
 #ifndef _WX_PROPLIST_H_
 #define _WX_PROPLIST_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "proplist.h"
-#endif
 
 #include "wx/deprecated/setup.h"
 

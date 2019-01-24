@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/ctrlsub.cpp
+// Name:        src/common/ctrlsub.cpp
 // Purpose:     wxItemContainer implementation
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     22.10.99
-// RCS-ID:      $Id: ctrlsub.cpp,v 1.18 2005/02/13 19:01:17 VZ Exp $
+// RCS-ID:      $Id: ctrlsub.cpp 39077 2006-05-06 19:05:50Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "controlwithitems.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -34,6 +30,8 @@
     #include "wx/ctrlsub.h"
     #include "wx/arrstr.h"
 #endif
+
+IMPLEMENT_ABSTRACT_CLASS(wxControlWithItems, wxControl)
 
 // ============================================================================
 // wxItemContainerImmutable implementation
@@ -51,9 +49,10 @@ wxItemContainerImmutable::~wxItemContainerImmutable()
 wxString wxItemContainerImmutable::GetStringSelection() const
 {
     wxString s;
+
     int sel = GetSelection();
-    if ( sel != -1 )
-        s = GetString(sel);
+    if ( sel != wxNOT_FOUND )
+        s = GetString((unsigned int)sel);
 
     return s;
 }
@@ -73,9 +72,9 @@ wxArrayString wxItemContainerImmutable::GetStrings() const
 {
     wxArrayString result;
 
-    const size_t count = GetCount();
+    const unsigned int count = GetCount();
     result.Alloc(count);
-    for ( size_t n = 0; n < count; n++ )
+    for ( unsigned int n = 0; n < count; n++ )
         result.Add(GetString(n));
 
     return result;
@@ -96,14 +95,14 @@ wxItemContainer::~wxItemContainer()
 
 void wxItemContainer::Append(const wxArrayString& strings)
 {
-    size_t count = strings.GetCount();
+    const size_t count = strings.GetCount();
     for ( size_t n = 0; n < count; n++ )
     {
         Append(strings[n]);
     }
 }
 
-int wxItemContainer::Insert(const wxString& item, int pos, void *clientData)
+int wxItemContainer::Insert(const wxString& item, unsigned int pos, void *clientData)
 {
     int n = DoInsert(item, pos);
     if ( n != wxNOT_FOUND )
@@ -112,8 +111,7 @@ int wxItemContainer::Insert(const wxString& item, int pos, void *clientData)
     return n;
 }
 
-int
-wxItemContainer::Insert(const wxString& item, int pos, wxClientData *clientData)
+int wxItemContainer::Insert(const wxString& item, unsigned int pos, wxClientData *clientData)
 {
     int n = DoInsert(item, pos);
     if ( n != wxNOT_FOUND )
@@ -126,7 +124,7 @@ wxItemContainer::Insert(const wxString& item, int pos, wxClientData *clientData)
 // client data
 // ----------------------------------------------------------------------------
 
-void wxItemContainer::SetClientObject(int n, wxClientData *data)
+void wxItemContainer::SetClientObject(unsigned int n, wxClientData *data)
 {
     wxASSERT_MSG( m_clientDataItemsType != wxClientData_Void,
                   wxT("can't have both object and void client data") );
@@ -149,7 +147,7 @@ void wxItemContainer::SetClientObject(int n, wxClientData *data)
     DoSetItemClientObject(n, data);
 }
 
-wxClientData *wxItemContainer::GetClientObject(int n) const
+wxClientData *wxItemContainer::GetClientObject(unsigned int n) const
 {
     wxASSERT_MSG( m_clientDataItemsType == wxClientData_Object,
                   wxT("this window doesn't have object client data") );
@@ -157,7 +155,7 @@ wxClientData *wxItemContainer::GetClientObject(int n) const
     return DoGetItemClientObject(n);
 }
 
-void wxItemContainer::SetClientData(int n, void *data)
+void wxItemContainer::SetClientData(unsigned int n, void *data)
 {
     wxASSERT_MSG( m_clientDataItemsType != wxClientData_Object,
                   wxT("can't have both object and void client data") );
@@ -166,12 +164,29 @@ void wxItemContainer::SetClientData(int n, void *data)
     m_clientDataItemsType = wxClientData_Void;
 }
 
-void *wxItemContainer::GetClientData(int n) const
+void *wxItemContainer::GetClientData(unsigned int n) const
 {
     wxASSERT_MSG( m_clientDataItemsType == wxClientData_Void,
                   wxT("this window doesn't have void client data") );
 
     return DoGetItemClientData(n);
+}
+
+// ============================================================================
+// wxControlWithItems implementation
+// ============================================================================
+
+void wxControlWithItems::InitCommandEventWithItems(wxCommandEvent& event, int n)
+{
+    InitCommandEvent(event);
+
+    if ( n != wxNOT_FOUND )
+    {
+        if ( HasClientObjectData() )
+            event.SetClientObject(GetClientObject(n));
+        else if ( HasClientUntypedData() )
+            event.SetClientData(GetClientData(n));
+    }
 }
 
 wxControlWithItems::~wxControlWithItems()

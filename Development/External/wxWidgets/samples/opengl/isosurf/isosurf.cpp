@@ -4,15 +4,10 @@
 // Author:      Brian Paul (original gltk version), Wolfram Gloger
 // Modified by: Julian Smart
 // Created:     04/01/98
-// RCS-ID:      $Id: isosurf.cpp,v 1.18 2005/02/26 20:03:26 JS Exp $
+// RCS-ID:      $Id: isosurf.cpp 54693 2008-07-18 13:56:25Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -54,7 +49,9 @@
 
 #include "isosurf.h"
 
+#if !defined(__WXMSW__) && !defined(__WXPM__)
 #include "../../sample.xpm"
+#endif
 
 // The following part is taken largely unchanged from the original C Version
 
@@ -258,7 +255,7 @@ bool MyApp::OnInit()
         wxDefaultPosition, wxDefaultSize);
 
     // Give it an icon
-    frame->SetIcon(wxIcon(_T("mondrian")));
+    frame->SetIcon(wxICON(sample));
 
     // Make a menubar
     wxMenu *fileMenu = new wxMenu;
@@ -277,7 +274,7 @@ bool MyApp::OnInit()
     int gl_attrib[20] = { WX_GL_RGBA, WX_GL_MIN_RED, 1, WX_GL_MIN_GREEN, 1,
         WX_GL_MIN_BLUE, 1, WX_GL_DEPTH_SIZE, 1,
         WX_GL_DOUBLEBUFFER,
-#  ifdef __WXMAC__
+#  if defined(__WXMAC__) || defined(__WXCOCOA__)
         GL_NONE };
 #  else
         None };
@@ -317,7 +314,6 @@ MyFrame::MyFrame(wxFrame *frame, const wxString& title, const wxPoint& pos,
     : wxFrame(frame, wxID_ANY, title, pos, size, style)
 {
     m_canvas = NULL;
-    SetIcon(wxIcon(sample_xpm));
 }
 
 MyFrame::~MyFrame()

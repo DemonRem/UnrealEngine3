@@ -7,15 +7,9 @@
 // Created:     19991127
 // Copyright:   (c) Mark Johnson
 // Licence:     wxWindows license
-// RCS-ID:      $Id: dbbrowse.cpp,v 1.21 2005/05/31 09:17:53 JS Exp $
+// RCS-ID:      $Id: dbbrowse.cpp 35650 2005-09-23 12:56:45Z MR $
 //----------------------------------------------------------------------------------------
-//-- all #ifdefs that the whole Project needs. -------------------------------------------
-//----------------------------------------------------------------------------------------
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
-//----------------------------------------------------------------------------------------
+
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 //----------------------------------------------------------------------------------------

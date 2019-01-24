@@ -4,11 +4,10 @@
 // Author:      Wlodzimierz ABX Skiba
 // Modified by:
 // Created:     30.08.2004
-// RCS-ID:      $Id: textctrlce.cpp,v 1.6 2005/02/06 11:27:19 JS Exp $
+// RCS-ID:      $Id: textctrlce.cpp 42816 2006-10-31 08:50:17Z RD $
 // Copyright:   (c) Wlodzimierz Skiba
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
-
 
 // ============================================================================
 // declarations
@@ -18,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "textctrlce.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,18 +24,16 @@
     #pragma hdrstop
 #endif
 
+#if wxUSE_TEXTCTRL && defined(__SMARTPHONE__) && defined(__WXWINCE__)
+
+#include "wx/textctrl.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/textctrl.h"
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
 #endif
 
 #include "wx/spinbutt.h"
 #include "wx/textfile.h"
-
-#include <commctrl.h>
-#include "wx/msw/missing.h"
-#include "wx/msw/winundef.h"
-
-#if wxUSE_TEXTCTRL && defined(__SMARTPHONE__) && defined(__WXWINCE__)
 
 #define GetBuddyHwnd()      (HWND)(m_hwndBuddy)
 
@@ -263,7 +256,7 @@ bool wxTextCtrl::Create(wxWindow *parent, wxWindowID id,
         sizeText.y = EDIT_HEIGHT_FROM_CHAR_HEIGHT(cy);
     }
 
-    SetBestSize(size);
+    SetInitialSize(size);
 
     (void)::ShowWindow(GetBuddyHwnd(), SW_SHOW);
 
@@ -400,7 +393,7 @@ wxString wxTextCtrl::GetRange(long from, long to) const
     return str;
 }
 
-void wxTextCtrl::SetValue(const wxString& value)
+void wxTextCtrl::DoSetValue(const wxString& value, int flags)
 {
     // if the text is long enough, it's faster to just set it instead of first
     // comparing it with the old one (chances are that it will be different
@@ -408,7 +401,7 @@ void wxTextCtrl::SetValue(const wxString& value)
     // edit controls mostly)
     if ( (value.length() > 0x400) || (value != GetValue()) )
     {
-        DoWriteText(value, false);
+        DoWriteText(value, flags);
 
         // for compatibility, don't move the cursor when doing SetValue()
         SetInsertionPoint(0);
@@ -416,7 +409,8 @@ void wxTextCtrl::SetValue(const wxString& value)
     else // same text
     {
         // still send an event for consistency
-        SendUpdateEvent();
+        if ( flags & SetValue_SendEvent )
+            SendUpdateEvent();
     }
 
     // we should reset the modified flag even if the value didn't really change
@@ -431,8 +425,9 @@ void wxTextCtrl::WriteText(const wxString& value)
     DoWriteText(value);
 }
 
-void wxTextCtrl::DoWriteText(const wxString& value, bool selectionOnly)
+void wxTextCtrl::DoWriteText(const wxString& value, int flags)
 {
+    bool selectionOnly = (flags & SetValue_SelectionOnly) != 0;
     wxString valueDos;
     if ( m_windowStyle & wxTE_MULTILINE )
         valueDos = wxTextFile::Translate(value, wxTextFileType_Dos);
@@ -443,7 +438,7 @@ void wxTextCtrl::DoWriteText(const wxString& value, bool selectionOnly)
     // call below which is confusing for the client code and so should be
     // avoided
     //
-    if ( ( selectionOnly && HasSelection() ) )
+    if ( selectionOnly && HasSelection() )
     {
         m_suppressNextUpdate = true;
     }
@@ -451,7 +446,7 @@ void wxTextCtrl::DoWriteText(const wxString& value, bool selectionOnly)
     ::SendMessage(GetBuddyHwnd(), selectionOnly ? EM_REPLACESEL : WM_SETTEXT,
                   0, (LPARAM)valueDos.c_str());
 
-    if ( !selectionOnly )
+    if ( !selectionOnly && !( flags & SetValue_SendEvent ) )
     {
         // Windows already sends an update event for single-line
         // controls.
@@ -648,7 +643,7 @@ void wxTextCtrl::Replace(long from, long to, const wxString& value)
     // Set selection and remove it
     DoSetSelection(from, to, false);
 
-    DoWriteText(value, true);
+    DoWriteText(value, SetValue_SelectionOnly);
 }
 
 void wxTextCtrl::Remove(long from, long to)

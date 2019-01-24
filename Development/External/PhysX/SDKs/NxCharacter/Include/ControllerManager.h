@@ -8,14 +8,17 @@
 \*----------------------------------------------------------------------------*/
 
 #include "NxControllerManager.h"
+#include "CCTAllocator.h"
 
 //A simple allocator using malloc() - The old ControllerManager used global allocation, so does the wrapper.
 class ControllerManagerAllocator : public NxUserAllocator {
 public:
-	virtual void*	mallocDEBUG(size_t size, const char* fileName, int line)	{ return ::malloc(size); }
-	virtual void*	malloc(size_t size)											{ return ::malloc(size); }
-	virtual void*	realloc(void* memory, size_t size)							{ return ::realloc(memory, size); }
-	virtual void	free(void* memory)											{ ::free(memory); }
+	virtual void*	mallocDEBUG(size_t size, const char*, int)	{ return ::malloc(size); }
+	virtual void*   mallocDEBUG(size_t size, const char*, int, const char*, NxMemoryType) { return ::malloc(size); }
+	virtual void*	malloc(size_t size)	{ return ::malloc(size); }
+	virtual void*   malloc(size_t size, NxMemoryType) { return ::malloc(size); }
+	virtual void*	realloc(void* memory, size_t size) { return ::realloc(memory, size); }
+	virtual void	free(void* memory) { ::free(memory); }
 };
 
 /**
@@ -57,17 +60,19 @@ public:
 		}
 		return mArray.begin();
 	}
+	NxDebugRenderable	getDebugData()		{ return mManager->getDebugData();	}
+	void				resetDebugData()	{ mManager->resetDebugData();		}
 protected:
 	NxControllerManager* mManager;
 	ControllerManagerAllocator* mAllocator;
-	NxArray<NxController*> mArray;
+	NxArray<NxController*, CCTAllocator> mArray;
 };
 
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

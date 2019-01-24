@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXMATERIAL
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -71,9 +71,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterialIndex NxTriangleMeshDesc.materialIndices NxShapeDesc.materialIndex NxShape.setMaterial()
 	*/
@@ -88,9 +89,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see saveToDesc NxMaterialDesc
 	*/
@@ -103,9 +105,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see loadFromDesc NxMaterialDesc
 	*/
@@ -118,9 +121,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene
 	*/
@@ -138,9 +142,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterialDesc.dynamicFriction getDynamicFriction()
 	*/
@@ -153,9 +158,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDynamicFriction NxMaterialDesc.dynamicFriction
 	*/
@@ -173,9 +179,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getStaticFriction() NxMaterialDesc.staticFriction
 	*/
@@ -187,9 +194,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setStaticFriction NxMaterialDesc.staticFriction
 	*/
@@ -206,9 +214,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getRestitution() NxMaterialDesc.restitution
 	*/
@@ -223,9 +232,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setRestitution() NxMaterialDesc.restitution
 	*/
@@ -242,9 +252,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getDynamicFrictionV() NxMaterialDesc.dynamicFrictionV setFlags()
 	*/
@@ -259,9 +270,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDynamicFrictionV() NxMaterialDesc.dynamicFrictionV
 	*/
@@ -278,9 +290,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getStaticFrictionV() NxMaterialDesc.staticFrictionV setFlags()
 	*/
@@ -293,9 +306,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setStaticFrictionV() NxMaterialDesc.staticFrictionV
 	*/
@@ -312,9 +326,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getDirOfAnisotropy() NxMaterialDesc.dirOfAnisotropy setFlags()
 	*/
@@ -327,9 +342,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setDirOfAnisotropy() NxMaterialDesc.dirOfAnisotropy setFlags()
 	*/
@@ -344,9 +360,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getFlags() NxMaterialFlag
 	*/
@@ -359,9 +376,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMaterialFlag setFlags()
 	*/
@@ -378,9 +396,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCombineMode getFrictionCombineMode setStaticFriction() setDynamicFriction()
 	*/
@@ -395,9 +414,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCombineMode setFrictionCombineMode() 
 	*/
@@ -414,9 +434,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCombineMode getRestitutionCombineMode() setRestitution()
 	*/
@@ -431,9 +452,10 @@ class NxMaterial
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCombineMode setRestitutionCombineMode getRestitution()
 	*/
@@ -448,9 +470,9 @@ class NxMaterial
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

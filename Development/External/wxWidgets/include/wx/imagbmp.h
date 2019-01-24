@@ -1,18 +1,14 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        imagbmp.h
-// Purpose:     wxImage BMP, ICO and CUR handlers
+// Name:        wx/imagbmp.h
+// Purpose:     wxImage BMP, ICO, CUR and ANI handlers
 // Author:      Robert Roebling, Chris Elliott
-// RCS-ID:      $Id: imagbmp.h,v 1.18 2004/10/18 05:55:41 ABX Exp $
+// RCS-ID:      $Id: imagbmp.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) Robert Roebling, Chris Elliott
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_IMAGBMP_H_
 #define _WX_IMAGBMP_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "imagbmp.h"
-#endif
 
 #include "wx/image.h"
 
@@ -60,14 +56,14 @@ public:
         m_extension = _T("bmp");
         m_type = wxBITMAP_TYPE_BMP;
         m_mime = _T("image/x-bmp");
-    };
+    }
 
 #if wxUSE_STREAMS
     virtual bool SaveFile( wxImage *image, wxOutputStream& stream, bool verbose=true );
     virtual bool LoadFile( wxImage *image, wxInputStream& stream, bool verbose=true, int index=-1 );
-    virtual bool DoCanRead( wxInputStream& stream );
 
 protected:
+    virtual bool DoCanRead( wxInputStream& stream );
     bool SaveDib(wxImage *image, wxOutputStream& stream, bool verbose,
                  bool IsBmp, bool IsMask);
     bool DoLoadDib(wxImage *image, int width, int height, int bpp, int ncolors,
@@ -94,14 +90,15 @@ public:
         m_extension = _T("ico");
         m_type = wxBITMAP_TYPE_ICO;
         m_mime = _T("image/x-ico");
-    };
+    }
 
 #if wxUSE_STREAMS
     virtual bool SaveFile( wxImage *image, wxOutputStream& stream, bool verbose=true );
     virtual bool LoadFile( wxImage *image, wxInputStream& stream, bool verbose=true, int index=-1 );
     virtual bool DoLoadFile( wxImage *image, wxInputStream& stream, bool verbose, int index );
-    virtual bool DoCanRead( wxInputStream& stream );
     virtual int GetImageCount( wxInputStream& stream );
+protected:
+    virtual bool DoCanRead( wxInputStream& stream );
 #endif // wxUSE_STREAMS
 
 private:
@@ -122,12 +119,13 @@ public:
         m_extension = _T("cur");
         m_type = wxBITMAP_TYPE_CUR;
         m_mime = _T("image/x-cur");
-    };
+    }
 
     // VS: This handler's meat is implemented inside wxICOHandler (the two
     //     formats are almost identical), but we hide this fact at
     //     the API level, since it is a mere implementation detail.
 
+protected:
 #if wxUSE_STREAMS
     virtual bool DoCanRead( wxInputStream& stream );
 #endif // wxUSE_STREAMS
@@ -148,14 +146,15 @@ public:
         m_extension = _T("ani");
         m_type = wxBITMAP_TYPE_ANI;
         m_mime = _T("image/x-ani");
-    };
+    }
 
 
 #if wxUSE_STREAMS
-    virtual bool SaveFile( wxImage *WXUNUSED(image), wxOutputStream& WXUNUSED(stream), bool WXUNUSED(verbose=true) ){return false ;};
+    virtual bool SaveFile( wxImage *WXUNUSED(image), wxOutputStream& WXUNUSED(stream), bool WXUNUSED(verbose=true) ){return false ;}
     virtual bool LoadFile( wxImage *image, wxInputStream& stream, bool verbose=true, int index=-1 );
-    virtual bool DoCanRead( wxInputStream& stream );
     virtual int GetImageCount( wxInputStream& stream );
+protected:
+    virtual bool DoCanRead( wxInputStream& stream );
 #endif // wxUSE_STREAMS
 
 private:

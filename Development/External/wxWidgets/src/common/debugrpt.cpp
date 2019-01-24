@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2005-01-17
-// RCS-ID:      $Id: debugrpt.cpp,v 1.19 2005/07/21 16:19:39 ABX Exp $
+// RCS-ID:      $Id: debugrpt.cpp 42650 2006-10-29 19:53:53Z VZ $
 // Copyright:   (c) 2005 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,8 +80,6 @@ protected:
     bool m_isOk;
 };
 
-#endif // wxUSE_STACKWALKER
-
 // ----------------------------------------------------------------------------
 // local functions
 // ----------------------------------------------------------------------------
@@ -106,13 +104,15 @@ TextElement(wxXmlNode *node, const wxChar *name, const wxString& value)
     nodeChild->AddChild(new wxXmlNode(wxXML_TEXT_NODE, wxEmptyString, value));
 }
 
+#if wxUSE_CRASHREPORT && defined(__INTEL__)
+
 static inline void
 HexElement(wxXmlNode *node, const wxChar *name, unsigned long value)
 {
     TextElement(node, name, wxString::Format(_T("%08lx"), value));
 }
 
-#if wxUSE_STACKWALKER
+#endif // wxUSE_CRASHREPORT
 
 // ============================================================================
 // XmlStackWalker implementation
@@ -190,10 +190,16 @@ wxDebugReport::wxDebugReport()
     // of course, this doesn't protect us against malicious users...
     wxFileName fn;
     fn.AssignTempFileName(appname);
+#if wxUSE_DATETIME
     m_dir.Printf(_T("%s%c%s_dbgrpt-%lu-%s"),
                  fn.GetPath().c_str(), wxFILE_SEP_PATH, appname.c_str(),
                  wxGetProcessId(),
                  wxDateTime::Now().Format(_T("%Y%m%dT%H%M%S")).c_str());
+#else
+    m_dir.Printf(_T("%s%c%s_dbgrpt-%lu"),
+                 fn.GetPath().c_str(), wxFILE_SEP_PATH, appname.c_str(),
+                 wxGetProcessId());
+#endif
 
     // as we are going to save the process state there use restrictive
     // permissions
@@ -371,7 +377,7 @@ bool wxDebugReport::DoAddLoadedModules(wxXmlNode *nodeModules)
         size_t len = 0;
         if ( info.GetAddress(&addr, &len) )
         {
-            HexProperty(nodeModule, _T("address"), (unsigned long)addr);
+            HexProperty(nodeModule, _T("address"), wxPtrToUInt(addr));
             HexProperty(nodeModule, _T("size"), len);
         }
 
@@ -397,7 +403,7 @@ bool wxDebugReport::DoAddExceptionInfo(wxXmlNode *nodeContext)
 
     HexProperty(nodeExc, _T("code"), c.code);
     nodeExc->AddProperty(_T("name"), c.GetExceptionString());
-    HexProperty(nodeExc, _T("address"), (unsigned long)c.addr);
+    HexProperty(nodeExc, _T("address"), wxPtrToUInt(c.addr));
 
 #ifdef __INTEL__
     wxXmlNode *nodeRegs = new wxXmlNode(wxXML_ELEMENT_NODE, _T("registers"));
@@ -556,10 +562,10 @@ bool wxDebugReport::Process()
 
 bool wxDebugReport::DoProcess()
 {
-    wxString msg = _("*** A debug report has been generated\n");
-    msg += wxString::Format(_("*** It can be found in \"%s\"\n"),
-                            GetDirectory().c_str());
-    msg += _("*** And includes the following files:\n");
+    wxString msg(_("A debug report has been generated. It can be found in"));
+    msg << _T("\n")
+           _T("\t") << GetDirectory() << _T("\n\n")
+        << _("And includes the following files:\n");
 
     wxString name, desc;
     const size_t count = GetFilesCount();

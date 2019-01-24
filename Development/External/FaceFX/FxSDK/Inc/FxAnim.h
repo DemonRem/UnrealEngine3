@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxAnim_H__
@@ -43,10 +43,7 @@ struct FxAnimBoneWeight
 
 /// An animation.  
 /// In FaceFX, the FxAnim class is responsible for grouping together the various
-/// curves controlling the animation.  There are two different curve types, but
-/// as of this version, only the FxAnimCurve is used.  The FxBoneCurve is not 
-/// supported but is reserved for future use.  It is only here as a placeholder 
-/// and should not be used by licensees.
+/// curves controlling the animation.
 ///
 /// \ingroup animation
 class FxAnim : public FxNamedObject, public FxDataContainer
@@ -68,12 +65,6 @@ public:
 	/// Test for inequality.
 	FxBool operator!=( const FxAnim& other ) const;
 
-	/// Ticks the animation and updates the nodes controlled in the %Face Graph.
-	/// \param time The time for which to evaluate, in seconds.
-	/// \return \p FxTrue if the animation is playing or \p FxFalse if it has 
-	/// finished.
-	FxBool Tick( const FxReal time ) const;
-	
 	/// Returns the number of animation curves in the animation.
 	FX_INLINE FxSize GetNumAnimCurves( void ) const { return _animCurves.Length(); }
 	/// Returns the index of the animation curve with the specified name.
@@ -82,9 +73,9 @@ public:
 	/// \p FxInvalidIndex if an animation curve named \a name was not found.
 	FxSize FindAnimCurve( const FxName& name ) const;
 	/// Returns a const reference to the animation curve at index.
-	const FxAnimCurve& GetAnimCurve( FxSize index ) const;
+	FX_INLINE const FxAnimCurve& GetAnimCurve( FxSize index ) const { return _animCurves[index]; }
 	/// Returns a mutable reference to the animation curve at index.
-	FxAnimCurve& GetAnimCurveM( FxSize index );
+	FX_INLINE FxAnimCurve& GetAnimCurveM( FxSize index ) { return _animCurves[index]; }
 
 	/// Adds the animation curve to the animation.  If FxFalse is returned then
 	/// the animation already contains the curve.
@@ -126,13 +117,6 @@ public:
 	FxBool RemoveBoneWeight( const FxName& boneName );
 	/// Removes all of the animation bone weights contained in the animation.
 	void RemoveAllBoneWeights( void );
-
-	/// Checks if the animation has been linked to the %Face Graph.
-	FxBool IsLinked( void ) const;
-	/// Links all curves in the animation to the %Face Graph.
-	void Link( const FxFaceGraph& faceGraph );
-	/// Unlinks the animation.
-	void Unlink( void );
 
 	/// Serialization.
 	virtual void Serialize( FxArchive& arc );
@@ -177,9 +161,6 @@ private:
 
 	/// The animation bone weights.
 	FxArray<FxAnimBoneWeight> _boneWeights;
-
-	// Whether the animation has been linked.
-	FxBool _isLinked;
 
 	// Unreal-specific stuff.
 	// The USoundCue path for the animation.
@@ -256,10 +237,19 @@ public:
 	/// Removes the animation named 'name'.
 	FxBool RemoveAnim( const FxName& name );
 
-	/// Links all animations in the group to the %Face Graph.
-	void Link( const FxFaceGraph& faceGraph );
-	/// Unlinks all animations in the group.
-	void Unlink( void );
+	/// Returns the name of the anim at the given index
+	FX_INLINE const FxChar* GetAnimNameAsCstr(FxSize index) { return _anims[index].GetNameAsCstr(); }
+
+	/// Remove the animation at the given index.
+	FX_INLINE FxBool RemoveAnimByIndex(FxSize index)
+	{
+		if (index < _anims.Length())
+		{
+			_anims.RemoveInPlace(index);
+			return FxTrue;
+		}
+		return FxFalse;
+	}
 
 	/// Serialization.
 	virtual void Serialize( FxArchive& arc );

@@ -4,17 +4,13 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     02/01/99
-// RCS-ID:      $Id: frmview.h,v 1.10 2004/07/22 18:51:10 ABX Exp $
+// RCS-ID:      $Id: frmview.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef __FRMVIEW_G__
 #define __FRMVIEW_G__
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "frmview.h"
-#endif
 
 #include "wx/module.h"
 

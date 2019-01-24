@@ -3,7 +3,7 @@
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxGestureConfig.h"
@@ -189,20 +189,6 @@ FxGestureConfig::FxGestureConfig()
 	eaWeights.PushBack(final);
 }
 
-// Serialize an FxRange
-FxArchive& operator<<( FxArchive& arc, FxRange& obj )
-{
-	arc << obj.min << obj.max;
-	return arc;
-}
-
-// Serialize an FxCentredRange
-FxArchive& operator<<( FxArchive& arc, FxCentredRange& obj )
-{
-	arc << obj.centre << obj.range;
-	return arc;
-}
-
 // Serialize an FxDriftProperty
 FxArchive& operator<<( FxArchive& arc, FxDriftProperty& obj )
 {
@@ -235,9 +221,8 @@ void FxGestureConfig::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxGestureConfig);
-	arc << version;
-
+	FxUInt16 version = arc.SerializeClassVersion("FxGestureConfig");
+	
 	arc
 		// Power and frequency extraction.
 		<< pfeAllowedFrequency

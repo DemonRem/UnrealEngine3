@@ -4,17 +4,13 @@
 // Author:      Jorgen Bodde
 // Modified by:
 // Created:     27/06/2004
-// RCS-ID:      $Id: test.h,v 1.2 2004/08/03 14:39:06 ABX Exp $
+// RCS-ID:      $Id: test.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Jorgen Bodde
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _TEST_H_
 #define _TEST_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "test.cpp"
-#endif
 
 /*!
  * Includes

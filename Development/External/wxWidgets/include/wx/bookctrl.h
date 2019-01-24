@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     19.08.03
-// RCS-ID:      $Id: bookctrl.h,v 1.19 2005/04/10 15:22:53 VZ Exp $
+// RCS-ID:      $Id: bookctrl.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_BOOKCTRL_H_
 #define _WX_BOOKCTRL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "bookctrl.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers
@@ -29,7 +25,30 @@
 
 WX_DEFINE_EXPORTED_ARRAY_PTR(wxWindow *, wxArrayPages);
 
-class WXDLLEXPORT wxImageList;
+class WXDLLIMPEXP_FWD_CORE wxImageList;
+class WXDLLIMPEXP_FWD_CORE wxBookCtrlBaseEvent;
+
+// ----------------------------------------------------------------------------
+// constants
+// ----------------------------------------------------------------------------
+
+// wxBookCtrl hit results
+enum
+{
+    wxBK_HITTEST_NOWHERE = 1,   // not on tab
+    wxBK_HITTEST_ONICON  = 2,   // on icon
+    wxBK_HITTEST_ONLABEL = 4,   // on label
+    wxBK_HITTEST_ONITEM  = wxBK_HITTEST_ONICON | wxBK_HITTEST_ONLABEL,
+    wxBK_HITTEST_ONPAGE  = 8    // not on tab control, but over the selected page
+};
+
+// wxBookCtrl flags (common for wxNotebook, wxListbook, wxChoicebook, wxTreebook)
+#define wxBK_DEFAULT          0x0000
+#define wxBK_TOP              0x0010
+#define wxBK_BOTTOM           0x0020
+#define wxBK_LEFT             0x0040
+#define wxBK_RIGHT            0x0080
+#define wxBK_ALIGN_MASK       (wxBK_TOP | wxBK_BOTTOM | wxBK_LEFT | wxBK_RIGHT)
 
 // ----------------------------------------------------------------------------
 // wxBookCtrlBase
@@ -77,14 +96,14 @@ public:
     virtual size_t GetPageCount() const { return m_pages.size(); }
 
     // get the panel which represents the given page
-    virtual wxWindow *GetPage(size_t n) { return m_pages[n]; }
+    wxWindow *GetPage(size_t n) { return m_pages[n]; }
+    wxWindow *GetPage(size_t n) const { return m_pages[n]; }
 
     // get the current page or NULL if none
     wxWindow *GetCurrentPage() const
     {
-        int n = GetSelection();
-        return n == wxNOT_FOUND ? NULL
-                                : wx_const_cast(wxBookCtrlBase *, this)->GetPage(n);
+        const int n = GetSelection();
+        return n == wxNOT_FOUND ? NULL : GetPage(n);
     }
 
     // get the currently selected page or wxNOT_FOUND if none
@@ -122,6 +141,23 @@ public:
     // calculate the size of the control from the size of its page
     virtual wxSize CalcSizeFromPage(const wxSize& sizePage) const = 0;
 
+    // get/set size of area between book control area and page area
+    unsigned int GetInternalBorder() const { return m_internalBorder; }
+    void SetInternalBorder(unsigned int border) { m_internalBorder = border; }
+
+    // Sets/gets the margin around the controller
+    void SetControlMargin(int margin) { m_controlMargin = margin; }
+    int GetControlMargin() const { return m_controlMargin; }
+
+    // returns true if we have wxBK_TOP or wxBK_BOTTOM style
+    bool IsVertical() const { return HasFlag(wxBK_BOTTOM | wxBK_TOP); }
+
+    // set/get option to shrink to fit current page
+    void SetFitToCurrentPage(bool fit) { m_fitToCurrentPage = fit; }
+    bool GetFitToCurrentPage() const { return m_fitToCurrentPage; }
+
+    // returns the sizer containing the control, if any
+    wxSizer* GetControlSizer() const { return m_controlSizer; }
 
     // operations
     // ----------
@@ -132,14 +168,14 @@ public:
     // remove one page from the notebook, without deleting it
     virtual bool RemovePage(size_t n)
     {
-        InvalidateBestSize();
+        DoInvalidateBestSize();
         return DoRemovePage(n) != NULL;
     }
 
     // remove all pages and delete them
     virtual bool DeleteAllPages()
     {
-        InvalidateBestSize();
+        DoInvalidateBestSize();
         WX_CLEAR_ARRAY(m_pages);
         return true;
     }
@@ -150,7 +186,7 @@ public:
                          bool bSelect = false,
                          int imageId = -1)
     {
-        InvalidateBestSize();
+        DoInvalidateBestSize();
         return InsertPage(GetPageCount(), page, text, bSelect, imageId);
     }
 
@@ -167,6 +203,9 @@ public:
     // NB: this function will generate PAGE_CHANGING/ED events
     virtual int SetSelection(size_t n) = 0;
 
+    // acts as SetSelection but does not generate events
+    virtual int ChangeSelection(size_t n) = 0;
+
 
     // cycle thru the pages
     void AdvanceSelection(bool forward = true)
@@ -179,7 +218,56 @@ public:
         }
     }
 
+    // hit test: returns which page is hit and, optionally, where (icon, label)
+    virtual int HitTest(const wxPoint& WXUNUSED(pt),
+                        long * WXUNUSED(flags) = NULL) const
+    {
+        return wxNOT_FOUND;
+    }
+
+
+    // we do have multiple pages
+    virtual bool HasMultiplePages() const { return true; }
+
+
 protected:
+    // flags for DoSetSelection()
+    enum
+    {
+        SetSelection_SendEvent = 1
+    };
+
+    // set the selection to the given page, sending the events (which can
+    // possibly prevent the page change from taking place) if SendEvent flag is
+    // included
+    virtual int DoSetSelection(size_t nPage, int flags = 0);
+
+    // if the derived class uses DoSetSelection() for implementing
+    // [Set|Change]Selection, it must override UpdateSelectedPage(),
+    // CreatePageChangingEvent() and MakeChangedEvent(), but as it might not
+    // use it, these functions are not pure virtual
+
+    // called to notify the control about a new current page
+    virtual void UpdateSelectedPage(size_t WXUNUSED(newsel))
+        { wxFAIL_MSG(wxT("Override this function!")); }
+
+    // create a new "page changing" event
+    virtual wxBookCtrlBaseEvent* CreatePageChangingEvent() const
+        { wxFAIL_MSG(wxT("Override this function!")); return NULL; }
+
+    // modify the event created by CreatePageChangingEvent() to "page changed"
+    // event, usually by just calling SetEventType() on it
+    virtual void MakeChangedEvent(wxBookCtrlBaseEvent& WXUNUSED(event))
+        { wxFAIL_MSG(wxT("Override this function!")); }
+
+
+    // Should we accept NULL page pointers in Add/InsertPage()?
+    //
+    // Default is no but derived classes may override it if they can treat NULL
+    // pages in some sensible way (e.g. wxTreebook overrides this to allow
+    // having nodes without any associated page)
+    virtual bool AllowNullPage() const { return false; }
+
     // remove the page and return a pointer to it
     virtual wxWindow *DoRemovePage(size_t page) = 0;
 
@@ -189,11 +277,19 @@ protected:
     // helper: get the next page wrapping if we reached the end
     int GetNextPage(bool forward) const;
 
-    // common part of all ctors
-    void Init();
+    // Lay out controls
+    void DoSize();
 
-    // Always rely on GetBestSize, which will look at all the pages
-    virtual void SetInitialBestSize(const wxSize& WXUNUSED(size)) { }
+    // This method also invalidates the size of the controller and should be
+    // called instead of just InvalidateBestSize() whenever pages are added or
+    // removed as this also affects the controller
+    void DoInvalidateBestSize();
+
+#if wxUSE_HELP
+    // Show the help for the corresponding page
+    void OnHelp(wxHelpEvent& event);
+#endif // wxUSE_HELP
+
 
     // the array of all pages of this control
     wxArrayPages m_pages;
@@ -204,8 +300,36 @@ protected:
     // true if we must delete m_imageList
     bool m_ownsImageList;
 
+    // get the page area
+    wxRect GetPageRect() const;
 
+    // event handlers
+    virtual wxSize GetControllerSize() const;
+    void OnSize(wxSizeEvent& event);
+
+    // controller buddy if available, NULL otherwise (usually for native book controls like wxNotebook)
+    wxControl *m_bookctrl;
+
+    // Whether to shrink to fit current page
+    bool m_fitToCurrentPage;
+
+    // the sizer containing the choice control
+    wxSizer *m_controlSizer;
+
+    // the margin around the choice control
+    int m_controlMargin;
+
+private:
+
+    // common part of all ctors
+    void Init();
+
+    // internal border
+    unsigned int m_internalBorder;
+
+    DECLARE_ABSTRACT_CLASS(wxBookCtrlBase)
     DECLARE_NO_COPY_CLASS(wxBookCtrlBase)
+    DECLARE_EVENT_TABLE()
 };
 
 // ----------------------------------------------------------------------------
@@ -218,10 +342,17 @@ public:
     wxBookCtrlBaseEvent(wxEventType commandType = wxEVT_NULL, int winid = 0,
                         int nSel = -1, int nOldSel = -1)
         : wxNotifyEvent(commandType, winid)
-        {
-            m_nSel = nSel;
-            m_nOldSel = nOldSel;
-        }
+    {
+        m_nSel = nSel;
+        m_nOldSel = nOldSel;
+    }
+
+    wxBookCtrlBaseEvent(const wxBookCtrlBaseEvent& event)
+        : wxNotifyEvent(event)
+    {
+        m_nSel = event.m_nSel;
+        m_nOldSel = event.m_nOldSel;
+    }
 
     // accessors
         // the currently selected page (-1 if none)
@@ -246,11 +377,7 @@ private:
     #define wxEVT_COMMAND_BOOKCTRL_PAGE_CHANGING   wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING
     #define EVT_BOOKCTRL_PAGE_CHANGED(id, fn)      EVT_NOTEBOOK_PAGE_CHANGED(id, fn)
     #define EVT_BOOKCTRL_PAGE_CHANGING(id, fn)     EVT_NOTEBOOK_PAGE_CHANGING(id, fn)
-    #define wxBC_TOP                               wxNB_TOP
-    #define wxBC_BOTTOM                            wxNB_BOTTOM
-    #define wxBC_LEFT                              wxNB_LEFT
-    #define wxBC_RIGHT                             wxNB_RIGHT
-    #define wxBC_DEFAULT                           wxNB_DEFAULT
+    #define wxBookctrlEventHandler(func)           wxNotebookEventHandler(func)
 #else
     // dedicated to Smartphones
     #include "wx/choicebk.h"
@@ -260,11 +387,15 @@ private:
     #define wxEVT_COMMAND_BOOKCTRL_PAGE_CHANGING   wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGING
     #define EVT_BOOKCTRL_PAGE_CHANGED(id, fn)      EVT_CHOICEBOOK_PAGE_CHANGED(id, fn)
     #define EVT_BOOKCTRL_PAGE_CHANGING(id, fn)     EVT_CHOICEBOOK_PAGE_CHANGING(id, fn)
-    #define wxBC_TOP                               wxCHB_TOP
-    #define wxBC_BOTTOM                            wxCHB_BOTTOM
-    #define wxBC_LEFT                              wxCHB_LEFT
-    #define wxBC_RIGHT                             wxCHB_RIGHT
-    #define wxBC_DEFAULT                           wxCHB_DEFAULT
+    #define wxBookctrlEventHandler(func)           wxChoicebookEventHandler(func)
+#endif
+
+#if WXWIN_COMPATIBILITY_2_6
+    #define wxBC_TOP                               wxBK_TOP
+    #define wxBC_BOTTOM                            wxBK_BOTTOM
+    #define wxBC_LEFT                              wxBK_LEFT
+    #define wxBC_RIGHT                             wxBK_RIGHT
+    #define wxBC_DEFAULT                           wxBK_DEFAULT
 #endif
 
 #endif // wxUSE_BOOKCTRL

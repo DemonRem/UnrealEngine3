@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: bmpbuttn.cpp,v 1.57 2005/06/07 19:16:15 ABX Exp $
+// RCS-ID:      $Id: bmpbuttn.cpp 42816 2006-10-31 08:50:17Z RD $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "bmpbuttn.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -22,14 +18,36 @@
 
 #if wxUSE_BMPBUTTON
 
+#include "wx/bmpbuttn.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/bmpbuttn.h"
     #include "wx/log.h"
     #include "wx/dcmemory.h"
+    #include "wx/image.h"
 #endif
 
 #include "wx/msw/private.h"
-#include "wx/image.h"
+
+#include "wx/msw/uxtheme.h"
+
+#if wxUSE_UXTHEME
+    // no need to include tmschema.h
+    #ifndef BP_PUSHBUTTON
+        #define BP_PUSHBUTTON 1
+
+        #define PBS_NORMAL    1
+        #define PBS_HOT       2
+        #define PBS_PRESSED   3
+        #define PBS_DISABLED  4
+        #define PBS_DEFAULTED 5
+
+        #define TMT_CONTENTMARGINS 3602
+    #endif
+#endif // wxUSE_UXTHEME
+
+#ifndef ODS_NOFOCUSRECT
+    #define ODS_NOFOCUSRECT     0x0200
+#endif
 
 // ----------------------------------------------------------------------------
 // macros
@@ -91,6 +109,8 @@ IMPLEMENT_DYNAMIC_CLASS(wxBitmapButton, wxButton)
 
 BEGIN_EVENT_TABLE(wxBitmapButton, wxBitmapButtonBase)
     EVT_SYS_COLOUR_CHANGED(wxBitmapButton::OnSysColourChanged)
+    EVT_ENTER_WINDOW(wxBitmapButton::OnMouseEnterOrLeave)
+    EVT_LEAVE_WINDOW(wxBitmapButton::OnMouseEnterOrLeave)
 END_EVENT_TABLE()
 
 /*
@@ -119,14 +139,12 @@ bool wxBitmapButton::Create(wxWindow *parent, wxWindowID id,
 
     parent->AddChild(this);
 
-    m_backgroundColour = parent->GetBackgroundColour();
-    m_foregroundColour = parent->GetForegroundColour();
     m_windowStyle = style;
 
     if ( style & wxBU_AUTODRAW )
     {
-        m_marginX = wxDEFAULT_BUTTON_MARGIN;
-        m_marginY = wxDEFAULT_BUTTON_MARGIN;
+        m_marginX =
+        m_marginY = 4;
     }
 
     if (id == wxID_ANY)
@@ -166,7 +184,7 @@ bool wxBitmapButton::Create(wxWindow *parent, wxWindowID id,
     SubclassWin(m_hWnd);
 
     SetPosition(pos);
-    SetBestSize(size);
+    SetInitialSize(size);
 
     return true;
 }
@@ -198,6 +216,107 @@ void wxBitmapButton::OnSysColourChanged(wxSysColourChangedEvent& event)
     event.Skip();
 }
 
+void wxBitmapButton::OnMouseEnterOrLeave(wxMouseEvent& event)
+{
+    if ( IsEnabled() && m_bmpHover.Ok() )
+        Refresh();
+
+    event.Skip();
+}
+
+void wxBitmapButton::OnSetBitmap()
+{
+    // if the focus bitmap is specified but hover one isn't, use the focus
+    // bitmap for hovering as well if this is consistent with the current
+    // Windows version look and feel
+    //
+    // rationale: this is compatible with the old wxGTK behaviour and also
+    // makes it much easier to do "the right thing" for all platforms (some of
+    // them, such as Windows XP, have "hot" buttons while others don't)
+    if ( !m_bmpHover.Ok() &&
+            m_bmpFocus.Ok() &&
+                wxUxThemeEngine::GetIfActive() )
+    {
+        m_bmpHover = m_bmpFocus;
+    }
+
+    // this will redraw us
+    wxBitmapButtonBase::OnSetBitmap();
+}
+
+#if wxUSE_UXTHEME
+static
+void MSWDrawXPBackground(wxButton *button, WXDRAWITEMSTRUCT *wxdis)
+{
+    LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT)wxdis;
+    HDC hdc = lpDIS->hDC;
+    UINT state = lpDIS->itemState;
+    RECT rectBtn;
+    CopyRect(&rectBtn, &lpDIS->rcItem);
+
+    wxUxThemeHandle theme(button, L"BUTTON");
+    int iState;
+
+    if ( state & ODS_SELECTED )
+    {
+        iState = PBS_PRESSED;
+    }
+    else if ( button->HasCapture() || button->IsMouseInWindow() )
+    {
+        iState = PBS_HOT;
+    }
+    else if ( state & ODS_FOCUS )
+    {
+        iState = PBS_DEFAULTED;
+    }
+    else if ( state & ODS_DISABLED )
+    {
+        iState = PBS_DISABLED;
+    }
+    else
+    {
+        iState = PBS_NORMAL;
+    }
+
+    // draw parent background if needed
+    if ( wxUxThemeEngine::Get()->IsThemeBackgroundPartiallyTransparent(theme,
+                                                                       BP_PUSHBUTTON,
+                                                                       iState) )
+    {
+        wxUxThemeEngine::Get()->DrawThemeParentBackground(GetHwndOf(button), hdc, &rectBtn);
+    }
+
+    // draw background
+    wxUxThemeEngine::Get()->DrawThemeBackground(theme, hdc, BP_PUSHBUTTON, iState,
+                                                &rectBtn, NULL);
+
+    // calculate content area margins
+    MARGINS margins;
+    wxUxThemeEngine::Get()->GetThemeMargins(theme, hdc, BP_PUSHBUTTON, iState,
+                                            TMT_CONTENTMARGINS, &rectBtn, &margins);
+    RECT rectClient;
+    ::CopyRect(&rectClient, &rectBtn);
+    ::InflateRect(&rectClient, -margins.cxLeftWidth, -margins.cyTopHeight);
+
+    // if focused and !nofocus rect
+    if ( (state & ODS_FOCUS) && !(state & ODS_NOFOCUSRECT) )
+    {
+        DrawFocusRect(hdc, &rectClient);
+    }
+
+    if ( button->UseBgCol() )
+    {
+        COLORREF colBg = wxColourToRGB(button->GetBackgroundColour());
+        HBRUSH hbrushBackground = ::CreateSolidBrush(colBg);
+
+        // don't overwrite the focus rect
+        ::InflateRect(&rectClient, -1, -1);
+        FillRect(hdc, &rectClient, hbrushBackground);
+        ::DeleteObject(hbrushBackground);
+    }
+}
+#endif // wxUSE_UXTHEME
+
 // VZ: should be at the very least less than wxDEFAULT_BUTTON_MARGIN
 #define FOCUS_MARGIN 3
 
@@ -221,10 +340,12 @@ bool wxBitmapButton::MSWOnDraw(WXDRAWITEMSTRUCT *item)
 
 
     // choose the bitmap to use depending on the button state
-    wxBitmap* bitmap;
+    wxBitmap *bitmap;
 
     if ( isSelected && m_bmpSelected.Ok() )
         bitmap = &m_bmpSelected;
+    else if ( m_bmpHover.Ok() && IsMouseInWindow() )
+        bitmap = &m_bmpHover;
     else if ((state & ODS_FOCUS) && m_bmpFocus.Ok())
         bitmap = &m_bmpFocus;
     else if ((state & ODS_DISABLED) && m_bmpDisabled.Ok())
@@ -242,6 +363,57 @@ bool wxBitmapButton::MSWOnDraw(WXDRAWITEMSTRUCT *item)
     int height = lpDIS->rcItem.bottom - y;
     int wBmp   = bitmap->GetWidth();
     int hBmp   = bitmap->GetHeight();
+
+#if wxUSE_UXTHEME
+    if ( autoDraw && wxUxThemeEngine::GetIfActive() )
+    {
+        MSWDrawXPBackground(this, item);
+        wxUxThemeHandle theme(this, L"BUTTON");
+
+        // calculate content area margins
+        // assuming here that each state is the same size
+        MARGINS margins;
+        wxUxThemeEngine::Get()->GetThemeMargins(theme, NULL,
+                                                BP_PUSHBUTTON, PBS_NORMAL,
+                                                TMT_CONTENTMARGINS, NULL,
+                                                &margins);
+        int marginX = margins.cxLeftWidth + 1;
+        int marginY = margins.cyTopHeight + 1;
+        int x1,y1;
+
+        if ( m_windowStyle & wxBU_LEFT )
+        {
+            x1 = x + marginX;
+        }
+        else if ( m_windowStyle & wxBU_RIGHT )
+        {
+            x1 = x + (width - wBmp) - marginX;
+        }
+        else
+        {
+            x1 = x + (width - wBmp) / 2;
+        }
+
+        if ( m_windowStyle & wxBU_TOP )
+        {
+            y1 = y + marginY;
+        }
+        else if ( m_windowStyle & wxBU_BOTTOM )
+        {
+            y1 = y + (height - hBmp) - marginY;
+        }
+        else
+        {
+            y1 = y + (height - hBmp) / 2;
+        }
+
+        // draw the bitmap
+        wxDCTemp dst((WXHDC)hDC);
+        dst.DrawBitmap(*bitmap, x1, y1, true);
+
+        return true;
+    }
+#endif // wxUSE_UXTHEME
 
     int x1,y1;
 
@@ -275,8 +447,7 @@ bool wxBitmapButton::MSWOnDraw(WXDRAWITEMSTRUCT *item)
     }
 
     // draw the bitmap
-    wxDC dst;
-    dst.SetHDC((WXHDC) hDC, false);
+    wxDCTemp dst((WXHDC)hDC);
     dst.DrawBitmap(*bitmap, x1, y1, true);
 
     // draw focus / disabled state, if auto-drawing
@@ -302,8 +473,6 @@ bool wxBitmapButton::MSWOnDraw(WXDRAWITEMSTRUCT *item)
 
 // GRG Feb/2000, support for bmp buttons with Win95/98 standard LNF
 
-#if defined(__WIN95__)
-
 void wxBitmapButton::DrawFace( WXHDC dc, int left, int top,
     int right, int bottom, bool sel )
 {
@@ -319,10 +488,7 @@ void wxBitmapButton::DrawFace( WXHDC dc, int left, int top,
     penLight    = CreatePen(PS_SOLID, 0, GetSysColor(COLOR_3DLIGHT));
     penShadow   = CreatePen(PS_SOLID, 0, GetSysColor(COLOR_3DSHADOW));
     penDkShadow = CreatePen(PS_SOLID, 0, GetSysColor(COLOR_3DDKSHADOW));
-    // brushFace   = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
-    // Taking the background colour fits in better with
-    // Windows XP themes.
-    brushFace   = CreateSolidBrush(m_backgroundColour.m_pixel);
+    brushFace   = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
 
     // draw the rectangle
     RECT rect;
@@ -358,73 +524,6 @@ void wxBitmapButton::DrawFace( WXHDC dc, int left, int top,
     DeleteObject(penDkShadow);
     DeleteObject(brushFace);
 }
-
-#else
-
-void wxBitmapButton::DrawFace( WXHDC dc, int left, int top,
-    int right, int bottom, bool sel )
-{
-    HPEN oldp;
-    HPEN penBorder;
-    HPEN penLight;
-    HPEN penShadow;
-    HBRUSH brushFace;
-
-    // create needed pens and brush
-    penBorder = CreatePen(PS_SOLID, 0, GetSysColor(COLOR_WINDOWFRAME));
-    penShadow = CreatePen(PS_SOLID, 0, GetSysColor(COLOR_BTNSHADOW));
-    penLight  = CreatePen(PS_SOLID, 0, GetSysColor(COLOR_BTNHIGHLIGHT));
-    brushFace = CreateSolidBrush(COLOR_BTNFACE);
-
-    // draw the rectangle
-    RECT rect;
-    rect.left   = left;
-    rect.right  = right;
-    rect.top    = top;
-    rect.bottom = bottom;
-    FillRect((HDC) dc, &rect, brushFace);
-
-    // draw the border
-    oldp = (HPEN) SelectObject( (HDC) dc, penBorder);
-    MoveToEx((HDC) dc,left+1,top,NULL);LineTo((HDC) dc,right-1,top);
-    MoveToEx((HDC) dc,left,top+1,NULL);LineTo((HDC) dc,left,bottom-1);
-    MoveToEx((HDC) dc,left+1,bottom-1,NULL);LineTo((HDC) dc,right-1,bottom-1);
-    MoveToEx((HDC) dc,right-1,top+1,NULL);LineTo((HDC) dc,right-1,bottom-1);
-
-    SelectObject( (HDC) dc, penShadow);
-    if (sel)
-    {
-        MoveToEx((HDC) dc,left+1    ,bottom-2   ,NULL);
-        LineTo((HDC) dc,  left+1    ,top+1);
-        LineTo((HDC) dc,  right-2   ,top+1);
-    }
-    else
-    {
-        MoveToEx((HDC) dc,left+1    ,bottom-2   ,NULL);
-        LineTo((HDC) dc,  right-2   ,bottom-2);
-        LineTo((HDC) dc,  right-2   ,top);
-
-        MoveToEx((HDC) dc,left+2    ,bottom-3   ,NULL);
-        LineTo((HDC) dc,  right-3   ,bottom-3);
-        LineTo((HDC) dc,  right-3   ,top+1);
-
-        SelectObject( (HDC) dc, penLight);
-
-        MoveToEx((HDC) dc,left+1    ,bottom-2   ,NULL);
-        LineTo((HDC) dc,  left+1    ,top+1);
-        LineTo((HDC) dc,  right-2   ,top+1);
-    }
-
-    // delete allocated resources
-    SelectObject((HDC) dc,oldp);
-    DeleteObject(penBorder);
-    DeleteObject(penLight);
-    DeleteObject(penShadow);
-    DeleteObject(brushFace);
-}
-
-#endif // defined(__WIN95__)
-
 
 void wxBitmapButton::DrawButtonFocus( WXHDC dc, int left, int top, int right,
     int bottom, bool WXUNUSED(sel) )
@@ -492,8 +591,50 @@ wxSize wxBitmapButton::DoGetBestSize() const
 {
     if ( m_bmpNormal.Ok() )
     {
-        wxSize best(m_bmpNormal.GetWidth() + 2*m_marginX,
-                      m_bmpNormal.GetHeight() + 2*m_marginY);
+        int width = m_bmpNormal.GetWidth(),
+            height = m_bmpNormal.GetHeight();
+        int marginH = 0,
+            marginV = 0;
+
+#if wxUSE_UXTHEME
+        if ( wxUxThemeEngine::GetIfActive() )
+        {
+            wxUxThemeHandle theme((wxBitmapButton *)this, L"BUTTON");
+
+            MARGINS margins;
+            wxUxThemeEngine::Get()->GetThemeMargins(theme, NULL,
+                                                    BP_PUSHBUTTON, PBS_NORMAL,
+                                                    TMT_CONTENTMARGINS, NULL,
+                                                    &margins);
+
+            // XP doesn't draw themed buttons correctly when the client area is
+            // smaller than 8x8 - enforce this minimum size for small bitmaps
+            if ( width < 8 )
+                width = 8;
+            if ( height < 8 )
+                height = 8;
+
+            // don't add margins for the borderless buttons, they don't need
+            // them and it just makes them appear larger than needed
+            if ( !HasFlag(wxBORDER_NONE) )
+            {
+                // we need 2 extra pixels for the focus rectangle, without them
+                // it's overwritten by the bitmap itself
+                marginH = margins.cxLeftWidth + margins.cxRightWidth + 2;
+                marginV = margins.cyTopHeight + margins.cyBottomHeight + 2;
+            }
+        }
+        else
+#endif // wxUSE_UXTHEME
+        {
+            if ( !HasFlag(wxBORDER_NONE) )
+            {
+                marginH = 2*m_marginX;
+                marginV = 2*m_marginY;
+            }
+        }
+
+        wxSize best(width + marginH, height + marginV);
         CacheBestSize(best);
         return best;
     }
@@ -503,4 +644,3 @@ wxSize wxBitmapButton::DoGetBestSize() const
 }
 
 #endif // wxUSE_BMPBUTTON
-

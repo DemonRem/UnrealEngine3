@@ -4,7 +4,7 @@
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     11/07/98
-// RCS-ID:      $Id: mstream.h,v 1.32 2005/04/02 22:36:52 VZ Exp $
+// RCS-ID:      $Id: mstream.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
 
 #include "wx/stream.h"
 
-class WXDLLIMPEXP_BASE wxMemoryOutputStream;
+class WXDLLIMPEXP_FWD_BASE wxMemoryOutputStream;
 
 class WXDLLIMPEXP_BASE wxMemoryInputStream : public wxInputStream
 {
@@ -27,15 +27,16 @@ public:
     wxMemoryInputStream(const wxMemoryOutputStream& stream);
     virtual ~wxMemoryInputStream();
     virtual wxFileOffset GetLength() const { return m_length; }
-    virtual bool Eof() const;
     virtual bool IsSeekable() const { return true; }
 
     char Peek();
 
     wxStreamBuffer *GetInputStreamBuffer() const { return m_i_streambuf; }
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated, compatibility only
-    wxStreamBuffer *InputStreamBuffer() const { return m_i_streambuf; }
+    wxDEPRECATED( wxStreamBuffer *InputStreamBuffer() const );
+#endif // WXWIN_COMPATIBILITY_2_6
 
 protected:
     wxStreamBuffer *m_i_streambuf;
@@ -63,8 +64,10 @@ public:
 
     wxStreamBuffer *GetOutputStreamBuffer() const { return m_o_streambuf; }
 
+#if WXWIN_COMPATIBILITY_2_6
     // deprecated, compatibility only
-    wxStreamBuffer *OutputStreamBuffer() const { return m_o_streambuf; }
+    wxDEPRECATED( wxStreamBuffer *OutputStreamBuffer() const );
+#endif // WXWIN_COMPATIBILITY_2_6
 
 protected:
     wxStreamBuffer *m_o_streambuf;
@@ -77,9 +80,13 @@ protected:
     DECLARE_NO_COPY_CLASS(wxMemoryOutputStream)
 };
 
+#if WXWIN_COMPATIBILITY_2_6
+    inline wxStreamBuffer *wxMemoryInputStream::InputStreamBuffer() const { return m_i_streambuf; }
+    inline wxStreamBuffer *wxMemoryOutputStream::OutputStreamBuffer() const { return m_o_streambuf; }
+#endif // WXWIN_COMPATIBILITY_2_6
+
 #endif
   // wxUSE_STREAMS
 
 #endif
   // _WX_WXMMSTREAM_H__
-

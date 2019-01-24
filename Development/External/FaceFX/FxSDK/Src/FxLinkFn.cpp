@@ -3,12 +3,13 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxLinkFn.h"
-#include "FxMath.h"
-#include "FxUtil.h"
+// This is here only to eat the pCustomCurve when serializing old versions of
+// FxLinkFnParameters.
+#include "FxAnimCurve.h"
 
 namespace OC3Ent
 {
@@ -28,65 +29,23 @@ FxLinkFnParameterDesc( const FxChar* name, FxReal defaultValue )
 {
 }
 
-FxLinkFnParameterDesc::
-FxLinkFnParameterDesc( const FxLinkFnParameterDesc& other )
-	: parameterName(other.parameterName)
-	, parameterDefaultValue(other.parameterDefaultValue)
-{
-}
-
-FxLinkFnParameterDesc::~FxLinkFnParameterDesc()
-{
-}
-
-#define kCurrentFxLinkFnParametersVersion 0
-
-FxLinkFnParameters::FxLinkFnParameters()
-	: pCustomCurve(NULL)
-{
-}
-
-FxLinkFnParameters::FxLinkFnParameters( const FxLinkFnParameters& other )
-	: parameters(other.parameters)
-	, pCustomCurve(NULL)
-{
-	if( other.pCustomCurve )
-	{
-		pCustomCurve = new FxAnimCurve(*other.pCustomCurve);
-	}
-}
-
-FxLinkFnParameters& FxLinkFnParameters::operator=( const FxLinkFnParameters& other )
-{
-	if( this == &other ) return *this;
-	
-	parameters = other.parameters;
-	if( pCustomCurve )
-	{
-		delete pCustomCurve;
-		pCustomCurve = NULL;
-	}
-	if( other.pCustomCurve )
-	{
-		pCustomCurve = new FxAnimCurve(*other.pCustomCurve);
-	}
-
-	return *this;
-}
-
-FxLinkFnParameters::~FxLinkFnParameters()
-{
-	if( pCustomCurve )
-	{
-		delete pCustomCurve;
-	}
-}
+#define kCurrentFxLinkFnParametersVersion 1
 
 FxArchive& operator<<( FxArchive& arc, FxLinkFnParameters& linkFnParams )
 {
-	FxUInt16 version = kCurrentFxLinkFnParametersVersion;
-	arc << version;
-	arc << linkFnParams.parameters << linkFnParams.pCustomCurve;
+	FxUInt16 version = arc.SerializeClassVersion("FxLinkFnParameters", FxTrue, kCurrentFxLinkFnParametersVersion);
+	arc << linkFnParams.parameters;
+	if( arc.IsLoading() && version < 1 )
+	{
+		// Eat the old pCustomCurve.
+		FxAnimCurve* pCustomCurve = NULL;
+		arc << pCustomCurve;
+		if( pCustomCurve )
+		{
+			delete pCustomCurve;
+			pCustomCurve = NULL;
+		}
+	}
 	return arc;
 }
 
@@ -113,7 +72,7 @@ void FX_CALL FxLinkFn::Startup( void )
 	{
 		FxLinkFn::StaticClass();
 
-		_linkFnTable = static_cast<FxArray<FxLinkFn*>*>(FxAlloc(sizeof(FxArray<FxLinkFn*>), "LinkFn List"));
+		_linkFnTable = static_cast<FxArray<FxLinkFn*>*>(FxAlloc(sizeof(FxArray<FxLinkFn*>), "LinkFnList"));
 		FxDefaultConstruct(_linkFnTable);
 		_linkFnTable->Reserve(FX_NUM_LINK_FUNCTIONS);
 
@@ -158,9 +117,10 @@ void FX_CALL FxLinkFn::Startup( void )
 		FxCorrectiveLinkFn* correctiveLinkFn = new FxCorrectiveLinkFn();
 		FxLinkFn::AddLinkFunction(correctiveLinkFn);
 
-		FxCustomLinkFn::StaticClass();
-		FxCustomLinkFn* customLinkFn = new FxCustomLinkFn();
-		FxLinkFn::AddLinkFunction(customLinkFn);
+		// Deprecated the Custom link function.  In FaceFX 1.7+, all Custom link
+		// functions are re-routed through the "null" link function.
+		FxNullLinkFn* deprecatedCustomLinkFn = new FxNullLinkFn("custom");
+		FxLinkFn::AddLinkFunction(deprecatedCustomLinkFn);
 
 		// Deprecated the Perlin Noise link function.  In FaceFX 1.5+, all
 		// Perlin Noise link functions are re-routed through the "null" link
@@ -224,6 +184,32 @@ const FxLinkFn* FX_CALL FxLinkFn::FindLinkFunction( const FxName& name )
 	return NULL;
 }
 
+const FxLinkFn* FX_CALL FxLinkFn::FindLinkFunctionByType( FxLinkFnType lfType )
+{
+	if( _linkFnTable )
+	{
+		FxSize numLinkFns = _linkFnTable->Length();
+		for( FxSize i = 0; i < numLinkFns; ++i )
+		{
+			if( (*_linkFnTable)[i]->GetType() == lfType )
+			{
+				return (*_linkFnTable)[i];
+			}
+		}
+	}
+	return NULL;
+}
+
+FxLinkFnType FX_CALL FxLinkFn::FindLinkFunctionType( const FxName& name )
+{
+	const FxLinkFn* pLinkFn = FindLinkFunction(name);
+	if( pLinkFn )
+	{
+		return pLinkFn->GetType();
+	}
+	return LFT_Invalid;
+}
+
 void FX_CALL FxLinkFn::AddLinkFunction( FxLinkFn* pLinkFn )
 {
 	if( pLinkFn )
@@ -280,7 +266,7 @@ FxLinearLinkFn::~FxLinearLinkFn()
 FX_IMPLEMENT_CLASS(FxQuadraticLinkFn, kCurrentFxLinkFnVersion, FxLinkFn)
 
 FxQuadraticLinkFn::FxQuadraticLinkFn()
-	: _fnDesc(" y = a * x^2 ")
+	: _fnDesc(" y = a * x ^2 ")
 {
 	SetName("quadratic");
 	_parameters.PushBack(FxLinkFnParameterDesc("a", 1.0f));
@@ -296,7 +282,7 @@ FxQuadraticLinkFn::~FxQuadraticLinkFn()
 FX_IMPLEMENT_CLASS(FxCubicLinkFn, kCurrentFxLinkFnVersion, FxLinkFn)
 
 FxCubicLinkFn::FxCubicLinkFn()
-	: _fnDesc(" y = a * x^3 ")
+	: _fnDesc(" y = a * x ^3 ")
 {
 	SetName("cubic");
 	_parameters.PushBack(FxLinkFnParameterDesc("a", 1.0f));
@@ -312,7 +298,7 @@ FxCubicLinkFn::~FxCubicLinkFn()
 FX_IMPLEMENT_CLASS(FxSqrtLinkFn, kCurrentFxLinkFnVersion, FxLinkFn)
 
 FxSqrtLinkFn::FxSqrtLinkFn()
-	: _fnDesc(" y = a * sqrt(x) ")
+	: _fnDesc(" y = a * sqrt( x ) ")
 {
 	SetName("square root");
 	_parameters.PushBack(FxLinkFnParameterDesc("a", 1.0f));
@@ -328,7 +314,7 @@ FxSqrtLinkFn::~FxSqrtLinkFn()
 FX_IMPLEMENT_CLASS(FxNegateLinkFn, kCurrentFxLinkFnVersion, FxLinkFn)
 
 FxNegateLinkFn::FxNegateLinkFn()
-	: _fnDesc(" y = -x ")
+	: _fnDesc(" y = - x ")
 {
 	SetName("negate");
 }
@@ -397,21 +383,6 @@ FxCorrectiveLinkFn::FxCorrectiveLinkFn()
 }
 
 FxCorrectiveLinkFn::~FxCorrectiveLinkFn()
-{
-}
-
-//------------------------------------------------------------------------------
-// Custom.
-//------------------------------------------------------------------------------
-FX_IMPLEMENT_CLASS(FxCustomLinkFn, kCurrentFxLinkFnVersion, FxLinkFn)
-
-FxCustomLinkFn::FxCustomLinkFn()
-	: _fnDesc(" y = custom_function(x) ")	
-{
-	SetName("custom");
-}
-
-FxCustomLinkFn::~FxCustomLinkFn()
 {
 }
 

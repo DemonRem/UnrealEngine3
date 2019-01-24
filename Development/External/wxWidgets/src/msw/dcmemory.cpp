@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dcmemory.cpp
+// Name:        src/msw/dcmemory.cpp
 // Purpose:     wxMemoryDC class
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dcmemory.cpp,v 1.32 2004/08/24 10:31:41 ABX Exp $
+// RCS-ID:      $Id: dcmemory.cpp 42755 2006-10-30 19:41:46Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dcmemory.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,14 +24,14 @@
     #pragma hdrstop
 #endif
 
+#include "wx/dcmemory.h"
+
 #ifndef WX_PRECOMP
     #include "wx/utils.h"
     #include "wx/log.h"
 #endif
 
 #include "wx/msw/private.h"
-
-#include "wx/dcmemory.h"
 
 // ----------------------------------------------------------------------------
 // wxWin macros
@@ -51,22 +47,11 @@ IMPLEMENT_DYNAMIC_CLASS(wxMemoryDC, wxDC)
 // wxMemoryDC
 // ----------------------------------------------------------------------------
 
-wxMemoryDC::wxMemoryDC()
-{
-    CreateCompatible(NULL);
-
-    Init();
-}
-
 wxMemoryDC::wxMemoryDC(wxDC *dc)
 {
     wxCHECK_RET( dc, _T("NULL dc in wxMemoryDC ctor") );
 
-    dc->BeginDrawing();
-
     CreateCompatible(dc);
-
-    dc->EndDrawing();
 
     Init();
 }
@@ -96,7 +81,7 @@ bool wxMemoryDC::CreateCompatible(wxDC *dc)
     return m_ok;
 }
 
-void wxMemoryDC::SelectObject(const wxBitmap& bitmap)
+void wxMemoryDC::DoSelect( const wxBitmap& bitmap)
 {
     // select old bitmap out of the device context
     if ( m_oldBitmap )
@@ -207,4 +192,3 @@ void wxMemoryDC::DoDrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord he
         wxDC::DoDrawRectangle(x, y, width, height);
     }
 }
-

@@ -4,7 +4,7 @@
 // Author:      Guillermo Rodriguez Garcia, <guille@iies.es>
 // Modified by:
 // Created:     Jan/2000
-// RCS-ID:      $Id: game.cpp,v 1.18 2005/01/31 18:18:15 ABX Exp $
+// RCS-ID:      $Id: game.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2000, Guillermo Rodriguez Garcia
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,6 @@
 // ==========================================================================
 // headers, declarations, constants
 // ==========================================================================
-
-#ifdef __GNUG__
-    #pragma implementation "game.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"

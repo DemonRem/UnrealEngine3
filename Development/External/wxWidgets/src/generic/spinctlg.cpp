@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     29.01.01
-// RCS-ID:      $Id: spinctlg.cpp,v 1.30 2005/09/12 20:06:31 MBN Exp $
+// RCS-ID:      $Id: spinctlg.cpp 52582 2008-03-17 13:46:31Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "spinctlg.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -187,7 +183,7 @@ bool wxSpinCtrl::Create(wxWindow *parent,
 
     m_btn->SetRange(min, max);
     m_btn->SetValue(initial);
-    SetBestSize(size);
+    SetInitialSize(size);
     Move(pos);
 
     // have to disable this window to avoid interfering it with message
@@ -269,6 +265,17 @@ bool wxSpinCtrl::Show(bool show)
     return true;
 }
 
+bool wxSpinCtrl::Reparent(wxWindow *newParent)
+{
+    if ( m_btn )
+    {
+        m_btn->Reparent(newParent);
+        m_text->Reparent(newParent);
+    }
+
+    return true;
+}
+
 // ----------------------------------------------------------------------------
 // value and range access
 // ----------------------------------------------------------------------------
@@ -323,6 +330,22 @@ void wxSpinCtrl::SetTextValue(int val)
 
     // and give focus to the control!
     // m_text->SetFocus();    Why???? TODO.
+
+#ifdef __WXCOCOA__
+    /*  It's sort of a hack to do this from here but the idea is that if the
+        user has clicked on us, which is the main reason this method is called,
+        then focus probably ought to go to the text control since clicking on
+        a text control usually gives it focus.
+
+        However, if the focus is already on us (i.e. the user has turned on
+        the ability to tab to controls) then we don't want to drop focus.
+        So we only set focus if we would steal it away from a different
+        control, not if we would steal it away from ourself.
+     */
+    wxWindow *currentFocusedWindow = wxWindow::FindFocus();
+    if(currentFocusedWindow != this && currentFocusedWindow != m_text)
+        m_text->SetFocus();
+#endif
 }
 
 void wxSpinCtrl::SetValue(int val)

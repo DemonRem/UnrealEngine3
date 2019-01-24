@@ -4,7 +4,7 @@
 // Author:      Roger Gammans, Paul Gammans
 // Modified by:
 // Created:
-// RCS-ID:      $Id: dbgrid.h,v 1.18 2004/09/10 12:55:47 ABX Exp $
+// RCS-ID:      $Id: dbgrid.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 1999 The Computer Surgery (roger@computer-surgery.co.uk)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,10 +13,6 @@
 
 #ifndef _WX_GENERIC_DBGRID_H_
 #define _WX_GENERIC_DBGRID_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "dbgrid.h"
-#endif
 
 #if wxUSE_ODBC
 #if wxUSE_GRID
@@ -119,7 +115,7 @@ class WXDLLIMPEXP_DBGRID wxDbGridTableBase : public wxGridTableBase
 public:
     wxDbGridTableBase(wxDbTable *tab, wxDbGridColInfo *ColInfo,
               int count = wxUSE_QUERY, bool takeOwnership = true);
-    ~wxDbGridTableBase();
+    virtual ~wxDbGridTableBase();
 
     virtual int GetNumberRows()
     {

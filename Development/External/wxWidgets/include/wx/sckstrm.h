@@ -4,16 +4,12 @@
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     17/07/97
-// RCS-ID:      $Id: sckstrm.h,v 1.19 2004/09/26 13:18:40 RL Exp $
+// RCS-ID:      $Id: sckstrm.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 #ifndef __SCK_STREAM_H__
 #define __SCK_STREAM_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface
-#endif
 
 #include "wx/stream.h"
 
@@ -25,7 +21,7 @@ class WXDLLIMPEXP_NET wxSocketOutputStream : public wxOutputStream
 {
  public:
   wxSocketOutputStream(wxSocketBase& s);
-  ~wxSocketOutputStream();
+  virtual ~wxSocketOutputStream();
 
   wxFileOffset SeekO( wxFileOffset WXUNUSED(pos), wxSeekMode WXUNUSED(mode) )
     { return -1; }
@@ -44,7 +40,7 @@ class WXDLLIMPEXP_NET wxSocketInputStream : public wxInputStream
 {
  public:
   wxSocketInputStream(wxSocketBase& s);
-  ~wxSocketInputStream();
+  virtual ~wxSocketInputStream();
 
   wxFileOffset SeekI( wxFileOffset WXUNUSED(pos), wxSeekMode WXUNUSED(mode) )
     { return -1; }
@@ -64,7 +60,7 @@ class WXDLLIMPEXP_NET wxSocketStream : public wxSocketInputStream,
 {
  public:
   wxSocketStream(wxSocketBase& s);
-  ~wxSocketStream();
+  virtual ~wxSocketStream();
 
   DECLARE_NO_COPY_CLASS(wxSocketStream)
 };

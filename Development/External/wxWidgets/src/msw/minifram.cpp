@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: minifram.cpp,v 1.26 2004/05/23 20:52:59 JS Exp $
+// RCS-ID:      $Id: minifram.cpp 49299 2007-10-21 18:07:29Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "minifram.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -20,10 +16,10 @@
 #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-#endif
+#if wxUSE_MINIFRAME
 
 #include "wx/minifram.h"
 
 IMPLEMENT_DYNAMIC_CLASS(wxMiniFrame, wxFrame)
 
+#endif // wxUSE_MINIFRAME

@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04.04.98
-// RCS-ID:      $Id: statbr95.h,v 1.19 2005/08/28 16:21:35 VZ Exp $
+// RCS-ID:      $Id: statbr95.h 41035 2006-09-06 17:36:22Z PC $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef   _STATBR95_H
 #define   _STATBR95_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "statbr95.h"
-#endif
 
 #if wxUSE_NATIVE_STATUSBAR
 
@@ -26,7 +22,7 @@ public:
     wxStatusBar95(wxWindow *parent,
                   wxWindowID id = wxID_ANY,
                   long style = wxST_SIZEGRIP,
-                  const wxString& name = wxEmptyString)
+                  const wxString& name = wxStatusBarNameStr)
     {
         (void)Create(parent, id, style, name);
     }
@@ -34,7 +30,7 @@ public:
     bool Create(wxWindow *parent,
                 wxWindowID id = wxID_ANY,
                 long style = wxST_SIZEGRIP,
-                const wxString& name = wxEmptyString);
+                const wxString& name = wxStatusBarNameStr);
 
     virtual ~wxStatusBar95();
 
@@ -61,16 +57,15 @@ public:
     virtual int GetBorderX() const;
     virtual int GetBorderY() const;
 
+    virtual WXLRESULT MSWWindowProc(WXUINT nMsg,
+                                    WXWPARAM wParam,
+                                    WXLPARAM lParam);
 protected:
     void CopyFieldsWidth(const int widths[]);
     void SetFieldsWidth();
 
     // override base class virtual
     void DoMoveWindow(int x, int y, int width, int height);
-
-    virtual WXLRESULT MSWWindowProc(WXUINT nMsg,
-                                    WXWPARAM wParam,
-                                    WXLPARAM lParam);
 
 private:
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxStatusBar95)

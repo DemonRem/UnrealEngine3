@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: panelg.h,v 1.44 2005/05/04 18:52:32 JS Exp $
+// RCS-ID:      $Id: panelg.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_GENERIC_PANEL_H_
 #define _WX_GENERIC_PANEL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "panelg.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers and forward declarations
@@ -23,9 +19,9 @@
 #include "wx/window.h"
 #include "wx/containr.h"
 
-class WXDLLEXPORT wxControlContainer;
+class WXDLLIMPEXP_FWD_CORE wxControlContainer;
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxPanelNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxPanelNameStr[];
 
 // ----------------------------------------------------------------------------
 // wxPanel contains other controls and implements TAB traversal between them
@@ -62,7 +58,8 @@ public:
     }
 
     // Pseudo ctor
-    bool Create(wxWindow *parent, wxWindowID winid,
+    bool Create(wxWindow *parent,
+                wxWindowID winid = wxID_ANY,
                 const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxDefaultSize,
                 long style = wxTAB_TRAVERSAL | wxNO_BORDER,

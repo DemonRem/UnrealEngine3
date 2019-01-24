@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: mdi.cpp,v 1.57 2005/08/11 13:29:28 VZ Exp $
+// RCS-ID:      $Id: mdi.cpp 43480 2006-11-18 00:08:27Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,8 @@
 #include "wx/toolbar.h"
 
 #if !defined(__WXMSW__)
-    #include "mondrian.xpm"
+    #include "../sample.xpm"
+    #include "chart.xpm"
 #endif
 
 #include "bitmaps/new.xpm"
@@ -85,6 +86,11 @@ BEGIN_EVENT_TABLE(MyChild, wxMDIChildFrame)
     EVT_MENU(MDI_CHANGE_POSITION, MyChild::OnChangePosition)
     EVT_MENU(MDI_CHANGE_SIZE, MyChild::OnChangeSize)
 
+#if wxUSE_CLIPBOARD
+    EVT_MENU(wxID_PASTE, MyChild::OnPaste)
+    EVT_UPDATE_UI(wxID_PASTE, MyChild::OnUpdatePaste)
+#endif // wxUSE_CLIPBOARD
+
     EVT_SIZE(MyChild::OnSize)
     EVT_MOVE(MyChild::OnMove)
 
@@ -111,21 +117,15 @@ bool MyApp::OnInit()
     frame = new MyFrame((wxFrame *)NULL, wxID_ANY, _T("MDI Demo"),
                         wxDefaultPosition, wxSize(500, 400),
                         wxDEFAULT_FRAME_STYLE | wxHSCROLL | wxVSCROLL);
-#ifdef __WXMSW__
 #if 0
     // Experimental: change the window menu
     wxMenu* windowMenu = new wxMenu;
     windowMenu->Append(5000, _T("My menu item!"));
     frame->SetWindowMenu(windowMenu);
 #endif
-#endif
 
     // Give it an icon
-#ifdef __WXMSW__
-    frame->SetIcon(wxIcon(_T("mdi_icn")));
-#else
-    frame->SetIcon(wxIcon( mondrian_xpm ));
-#endif
+    frame->SetIcon(wxICON(sample));
 
     // Make a menubar
     wxMenu *file_menu = new wxMenu;
@@ -166,8 +166,7 @@ MyFrame::MyFrame(wxWindow *parent,
                  const wxPoint& pos,
                  const wxSize& size,
                  const long style)
-       : wxMDIParentFrame(parent, id, title, pos, size,
-                          style | wxNO_FULL_REPAINT_ON_RESIZE)
+       : wxMDIParentFrame(parent, id, title, pos, size, style)
 {
     textWindow = new wxTextCtrl(this, wxID_ANY, _T("A help window"),
                                 wxDefaultPosition, wxDefaultSize,
@@ -178,6 +177,7 @@ MyFrame::MyFrame(wxWindow *parent,
     InitToolBar(GetToolBar());
 #endif // wxUSE_TOOLBAR
 
+#if wxUSE_ACCEL
     // Accelerators
     wxAcceleratorEntry entries[3];
     entries[0].Set(wxACCEL_CTRL, (int) 'N', MDI_NEW_WINDOW);
@@ -185,6 +185,7 @@ MyFrame::MyFrame(wxWindow *parent,
     entries[2].Set(wxACCEL_CTRL, (int) 'A', MDI_ABOUT);
     wxAcceleratorTable accel(3, entries);
     SetAcceleratorTable(accel);
+#endif // wxUSE_ACCEL
 }
 
 void MyFrame::OnClose(wxCloseEvent& event)
@@ -228,12 +229,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& WXUNUSED(event) )
     subframe->SetTitle(title);
 
     // Give it an icon
-#ifdef __WXMSW__
-    subframe->SetIcon(wxIcon(_T("chrt_icn")));
-#else
-    subframe->SetIcon(wxIcon( mondrian_xpm ));
-#endif
+    subframe->SetIcon(wxICON(chart));
 
+#if wxUSE_MENUS
     // Make a menubar
     wxMenu *file_menu = new wxMenu;
 
@@ -248,6 +246,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& WXUNUSED(event) )
     option_menu->AppendSeparator();
     option_menu->Append(MDI_CHANGE_POSITION, _T("Move frame\tCtrl-M"));
     option_menu->Append(MDI_CHANGE_SIZE, _T("Resize frame\tCtrl-S"));
+#if wxUSE_CLIPBOARD
+    option_menu->AppendSeparator();
+    option_menu->Append(wxID_PASTE, _T("Copy text from clipboard\tCtrl-V"));
+#endif // wxUSE_CLIPBOARD
 
     wxMenu *help_menu = new wxMenu;
     help_menu->Append(MDI_ABOUT, _T("&About"));
@@ -260,6 +262,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& WXUNUSED(event) )
 
     // Associate the menu bar with the frame
     subframe->SetMenuBar(menu_bar);
+#endif // wxUSE_MENUS
 
 #if wxUSE_STATUSBAR
     subframe->CreateStatusBar();
@@ -278,7 +281,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& WXUNUSED(event) )
     subframe->Show(true);
 }
 
-void MyFrame::OnSize(wxSizeEvent& 
+void MyFrame::OnSize(wxSizeEvent&
                                   #ifdef __WXUNIVERSAL__
                                   event
                                   #else
@@ -295,7 +298,7 @@ void MyFrame::OnSize(wxSizeEvent&
     // FIXME: On wxX11, we need the MDI frame to process this
     // event, but on other platforms this should not
     // be done.
-#ifdef __WXUNIVERSAL__   
+#ifdef __WXUNIVERSAL__
     event.Skip();
 #endif
 }
@@ -303,44 +306,30 @@ void MyFrame::OnSize(wxSizeEvent&
 #if wxUSE_TOOLBAR
 void MyFrame::InitToolBar(wxToolBar* toolBar)
 {
-    wxBitmap* bitmaps[8];
+    wxBitmap bitmaps[8];
 
-    bitmaps[0] = new wxBitmap( new_xpm );
-    bitmaps[1] = new wxBitmap( open_xpm );
-    bitmaps[2] = new wxBitmap( save_xpm );
-    bitmaps[3] = new wxBitmap( copy_xpm );
-    bitmaps[4] = new wxBitmap( cut_xpm );
-    bitmaps[5] = new wxBitmap( paste_xpm );
-    bitmaps[6] = new wxBitmap( print_xpm );
-    bitmaps[7] = new wxBitmap( help_xpm );
+    bitmaps[0] = wxBitmap( new_xpm );
+    bitmaps[1] = wxBitmap( open_xpm );
+    bitmaps[2] = wxBitmap( save_xpm );
+    bitmaps[3] = wxBitmap( copy_xpm );
+    bitmaps[4] = wxBitmap( cut_xpm );
+    bitmaps[5] = wxBitmap( paste_xpm );
+    bitmaps[6] = wxBitmap( print_xpm );
+    bitmaps[7] = wxBitmap( help_xpm );
 
-    int width = 24;
-    int currentX = 5;
-
-    toolBar->AddTool( MDI_NEW_WINDOW, *(bitmaps[0]), wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("New file"));
-    currentX += width + 5;
-    toolBar->AddTool(1, *bitmaps[1], wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Open file"));
-    currentX += width + 5;
-    toolBar->AddTool(2, *bitmaps[2], wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Save file"));
-    currentX += width + 5;
+    toolBar->AddTool(MDI_NEW_WINDOW, _T("New"), bitmaps[0], _T("New file"));
+    toolBar->AddTool(1, _T("Open"), bitmaps[1], _T("Open file"));
+    toolBar->AddTool(2, _T("Save"), bitmaps[2], _T("Save file"));
     toolBar->AddSeparator();
-    toolBar->AddTool(3, *bitmaps[3], wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Copy"));
-    currentX += width + 5;
-    toolBar->AddTool(4, *bitmaps[4], wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Cut"));
-    currentX += width + 5;
-    toolBar->AddTool(5, *bitmaps[5], wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Paste"));
-    currentX += width + 5;
+    toolBar->AddTool(3, _T("Copy"), bitmaps[3], _T("Copy"));
+    toolBar->AddTool(4, _T("Cut"), bitmaps[4], _T("Cut"));
+    toolBar->AddTool(5, _T("Paste"), bitmaps[5], _T("Paste"));
     toolBar->AddSeparator();
-    toolBar->AddTool(6, *bitmaps[6], wxNullBitmap, false, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Print"));
-    currentX += width + 5;
+    toolBar->AddTool(6, _T("Print"), bitmaps[6], _T("Print"));
     toolBar->AddSeparator();
-    toolBar->AddTool( MDI_ABOUT, *bitmaps[7], wxNullBitmap, true, currentX, wxDefaultCoord, (wxObject *) NULL, _T("Help"));
+    toolBar->AddTool(MDI_ABOUT, _T("About"), bitmaps[7], _T("Help"));
 
     toolBar->Realize();
-
-    int i;
-    for (i = 0; i < 8; i++)
-        delete bitmaps[i];
 }
 #endif // wxUSE_TOOLBAR
 
@@ -363,6 +352,9 @@ MyCanvas::MyCanvas(wxWindow *parent, const wxPoint& pos, const wxSize& size)
 // Define the repainting behaviour
 void MyCanvas::OnDraw(wxDC& dc)
 {
+    if ( !m_text.empty() )
+        dc.DrawText(m_text, 10, 10);
+
     dc.SetFont(*wxSWISS_FONT);
     dc.SetPen(*wxGREEN_PEN);
     dc.DrawLine(0, 0, 200, 200);
@@ -452,7 +444,7 @@ void MyChild::OnChangeSize(wxCommandEvent& WXUNUSED(event))
 
 void MyChild::OnChangeTitle(wxCommandEvent& WXUNUSED(event))
 {
-//#if wxUSE_TEXTDLG
+#if wxUSE_TEXTDLG
     static wxString s_title = _T("Canvas Frame");
 
     wxString title = wxGetTextFromUser(_T("Enter the new title for MDI child"),
@@ -464,7 +456,7 @@ void MyChild::OnChangeTitle(wxCommandEvent& WXUNUSED(event))
 
     s_title = title;
     SetTitle(s_title);
-//#endif
+#endif // wxUSE_TEXTDLG
 }
 
 void MyChild::OnActivate(wxActivateEvent& event)
@@ -518,4 +510,22 @@ void MyChild::OnClose(wxCloseEvent& event)
     event.Skip();
 }
 
+#if wxUSE_CLIPBOARD
 
+#include "wx/clipbrd.h"
+
+void MyChild::OnPaste(wxCommandEvent& WXUNUSED(event))
+{
+    wxClipboardLocker lock;
+    wxTextDataObject data;
+    canvas->SetText(wxTheClipboard->GetData(data) ? data.GetText().c_str()
+                                                  : _T("No text on clipboard"));
+}
+
+void MyChild::OnUpdatePaste(wxUpdateUIEvent& event)
+{
+    wxClipboardLocker lock;
+    event.Enable( wxTheClipboard->IsSupported(wxDF_TEXT) );
+}
+
+#endif // wxUSE_CLIPBOARD

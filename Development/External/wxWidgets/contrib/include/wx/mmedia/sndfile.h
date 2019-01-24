@@ -3,7 +3,7 @@
 // Purpose:
 // Date: 08/11/1999
 // Author: Guilhem Lavaux <lavaux@easynet.fr> (C) 1999
-// CVSID: $Id: sndfile.h,v 1.5 2005/05/30 12:39:25 MW Exp $
+// CVSID: $Id: sndfile.h 34412 2005-05-30 12:39:25Z MW $
 // License:    wxWindows license
 // --------------------------------------------------------------------------
 #ifndef _WX_SNDFILE_H

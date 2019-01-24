@@ -4,13 +4,15 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2005-01-08
-// RCS-ID:      $Id: stackwalk.h,v 1.2 2005/01/19 01:15:07 VZ Exp $
+// RCS-ID:      $Id: stackwalk.h 43346 2006-11-12 14:33:03Z RR $
 // Copyright:   (c) 2005 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MSW_STACKWALK_H_
 #define _WX_MSW_STACKWALK_H_
+
+#include "wx/arrstr.h"
 
 // these structs are declared in windows headers
 struct _CONTEXT;
@@ -88,7 +90,7 @@ public:
     // only
     wxStackWalker(const char * WXUNUSED(argv0) = NULL) { }
 
-    virtual void Walk(size_t skip = 1);
+    virtual void Walk(size_t skip = 1, size_t maxDepth = 200);
     virtual void WalkFromException();
 
 

@@ -2,9 +2,9 @@
 #define NX_COLLISION_CAPSULECONTROLLER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -36,8 +36,10 @@ class CapsuleController : public NxCapsuleController, public Controller
 	// NxCapsuleController
 	virtual	NxF32					getRadius()							const;
 	virtual	NxF32					getHeight()							const;
+	virtual	NxCapsuleClimbingMode	getClimbingMode()					const;
 	virtual	bool					setRadius(NxF32 radius);
 	virtual	bool					setHeight(NxF32 height);
+	virtual	bool					setClimbingMode(NxCapsuleClimbingMode);
 	//~ NxCapsuleController
 
 	virtual	const NxExtendedVec3&	getPosition()						const	{ return exposedPosition;				}
@@ -53,13 +55,14 @@ class CapsuleController : public NxCapsuleController, public Controller
 
 			NxF32					radius;
 			NxF32					height;
+			NxCapsuleClimbingMode	climbingMode;
 	};
 
 /** \endcond */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

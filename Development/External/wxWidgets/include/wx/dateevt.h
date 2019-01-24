@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2005-01-10
-// RCS-ID:      $Id: dateevt.h,v 1.4 2005/03/09 16:29:55 ABX Exp $
+// RCS-ID:      $Id: dateevt.h 39637 2006-06-08 18:27:44Z RD $
 // Copyright:   (c) 2005 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,10 +34,13 @@ public:
     const wxDateTime& GetDate() const { return m_date; }
     void SetDate(const wxDateTime &date) { m_date = date; }
 
+    // default copy ctor, assignment operator and dtor are ok
+    virtual wxEvent *Clone() const { return new wxDateEvent(*this); }
+
 private:
     wxDateTime m_date;
 
-    DECLARE_DYNAMIC_CLASS_NO_COPY(wxDateEvent)
+    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxDateEvent)
 };
 
 // ----------------------------------------------------------------------------

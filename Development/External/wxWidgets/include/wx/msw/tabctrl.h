@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: tabctrl.h,v 1.24 2005/01/21 18:11:13 ABX Exp $
+// RCS-ID:      $Id: tabctrl.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,13 +12,9 @@
 #ifndef _WX_TABCTRL_H_
 #define _WX_TABCTRL_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "tabctrl.h"
-#endif
-
 class WXDLLIMPEXP_CORE wxImageList;
 
-// extern WXDLLEXPORT_DATA(const wxChar*) wxToolBarNameStr;
+// extern WXDLLEXPORT_DATA(const wxChar) wxToolBarNameStr[];
 
 /*
  * Flags returned by HitTest
@@ -44,7 +40,7 @@ class WXDLLEXPORT wxTabCtrl: public wxControl
     {
         Create(parent, id, pos, size, style, name);
     }
-    ~wxTabCtrl();
+    virtual ~wxTabCtrl();
 
 // Accessors
 

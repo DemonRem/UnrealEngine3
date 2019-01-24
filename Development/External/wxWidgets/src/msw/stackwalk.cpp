@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2005-01-08
-// RCS-ID:      $Id: stackwalk.cpp,v 1.8 2005/08/03 23:57:00 VZ Exp $
+// RCS-ID:      $Id: stackwalk.cpp 47767 2007-07-28 00:16:55Z VZ $
 // Copyright:   (c) 2003-2005 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ void wxStackFrame::OnGetName()
     wxZeroMemory(symbolBuffer);
 
     PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)symbolBuffer;
-    pSymbol->SizeOfStruct = sizeof(symbolBuffer);
+    pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
     pSymbol->MaxNameLen = MAX_NAME_LEN;
 
     DWORD64 symDisplacement = 0;
@@ -266,8 +266,9 @@ void wxStackWalker::WalkFrom(const CONTEXT *pCtx, size_t skip)
     #error "Need to initialize STACKFRAME on non x86"
 #endif // _M_IX86
 
-    // iterate over all stack frames
-    for ( size_t nLevel = 0; ; nLevel++ )
+    // iterate over all stack frames (but stop after 200 to avoid entering
+    // infinite loop if the stack is corrupted)
+    for ( size_t nLevel = 0; nLevel < 200; nLevel++ )
     {
         // get the next stack frame
         if ( !wxDbgHelpDLL::StackWalk
@@ -326,7 +327,7 @@ void wxStackWalker::WalkFromException()
     WalkFrom(wxGlobalSEInformation, 0);
 }
 
-void wxStackWalker::Walk(size_t skip)
+void wxStackWalker::Walk(size_t skip, size_t WXUNUSED(maxDepth))
 {
     // to get a CONTEXT for the current location, simply force an exception and
     // get EXCEPTION_POINTERS from it
@@ -400,7 +401,7 @@ void wxStackWalker::WalkFromException()
 {
 }
 
-void wxStackWalker::Walk(size_t WXUNUSED(skip))
+void wxStackWalker::Walk(size_t WXUNUSED(skip), size_t WXUNUSED(maxDepth))
 {
 }
 

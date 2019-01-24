@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NX_SCHEDULER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -15,9 +15,10 @@ The SDK submits NxTasks to users custom scheduler for execution on an appropriat
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : No
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxScheduler NxTask.execute()
 */
@@ -37,9 +38,10 @@ class NxTask
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScheduler
 	*/
@@ -54,9 +56,10 @@ call methods of this class with tasks(#NxTask) which the application should exec
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : No
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxSceneDesc.customScheduler NX_SF_ENABLE_MULTITHREAD NxTask
 */
@@ -73,9 +76,10 @@ class NxUserScheduler
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTask
      */
@@ -93,9 +97,10 @@ class NxUserScheduler
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTask
      */
@@ -114,9 +119,10 @@ class NxUserScheduler
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : No
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTask
      */
@@ -126,9 +132,9 @@ class NxUserScheduler
 	virtual ~NxUserScheduler(){};
 	};
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -2,9 +2,9 @@
 // Name:        wx/msw/listctrl.h
 // Purpose:     wxListCtrl class
 // Author:      Julian Smart
-// Modified by:
+// Modified by: Agron Selimaj
 // Created:     01/02/97
-// RCS-ID:      $Id: listctrl.h,v 1.55 2005/07/22 22:29:15 MW Exp $
+// RCS-ID:      $Id: listctrl.h 54419 2008-06-29 01:35:24Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,19 +12,9 @@
 #ifndef _WX_LISTCTRL_H_
 #define _WX_LISTCTRL_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "listctrl.h"
-#endif
-
-#if wxUSE_LISTCTRL
-
-#include "wx/control.h"
-#include "wx/event.h"
-#include "wx/hash.h"
 #include "wx/textctrl.h"
 
-
-class WXDLLEXPORT wxImageList;
+class WXDLLIMPEXP_FWD_CORE wxImageList;
 
 /*
     The wxListCtrl can show lists of items in four different modes:
@@ -124,7 +114,7 @@ public:
     bool GetColumn(int col, wxListItem& item) const;
 
     // Sets information about this column
-    bool SetColumn(int col, wxListItem& item) ;
+    bool SetColumn(int col, const wxListItem& item) ;
 
     // Gets the column width
     int GetColumnWidth(int col) const;
@@ -161,6 +151,7 @@ public:
 
     // Sets the item image
     bool SetItemImage(long item, int image, int selImage = -1) ;
+    bool SetItemColumnImage(long item, long column, int image);
 
     // Gets the item text
     wxString GetItemText(long item) const ;
@@ -172,10 +163,16 @@ public:
     wxUIntPtr GetItemData(long item) const ;
 
     // Sets the item data
-    bool SetItemData(long item, long data) ;
+#if wxABI_VERSION >= 20804
+    bool SetItemPtrData(long item, wxUIntPtr data);
+#endif // wxABI 2.8.4+
+    bool SetItemData(long item, long data);
 
     // Gets the item rectangle
     bool GetItemRect(long item, wxRect& rect, int code = wxLIST_RECT_BOUNDS) const ;
+
+    // Gets the subitem rectangle in report mode
+    bool GetSubItemRect(long item, long subItem, wxRect& rect, int code = wxLIST_RECT_BOUNDS) const ;
 
     // Gets the item position
     bool GetItemPosition(long item, wxPoint& pos) const ;
@@ -200,11 +197,9 @@ public:
     void SetItemBackgroundColour( long item, const wxColour &col);
     wxColour GetItemBackgroundColour( long item ) const;
 
-#if wxABI_VERSION >= 20602
     // Font of an item.
     void SetItemFont( long item, const wxFont &f);
     wxFont GetItemFont( long item ) const;
-#endif
 
     // Gets the number of selected items in the list control
     int GetSelectedItemCount() const;
@@ -298,11 +293,12 @@ public:
 
     // Determines which item (if any) is at the specified point,
     // giving details in 'flags' (see wxLIST_HITTEST_... flags above)
-    long HitTest(const wxPoint& point, int& flags);
+    // Request the subitem number as well at the given coordinate.
+    long HitTest(const wxPoint& point, int& flags, long* ptrSubItem = NULL) const;
 
     // Inserts an item, returning the index of the new item if successful,
     // -1 otherwise.
-    long InsertItem(wxListItem& info);
+    long InsertItem(const wxListItem& info);
 
     // Insert a string item
     long InsertItem(long index, const wxString& label);
@@ -314,7 +310,7 @@ public:
     long InsertItem(long index, const wxString& label, int imageIndex);
 
     // For list view mode (only), inserts a column.
-    long InsertColumn(long col, wxListItem& info);
+    long InsertColumn(long col, const wxListItem& info);
 
     long InsertColumn(long col,
                       const wxString& heading,
@@ -342,11 +338,12 @@ public:
     // or zero if the two items are equivalent.
 
     // data is arbitrary data to be passed to the sort function.
-    bool SortItems(wxListCtrlCompare fn, long data);
+    bool SortItems(wxListCtrlCompare fn, wxUIntPtr data);	// @UE3: 64-bit sorting fix
 
     // IMPLEMENTATION
     virtual bool MSWCommand(WXUINT param, WXWORD id);
     virtual bool MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result);
+    virtual bool MSWShouldPreProcessMessage(WXMSG* msg);
 
     // bring the control in sync with current m_windowStyle value
     void UpdateStyle();
@@ -368,15 +365,10 @@ public:
     GetClassDefaultAttributes(wxWindowVariant variant = wxWINDOW_VARIANT_NORMAL);
 
 
+#if WXWIN_COMPATIBILITY_2_6
     // obsolete stuff, for compatibility only -- don't use
     wxDEPRECATED( int GetItemSpacing(bool isSmall) const);
-
-protected:
-    // common part of all ctors
-    void Init();
-
-    // free memory taken by all internal data
-    void FreeAllInternalData();
+#endif // WXWIN_COMPATIBILITY_2_6
 
     // convert our styles to Windows
     virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
@@ -385,6 +377,17 @@ protected:
     virtual WXLRESULT MSWWindowProc(WXUINT nMsg,
                                     WXWPARAM wParam,
                                     WXLPARAM lParam);
+
+protected:
+    // common part of all ctors
+    void Init();
+
+    // free memory taken by all internal data
+    void FreeAllInternalData();
+
+    // get the item attribute, either by quering it for virtual control, or by
+    // returning the one previously set using setter methods for a normal one
+    wxListItemAttr *DoGetItemAttr(long item) const;
 
 
     wxTextCtrl*       m_textCtrl;        // The control used for editing a label
@@ -413,8 +416,13 @@ protected:
     // return the text for the given column of the given item
     virtual wxString OnGetItemText(long item, long column) const;
 
-    // return the icon for the given item
+    // return the icon for the given item. In report view, OnGetItemImage will
+    // only be called for the first column. See OnGetItemColumnImage for
+    // details.
     virtual int OnGetItemImage(long item) const;
+
+    // return the icon for the given item and column.
+    virtual int OnGetItemColumnImage(long item, long column) const;
 
     // return the attribute for the item (may return NULL if none)
     virtual wxListItemAttr *OnGetItemAttr(long item) const;
@@ -423,12 +431,19 @@ private:
     // process NM_CUSTOMDRAW notification message
     WXLPARAM OnCustomDraw(WXLPARAM lParam);
 
+    // set the extended styles for the control (used by Create() and
+    // UpdateStyle()), only should be called if InReportView()
+    void MSWSetExListStyles();
+
+    // initialize the (already created) m_textCtrl with the associated HWND
+    void InitEditControl(WXHWND hWnd);
+
+    // destroy m_textCtrl if it's currently valid and reset it to NULL
+    void DeleteEditControl();
+
     DECLARE_DYNAMIC_CLASS(wxListCtrl)
     DECLARE_EVENT_TABLE()
     DECLARE_NO_COPY_CLASS(wxListCtrl)
 };
 
-#endif // wxUSE_LISTCTRL
-
 #endif // _WX_LISTCTRL_H_
-

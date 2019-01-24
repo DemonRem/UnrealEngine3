@@ -4,11 +4,11 @@
 //
 // The fundamental frequency detection algorithm is adapted from 
 // "YIN, a fundamental frequency estimator for speech and music" 
-// by Alain de Cheveigné.
+// by Alain de Cheveigne.
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxStressDetector.h"
@@ -168,7 +168,7 @@ void FxStressDetector::Synch( FxPhonemeList* pPhonList, const FxGestureConfig& c
 		FxSize vowelCount = 0;
 		for( FxSize i = 0; i < _pPhonList->GetNumPhonemes(); ++i )
 		{
-			if( _pPhonList->GetPhonemeEnum(i) <= PHONEME_AX )
+			if( _pPhonList->GetPhonemeEnum(i) >= PHON_IY )
 			{
 				FxStressInformation stressInfo;
 				FxMemset(&stressInfo, 0, sizeof(FxStressInformation));
@@ -318,7 +318,7 @@ void FxStressDetector::Synch( FxPhonemeList* pPhonList, const FxGestureConfig& c
 
 				_stressInfos.PushBack(stressInfo);
 			}
-			else if( _pPhonList->GetPhonemeEnum(i) == PHONEME_SIL &&
+			else if( _pPhonList->GetPhonemeEnum(i) == PHON_SIL &&
 					 _pPhonList->GetPhonemeDuration(i) > config.sdShortSilence )
 			{
 				FxStressInformation stressInfo;
@@ -361,7 +361,7 @@ void FxStressDetector::Synch( FxPhonemeList* pPhonList, const FxGestureConfig& c
 							_stressInfos[rightIndex].startTime - _stressInfos[i].endTime <= validWindowLength && goodRight )
 						{
 							// Add in the vowel's contribution to the average.
-							sum += _stressInfos[rightIndex].maxPower * 0.75f + _stressInfos[rightIndex].averagePower * 0.25f;
+							sum += _stressInfos[rightIndex].maxPower * config.pfeMaxPowerContribution + _stressInfos[rightIndex].averagePower * config.pfeAvgPowerContribution;
 							count++;
 						}
 						else if( FxRealEquality(_stressInfos[rightIndex].averagePower, FxInvalidValue) &&
@@ -394,7 +394,7 @@ void FxStressDetector::Synch( FxPhonemeList* pPhonList, const FxGestureConfig& c
 				}
 
 				// Compute the normalized average power.
-				if( count >= 0 )
+				if( count > 0 )
 				{
 					sum /= static_cast<FxReal>(count);	
 					_stressInfos[i].normalizedAvgPower = ((_stressInfos[i].maxPower * config.pfeMaxPowerContribution + 
@@ -433,7 +433,7 @@ void FxStressDetector::Synch( FxPhonemeList* pPhonList, const FxGestureConfig& c
 				FxInt32 index = phonIndex - (phonWindowLength/2) + j;
 				if( index >= 0 && index < static_cast<FxInt32>(_pPhonList->GetNumPhonemes()) )
 				{
-					if( _pPhonList->GetPhonemeEnum(index) != PHONEME_SIL )
+					if( _pPhonList->GetPhonemeEnum(index) != PHON_SIL )
 					{
 						duration += _pPhonList->GetPhonemeDuration(index);
 						count++;
@@ -442,12 +442,12 @@ void FxStressDetector::Synch( FxPhonemeList* pPhonList, const FxGestureConfig& c
 			}
 
 			_stressInfos[i].localRateOfSpeech = static_cast<FxReal>(count) / duration; // phonemes/sec
-			FxReal phonLength = FxClamp(config.rosAvgPhonemeDuration.min, 
+			FxReal phonLength = FxClamp(config.rosAvgPhonemeDuration.rangeMin, 
 										1.0f / _stressInfos[i].localRateOfSpeech,
-										config.rosAvgPhonemeDuration.max);
-			_stressInfos[i].localTimeScale = ((phonLength - config.rosAvgPhonemeDuration.min) / 
+										config.rosAvgPhonemeDuration.rangeMax);
+			_stressInfos[i].localTimeScale = ((phonLength - config.rosAvgPhonemeDuration.rangeMin) / 
 				(config.rosAvgPhonemeDuration.Length())) * 
-				config.rosTimeScale.Length() + config.rosTimeScale.min;
+				config.rosTimeScale.Length() + config.rosTimeScale.rangeMin;
 		}
 
 		// Classify the stresses.
@@ -635,7 +635,7 @@ FxBool FxStressDetector::IsVowel( FxReal time )
 		}
 		if( phonIndex != FxInvalidIndex )
 		{
-			return _pPhonList->GetPhonemeEnum(phonIndex) <= PHONEME_AX;
+			return _pPhonList->GetPhonemeEnum(phonIndex) >= PHON_IY;
 		}
 	}
 	return FxFalse;

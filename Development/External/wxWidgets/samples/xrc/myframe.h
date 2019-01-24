@@ -2,7 +2,7 @@
 // Name:        myframe.h
 // Purpose:     XML resources sample: A derived frame, called MyFrame
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: myframe.h,v 1.5 2005/07/13 18:04:55 VZ Exp $
+// RCS-ID:      $Id: myframe.h 42235 2006-10-22 12:12:41Z VZ $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
@@ -13,14 +13,6 @@
 
 #ifndef _MYFRAME_H_
 #define _MYFRAME_H_
-
-//-----------------------------------------------------------------------------
-// GCC interface
-//-----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma interface "myframe.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Headers
@@ -56,6 +48,7 @@ private:
     void OnPlatformPropertyToolOrMenuCommand(wxCommandEvent& event);
     void OnArtProviderToolOrMenuCommand(wxCommandEvent& event);
     void OnVariableExpansionToolOrMenuCommand(wxCommandEvent& event);
+    void OnAnimationCtrlPlay(wxCommandEvent& event);
 
     // Any class wishing to process wxWidgets events must use this macro
     DECLARE_EVENT_TABLE()

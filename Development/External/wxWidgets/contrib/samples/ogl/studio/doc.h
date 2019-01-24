@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        doc.h
+// Name:        contrib/samples/ogl/studio/doc.h
 // Purpose:     Document classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: doc.h,v 1.6 2005/03/31 19:18:24 ABX Exp $
+// RCS-ID:      $Id: doc.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,15 +12,11 @@
 #ifndef _STUDIO_DOC_H_
 #define _STUDIO_DOC_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface
-#endif
+#include "wx/docview.h"
+#include "wx/cmdproc.h"
+#include "wx/string.h"
 
-#include <wx/docview.h>
-#include <wx/cmdproc.h>
-#include <wx/string.h>
-
-#include <wx/ogl/ogl.h> // base header of OGL, includes and adjusts wx/deprecated/setup.h
+#include "wx/ogl/ogl.h" // base header of OGL, includes and adjusts wx/deprecated/setup.h
 
 #include "shapes.h"
 

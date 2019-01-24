@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/utils.cpp
+// Name:        src/msw/utils.cpp
 // Purpose:     Various utilities
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: utils.cpp,v 1.181 2005/07/18 16:58:18 ABX Exp $
+// RCS-ID:      $Id: utils.cpp 53784 2008-05-27 15:48:23Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -25,12 +25,15 @@
 #endif
 
 #ifndef WX_PRECOMP
+    #include "wx/msw/missing.h"     // CHARSET_HANGUL
     #include "wx/utils.h"
     #include "wx/app.h"
     #include "wx/intl.h"
     #include "wx/log.h"
+    #include "wx/timer.h"
 #endif  //WX_PRECOMP
 
+#include "wx/msw/registry.h"
 #include "wx/apptrait.h"
 #include "wx/dynlib.h"
 #include "wx/dynload.h"
@@ -39,7 +42,6 @@
 #include "wx/confbase.h"        // for wxExpandEnvVars()
 
 #include "wx/msw/private.h"     // includes <windows.h>
-#include "wx/msw/missing.h"     // CHARSET_HANGUL
 
 #if defined(__CYGWIN__)
     //CYGWIN gives annoying warning about runtime stuff if we don't do this
@@ -53,8 +55,6 @@
     // used in wxGetFullHostName() with the old mingw32 versions
     #include <winsock.h>
 #endif
-
-#include "wx/timer.h"
 
 #if !defined(__GNUWIN32__) && !defined(__SALFORDC__) && !defined(__WXMICROWIN__) && !defined(__WXWINCE__)
     #include <direct.h>
@@ -110,8 +110,13 @@
 // ----------------------------------------------------------------------------
 
 // In the WIN.INI file
+#if (!defined(USE_NET_API) && !defined(__WXWINCE__)) || defined(__WXMICROWIN__)
 static const wxChar WX_SECTION[] = wxT("wxWindows");
+#endif
+
+#if (!defined(USE_NET_API) && !defined(__WXWINCE__))
 static const wxChar eUSERNAME[]  = wxT("UserName");
+#endif
 
 // ============================================================================
 // implementation
@@ -262,8 +267,8 @@ bool wxGetUserId(wxChar *WXUNUSED_IN_WINCE(buf),
 
     // Can't assume we have NIS (PC-NFS) or some other ID daemon
     // So we ...
-    if (  (user = wxGetenv(wxT("USER"))) == NULL &&
-            (user = wxGetenv(wxT("LOGNAME"))) == NULL )
+    if ( (user = wxGetenv(wxT("USER"))) == NULL &&
+         (user = wxGetenv(wxT("LOGNAME"))) == NULL )
     {
         // Use wxWidgets configuration data (comming soon)
         GetProfileString(WX_SECTION, eUSERID, default_id, buf, maxSize - 1);
@@ -278,12 +283,21 @@ bool wxGetUserId(wxChar *WXUNUSED_IN_WINCE(buf),
 }
 
 // Get user name e.g. Julian Smart
-bool wxGetUserName(wxChar *WXUNUSED_IN_WINCE(buf),
-                   int WXUNUSED_IN_WINCE(maxSize))
+bool wxGetUserName(wxChar *buf, int maxSize)
 {
+    wxCHECK_MSG( buf && ( maxSize > 0 ), false,
+                    _T("empty buffer in wxGetUserName") );
 #if defined(__WXWINCE__)
-    // TODO-CE
-    return false;
+    wxLogNull noLog;
+    wxRegKey key(wxRegKey::HKCU, wxT("ControlPanel\\Owner"));
+    if(!key.Open(wxRegKey::Read))
+        return false;
+    wxString name;
+    if(!key.QueryValue(wxT("Owner"),name))
+        return false;
+    wxStrncpy(buf, name.c_str(), maxSize-1);
+    buf[maxSize-1] = _T('\0');
+    return true;
 #elif defined(USE_NET_API)
     CHAR szUserName[256];
     if ( !wxGetUserId(szUserName, WXSIZEOF(szUserName)) )
@@ -373,7 +387,7 @@ const wxChar* wxGetHomeDir(wxString *pstr)
     wxString& strDir = *pstr;
 
     // first branch is for Cygwin
-#if defined(__UNIX__)
+#if defined(__UNIX__) && !defined(__WINE__)
     const wxChar *szHome = wxGetenv("HOME");
     if ( szHome == NULL ) {
       // we're homeless...
@@ -465,8 +479,8 @@ wxChar *wxGetUserHome(const wxString& WXUNUSED(user))
 }
 
 bool wxGetDiskSpace(const wxString& WXUNUSED_IN_WINCE(path),
-                    wxLongLong *WXUNUSED_IN_WINCE(pTotal),
-                    wxLongLong *WXUNUSED_IN_WINCE(pFree))
+                    wxDiskspaceSize_t *WXUNUSED_IN_WINCE(pTotal),
+                    wxDiskspaceSize_t *WXUNUSED_IN_WINCE(pFree))
 {
 #ifdef __WXWINCE__
     // TODO-CE
@@ -521,12 +535,20 @@ bool wxGetDiskSpace(const wxString& WXUNUSED_IN_WINCE(path),
 #endif
         if ( pTotal )
         {
-            *pTotal = wxLongLong(UL(bytesTotal).HighPart, UL(bytesTotal).LowPart);
+#if wxUSE_LONGLONG
+            *pTotal = wxDiskspaceSize_t(UL(bytesTotal).HighPart, UL(bytesTotal).LowPart);
+#else
+            *pTotal = wxDiskspaceSize_t(UL(bytesTotal).LowPart);
+#endif
         }
 
         if ( pFree )
         {
+#if wxUSE_LONGLONG
             *pFree = wxLongLong(UL(bytesFree).HighPart, UL(bytesFree).LowPart);
+#else
+            *pFree = wxDiskspaceSize_t(UL(bytesFree).LowPart);
+#endif
         }
     }
     else
@@ -554,7 +576,7 @@ bool wxGetDiskSpace(const wxString& WXUNUSED_IN_WINCE(path),
             return false;
         }
 
-        wxLongLong lBytesPerCluster = lSectorsPerCluster;
+        wxDiskspaceSize_t lBytesPerCluster = (wxDiskspaceSize_t) lSectorsPerCluster;
         lBytesPerCluster *= lBytesPerSector;
 
         if ( pTotal )
@@ -929,7 +951,7 @@ bool wxShutdown(wxShutdownFlags WXUNUSED_IN_WINCE(wFlags))
 #elif defined(__WIN32__)
     bool bOK = true;
 
-    if ( wxGetOsVersion(NULL, NULL) == wxWINDOWS_NT ) // if is NT or 2K
+    if ( wxGetOsVersion(NULL, NULL) == wxOS_WINDOWS_NT ) // if is NT or 2K
     {
         // Get a token for this process.
         HANDLE hToken;
@@ -979,18 +1001,6 @@ bool wxShutdown(wxShutdownFlags WXUNUSED_IN_WINCE(wFlags))
 
     return bOK;
 #endif // Win32/16
-}
-
-wxPowerType wxGetPowerType()
-{
-    // TODO
-    return wxPOWER_UNKNOWN;
-}
-
-wxBatteryState wxGetBatteryState()
-{
-    // TODO
-    return wxBATTERY_UNKNOWN_STATE;
 }
 
 // ----------------------------------------------------------------------------
@@ -1059,6 +1069,13 @@ wxString wxGetOsDescription()
     {
         switch ( info.dwPlatformId )
         {
+#ifdef VER_PLATFORM_WIN32_CE
+            case VER_PLATFORM_WIN32_CE:
+                str.Printf(_("Windows CE (%d.%d)"),
+                           info.dwMajorVersion,
+                           info.dwMinorVersion);
+                break;
+#endif
             case VER_PLATFORM_WIN32s:
                 str = _("Win32s on Windows 3.1");
                 break;
@@ -1104,31 +1121,45 @@ wxString wxGetOsDescription()
                 break;
 
             case VER_PLATFORM_WIN32_NT:
-                if ( info.dwMajorVersion == 5 )
+                switch ( info.dwMajorVersion )
                 {
-                    switch ( info.dwMinorVersion )
-                    {
-                        case 0:
-                            str.Printf(_("Windows 2000 (build %lu"),
+                    case 5:
+                        switch ( info.dwMinorVersion )
+                        {
+                            case 0:
+                                str.Printf(_("Windows 2000 (build %lu"),
+                                           info.dwBuildNumber);
+                                break;
+
+                            case 1:
+                                str.Printf(_("Windows XP (build %lu"),
+                                           info.dwBuildNumber);
+                                break;
+
+                            case 2:
+                                str.Printf(_("Windows Server 2003 (build %lu"),
+                                           info.dwBuildNumber);
+                                break;
+                        }
+                        break;
+
+                    case 6:
+                        if ( info.dwMinorVersion == 0 )
+                        {
+                            str.Printf(_("Windows Vista (build %lu"),
                                        info.dwBuildNumber);
-                            break;
-                        case 1:
-                            str.Printf(_("Windows XP (build %lu"),
-                                       info.dwBuildNumber);
-                            break;
-                        case 2:
-                            str.Printf(_("Windows Server 2003 (build %lu"),
-                                       info.dwBuildNumber);
-                            break;
-                    }
+                        }
+                        break;
                 }
-                if ( wxIsEmpty(str) )
+
+                if ( str.empty() )
                 {
                     str.Printf(_("Windows NT %lu.%lu (build %lu"),
                            info.dwMajorVersion,
                            info.dwMinorVersion,
                            info.dwBuildNumber);
                 }
+
                 if ( !wxIsEmpty(info.szCSDVersion) )
                 {
                     str << _T(", ") << info.szCSDVersion;
@@ -1145,61 +1176,57 @@ wxString wxGetOsDescription()
     return str;
 }
 
-wxToolkitInfo& wxAppTraits::GetToolkitInfo()
+bool wxIsPlatform64Bit()
 {
-    // cache the version info, it's not going to change
-    //
-    // NB: this is MT-safe, we may use these static vars from different threads
-    //     but as they always have the same value it doesn't matter
-    static int s_ver = -1,
-               s_major = -1,
-               s_minor = -1;
+#if defined(_WIN64)
+    return true;  // 64-bit programs run only on Win64
+#else // Win32
+    // 32-bit programs run on both 32-bit and 64-bit Windows so check
+    typedef BOOL (WINAPI *IsWow64Process_t)(HANDLE, BOOL *);
 
-    if ( s_ver == -1 )
+    wxDynamicLibrary dllKernel32(_T("kernel32.dll"));
+    IsWow64Process_t pfnIsWow64Process =
+        (IsWow64Process_t)dllKernel32.RawGetSymbol(_T("IsWow64Process"));
+
+    BOOL wow64 = FALSE;
+    if ( pfnIsWow64Process )
     {
-        OSVERSIONINFO info;
-        wxZeroMemory(info);
+        pfnIsWow64Process(::GetCurrentProcess(), &wow64);
+    }
+    //else: running under a system without Win64 support
 
-        s_ver = wxWINDOWS;
-        info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-        if ( ::GetVersionEx(&info) )
-        {
-            s_major = info.dwMajorVersion;
-            s_minor = info.dwMinorVersion;
+    return wow64 != FALSE;
+#endif // Win64/Win32
+}
 
-#ifdef __SMARTPHONE__
-            s_ver = wxWINDOWS_SMARTPHONE;
-#elif defined(__POCKETPC__)
-            s_ver = wxWINDOWS_POCKETPC;
-#else
-            switch ( info.dwPlatformId )
-            {
-                case VER_PLATFORM_WIN32s:
-                    s_ver = wxWIN32S;
-                    break;
+wxOperatingSystemId wxGetOsVersion(int *verMaj, int *verMin)
+{
+    OSVERSIONINFO info;
+    wxZeroMemory(info);
 
-                case VER_PLATFORM_WIN32_WINDOWS:
-                    s_ver = wxWIN95;
-                    break;
-
-                case VER_PLATFORM_WIN32_NT:
-                    s_ver = wxWINDOWS_NT;
-                    break;
-#ifdef __WXWINCE__
-                case VER_PLATFORM_WIN32_CE:
-                    s_ver = wxWINDOWS_CE;
-#endif
-            }
-#endif
-        }
+    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if ( ::GetVersionEx(&info) )
+    {
+        if (verMaj) *verMaj = info.dwMajorVersion;
+        if (verMin) *verMin = info.dwMinorVersion;
     }
 
-    static wxToolkitInfo info;
-    info.versionMajor = s_major;
-    info.versionMinor = s_minor;
-    info.os = s_ver;
-    info.name = _T("wxBase");
-    return info;
+#if defined( __WXWINCE__ )
+    return wxOS_WINDOWS_CE;
+#elif defined( __WXMICROWIN__ )
+    return wxOS_WINDOWS_MICRO;
+#else
+    switch ( info.dwPlatformId )
+    {
+    case VER_PLATFORM_WIN32_NT:
+        return wxOS_WINDOWS_NT;
+
+    case VER_PLATFORM_WIN32_WINDOWS:
+        return wxOS_WINDOWS_9X;
+    }
+
+    return wxOS_UNKNOWN;
+#endif
 }
 
 wxWinVersion wxGetWinVersion()
@@ -1208,7 +1235,7 @@ wxWinVersion wxGetWinVersion()
         verMin;
     switch ( wxGetOsVersion(&verMaj, &verMin) )
     {
-        case wxWIN95:
+        case wxOS_WINDOWS_9X:
             if ( verMaj == 4 )
             {
                 switch ( verMin )
@@ -1225,7 +1252,7 @@ wxWinVersion wxGetWinVersion()
             }
             break;
 
-        case wxWINDOWS_NT:
+        case wxOS_WINDOWS_NT:
             switch ( verMaj )
             {
                 case 3:
@@ -1253,6 +1280,9 @@ wxWinVersion wxGetWinVersion()
             }
             break;
 
+        default:
+            // Do nothing just to silence GCC warning
+            break;
     }
 
     return wxWinVersion_Unknown;
@@ -1374,10 +1404,10 @@ extern WXDLLIMPEXP_BASE long wxEncodingToCodepage(wxFontEncoding encoding)
         case wxFONTENCODING_ISO8859_8:      ret = 28598; break;
         case wxFONTENCODING_ISO8859_9:      ret = 28599; break;
         case wxFONTENCODING_ISO8859_10:     ret = 28600; break;
-        case wxFONTENCODING_ISO8859_11:     ret = 28601; break;
+        case wxFONTENCODING_ISO8859_11:     ret = 874; break;
         // case wxFONTENCODING_ISO8859_12,      // doesn't exist currently, but put it
         case wxFONTENCODING_ISO8859_13:     ret = 28603; break;
-        case wxFONTENCODING_ISO8859_14:     ret = 28604; break;
+        // case wxFONTENCODING_ISO8859_14:     ret = 28604; break; // no correspondence on Windows
         case wxFONTENCODING_ISO8859_15:     ret = 28605; break;
         case wxFONTENCODING_KOI8:           ret = 20866; break;
         case wxFONTENCODING_KOI8_U:         ret = 21866; break;
@@ -1544,4 +1574,3 @@ wxCreateHiddenWindow(LPCTSTR *pclassname, LPCTSTR classname, WNDPROC wndproc)
 
     return hwnd;
 }
-

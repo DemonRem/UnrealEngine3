@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin (original code by Robert Roebling)
 // Modified by:
 // Created:     25.05.99
-// RCS-ID:      $Id: caret.cpp,v 1.14 2004/07/25 16:32:24 VZ Exp $
+// RCS-ID:      $Id: caret.cpp 55170 2008-08-22 10:34:32Z JS $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "caret.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -92,10 +88,11 @@ void wxCaret::InitGeneric()
 {
     m_hasFocus = true;
     m_blinkedOut = true;
-
+#ifndef wxHAS_CARET_USING_OVERLAYS
     m_xOld =
     m_yOld = -1;
     m_bmpUnderCaret.Create(m_width, m_height);
+#endif
 }
 
 wxCaret::~wxCaret()
@@ -134,6 +131,9 @@ void wxCaret::DoHide()
 
 void wxCaret::DoMove()
 {
+#ifdef wxHAS_CARET_USING_OVERLAYS
+    m_overlay.Reset();
+#endif
     if ( IsVisible() )
     {
         if ( !m_blinkedOut )
@@ -158,8 +158,12 @@ void wxCaret::DoSize()
         m_countVisible = 0;
         DoHide();
     }
+#ifdef wxHAS_CARET_USING_OVERLAYS
+    m_overlay.Reset();
+#else
     // Change bitmap size
     m_bmpUnderCaret = wxBitmap(m_width, m_height);
+#endif
     if (countVisible > 0)
     {
         m_countVisible = countVisible;
@@ -212,6 +216,18 @@ void wxCaret::Blink()
 void wxCaret::Refresh()
 {
     wxClientDC dcWin(GetWindow());
+// this is the new code, switch to 0 if this gives problems
+#ifdef wxHAS_CARET_USING_OVERLAYS
+    wxDCOverlay dcOverlay( m_overlay, &dcWin, m_x, m_y, m_width , m_height );
+    if ( m_blinkedOut )
+    {
+        dcOverlay.Clear();
+    }
+    else
+    {
+        DoDraw( &dcWin );
+    }
+#else
     wxMemoryDC dcMem;
     dcMem.SelectObject(m_bmpUnderCaret);
     if ( m_blinkedOut )
@@ -247,14 +263,42 @@ void wxCaret::Refresh()
         // and draw the caret there
         DoDraw(&dcWin);
     }
+#endif
 }
 
 void wxCaret::DoDraw(wxDC *dc)
 {
-    dc->SetPen( *wxBLACK_PEN );
-
-    dc->SetBrush(*(m_hasFocus ? wxBLACK_BRUSH : wxTRANSPARENT_BRUSH));
-    dc->SetPen(*wxBLACK_PEN);
+#if defined(__WXGTK__) || defined(__WXMAC__)
+    wxClientDC* clientDC = wxDynamicCast(dc, wxClientDC);
+    if (clientDC)
+    {
+        wxPen pen(*wxBLACK_PEN);
+        wxBrush brush(*wxBLACK_BRUSH);
+#ifdef __WXGTK__
+        wxWindow* win = clientDC->m_owner;
+#else
+        wxWindow* win = clientDC->GetWindow();
+#endif
+        if (win)
+        {
+            wxColour backgroundColour(win->GetBackgroundColour());
+            if (backgroundColour.Red() < 100 &&
+                backgroundColour.Green() < 100 &&
+                backgroundColour.Blue() < 100)
+            {
+                pen = *wxWHITE_PEN;
+                brush = *wxWHITE_BRUSH;
+            }
+        }
+        dc->SetPen( pen );
+        dc->SetBrush(m_hasFocus ? brush : *wxTRANSPARENT_BRUSH);
+    }
+    else
+#endif
+    {
+        dc->SetBrush(*(m_hasFocus ? wxBLACK_BRUSH : wxTRANSPARENT_BRUSH));
+        dc->SetPen(*wxBLACK_PEN);
+    }
 
     // VZ: unfortunately, the rectangle comes out a pixel smaller when this is
     //     done under wxGTK - no idea why

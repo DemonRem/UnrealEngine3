@@ -4,7 +4,7 @@
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     1997
-// RCS-ID:      $Id: file.h,v 1.10 2004/05/23 20:51:44 JS Exp $
+// RCS-ID:      $Id: file.h 43836 2006-12-06 19:20:40Z VZ $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,16 +12,11 @@
 #ifndef __WX_PROTO_FILE_H__
 #define __WX_PROTO_FILE_H__
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "sckfile.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_PROTOCOL_FILE
 
 #include "wx/protocol/protocol.h"
-#include "wx/url.h"
 
 class WXDLLIMPEXP_NET wxFileProto: public wxProtocol {
   DECLARE_DYNAMIC_CLASS_NO_COPY(wxFileProto)
@@ -30,7 +25,7 @@ protected:
   wxProtocolError m_error;
 public:
   wxFileProto();
-  ~wxFileProto();
+  virtual ~wxFileProto();
 
   wxProtocolError GetError() { return m_error; }
   bool Abort() { return TRUE; }

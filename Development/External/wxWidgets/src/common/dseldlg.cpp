@@ -4,7 +4,7 @@
 // Author:      Paul Thiessen
 // Modified by:
 // Created:     20.02.01
-// RCS-ID:      $Id: dseldlg.cpp,v 1.6 2004/05/23 20:52:00 JS Exp $
+// RCS-ID:      $Id: dseldlg.cpp 39613 2006-06-07 11:44:19Z ABX $
 // Copyright:   (c) 2001 wxWidgets team
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dseldlg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,18 +24,16 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-#endif //WX_PRECOMP
+#if wxUSE_DIRDLG
 
 #include "wx/dirdlg.h"
 
-#if wxUSE_DIRDLG
+#ifndef WX_PRECOMP
+#endif //WX_PRECOMP
 
 // ============================================================================
 // implementation
 // ============================================================================
-
-const wxChar *wxDirSelectorPromptStr = wxT("Select a directory");
 
 wxString wxDirSelector(const wxString& message,
                        const wxString& defaultPath,
@@ -59,4 +53,3 @@ wxString wxDirSelector(const wxString& message,
 }
 
 #endif // wxUSE_DIRDLG
-

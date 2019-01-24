@@ -2,7 +2,7 @@
  *
  *  config.h
  *
- *  $Id: config.h,v 1.7 1999/10/14 17:08:31 RR Exp $
+ *  $Id: config.h 3995 1999-10-14 17:08:31Z RR $
  *
  *  Configuration
  *

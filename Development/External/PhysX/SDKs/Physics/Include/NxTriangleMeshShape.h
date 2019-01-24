@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXTRIANGLEMESHSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -33,9 +33,6 @@ shape descriptor into the NxActorDesc class before creating the actor.
 
 The shape is deleted by calling NxActor::releaseShape() on the owning actor.
 
-PPU: Collision detection will only be performed against mesh pages which have been mapped into
-PPU memory using #mapPageInstance()
-
 Example:
 
 \include NxTriangleMeshShape_Create.cpp
@@ -62,9 +59,10 @@ class NxTriangleMeshShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMeshShapeDesc
 	*/
@@ -77,9 +75,10 @@ class NxTriangleMeshShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh
 	*/
@@ -93,17 +92,20 @@ class NxTriangleMeshShape: public NxShape
 
 	\param[out] triangle triangle points in local or world space.
 	\param[out] edgeTri World space edge normals for triangle (NULL to not compute).
-	\param[out] flags Flags which show if an edge is convex. See #NxTriangleFlags
+	\param[out] flags Flags which show if an edge is convex (see #NxTriangleFlags, NULL to not compute).
 	\param[in] triangleIndex The index of the triangle to retrieve.
 	\param[in] worldSpaceTranslation true to return triangle's position in world space, else false for local space
 	\param[in] worldSpaceRotation true to return triangle's orientation in world space, else false for local space
 	\return Unused.
 
+	\comment If either the edgeTri or flags parameter is non-NULL, adjacency information might need to be computed internally.
+
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangle NxTriangleFlags NxTriangleID overlapAABBTriangles()
 	*/
@@ -128,9 +130,10 @@ class NxTriangleMeshShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxQueryFlags NxScene.overlapAABBShapes() getTriangle()
 	*/
@@ -148,14 +151,15 @@ class NxTriangleMeshShape: public NxShape
 
 	\param[in] bounds Bounds to test against. In object or world space depending on #NxQueryFlags. <b>Range:</b> See #NxBounds3
 	\param[in] flags Controls if the bounds are in object or world space and if we return first contact only. See #NxQueryFlags.
-	\param[in] callback Used to return triangles whicj intersect the AABB
+	\param[in] callback Used to return triangles which intersect the AABB
 	\return True if there is an overlap.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxQueryFlags NxScene.overlapAABBShapes() getTriangle() NxUserEntityReport
 	*/
@@ -186,9 +190,10 @@ class NxTriangleMeshShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see unmapPageInstance() isPageInstanceMapped()
 	*/
@@ -205,9 +210,10 @@ class NxTriangleMeshShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isPageInstanceMapped() mapPageInstance()
 	*/
@@ -223,9 +229,10 @@ class NxTriangleMeshShape: public NxShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see mapPageInstance() unmapPageInstance()
 	*/
@@ -236,9 +243,9 @@ class NxTriangleMeshShape: public NxShape
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

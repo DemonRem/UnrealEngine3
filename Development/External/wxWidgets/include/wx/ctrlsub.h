@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     22.10.99
-// RCS-ID:      $Id: ctrlsub.h,v 1.29 2005/03/16 16:18:18 ABX Exp $
+// RCS-ID:      $Id: ctrlsub.h 42816 2006-10-31 08:50:17Z RD $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_CTRLSUB_H_BASE_
 #define _WX_CTRLSUB_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "controlwithitems.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -42,13 +38,28 @@ public:
     // accessing strings
     // -----------------
 
-    virtual int GetCount() const = 0;
+    virtual unsigned int GetCount() const = 0;
     bool IsEmpty() const { return GetCount() == 0; }
 
-    virtual wxString GetString(int n) const = 0;
+    virtual wxString GetString(unsigned int n) const = 0;
     wxArrayString GetStrings() const;
-    virtual void SetString(int n, const wxString& s) = 0;
-    virtual int FindString(const wxString& s) const = 0;
+    virtual void SetString(unsigned int n, const wxString& s) = 0;
+
+    // finding string natively is either case sensitive or insensitive
+    // but never both so fall back to this base version for not
+    // supported search type
+    virtual int FindString(const wxString& s, bool bCase = false) const
+    {
+        unsigned int count = GetCount();
+
+        for ( unsigned int i = 0; i < count ; ++i )
+        {
+            if (GetString(i).IsSameAs( s , bCase ))
+                return (int)i;
+        }
+
+        return wxNOT_FOUND;
+    }
 
 
     // selection
@@ -71,7 +82,8 @@ public:
 protected:
 
     // check that the index is valid
-    inline bool IsValid(int n) const { return n >= 0 && n < GetCount(); }
+    inline bool IsValid(unsigned int n) const { return n < GetCount(); }
+    inline bool IsValidInsert(unsigned int n) const { return n <= GetCount(); }
 };
 
 class WXDLLEXPORT wxItemContainer : public wxItemContainerImmutable
@@ -97,46 +109,41 @@ public:
     // append several items at once to the control
     void Append(const wxArrayString& strings);
 
-    int Insert(const wxString& item, int pos)
+    int Insert(const wxString& item, unsigned int pos)
         { return DoInsert(item, pos); }
-    int Insert(const wxString& item, int pos, void *clientData);
-    int Insert(const wxString& item, int pos, wxClientData *clientData);
+    int Insert(const wxString& item, unsigned int pos, void *clientData);
+    int Insert(const wxString& item, unsigned int pos, wxClientData *clientData);
 
     // deleting items
     // --------------
 
     virtual void Clear() = 0;
-    virtual void Delete(int n) = 0;
+    virtual void Delete(unsigned int n) = 0;
 
     // misc
     // ----
 
     // client data stuff
-    void SetClientData(int n, void* clientData);
-    void* GetClientData(int n) const;
+    void SetClientData(unsigned int n, void* clientData);
+    void* GetClientData(unsigned int n) const;
 
-    void SetClientObject(int n, wxClientData* clientData);
-    wxClientData* GetClientObject(int n) const;
+    void SetClientObject(unsigned int n, wxClientData* clientData);
+    wxClientData* GetClientObject(unsigned int n) const;
 
     bool HasClientObjectData() const
         { return m_clientDataItemsType == wxClientData_Object; }
     bool HasClientUntypedData() const
         { return m_clientDataItemsType == wxClientData_Void; }
 
-#if WXWIN_COMPATIBILITY_2_2
-    // compatibility - these functions are deprecated, use the new ones
-    // instead
-    wxDEPRECATED( int Number() const );
-#endif // WXWIN_COMPATIBILITY_2_2
-
 protected:
     virtual int DoAppend(const wxString& item) = 0;
-    virtual int DoInsert(const wxString& item, int pos) = 0;
+    virtual int DoInsert(const wxString& item, unsigned int pos) = 0;
 
-    virtual void DoSetItemClientData(int n, void* clientData) = 0;
-    virtual void* DoGetItemClientData(int n) const = 0;
-    virtual void DoSetItemClientObject(int n, wxClientData* clientData) = 0;
-    virtual wxClientData* DoGetItemClientObject(int n) const = 0;
+    virtual void DoSetItemClientData(unsigned int n, void* clientData) = 0;
+    virtual void* DoGetItemClientData(unsigned int n) const = 0;
+    virtual void DoSetItemClientObject(unsigned int n, wxClientData* clientData) = 0;
+    virtual wxClientData* DoGetItemClientObject(unsigned int n) const = 0;
+
 
     // the type of the client data for the items
     wxClientDataType m_clientDataItemsType;
@@ -148,20 +155,20 @@ protected:
 // two versions
 #define wxCONTROL_ITEMCONTAINER_CLIENTDATAOBJECT_RECAST                    \
     void SetClientData(void *data)                                         \
-        { wxControl::SetClientData(data); }                                \
+        { wxEvtHandler::SetClientData(data); }                             \
     void *GetClientData() const                                            \
-        { return wxControl::GetClientData(); }                             \
+        { return wxEvtHandler::GetClientData(); }                          \
     void SetClientObject(wxClientData *data)                               \
-        { wxControl::SetClientObject(data); }                              \
+        { wxEvtHandler::SetClientObject(data); }                           \
     wxClientData *GetClientObject() const                                  \
-        { return wxControl::GetClientObject(); }                           \
-    void SetClientData(int n, void* clientData)                            \
+        { return wxEvtHandler::GetClientObject(); }                        \
+    void SetClientData(unsigned int n, void* clientData)                   \
         { wxItemContainer::SetClientData(n, clientData); }                 \
-    void* GetClientData(int n) const                                       \
+    void* GetClientData(unsigned int n) const                              \
         { return wxItemContainer::GetClientData(n); }                      \
-    void SetClientObject(int n, wxClientData* clientData)                  \
+    void SetClientObject(unsigned int n, wxClientData* clientData)         \
         { wxItemContainer::SetClientObject(n, clientData); }               \
-    wxClientData* GetClientObject(int n) const                             \
+    wxClientData* GetClientObject(unsigned int n) const                    \
         { return wxItemContainer::GetClientObject(n); }
 
 class WXDLLEXPORT wxControlWithItems : public wxControl, public wxItemContainer
@@ -182,16 +189,14 @@ public:
     virtual bool ShouldInheritColours() const { return false; }
 
 protected:
-    // we can't compute our best size before the items are added to the control
-    // which is done after calling SetInitialBestSize() (it is called from the
-    // base class ctor and the items are added in the derived class ctor), so
-    // don't do anything at all here as our size will be changed later anyhow
+    // fill in the client object or data field of the event as appropriate
     //
-    // of course, all derived classes *must* call SetBestSize() from their
-    // ctors for this to work!
-    virtual void SetInitialBestSize(const wxSize& WXUNUSED(size)) { }
+    // calls InitCommandEvent() and, if n != wxNOT_FOUND, also sets the per
+    // item client data
+    void InitCommandEventWithItems(wxCommandEvent& event, int n);
 
 private:
+    DECLARE_ABSTRACT_CLASS(wxControlWithItems)
     DECLARE_NO_COPY_CLASS(wxControlWithItems)
 };
 
@@ -200,16 +205,6 @@ private:
 // inline functions
 // ----------------------------------------------------------------------------
 
-#if WXWIN_COMPATIBILITY_2_2
-
-inline int wxItemContainer::Number() const
-{
-    return GetCount();
-}
-
-#endif // WXWIN_COMPATIBILITY_2_2
-
 #endif // wxUSE_CONTROLS
 
 #endif // _WX_CTRLSUB_H_BASE_
-

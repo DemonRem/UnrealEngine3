@@ -3,14 +3,11 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxPlatformWin32_H__
 #define FxPlatformWin32_H__
-
-#pragma warning(push)
-#pragma warning(disable : 4548)	// expression before comma has no effect; expected expression with side-effect
 
 #include <cwchar>  // For wchar_t and supporting functions.
 
@@ -47,6 +44,14 @@ namespace Face
 
 	typedef unsigned int		FxSize;
 
+#ifdef _WIN64
+	typedef signed __int64		FxIntPtr;
+	typedef unsigned __int64	FxUIntPtr;
+#else
+	typedef int					FxIntPtr;
+	typedef unsigned int		FxUIntPtr;
+#endif
+
 	static const FxChar FxPlatformPathSeparator = '\\';
 
 #ifdef _MSC_VER // Microsoft compiler specific stuff.
@@ -55,6 +60,8 @@ namespace Face
 	#endif
 	// Shut up the warning level 4 conditional expression is constant warnings.
 	#pragma warning(disable : 4127)
+	// Shut up the function marked as __forceinline not inlined warnings.
+	#pragma warning(disable : 4714)
 
 	// Turn on some useful warnings that are turned off by default.
 
@@ -68,8 +75,6 @@ namespace Face
 	#pragma warning(default : 4287)
 	// nonstandard extension used : 'var' : loop control variable declared in the for-loop is used outside the for-loop scope
 	#pragma warning(default : 4289)
-	// 'type' : use of undefined type detected in CLR meta-data - use of this type may lead to a runtime exception
-	#pragma warning(default : 4339)
 	// 'type name' : type-name exceeds meta-data limit of 'limit' characters
 	#pragma warning(default : 4536)
 	// expression before comma evaluates to a function which is missing an argument list
@@ -134,7 +139,5 @@ namespace Face
 
 // Bring in the ANSI platform.
 #include "FxPlatformANSI.h"
-
-#pragma warning(pop)
 
 #endif

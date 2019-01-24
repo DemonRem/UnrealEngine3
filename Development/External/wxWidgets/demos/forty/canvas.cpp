@@ -4,17 +4,12 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: canvas.cpp,v 1.10 2005/01/31 18:14:12 ABX Exp $
+// RCS-ID:      $Id: canvas.cpp 52452 2008-03-12 13:45:14Z JS $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------
 // Last modified: 22nd July 1998 - ported to wxWidgets 2.0
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -39,12 +34,14 @@ BEGIN_EVENT_TABLE(FortyCanvas, wxScrolledWindow)
 END_EVENT_TABLE()
 
 FortyCanvas::FortyCanvas(wxWindow* parent, const wxPoint& pos, const wxSize& size) :
-             wxScrolledWindow(parent, wxID_ANY, pos, size),
+             wxScrolledWindow(parent, wxID_ANY, pos, size, 0),
              m_helpingHand(true),
              m_rightBtnUndo(true),
              m_playerDialog(0),
              m_leftBtnDown(false)
 {
+    SetScrollbars(0, 0, 0, 0);
+
 #ifdef __WXGTK__
     m_font = wxTheFontList->FindOrCreateFont(12, wxROMAN, wxNORMAL, wxNORMAL);
 #else

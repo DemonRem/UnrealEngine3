@@ -3,7 +3,7 @@
 // 
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxEmphasisActionGenerator.h"
@@ -84,7 +84,7 @@ void FxEmphasisActionGenerator::Process( const FxArray<FxStressInformation>& str
 					lead   *= stressInfos[i].localTimeScale * config.gcSpeed;
 					tail   *= stressInfos[i].localTimeScale * config.gcSpeed;
 					// Scale the centre value by a per-action random value.
-					value  *= _random.RealInRange(config.eaProperties[emphasisActionIndex].valueScale.min, config.eaProperties[emphasisActionIndex].valueScale.max) * config.gcMagnitude;
+					value  *= _random.RealInRange(config.eaProperties[emphasisActionIndex].valueScale.rangeMin, config.eaProperties[emphasisActionIndex].valueScale.rangeMax) * config.gcMagnitude;
 				}
 				else if( (track == GT_EmphasisHeadRoll || track == GT_EmphasisHeadYaw) && _random.Bool() )
 				{

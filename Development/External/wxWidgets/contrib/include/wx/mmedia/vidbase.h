@@ -5,16 +5,12 @@
 // Created:    1997
 // Updated:    1998
 // Copyright:  (C) 1997, 1998, Guilhem Lavaux
-// CVS:        $Id: vidbase.h,v 1.4 2004/06/16 15:22:54 ABX Exp $
+// CVS:        $Id: vidbase.h 35650 2005-09-23 12:56:45Z MR $
 // License:    wxWindows license
 // /////////////////////////////////////////////////////////////////////////////
 /* Real -*- C++ -*- */
 #ifndef __VID_bdrv_H__
 #define __VID_bdrv_H__
-
-#ifdef __GNUG__
-#pragma interface "vidbase.h"
-#endif
 
 // ----------------------------------------------------------------------------
 // headers

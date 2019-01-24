@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
-<!-- $Id: common.bkl,v 1.138 2005/08/22 14:54:41 ABX Exp $ -->
+<!-- $Id: common.bkl 53750 2008-05-26 09:21:56Z VS $ -->
 
 <makefile>
 
-    <requires version="0.1.7"/>
+    <requires version="0.2.3"/>
 
     <!-- bakefile modules we need: -->
     <using module="datafiles"/>
@@ -130,7 +130,7 @@
         <if cond="MONOLITHIC=='0'">$(mk.evalExpr(wxwin.mkLibName('adv')))</if>
     </set>
     <set var="WXLIB_MEDIA">
-        <if cond="MONOLITHIC=='0'">$(mk.evalExpr(wxwin.mkLibName('media')))</if>
+        <if cond="MONOLITHIC=='0' and USE_MEDIA=='1'">$(mk.evalExpr(wxwin.mkLibName('media')))</if>
     </set>
     <set var="WXLIB_HTML">
         <if cond="MONOLITHIC=='0'">$(mk.evalExpr(wxwin.mkLibName('html')))</if>
@@ -149,6 +149,12 @@
     <set var="WXLIB_DBGRID">
         <if cond="MONOLITHIC=='0'">$(mk.evalExpr(wxwin.mkLibName('dbgrid')))</if>
     </set>
+    <set var="WXLIB_AUI">
+        <if cond="MONOLITHIC=='0'">$(mk.evalExpr(wxwin.mkLibName('aui')))</if>
+    </set>
+    <set var="WXLIB_RICHTEXT">
+        <if cond="MONOLITHIC=='0'">$(mk.evalExpr(wxwin.mkLibName('richtext')))</if>
+    </set>
 
     <set var="WXLIB_MONO">
         <if cond="MONOLITHIC=='1'">$(mk.evalExpr(wxwin.mkLibName('mono')))</if>
@@ -161,6 +167,10 @@
 
     <set var="DIR_SUFFIX_CPU">
         <if cond="FORMAT=='msevc4prj'">_$(CPU)</if>
+        <if cond="TARGET_CPU=='amd64'">_amd64</if>
+        <if cond="TARGET_CPU=='AMD64'">_amd64</if>
+        <if cond="TARGET_CPU=='ia64'">_ia64</if>
+        <if cond="TARGET_CPU=='IA64'">_ia64</if>
     </set>
 
     <if cond="FORMAT!='autoconf'">
@@ -190,7 +200,7 @@
     </set>
 
     <set var="LIBDIRNAME" make_var="1">
-        <if cond="FORMAT=='autoconf'">$(top_builddir)lib</if>
+        <if cond="FORMAT=='autoconf'">$(wx_top_builddir)/lib</if>
         <if cond="FORMAT!='autoconf'">
             $(nativePaths(TOP_SRCDIR))lib$(DIRSEP)$(COMPILER)$(DIR_SUFFIX_CPU)_$(LIBTYPE_SUFFIX)$(CFG)
         </if>
@@ -272,6 +282,22 @@
         <if cond="MSLU=='1'">unicows</if>
     </set>
 
+    <if cond="FORMAT!='autoconf'">
+        <set var="GDIPLUS_LIB">
+            <if cond="USE_GDIPLUS=='1'">gdiplus</if>
+	</set>
+	<set var="GFXCTX_DEFINE">
+            <if cond="USE_GDIPLUS=='1'">wxUSE_GRAPHICS_CONTEXT=1</if>
+	</set>
+    </if>
+
+    <set var="LINK_TARGET_CPU">
+        <if cond="TARGET_CPU=='amd64'">/MACHINE:AMD64</if>
+        <if cond="TARGET_CPU=='AMD64'">/MACHINE:AMD64</if>
+        <if cond="TARGET_CPU=='ia64'">/MACHINE:IA64</if>
+        <if cond="TARGET_CPU=='IA64'">/MACHINE:IA64</if>
+    </set>
+
     <template id="common_settings">
         <debug-info>$(DEBUGINFO)</debug-info>
         <debug-runtime-libs>$(DEBUGRUNTIME)</debug-runtime-libs>
@@ -292,6 +318,10 @@
             <set var="_ldlibs">$(_ldlibs.replace('ccrtrtti.lib', ''))</set>
             <set var="_cppflags">$(_cppflags.replace('/GR', ''))</set>
         </if>
+        <if cond="FORMAT=='msvc'">
+            <ldflags>$(LINK_TARGET_CPU)</ldflags>
+        </if>
+        <include cond="FORMAT=='msevc4prj'">$(TOP_SRCDIR)build/wince/missing</include>
     </template>
 
     <template id="anylib">
@@ -317,28 +347,22 @@
 
     <!-- deal with the need to copy setup.h here: -->
 
-    <set var="IS_MSVC_PRJ">$(FORMAT in ['msvc6prj','msevc4prj'])</set>
+    <set var="IS_MSVC_PRJ">
+        $(FORMAT in ['msvc6prj','msevc4prj','msvs2005prj'])
+    </set>
 
     <define-tag name="msvc-headers" rules="dll,lib">
         <if cond="IS_MSVC_PRJ">
-            <!-- FIXME: remove this once we require >=bkl-0.1.9 -->
-            <if cond="BAKEFILE_VERSION in ['0.1.7', '0.1.8']">
-                <msvc-project-files>
-                    $(addPrefixToList('include\', wxwin.headersOnly(value)))
-                </msvc-project-files>
-            </if>
-            <if cond="BAKEFILE_VERSION not in ['0.1.7', '0.1.8']">
-                <msvc-project-files>
-                    $(addPrefixToList('include\\', wxwin.headersOnly(value)))
-                </msvc-project-files>
-            </if>
+            <msvc-project-files>
+                $(addPrefixToList('include\\', wxwin.headersOnly(value)))
+            </msvc-project-files>
         </if>
     </define-tag>
 
     <set var="msvc_copy_setup_h_script">
         <if cond="IS_MSVC_PRJ">
 Creating $(SETUPHDIR)\wx\setup.h
-InputPath=..\include\wx\%s
+InputPath=..\..\include\wx\%s
 
 "$(SETUPHDIR)\wx\setup.h" : $(DOLLAR)(SOURCE) "$(DOLLAR)(INTDIR)" "$(DOLLAR)(OUTDIR)"
 $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
@@ -385,8 +409,29 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
         </if>
     </define-tag>
 
+    <define-tag name="msvc-create-rcdefs-h" rules="dll,lib">
+        <if cond="IS_MSVC_PRJ">
+            <msvc-headers-setup-h>
+                msw/genrcdefs.h
+            </msvc-headers-setup-h>
+            <!-- FIXME: we need another way to get the compiler name -->
+            <set var="VC_COMPILER">
+                <if cond="FORMAT=='msevc4prj'">$(_COMPILER)</if>
+                <if cond="FORMAT!='msevc4prj'">cl</if>
+            </set>
+            <set var="_custom_build_include_wx_msw_genrcdefs_h">
+Creating $(SETUPHDIR)\wx\msw\rcdefs.h
+InputPath=..\..\include\wx\msw\genrcdefs.h
+
+"$(SETUPHDIR)\wx\msw\rcdefs.h" : "$(DOLLAR)(SOURCE)" "$(SETUPHDIR)\wx\msw"
+$(TAB)$(VC_COMPILER) /EP /nologo "$(DOLLAR)(InputPath)" > "$(SETUPHDIR)\wx\msw\rcdefs.h"
+            </set>
+        </if>
+    </define-tag>
+
     <template id="msvc_setup_h">
         <msvc-copy-setup-h/>
+        <msvc-create-rcdefs-h/>
     </template>
 
     <!-- =============================================================== -->
@@ -420,6 +465,13 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
         <if cond="MONOLITHIC=='0'">$(EXTRALIBS_GUI)</if>
     </set>
 
+    <if cond="TOOLKIT=='MGL' and FORMAT=='watcom'">
+        <set var="MGLLIBPATH">$(DOLLAR)(%SCITECH)/lib/$(BUILD)/dos32/ow10</set>
+        <set var="MGLPMLIBPATH">
+            <if cond="DOS32=='DOS4GW'">dos4gw</if>
+        </set>
+    </if>
+
     <template id="wx" template="common_settings">
         <set var="wxid">$(wxwin.mk_wxid(id))</set>
         <define>__WX$(TOOLKIT)__</define>
@@ -430,11 +482,14 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
         <define>$(THREAD_DEFINE)</define>
         <define>$(UNICODE_DEFINE)</define>
         <define>$(MSLU_DEFINE)</define>
-        <!-- this include is added by configure, we need to put other
-             includes before it: -->
+        <if cond="FORMAT!='autoconf'"><define>$(GFXCTX_DEFINE)</define></if>
+        <include cond="FORMAT!='autoconf'">$(SETUPHDIR)</include>
         <include cond="FORMAT!='autoconf'">$(TOP_SRCDIR)include</include>
         <lib-path>$(LIBDIRNAME)</lib-path>
-        <include cond="FORMAT!='autoconf'">$(SETUPHDIR)</include>
+        <if cond="TOOLKIT=='MGL' and FORMAT=='watcom'">
+            <lib-path>$(MGLLIBPATH)</lib-path>
+            <lib-path>$(MGLLIBPATH)/$(MGLPMLIBPATH)</lib-path>
+        </if>
         <warnings>max</warnings>
         <cppflags-watcom>
             -wcd=549 <!-- 'sizeof' operand contains compiler generated information -->
@@ -450,9 +505,6 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
     <!-- for both GUI and wxBase libs/samples: -->
     <template id="wx_append_base_nomono">
         <!-- link against builtin 3rd party libs, if needed: -->
-        <sys-lib>$(LIB_TIFF)</sys-lib>
-        <sys-lib>$(LIB_JPEG)</sys-lib>
-        <sys-lib>$(LIB_PNG)</sys-lib>
         <sys-lib>$(LIB_ZLIB)</sys-lib>
         <sys-lib>$(LIB_ODBC)</sys-lib>
         <sys-lib>$(LIB_REGEX)</sys-lib>
@@ -467,9 +519,17 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
             </if>
         </if>
 
+        <!-- system libraries on mgl: -->
+        <if cond="FORMAT=='watcom' and TOOLKIT=='MGL'">
+            <sys-lib>mgl</sys-lib>
+            <sys-lib>mglcpp</sys-lib>
+            <sys-lib>pm</sys-lib>
+        </if>
+
         <!-- system libraries on windows: -->
         <if cond="FORMAT!='autoconf' and PLATFORM_WIN32=='1'">
             <sys-lib>$(UNICOWS_LIB)</sys-lib>
+            <sys-lib>$(GDIPLUS_LIB)</sys-lib>
             <if cond="FORMAT=='borland'">
                 <sys-lib>ole2w32</sys-lib>
             </if>
@@ -497,7 +557,7 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
                 <sys-lib>advapi32</sys-lib>
                 <sys-lib>wsock32</sys-lib>
             </if>
-            <if cond="FORMAT=='msvc' or FORMAT=='msvc6prj' or FORMAT=='borland'">
+            <if cond="FORMAT=='borland'">
                 <sys-lib>oleacc</sys-lib>
             </if>
             <if cond="FORMAT!='msevc4prj'">
@@ -508,7 +568,10 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
 
 
     <!-- for GUI libs/samples: -->
-    <template id="wx_append_nomono" template="wx_append_base_nomono">
+    <template id="wx_append_nomono" template_append="wx_append_base_nomono">
+        <sys-lib>$(LIB_TIFF)</sys-lib>
+        <sys-lib>$(LIB_JPEG)</sys-lib>
+        <sys-lib>$(LIB_PNG)</sys-lib>
         <ldlibs>$(EXTRALIBS_FOR_GUI)</ldlibs>
     </template>
 
@@ -530,10 +593,10 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
         <libname>$(WXLIBNAME)</libname>
 
         <if cond="WX_DISABLE_PRECOMP_HEADERS=='0'">
-            <if cond="FORMAT!='autoconf' and TOOLKIT in ['MSW','WINCE']">
-                <sources>$(WXTOPDIR)src/msw/dummy.cpp</sources>
+            <if cond="FORMAT!='autoconf' and TOOLKIT in ['MSW','MGL','PM','WINCE']">
+                <sources>$(WXTOPDIR)src/common/dummy.cpp</sources>
                 <precomp-headers-gen>
-                    $(WXTOPDIR)src/msw/dummy.cpp
+                    $(WXTOPDIR)src/common/dummy.cpp
                 </precomp-headers-gen>
             </if>
             <precomp-headers-location>$(WXTOPDIR)include</precomp-headers-location>
@@ -560,6 +623,14 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
         </if>
     </template>
 
+    <if cond="FORMAT=='autoconf'">
+        <set var="RCDEFDIR">
+            <if cond="TOOLKIT=='MSW'">
+                $(LIBDIRNAME)/wx/include/$(TOOLCHAIN_FULLNAME)
+            </if>
+        </set>
+    </if>
+
     <template id="wx_dll_b" template="wx_lib_b">
         <set var="WXDLLNAME">$(wxwin.mkDllName(wxid))</set>
         <dllname>$(WXDLLNAME)</dllname>
@@ -570,11 +641,10 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
         <ldflags cond="FORMAT=='autoconf'">$(WXMACVERSION_CMD)</ldflags>
 
         <!-- version info resources: -->
-        <if cond="FORMAT not in ['rpmspec','wx24dsp']"> <!-- FIXME: fix for bkl-0.1.7 only, remove the cond later -->
-            <res-define>WXDLLNAME=$(WXDLLNAME)</res-define>
-            <res-include cond="FORMAT=='autoconf'">
-                $(TOP_SRCDIR)include
-            </res-include>
+        <res-define>WXDLLNAME=$(WXDLLNAME)</res-define>
+        <if cond="FORMAT=='autoconf'">
+            <res-include>$(RCDEFDIR)</res-include>
+            <res-include>$(TOP_SRCDIR)include</res-include>
         </if>
         <win32-res>$(WXTOPDIR)src/msw/version.rc</win32-res>
     </template>
@@ -594,6 +664,9 @@ $(TAB)copy "$(DOLLAR)(InputPath)" $(SETUPHDIR)\wx\setup.h
     </template>
 
     <template id="wx_3rdparty_includes_gui" cond="USE_GUI=='1'">
+        <if cond="FORMAT=='watcom' and TOOLKIT=='MGL'">
+            <include>$(DOLLAR)(%SCITECH)/include</include>
+        </if>
         <include>$(INC_TIFF)</include>
         <include>$(INC_JPEG)</include>
         <include>$(INC_PNG)</include>

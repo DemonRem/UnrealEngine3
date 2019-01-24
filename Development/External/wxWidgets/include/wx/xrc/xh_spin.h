@@ -1,9 +1,9 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        xh_spin.h
-// Purpose:     XML resource handler for wxSpinButton
+// Name:        wx/xrc/xh_spin.h
+// Purpose:     XML resource handler for wxSpinButton and wxSpinCtrl
 // Author:      Bob Mitchell
 // Created:     2000/03/21
-// RCS-ID:      $Id: xh_spin.h,v 1.6 2005/01/07 21:27:19 VS Exp $
+// RCS-ID:      $Id: xh_spin.h 41590 2006-10-03 14:53:40Z VZ $
 // Copyright:   (c) 2000 Bob Mitchell and Verant Interactive
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -11,14 +11,12 @@
 #ifndef _WX_XH_SPIN_H_
 #define _WX_XH_SPIN_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "xh_spin.h"
-#endif
-
 #include "wx/xrc/xmlres.h"
-#include "wx/defs.h"
+
+#if wxUSE_XRC 
 
 #if wxUSE_SPINBTN
+
 class WXDLLIMPEXP_XRC wxSpinButtonXmlHandler : public wxXmlResourceHandler
 {
     DECLARE_DYNAMIC_CLASS(wxSpinButtonXmlHandler)
@@ -34,9 +32,12 @@ public:
     virtual wxObject *DoCreateResource();
     virtual bool CanHandle(wxXmlNode *node);
 };
-#endif
+
+#endif // wxUSE_SPINBTN
+
 
 #if wxUSE_SPINCTRL
+
 class WXDLLIMPEXP_XRC wxSpinCtrlXmlHandler : public wxXmlResourceHandler
 {
     DECLARE_DYNAMIC_CLASS(wxSpinCtrlXmlHandler)
@@ -52,6 +53,9 @@ public:
     virtual wxObject *DoCreateResource();
     virtual bool CanHandle(wxXmlNode *node);
 };
-#endif
+
+#endif // wxUSE_SPINCTRL
+
+#endif // wxUSE_XRC
 
 #endif // _WX_XH_SPIN_H_

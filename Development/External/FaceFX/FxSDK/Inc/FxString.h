@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 // 
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxString_H__
@@ -264,8 +264,17 @@ public:
 	/// Serializes the string to an archive.
 	FxArchive& Serialize( FxArchive& arc )
 	{
+		// As of version 1.7, container classes have the same version as the 
+		// SDK itself so there is no need to explicitly serialize it.  This eats
+		// the version when loading pre-1.7 archives.  For FxString, however,
+		// the version is always kCurrentFxStringVersion until there is a 
+		// compelling reason to change it since the code is already structured
+		// in that way.
 		FxUInt16 version = kCurrentFxStringVersion;
-		arc << version;
+		if( arc.GetSDKVersion() < 1700 && arc.IsLoading() )
+		{
+			arc << version;
+		}
 
 		FxSize length = Length();
 		arc << length;
@@ -300,6 +309,7 @@ public:
 				temp._usedCount += length;
 				temp.Swap(_container);
 			}
+			_container._v[_container._usedCount] = static_cast<char_type>(0);
 		}
 		return arc;
 	}
@@ -426,6 +436,9 @@ private:
 	char_type* _buffer;
 	FxSize _bufferSize;
 };
+
+/// A macro for wide-character strings.
+#define FxW(str) L##str
 
 } // namespace Face
 

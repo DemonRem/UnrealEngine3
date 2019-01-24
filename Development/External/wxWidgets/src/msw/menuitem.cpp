@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        menuitem.cpp
+// Name:        src/msw/menuitem.cpp
 // Purpose:     wxMenuItem implementation
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     11.11.97
-// RCS-ID:      $Id: menuitem.cpp,v 1.63 2005/03/12 14:16:28 GD Exp $
+// RCS-ID:      $Id: menuitem.cpp 41021 2006-09-05 21:00:55Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "menuitem.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,19 +26,19 @@
 
 #if wxUSE_MENUS
 
+#include "wx/menuitem.h"
+#include "wx/stockitem.h"
+
 #ifndef WX_PRECOMP
     #include "wx/font.h"
     #include "wx/bitmap.h"
     #include "wx/settings.h"
-    #include "wx/font.h"
     #include "wx/window.h"
     #include "wx/accel.h"
-    #include "wx/menu.h"
     #include "wx/string.h"
+    #include "wx/log.h"
+    #include "wx/menu.h"
 #endif
-
-#include "wx/menuitem.h"
-#include "wx/log.h"
 
 #if wxUSE_ACCEL
     #include "wx/accel.h"
@@ -82,7 +78,7 @@ UINT GetMenuState(HMENU hMenu, UINT id, UINT flags) ;
 bool wxMenuItemStreamingCallback( const wxObject *object, wxWriter * , wxPersister * , wxxVariantArray & )
 {
     const wxMenuItem * mitem = dynamic_cast<const wxMenuItem*>(object) ;
-    if ( mitem->GetMenu() && !mitem->GetMenu()->GetTitle().IsEmpty() )
+    if ( mitem->GetMenu() && !mitem->GetMenu()->GetTitle().empty() )
     {
         // we don't stream out the first two items for menus with a title, they will be reconstructed
         if ( mitem->GetMenu()->FindItemByPosition(0) == mitem || mitem->GetMenu()->FindItemByPosition(1) == mitem )
@@ -341,17 +337,24 @@ void wxMenuItem::Check(bool check)
     wxMenuItemBase::Check(check);
 }
 
-void wxMenuItem::SetText(const wxString& text)
+void wxMenuItem::SetText(const wxString& txt)
 {
+    wxString text = txt;
+
     // don't do anything if label didn't change
-    if ( m_text == text )
+    if ( m_text == txt )
         return;
 
+    // wxMenuItemBase will do stock ID checks
     wxMenuItemBase::SetText(text);
-    OWNER_DRAWN_ONLY( wxOwnerDrawn::SetName(text) );
+
+    // m_text could now be different from 'text' if we are a stock menu item,
+    // so use only m_text below
+
+    OWNER_DRAWN_ONLY( wxOwnerDrawn::SetName(m_text) );
 #if wxUSE_OWNER_DRAWN
     // tell the owner drawing code to to show the accel string as well
-    SetAccelString(text.AfterFirst(_T('\t')));
+    SetAccelString(m_text.AfterFirst(_T('\t')));
 #endif
 
     HMENU hMenu = GetHMenuOf(m_parentMenu);
@@ -389,7 +392,7 @@ void wxMenuItem::SetText(const wxString& text)
 #endif  //owner drawn
         {
             flagsOld |= MF_STRING;
-            data = (wxChar*) text.c_str();
+            data = (wxChar*) m_text.c_str();
         }
 
 #ifdef __WXWINCE__
@@ -403,7 +406,7 @@ void wxMenuItem::SetText(const wxString& text)
         info.cbSize = sizeof(info);
         info.fMask = MIIM_TYPE;
         info.fType = MFT_STRING;
-        info.cch = text.Length();
+        info.cch = m_text.length();
         info.dwTypeData = (LPTSTR) data ;
         if ( !::SetMenuItemInfo(hMenu, id, FALSE, & info) )
         {

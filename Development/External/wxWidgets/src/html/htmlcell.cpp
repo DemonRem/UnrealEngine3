@@ -1,47 +1,33 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        htmlcell.cpp
+// Name:        src/html/htmlcell.cpp
 // Purpose:     wxHtmlCell - basic element of HTML output
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: htmlcell.cpp,v 1.102 2005/09/11 12:09:35 VZ Exp $
+// RCS-ID:      $Id: htmlcell.cpp 53318 2008-04-23 11:54:05Z VS $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "htmlcell.h"
-#endif
-
 #include "wx/wxprec.h"
 
-#include "wx/defs.h"
+#ifdef __BORLANDC__
+    #pragma hdrstop
+#endif
 
 #if wxUSE_HTML && wxUSE_STREAMS
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
 #ifndef WXPRECOMP
+    #include "wx/dynarray.h"
     #include "wx/brush.h"
     #include "wx/colour.h"
     #include "wx/dc.h"
+    #include "wx/settings.h"
+    #include "wx/module.h"
 #endif
 
 #include "wx/html/htmlcell.h"
 #include "wx/html/htmlwin.h"
-#include "wx/settings.h"
-#include "wx/module.h"
-#include "wx/dynarray.h"
 
 #include <stdlib.h>
-
-//-----------------------------------------------------------------------------
-// Global variables
-//-----------------------------------------------------------------------------
-
-static wxCursor *gs_cursorLink = NULL;
-static wxCursor *gs_cursorText = NULL;
-
 
 //-----------------------------------------------------------------------------
 // Helper classes
@@ -94,6 +80,8 @@ wxHtmlCell::wxHtmlCell() : wxObject()
     m_Next = NULL;
     m_Parent = NULL;
     m_Width = m_Height = m_Descent = 0;
+    m_ScriptMode = wxHTML_SCRIPT_NORMAL;        // <sub> or <sup> mode
+    m_ScriptBaseline = 0;                       // <sub> or <sup> baseline
     m_CanLiveOnPagebreak = true;
     m_Link = NULL;
 }
@@ -103,37 +91,136 @@ wxHtmlCell::~wxHtmlCell()
     delete m_Link;
 }
 
-
-void wxHtmlCell::OnMouseClick(wxWindow *parent, int x, int y,
-                              const wxMouseEvent& event)
+// Update the descent value when whe are in a <sub> or <sup>.
+// prevbase is the parent base
+void wxHtmlCell::SetScriptMode(wxHtmlScriptMode mode, long previousBase)
 {
-    wxHtmlLinkInfo *lnk = GetLink(x, y);
-    if (lnk != NULL)
+    m_ScriptMode = mode;
+
+    if (mode == wxHTML_SCRIPT_SUP)
+        m_ScriptBaseline = previousBase - (m_Height + 1) / 2;
+    else if (mode == wxHTML_SCRIPT_SUB)
+        m_ScriptBaseline = previousBase + (m_Height + 1) / 6;
+    else
+        m_ScriptBaseline = 0;
+
+    m_Descent += m_ScriptBaseline;
+}
+
+#if WXWIN_COMPATIBILITY_2_6
+
+struct wxHtmlCellOnMouseClickCompatHelper;
+
+static wxHtmlCellOnMouseClickCompatHelper *gs_helperOnMouseClick = NULL;
+
+// helper for routing calls to new ProcessMouseClick() method to deprecated
+// OnMouseClick() method
+struct wxHtmlCellOnMouseClickCompatHelper
+{
+    wxHtmlCellOnMouseClickCompatHelper(wxHtmlWindowInterface *window_,
+                                       const wxPoint& pos_,
+                                       const wxMouseEvent& event_)
+        : window(window_), pos(pos_), event(event_), retval(false)
+    {
+    }
+
+    bool CallOnMouseClick(wxHtmlCell *cell)
+    {
+        wxHtmlCellOnMouseClickCompatHelper *oldHelper = gs_helperOnMouseClick;
+        gs_helperOnMouseClick = this;
+        cell->OnMouseClick
+              (
+                window ? window->GetHTMLWindow() : NULL,
+                pos.x, pos.y,
+                event
+              );
+        gs_helperOnMouseClick = oldHelper;
+        return retval;
+    }
+
+    wxHtmlWindowInterface *window;
+    const wxPoint& pos;
+    const wxMouseEvent& event;
+    bool retval;
+};
+#endif // WXWIN_COMPATIBILITY_2_6
+
+bool wxHtmlCell::ProcessMouseClick(wxHtmlWindowInterface *window,
+                                   const wxPoint& pos,
+                                   const wxMouseEvent& event)
+{
+    wxCHECK_MSG( window, false, _T("window interface must be provided") );
+
+#if WXWIN_COMPATIBILITY_2_6
+    // NB: this hack puts the body of ProcessMouseClick() into OnMouseClick()
+    //     (for which it has to pass the arguments and return value via a
+    //     helper variable because these two methods have different
+    //     signatures), so that old code overriding OnMouseClick will continue
+    //     to work
+    wxHtmlCellOnMouseClickCompatHelper compat(window, pos, event);
+    return compat.CallOnMouseClick(this);
+}
+
+void wxHtmlCell::OnMouseClick(wxWindow *, int, int, const wxMouseEvent& event)
+{
+    wxCHECK_RET( gs_helperOnMouseClick, _T("unexpected call to OnMouseClick") );
+    wxHtmlWindowInterface *window = gs_helperOnMouseClick->window;
+    const wxPoint& pos = gs_helperOnMouseClick->pos;
+#endif // WXWIN_COMPATIBILITY_2_6
+
+    wxHtmlLinkInfo *lnk = GetLink(pos.x, pos.y);
+    bool retval = false;
+
+    if (lnk)
     {
         wxHtmlLinkInfo lnk2(*lnk);
         lnk2.SetEvent(&event);
         lnk2.SetHtmlCell(this);
 
-        // note : this cast is legal because parent is *always* wxHtmlWindow
-        wxStaticCast(parent, wxHtmlWindow)->OnLinkClicked(lnk2);
+        window->OnHTMLLinkClicked(lnk2);
+        retval = true;
     }
+
+#if WXWIN_COMPATIBILITY_2_6
+    gs_helperOnMouseClick->retval = retval;
+#else
+    return retval;
+#endif // WXWIN_COMPATIBILITY_2_6
 }
 
-
+#if WXWIN_COMPATIBILITY_2_6
 wxCursor wxHtmlCell::GetCursor() const
 {
+    return wxNullCursor;
+}
+#endif // WXWIN_COMPATIBILITY_2_6
+
+wxCursor wxHtmlCell::GetMouseCursor(wxHtmlWindowInterface *window) const
+{
+#if WXWIN_COMPATIBILITY_2_6
+    // NB: Older versions of wx used GetCursor() virtual method in place of
+    //     GetMouseCursor(interface). This code ensures that user code that
+    //     overriden GetCursor() continues to work. The trick is that the base
+    //     wxHtmlCell::GetCursor() method simply returns wxNullCursor, so we
+    //     know that GetCursor() was overriden iff it returns valid cursor.
+    wxCursor cur = GetCursor();
+    if (cur.Ok())
+        return cur;
+#endif // WXWIN_COMPATIBILITY_2_6
+
     if ( GetLink() )
     {
-        if ( !gs_cursorLink )
-            gs_cursorLink = new wxCursor(wxCURSOR_HAND);
-        return *gs_cursorLink;
+        return window->GetHTMLCursor(wxHtmlWindowInterface::HTMLCursor_Link);
     }
     else
-        return *wxSTANDARD_CURSOR;
+    {
+        return window->GetHTMLCursor(wxHtmlWindowInterface::HTMLCursor_Default);
+    }
 }
 
 
-bool wxHtmlCell::AdjustPagebreak(int *pagebreak, int* WXUNUSED(known_pagebreaks), int WXUNUSED(number_of_pages)) const
+bool wxHtmlCell::AdjustPagebreak(int *pagebreak,
+                                 wxArrayInt& WXUNUSED(known_pagebreaks)) const
 {
     if ((!m_CanLiveOnPagebreak) &&
                 m_PosY < *pagebreak && m_PosY + m_Height > *pagebreak)
@@ -190,15 +277,24 @@ wxHtmlCell *wxHtmlCell::FindCellByPos(wxCoord x, wxCoord y,
 }
 
 
-wxPoint wxHtmlCell::GetAbsPos() const
+wxPoint wxHtmlCell::GetAbsPos(wxHtmlCell *rootCell) const
 {
     wxPoint p(m_PosX, m_PosY);
-    for (wxHtmlCell *parent = m_Parent; parent; parent = parent->m_Parent)
+    for (wxHtmlCell *parent = m_Parent; parent && parent != rootCell;
+         parent = parent->m_Parent)
     {
         p.x += parent->m_PosX;
         p.y += parent->m_PosY;
     }
     return p;
+}
+
+wxHtmlCell *wxHtmlCell::GetRootCell() const
+{
+    wxHtmlCell *c = wxConstCast(this, wxHtmlCell);
+    while ( c->m_Parent )
+        c = c->m_Parent;
+    return c;
 }
 
 unsigned wxHtmlCell::GetDepth() const
@@ -256,7 +352,7 @@ bool wxHtmlCell::IsBefore(wxHtmlCell *cell) const
 
 IMPLEMENT_ABSTRACT_CLASS(wxHtmlWordCell, wxHtmlCell)
 
-wxHtmlWordCell::wxHtmlWordCell(const wxString& word, wxDC& dc) : wxHtmlCell()
+wxHtmlWordCell::wxHtmlWordCell(const wxString& word, const wxDC& dc) : wxHtmlCell()
 {
     m_Word = word;
     dc.GetTextExtent(m_Word, &m_Width, &m_Height, &m_Descent);
@@ -276,7 +372,7 @@ void wxHtmlWordCell::SetPreviousWord(wxHtmlWordCell *cell)
 // Splits m_Word into up to three parts according to selection, returns
 // substring before, in and after selection and the points (in relative coords)
 // where s2 and s3 start:
-void wxHtmlWordCell::Split(wxDC& dc,
+void wxHtmlWordCell::Split(const wxDC& dc,
                            const wxPoint& selFrom, const wxPoint& selTo,
                            unsigned& pos1, unsigned& pos2) const
 {
@@ -284,6 +380,16 @@ void wxHtmlWordCell::Split(wxDC& dc,
                    wxDefaultPosition : selFrom - GetAbsPos();
     wxPoint pt2 = (selTo == wxDefaultPosition) ?
                    wxPoint(m_Width, wxDefaultCoord) : selTo - GetAbsPos();
+
+    // if the selection is entirely within this cell, make sure pt1 < pt2 in
+    // order to make the rest of this function simpler:
+    if ( selFrom != wxDefaultPosition && selTo != wxDefaultPosition &&
+         selFrom.x > selTo.x )
+    {
+        wxPoint tmp = pt1;
+        pt1 = pt2;
+        pt2 = tmp;
+    }
 
     unsigned len = m_Word.length();
     unsigned i = 0;
@@ -297,19 +403,26 @@ void wxHtmlWordCell::Split(wxDC& dc,
         pt2.x = m_Width;
 
     // before selection:
+    // (include character under caret only if in first half of width)
 #ifdef __WXMAC__
     // implementation using PartialExtents to support fractional widths
     wxArrayInt widths ;
     dc.GetPartialTextExtents(m_Word,widths) ;
     while( i < len && pt1.x >= widths[i] )
         i++ ;
-#else // __WXMAC__
+    if ( i < len )
+    {
+        int charW = (i > 0) ? widths[i] - widths[i-1] : widths[i];
+        if ( widths[i] - pt1.x < charW/2 )
+            i++;
+    }
+#else // !__WXMAC__
     wxCoord charW, charH;
     while ( pt1.x > 0 && i < len )
     {
         dc.GetTextExtent(m_Word[i], &charW, &charH);
         pt1.x -= charW;
-        if ( pt1.x >= 0 )
+        if ( pt1.x >= -charW/2 )
         {
             pos1 += charW;
             i++;
@@ -318,18 +431,25 @@ void wxHtmlWordCell::Split(wxDC& dc,
 #endif // __WXMAC__/!__WXMAC__
 
     // in selection:
+    // (include character under caret only if in first half of width)
     unsigned j = i;
 #ifdef __WXMAC__
     while( j < len && pt2.x >= widths[j] )
         j++ ;
-#else // __WXMAC__
+    if ( j < len )
+    {
+        int charW = (j > 0) ? widths[j] - widths[j-1] : widths[j];
+        if ( widths[j] - pt2.x < charW/2 )
+            j++;
+    }
+#else // !__WXMAC__
     pos2 = pos1;
     pt2.x -= pos2;
     while ( pt2.x > 0 && j < len )
     {
         dc.GetTextExtent(m_Word[j], &charW, &charH);
         pt2.x -= charW;
-        if ( pt2.x >= 0 )
+        if ( pt2.x >= -charW/2 )
         {
             pos2 += charW;
             j++;
@@ -341,7 +461,7 @@ void wxHtmlWordCell::Split(wxDC& dc,
     pos2 = j;
 }
 
-void wxHtmlWordCell::SetSelectionPrivPos(wxDC& dc, wxHtmlSelection *s) const
+void wxHtmlWordCell::SetSelectionPrivPos(const wxDC& dc, wxHtmlSelection *s) const
 {
     unsigned p1, p2;
 
@@ -511,6 +631,8 @@ wxString wxHtmlWordCell::ConvertToText(wxHtmlSelection *s) const
         {
             int part1 = priv.x;
             int part2 = priv.y;
+            if ( part1 == part2 )
+                return wxEmptyString;
             return m_Word.Mid(part1, part2-part1);
         }
         //else: return the whole word below
@@ -519,16 +641,16 @@ wxString wxHtmlWordCell::ConvertToText(wxHtmlSelection *s) const
     return m_Word;
 }
 
-wxCursor wxHtmlWordCell::GetCursor() const
+wxCursor wxHtmlWordCell::GetMouseCursor(wxHtmlWindowInterface *window) const
 {
     if ( !GetLink() )
     {
-        if ( !gs_cursorText )
-            gs_cursorText = new wxCursor(wxCURSOR_IBEAM);
-        return *gs_cursorText;
+        return window->GetHTMLCursor(wxHtmlWindowInterface::HTMLCursor_Text);
     }
     else
-        return wxHtmlCell::GetCursor();
+    {
+        return wxHtmlCell::GetMouseCursor(window);
+    }
 }
 
 
@@ -604,37 +726,35 @@ int wxHtmlContainerCell::GetIndentUnits(int ind) const
 }
 
 
-
-bool wxHtmlContainerCell::AdjustPagebreak(int *pagebreak, int* known_pagebreaks, int number_of_pages) const
+bool wxHtmlContainerCell::AdjustPagebreak(int *pagebreak,
+                                          wxArrayInt& known_pagebreaks) const
 {
     if (!m_CanLiveOnPagebreak)
-        return wxHtmlCell::AdjustPagebreak(pagebreak, known_pagebreaks, number_of_pages);
+        return wxHtmlCell::AdjustPagebreak(pagebreak, known_pagebreaks);
 
-    else
+    wxHtmlCell *c = GetFirstChild();
+    bool rt = false;
+    int pbrk = *pagebreak - m_PosY;
+
+    while (c)
     {
-        wxHtmlCell *c = GetFirstChild();
-        bool rt = false;
-        int pbrk = *pagebreak - m_PosY;
-
-        while (c)
-        {
-            if (c->AdjustPagebreak(&pbrk, known_pagebreaks, number_of_pages))
-                rt = true;
-            c = c->GetNext();
-        }
-        if (rt)
-            *pagebreak = pbrk + m_PosY;
-        return rt;
+        if (c->AdjustPagebreak(&pbrk, known_pagebreaks))
+            rt = true;
+        c = c->GetNext();
     }
+    if (rt)
+        *pagebreak = pbrk + m_PosY;
+    return rt;
 }
-
 
 
 void wxHtmlContainerCell::Layout(int w)
 {
     wxHtmlCell::Layout(w);
 
-    if (m_LastLayout == w) return;
+    if (m_LastLayout == w)
+        return;
+    m_LastLayout = w;
 
     // VS: Any attempt to layout with negative or zero width leads to hell,
     // but we can't ignore such attempts completely, since it sometimes
@@ -650,8 +770,6 @@ void wxHtmlContainerCell::Layout(int w)
        return;
     }
 
-    wxHtmlCell *cell = m_Cells,
-               *line = m_Cells;
     wxHtmlCell *nextCell;
     long xpos = 0, ypos = m_IndentTop;
     int xdelta = 0, ybasicpos = 0, ydiff;
@@ -698,6 +816,8 @@ void wxHtmlContainerCell::Layout(int w)
     s_width = m_Width - s_indent - ((m_IndentRight < 0) ? (-m_IndentRight * m_Width / 100) : m_IndentRight);
 
     // my own layouting:
+    wxHtmlCell *cell = m_Cells,
+               *line = m_Cells;
     while (cell != NULL)
     {
         switch (m_AlignVer)
@@ -792,12 +912,12 @@ void wxHtmlContainerCell::Layout(int w)
                 if ( step > 0 )
                 {
                     // first count the cells which will get extra space
-                    int total = 0;
+                    int total = -1;
 
                     const wxHtmlCell *c;
                     if ( line != cell )
                     {
-                        for ( c = line->GetNext(); c != cell; c = c->GetNext() )
+                        for ( c = line; c != cell; c = c->GetNext() )
                         {
                             if ( c->IsLinebreakAllowed() )
                             {
@@ -809,11 +929,22 @@ void wxHtmlContainerCell::Layout(int w)
                     // and now extra space to those cells which merit it
                     if ( total )
                     {
-                        // first cell on line is not moved:
-                        line->SetPos(line->GetPosX() + s_indent,
-                                     line->GetPosY() + ypos);
+                        // first visible cell on line is not moved:
+                        while (line !=cell && !line->IsLinebreakAllowed())
+                        {
+                            line->SetPos(line->GetPosX() + s_indent,
+                                         line->GetPosY() + ypos);
+                            line = line->GetNext();
+                        }
 
-                        line = line->GetNext();
+                        if (line != cell)
+                        {
+                            line->SetPos(line->GetPosX() + s_indent,
+                                         line->GetPosY() + ypos);
+
+                            line = line->GetNext();
+                        }
+
                         for ( int n = 0; line != cell; line = line->GetNext() )
                         {
                             if ( line->IsLinebreakAllowed() )
@@ -879,8 +1010,6 @@ void wxHtmlContainerCell::Layout(int w)
     m_MaxTotalWidth += s_indent + ((m_IndentRight < 0) ? (-m_IndentRight * m_Width / 100) : m_IndentRight);
     MaxLineWidth += s_indent + ((m_IndentRight < 0) ? (-m_IndentRight * m_Width / 100) : m_IndentRight);
     if (m_Width < MaxLineWidth) m_Width = MaxLineWidth;
-
-    m_LastLayout = w;
 }
 
 void wxHtmlContainerCell::UpdateRenderingStatePre(wxHtmlRenderingInfo& info,
@@ -1052,7 +1181,7 @@ void wxHtmlContainerCell::SetWidthFloat(const wxHtmlTag& tag, double pixel_scale
         int wdi;
         wxString wd = tag.GetParam(wxT("WIDTH"));
 
-        if (wd[wd.Length()-1] == wxT('%'))
+        if (wd[wd.length()-1] == wxT('%'))
         {
             wxSscanf(wd.c_str(), wxT("%i%%"), &wdi);
             SetWidthFloat(wdi, wxHTML_UNITS_PERCENT);
@@ -1137,13 +1266,34 @@ wxHtmlCell *wxHtmlContainerCell::FindCellByPos(wxCoord x, wxCoord y,
 }
 
 
-void wxHtmlContainerCell::OnMouseClick(wxWindow *parent, int x, int y, const wxMouseEvent& event)
+bool wxHtmlContainerCell::ProcessMouseClick(wxHtmlWindowInterface *window,
+                                            const wxPoint& pos,
+                                            const wxMouseEvent& event)
 {
-    wxHtmlCell *cell = FindCellByPos(x, y);
-    if ( cell )
-        cell->OnMouseClick(parent, x, y, event);
+#if WXWIN_COMPATIBILITY_2_6
+    wxHtmlCellOnMouseClickCompatHelper compat(window, pos, event);
+    return compat.CallOnMouseClick(this);
 }
 
+void wxHtmlContainerCell::OnMouseClick(wxWindow*,
+                                       int, int, const wxMouseEvent& event)
+{
+    wxCHECK_RET( gs_helperOnMouseClick, _T("unexpected call to OnMouseClick") );
+    wxHtmlWindowInterface *window = gs_helperOnMouseClick->window;
+    const wxPoint& pos = gs_helperOnMouseClick->pos;
+#endif // WXWIN_COMPATIBILITY_2_6
+
+    bool retval = false;
+    wxHtmlCell *cell = FindCellByPos(pos.x, pos.y);
+    if ( cell )
+        retval = cell->ProcessMouseClick(window, pos, event);
+
+#if WXWIN_COMPATIBILITY_2_6
+    gs_helperOnMouseClick->retval = retval;
+#else
+    return retval;
+#endif // WXWIN_COMPATIBILITY_2_6
+}
 
 
 wxHtmlCell *wxHtmlContainerCell::GetFirstTerminal() const
@@ -1372,8 +1522,15 @@ void wxHtmlWidgetCell::Draw(wxDC& WXUNUSED(dc),
         c = c->GetParent();
     }
 
-    ((wxScrolledWindow*)(m_Wnd->GetParent()))->GetViewStart(&stx, &sty);
-    m_Wnd->SetSize(absx - wxHTML_SCROLL_STEP * stx, absy  - wxHTML_SCROLL_STEP * sty, m_Width, m_Height);
+    wxScrolledWindow *scrolwin =
+        wxDynamicCast(m_Wnd->GetParent(), wxScrolledWindow);
+    wxCHECK_RET( scrolwin,
+                 _T("widget cells can only be placed in wxHtmlWindow") );
+
+    scrolwin->GetViewStart(&stx, &sty);
+    m_Wnd->SetSize(absx - wxHTML_SCROLL_STEP * stx,
+                   absy  - wxHTML_SCROLL_STEP * sty,
+                   m_Width, m_Height);
 }
 
 
@@ -1448,30 +1605,5 @@ const wxHtmlCell* wxHtmlTerminalCellsInterator::operator++()
 
     return m_pos;
 }
-
-
-
-
-
-
-
-//-----------------------------------------------------------------------------
-// Cleanup
-//-----------------------------------------------------------------------------
-
-class wxHtmlCellModule: public wxModule
-{
-DECLARE_DYNAMIC_CLASS(wxHtmlCellModule)
-public:
-    wxHtmlCellModule() : wxModule() {}
-    bool OnInit() { return true; }
-    void OnExit()
-    {
-        wxDELETE(gs_cursorLink);
-        wxDELETE(gs_cursorText);
-    }
-};
-
-IMPLEMENT_DYNAMIC_CLASS(wxHtmlCellModule, wxModule)
 
 #endif

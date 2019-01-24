@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXCONTROLLER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -101,7 +101,7 @@ struct NxControllerShapeHit
 	NxShape*		shape;			//!< Touched shape
 	NxExtendedVec3	worldPos;		//!< Contact position in world space
 	NxVec3			worldNormal;	//!< Contact normal in world space
-	NxU32			id;				//!< Feature identifier (e.g. triangle index for meshes)
+	NxU32			id;				//!< Reserved for future use
 	NxVec3			dir;			//!< Motion direction
 	NxF32			length;			//!< Motion length
 	};
@@ -183,7 +183,11 @@ class NxControllerDesc
 
 	\return True if the descriptor is valid.
 	*/
-	NX_INLINE virtual	bool						isValid()		const;
+	NX_INLINE virtual	bool						isValid()		const { return !checkValid(); }
+		/**
+		\brief returns 0 if the current settings are valid
+		*/
+		NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Not used.
@@ -316,12 +320,12 @@ NX_INLINE void NxControllerDesc::setToDefault()
 	position.zero();
 	}
 
-NX_INLINE bool NxControllerDesc::isValid() const
+NX_INLINE NxU32 NxControllerDesc::checkValid() const
 	{
-	if (slopeLimit<0)	return false;
-	if (stepOffset<0)	return false;
-	if (skinWidth<0)	return false;
-	return true;
+	if (slopeLimit<0)	return 1;
+	if (stepOffset<0)	return 2;
+	if (skinWidth<0)	return 3;
+	return 0;
 	}
 
 
@@ -349,6 +353,8 @@ NX_INLINE bool NxControllerDesc::isValid() const
 	\param sharpness to prevent sudden height changes due to the autostep feature, the motion can be smoothed using a feedback filter.
 	This coefficient defines the amount of smoothing. The smaller, the smoother. (1.0 means no smoothing).
 	\param groupsMask Alternative mask used to filter shapes, see NxScene::overlapAABBShapes().
+
+	\note If static actors in the scene have changed, call NxCharacter::reportSceneChanged() first.
 	*/
 	virtual		void					move(const NxVec3& disp, NxU32 activeGroups, NxF32 minDist, NxU32& collisionFlags, NxF32 sharpness=1.0f, const NxGroupsMask* groupsMask=NULL)	= 0;
 
@@ -449,7 +455,9 @@ NX_INLINE bool NxControllerDesc::isValid() const
 	virtual		NxCCTInteractionFlag	getInteraction()				const		= 0;
 
 	/**
-	\brief The character controller uses caching in order to speed up collision testing, this caching can not detect when static objects have changed in the scene. You need to call this method when such changes have been made.
+	\brief The character controller uses caching in order to speed up collision testing, 
+	this caching can not detect when static objects have changed in the scene. 
+	You need to call this method when such changes have been made.
 	*/
 	virtual		void					reportSceneChanged()			= 0;
 
@@ -471,9 +479,9 @@ NX_INLINE bool NxControllerDesc::isValid() const
 	};
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

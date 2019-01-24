@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXWHEELSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -57,9 +57,10 @@ The second section goes from (extremumSlip, extremumValue) to (asymptoteSlip, as
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes (Software fallback for collision)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 See #NxWheelShape.
 */
@@ -150,7 +151,11 @@ class NxTireFunctionDesc
 	/**
 	returns true if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	evaluates the Force(Slip) function
@@ -197,7 +202,7 @@ enum NxWheelShapeFlags
 	\brief If set, the NxWheelShape will clamp the force in the friction constraints.
 	See #NxTireFunctionDesc
 	*/
-	NX_WF_CLAMPED_FRICTION = 1 << 6,
+	NX_WF_CLAMPED_FRICTION = 1 << 6
 	};
 
 
@@ -206,9 +211,10 @@ enum NxWheelShapeFlags
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes (Software fallback for collision)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxWheelShape NxActor.createActor()
 */
@@ -361,7 +367,11 @@ class NxWheelShapeDesc : public NxShapeDesc		//TODO: this nor other desc classes
 	/**
 	\brief returns true if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 
@@ -379,15 +389,15 @@ NX_INLINE void NxTireFunctionDesc::setToDefault()
 	stiffnessFactor = 1000000.0f;	//quite stiff by default.
 	}
 
-NX_INLINE bool NxTireFunctionDesc::isValid() const
+NX_INLINE NxU32 NxTireFunctionDesc::checkValid() const
 	{
-	if(!(0.0f < extremumSlip))			return false;
-	if(!(extremumSlip < asymptoteSlip))	return false;
-	if(!(0.0f < extremumValue))			return false;
-	if(!(0.0f < asymptoteValue))		return false;
-	if(!(0.0f <= stiffnessFactor))		return false;
+	if(!(0.0f < extremumSlip))			return 1;
+	if(!(extremumSlip < asymptoteSlip))	return 2;
+	if(!(0.0f < extremumValue))			return 3;
+	if(!(0.0f < asymptoteValue))		return 4;
+	if(!(0.0f <= stiffnessFactor))		return 5;
 
-	return true;
+	return 0;
 	}
 
 
@@ -474,31 +484,31 @@ NX_INLINE NxWheelShapeDesc::NxWheelShapeDesc() : NxShapeDesc(NX_SHAPE_WHEEL)	//c
  		}
 	}
 
-NX_INLINE bool NxWheelShapeDesc::isValid() const
+NX_INLINE NxU32 NxWheelShapeDesc::checkValid() const
 	{
-	if(!NxMath::isFinite(radius))	return false;
-	if(radius<=0.0f)				return false;
-	if(!NxMath::isFinite(suspensionTravel))	return false;
-	if(suspensionTravel<0.0f)				return false;
-	if(!NxMath::isFinite(inverseWheelMass))	return false;
-	if(inverseWheelMass<=0.0f)				return false;
-	if(!NxMath::isFinite(motorTorque))	return false;
-	if(!NxMath::isFinite(brakeTorque))	return false;
-	if(brakeTorque<0.0f)				return false;
-	if(!NxMath::isFinite(steerAngle))	return false;
+	if(!NxMath::isFinite(radius))	return 1;
+	if(radius<=0.0f)				return 2;
+	if(!NxMath::isFinite(suspensionTravel))	return 3;
+	if(suspensionTravel<0.0f)				return 4;
+	if(!NxMath::isFinite(inverseWheelMass))	return 5;
+	if(inverseWheelMass<=0.0f)				return 6;
+	if(!NxMath::isFinite(motorTorque))	return 7;
+	if(!NxMath::isFinite(brakeTorque))	return 8;
+	if(brakeTorque<0.0f)				return 9;
+	if(!NxMath::isFinite(steerAngle))	return 10;
 
-	if (!suspension.isValid()) return false;
-	if (!longitudalTireForceFunction.isValid()) return false;
-	if (!lateralTireForceFunction.isValid()) return false;
+	if (!suspension.isValid()) return 11;
+	if (!longitudalTireForceFunction.isValid()) return 12;
+	if (!lateralTireForceFunction.isValid()) return 13;
 
 
-	return NxShapeDesc::isValid();
+	return 14*NxShapeDesc::checkValid();
 	}
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -5,7 +5,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: mfutils.h,v 1.7 2004/06/09 16:42:21 ABX Exp $
+// RCS-ID:      $Id: mfutils.h 35812 2005-10-06 18:17:23Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -13,12 +13,8 @@
 #ifndef _MFUTILS_H_
 #define _MFUTILS_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma interface "mfutils.h"
-#endif
 
-
-#include <wx/metafile.h>
+#include "wx/metafile.h"
 
 #ifndef GetRValue
 #define GetRValue(rgb) ((unsigned char)(rgb))

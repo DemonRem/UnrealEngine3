@@ -26,7 +26,7 @@ struct PrimitiveGroup
 {
 	PrimType type;
 	unsigned int numIndices;
-	unsigned short* indices;
+	unsigned int* indices;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,8 +96,8 @@ void SetListsOnly(const bool bListsOnly);
 //
 // Be sure to call delete[] on the returned primGroups to avoid leaking mem
 //
-void GenerateStrips(const unsigned short* in_indices, const unsigned int in_numIndices,
-					PrimitiveGroup** primGroups, unsigned short* numGroups);
+void GenerateStrips(const unsigned int* in_indices, const unsigned int in_numIndices,
+					PrimitiveGroup** primGroups, unsigned int* numGroups);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@ void GenerateStrips(const unsigned short* in_indices, const unsigned int in_numI
 //
 // Credit goes to the MS Xbox crew for the idea for this interface.
 //
-void RemapIndices(const PrimitiveGroup* in_primGroups, const unsigned short numGroups, 
-				  const unsigned short numVerts, PrimitiveGroup** remappedGroups);
+void RemapIndices(const PrimitiveGroup* in_primGroups, const unsigned int numGroups, 
+				  const unsigned int numVerts, PrimitiveGroup** remappedGroups);
 
 #endif

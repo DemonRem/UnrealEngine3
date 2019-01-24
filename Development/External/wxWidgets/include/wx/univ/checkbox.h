@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     07.09.00
-// RCS-ID:      $Id: checkbox.h,v 1.17 2005/01/07 16:54:07 VZ Exp $
+// RCS-ID:      $Id: checkbox.h 41227 2006-09-14 19:36:47Z VZ $
 // Copyright:   (c) 2000 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_CHECKBOX_H_
 #define _WX_UNIV_CHECKBOX_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "univcheckbox.h"
-#endif
 
 #include "wx/button.h" // for wxStdButtonInputHandler
 
@@ -31,11 +27,6 @@
 // ----------------------------------------------------------------------------
 // wxCheckBox
 // ----------------------------------------------------------------------------
-
-// X11 headers may define this
-#ifdef Status
-#undef Status
-#endif
 
 class WXDLLEXPORT wxCheckBox : public wxCheckBoxBase
 {
@@ -101,17 +92,23 @@ public:
     // overridden base class virtuals
     virtual bool IsPressed() const { return m_isPressed; }
 
+    virtual bool PerformAction(const wxControlAction& action,
+                               long numArg = -1,
+                               const wxString& strArg = wxEmptyString);
+
+    virtual bool CanBeHighlighted() const { return true; }
+    virtual wxInputHandler *CreateStdInputHandler(wxInputHandler *handlerDef);
+    virtual wxInputHandler *DoGetStdInputHandler(wxInputHandler *handlerDef)
+    {
+        return CreateStdInputHandler(handlerDef);
+    }
+
 protected:
     virtual void DoSet3StateValue(wxCheckBoxState WXUNUSED(state));
     virtual wxCheckBoxState DoGet3StateValue() const;
 
-    virtual bool PerformAction(const wxControlAction& action,
-                               long numArg = -1,
-                               const wxString& strArg = wxEmptyString);
     virtual void DoDraw(wxControlRenderer *renderer);
     virtual wxSize DoGetBestClientSize() const;
-
-    virtual bool CanBeHighlighted() const { return true; }
 
     // get the size of the bitmap using either the current one or the default
     // one (query renderer then)
@@ -148,22 +145,6 @@ private:
     bool m_isPressed;
 
     DECLARE_DYNAMIC_CLASS(wxCheckBox)
-};
-
-// ----------------------------------------------------------------------------
-// wxStdCheckboxInputHandler: handles the mouse events for the check and radio
-// boxes (handling the keyboard input is simple, but its handling differs a
-// lot between GTK and MSW, so a new class should be derived for this)
-// ----------------------------------------------------------------------------
-
-class WXDLLEXPORT wxStdCheckboxInputHandler : public wxStdButtonInputHandler
-{
-public:
-    wxStdCheckboxInputHandler(wxInputHandler *inphand);
-
-    // we have to override this one as wxStdButtonInputHandler version works
-    // only with the buttons
-    virtual bool HandleActivation(wxInputConsumer *consumer, bool activated);
 };
 
 #endif // _WX_UNIV_CHECKBOX_H_

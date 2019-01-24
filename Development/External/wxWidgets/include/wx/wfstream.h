@@ -4,17 +4,13 @@
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     11/07/98
-// RCS-ID:      $Id: wfstream.h,v 1.26 2005/03/13 16:20:41 MW Exp $
+// RCS-ID:      $Id: wfstream.h 44013 2006-12-19 13:49:26Z SC $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_WXFSTREAM_H__
 #define _WX_WXFSTREAM_H__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "wfstream.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -38,11 +34,12 @@ public:
     wxFileInputStream(const wxString& ifileName);
     wxFileInputStream(wxFile& file);
     wxFileInputStream(int fd);
-    ~wxFileInputStream();
+    virtual ~wxFileInputStream();
 
     wxFileOffset GetLength() const;
 
-    bool Ok() const { return m_file->IsOpened(); }
+    bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const;
     bool IsSeekable() const { return m_file->GetKind() == wxFILE_KIND_DISK; }
 
 protected:
@@ -71,7 +68,8 @@ public:
     bool Close() { return m_file_destroy ? m_file->Close() : true; }
     wxFileOffset GetLength() const;
 
-    bool Ok() const { return m_file->IsOpened(); }
+    bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const;
     bool IsSeekable() const { return m_file->GetKind() == wxFILE_KIND_DISK; }
 
 protected:
@@ -137,11 +135,12 @@ public:
     wxFFileInputStream(const wxString& fileName, const wxChar *mode = _T("rb"));
     wxFFileInputStream(wxFFile& file);
     wxFFileInputStream(FILE *file);
-    ~wxFFileInputStream();
+    virtual ~wxFFileInputStream();
 
     wxFileOffset GetLength() const;
 
-    bool Ok() const { return m_file->IsOpened(); }
+    bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const;
     bool IsSeekable() const { return m_file->GetKind() == wxFILE_KIND_DISK; }
 
 protected:
@@ -170,7 +169,8 @@ public:
     bool Close() { return m_file_destroy ? m_file->Close() : true; }
     wxFileOffset GetLength() const;
 
-    bool Ok() const { return m_file->IsOpened(); }
+    bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const ;
     bool IsSeekable() const { return m_file->GetKind() == wxFILE_KIND_DISK; }
 
 protected:

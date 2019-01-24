@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: imaglist.h,v 1.9 2005/02/27 10:36:44 JS Exp $
+// RCS-ID:      $Id: imaglist.h 41271 2006-09-18 04:41:09Z KO $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,38 +12,7 @@
 #ifndef _WX_IMAGLIST_H_
 #define _WX_IMAGLIST_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "imaglist.h"
-#endif
-
 #include "wx/bitmap.h"
-
-/*
- * wxImageList is used for wxListCtrl, wxTreeCtrl. These controls refer to
- * images for their items by an index into an image list.
- * A wxImageList is capable of creating images with optional masks from
- * a variety of sources - a single bitmap plus a colour to indicate the mask,
- * two bitmaps, or an icon.
- *
- * Image lists can also create and draw images used for drag and drop functionality.
- * This is not yet implemented in wxImageList. We need to discuss a generic API
- * for doing drag and drop and see whether it ties in with the Win95 view of it.
- * See below for candidate functions and an explanation of how they might be
- * used.
- */
-
-// Flags for Draw
-#define wxIMAGELIST_DRAW_NORMAL         0x0001
-#define wxIMAGELIST_DRAW_TRANSPARENT    0x0002
-#define wxIMAGELIST_DRAW_SELECTED       0x0004
-#define wxIMAGELIST_DRAW_FOCUSED        0x0008
-
-// Flag values for Set/GetImageList
-enum {
-    wxIMAGE_LIST_NORMAL, // Normal icons
-    wxIMAGE_LIST_SMALL,  // Small icons
-    wxIMAGE_LIST_STATE   // State icons: unimplemented (see WIN32 documentation)
-};
 
 // Eventually we'll make this a reference-counted wxGDIObject. For
 // now, the app must take care of ownership issues. That is, the
@@ -66,7 +35,7 @@ public:
   {
     Create(width, height, mask, initialCount);
   }
-  ~wxImageList();
+  virtual ~wxImageList();
 
 
   // Attributes

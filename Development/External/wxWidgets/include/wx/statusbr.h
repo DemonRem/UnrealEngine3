@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     05.02.00
-// RCS-ID:      $Id: statusbr.h,v 1.26 2005/05/04 18:52:03 JS Exp $
+// RCS-ID:      $Id: statusbr.h 41035 2006-09-06 17:36:22Z PC $
 // Copyright:   (c) Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,16 +12,15 @@
 #ifndef _WX_STATUSBR_H_BASE_
 #define _WX_STATUSBR_H_BASE_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "statbar.h"
-#endif
-
-#include "wx/window.h"
+#include "wx/defs.h"
 
 #if wxUSE_STATUSBAR
 
+#include "wx/window.h"
 #include "wx/list.h"
 #include "wx/dynarray.h"
+
+extern WXDLLIMPEXP_DATA_CORE(const wxChar) wxStatusBarNameStr[];
 
 WX_DECLARE_LIST(wxString, wxListString);
 

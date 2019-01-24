@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/dde.cpp
+// Name:        src/msw/dde.cpp
 // Purpose:     DDE classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dde.cpp,v 1.48 2005/09/11 18:31:32 JS Exp $
+// RCS-ID:      $Id: dde.cpp 40943 2006-08-31 19:31:43Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "dde.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -33,12 +29,12 @@
 #ifndef WX_PRECOMP
     #include "wx/utils.h"
     #include "wx/app.h"
+    #include "wx/hashmap.h"
+    #include "wx/module.h"
 #endif
 
-#include "wx/module.h"
 #include "wx/dde.h"
 #include "wx/intl.h"
-#include "wx/hashmap.h"
 
 #include "wx/msw/private.h"
 
@@ -108,9 +104,9 @@ static wxAtomMap wxAtomTable;
 
 #include "wx/listimpl.cpp"
 
-WX_DEFINE_LIST(wxDDEClientList);
-WX_DEFINE_LIST(wxDDEServerList);
-WX_DEFINE_LIST(wxDDEConnectionList);
+WX_DEFINE_LIST(wxDDEClientList)
+WX_DEFINE_LIST(wxDDEServerList)
+WX_DEFINE_LIST(wxDDEConnectionList)
 
 static wxDDEClientList wxDDEClientObjects;
 static wxDDEServerList wxDDEServerObjects;
@@ -304,7 +300,7 @@ bool wxDDEServer::Create(const wxString& server)
 
 wxDDEServer::~wxDDEServer()
 {
-    if ( !m_serviceName.IsEmpty() )
+    if ( !m_serviceName.empty() )
     {
         HSZ hsz = DDEAtomFromString(m_serviceName);
 
@@ -562,7 +558,7 @@ bool wxDDEConnection::Execute(const wxChar *data, int size, wxIPCFormat WXUNUSED
                                     GetHConv(),
                                     NULL,
 // If the transaction specified by the wType parameter does not pass data or is XTYP_EXECUTE,
-// wFmt should be zero. 
+// wFmt should be zero.
                                     0,
                                     XTYP_EXECUTE,
                                     DDE_TIMEOUT,

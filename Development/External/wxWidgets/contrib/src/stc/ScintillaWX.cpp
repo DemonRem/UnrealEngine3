@@ -9,16 +9,16 @@
 // Author:      Robin Dunn
 //
 // Created:     13-Jan-2000
-// RCS-ID:      $Id: ScintillaWX.cpp,v 1.85 2005/08/23 16:02:48 ABX Exp $
+// RCS-ID:      $Id: ScintillaWX.cpp 55221 2008-08-24 04:06:41Z RD $
 // Copyright:   (c) 2000 by Total Control Software
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
-#include <wx/wx.h>
-#include <wx/textbuf.h>
-#include <wx/dataobj.h>
-#include <wx/clipbrd.h>
-#include <wx/dnd.h>
+#include "wx/wx.h"
+#include "wx/textbuf.h"
+#include "wx/dataobj.h"
+#include "wx/clipbrd.h"
+#include "wx/dnd.h"
 
 #include "ScintillaWX.h"
 #include "ExternalLexer.h"
@@ -27,7 +27,7 @@
 
 #ifdef __WXMSW__
     // GetHwndOf()
-    #include <wx/msw/private.h>
+    #include "wx/msw/private.h"
 #endif
 
 //----------------------------------------------------------------------
@@ -49,6 +49,21 @@ private:
 
 
 #if wxUSE_DRAG_AND_DROP
+class wxStartDragTimer : public wxTimer {
+public:
+    wxStartDragTimer(ScintillaWX* swx) {
+        this->swx = swx;
+    }
+
+    void Notify() {
+        swx->DoStartDrag();
+    }
+
+private:
+    ScintillaWX* swx;
+};
+
+
 bool wxSTCDropTarget::OnDropText(wxCoord x, wxCoord y, const wxString& data) {
     return swx->DoDropText(x, y, data);
 }
@@ -64,7 +79,7 @@ wxDragResult  wxSTCDropTarget::OnDragOver(wxCoord x, wxCoord y, wxDragResult def
 void  wxSTCDropTarget::OnLeave() {
     swx->DoDragLeave();
 }
-#endif
+#endif // wxUSE_DRAG_AND_DROP
 
 
 #if wxUSE_POPUPWIN && wxSTC_USE_POPUP
@@ -72,7 +87,7 @@ void  wxSTCDropTarget::OnLeave() {
 #define wxSTCCallTipBase wxPopupWindow
 #define param2  wxBORDER_NONE  // popup's 2nd param is flags
 #else
-#define wxSTCCallTipBase wxWindow
+#define wxSTCCallTipBase wxFrame
 #define param2 -1 // wxWindow's 2nd param is ID
 #endif
 
@@ -80,8 +95,19 @@ void  wxSTCDropTarget::OnLeave() {
 
 class wxSTCCallTip : public wxSTCCallTipBase {
 public:
-    wxSTCCallTip(wxWindow* parent, CallTip* ct, ScintillaWX* swx)
-        : wxSTCCallTipBase(parent, param2),
+    wxSTCCallTip(wxWindow* parent, CallTip* ct, ScintillaWX* swx) :
+#if wxUSE_POPUPWIN && wxSTC_USE_POPUP
+        wxSTCCallTipBase(parent, wxBORDER_NONE),
+#else
+        wxSTCCallTipBase(parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                         wxFRAME_NO_TASKBAR
+                         | wxFRAME_FLOAT_ON_PARENT
+                         | wxBORDER_NONE
+#ifdef __WXMAC__
+                         | wxPOPUP_WINDOW  
+#endif
+            ), 
+#endif
           m_ct(ct), m_swx(swx), m_cx(wxDefaultCoord), m_cy(wxDefaultCoord)
         {
         }
@@ -97,7 +123,8 @@ public:
 
     bool AcceptsFocus() const { return false; }
 
-    void OnPaint(wxPaintEvent& WXUNUSED(evt)) {
+    void OnPaint(wxPaintEvent& WXUNUSED(evt))
+    {
         wxBufferedPaintDC dc(this);
         Surface* surfaceWindow = Surface::Allocate();
         surfaceWindow->Init(&dc, m_ct->wDraw.GetID());
@@ -106,22 +133,25 @@ public:
         delete surfaceWindow;
     }
 
-    void OnFocus(wxFocusEvent& event) {
+    void OnFocus(wxFocusEvent& event)
+    {
         GetParent()->SetFocus();
         event.Skip();
     }
 
-    void OnLeftDown(wxMouseEvent& event) {
+    void OnLeftDown(wxMouseEvent& event)
+    {
         wxPoint pt = event.GetPosition();
         Point p(pt.x, pt.y);
         m_ct->MouseClick(p);
         m_swx->CallTipClick();
     }
 
-#if wxUSE_POPUPWIN && wxSTC_USE_POPUP
     virtual void DoSetSize(int x, int y,
                            int width, int height,
-                           int sizeFlags = wxSIZE_AUTO) {
+                           int sizeFlags = wxSIZE_AUTO)
+    {
+        // convert coords to screen coords since we're a top-level window
         if (x != wxDefaultCoord) {
             m_cx = x;
             GetParent()->ClientToScreen(&x, NULL);
@@ -132,9 +162,27 @@ public:
         }
         wxSTCCallTipBase::DoSetSize(x, y, width, height, sizeFlags);
     }
-#endif
 
-    wxPoint GetMyPosition() {
+#if wxUSE_POPUPWIN && wxSTC_USE_POPUP
+#else
+    virtual bool Show( bool show = true )
+    {
+        // Although we're a frame, we always want the parent to be active, so
+        // raise it whenever we get shown.
+        bool rv = wxSTCCallTipBase::Show(show);
+        if (rv && show)
+        {
+            wxTopLevelWindow *frame = wxDynamicCast(
+                wxGetTopLevelParent(GetParent()), wxTopLevelWindow);
+            if (frame)
+                frame->Raise();
+        }
+        return rv;
+    }
+#endif
+    
+    wxPoint GetMyPosition()
+    {
         return wxPoint(m_cx, m_cy);
     }
 
@@ -197,10 +245,16 @@ ScintillaWX::ScintillaWX(wxStyledTextCtrl* win) {
     sysCaretWidth = 0;
     sysCaretHeight = 0;
 #endif
+#if wxUSE_DRAG_AND_DROP
+    startDragTimer = new wxStartDragTimer(this);
+#endif // wxUSE_DRAG_AND_DROP
 }
 
 
 ScintillaWX::~ScintillaWX() {
+#if wxUSE_DRAG_AND_DROP
+    delete startDragTimer;
+#endif // wxUSE_DRAG_AND_DROP
     Finalise();
 }
 
@@ -214,7 +268,7 @@ void ScintillaWX::Initialise() {
     dropTarget = new wxSTCDropTarget;
     dropTarget->SetScintilla(this);
     stc->SetDropTarget(dropTarget);
-#endif
+#endif // wxUSE_DRAG_AND_DROP
 #ifdef __WXMAC__
     vs.extraFontFlag = false;  // UseAntiAliasing
 #else
@@ -233,6 +287,15 @@ void ScintillaWX::Finalise() {
 
 void ScintillaWX::StartDrag() {
 #if wxUSE_DRAG_AND_DROP
+    // We defer the starting of the DnD, otherwise the LeftUp of a normal
+    // click could be lost and the STC will think it is doing a DnD when the
+    // user just wanted a normal click.
+    startDragTimer->Start(200, true);
+#endif // wxUSE_DRAG_AND_DROP
+}
+
+void ScintillaWX::DoStartDrag() {
+#if wxUSE_DRAG_AND_DROP
     wxString dragText = stc2wx(drag.s, drag.len);
 
     // Send an event to allow the drag text to be changed
@@ -245,7 +308,7 @@ void ScintillaWX::StartDrag() {
     stc->GetEventHandler()->ProcessEvent(evt);
     dragText = evt.GetDragText();
 
-    if (dragText.Length()) {
+    if (dragText.length()) {
         wxDropSource        source(stc);
         wxTextDataObject    data(dragText);
         wxDragResult        result;
@@ -258,7 +321,7 @@ void ScintillaWX::StartDrag() {
         inDragDrop = false;
         SetDragPosition(invalidPosition);
     }
-#endif
+#endif // wxUSE_DRAG_AND_DROP
 }
 
 
@@ -454,7 +517,13 @@ void ScintillaWX::Paste() {
         wxString   text = wxTextBuffer::Translate(data.GetText(),
                                                   wxConvertEOLMode(pdoc->eolMode));
         wxWX2MBbuf buf = (wxWX2MBbuf)wx2stc(text);
-        int        len = strlen(buf);
+
+#if wxUSE_UNICODE
+        // free up the old character buffer in case the text is real big
+        data.SetText(wxEmptyString); 
+        text = wxEmptyString;
+#endif
+        int len = strlen(buf);
         pdoc->InsertString(currentPos, buf, len);
         SetEmptySelection(currentPos + len);
     }
@@ -468,6 +537,8 @@ void ScintillaWX::Paste() {
 
 void ScintillaWX::CopyToClipboard(const SelectionText& st) {
 #if wxUSE_CLIPBOARD
+    if ( !st.len )
+        return;
     if (wxTheClipboard->Open()) {
         wxTheClipboard->UsePrimarySelection(false);
         wxString text = wxTextBuffer::Translate(stc2wx(st.s, st.len-1));
@@ -611,11 +682,15 @@ bool ScintillaWX::DestroySystemCaret() {
 //----------------------------------------------------------------------
 
 
-long ScintillaWX::DefWndProc(unsigned int /*iMessage*/, unsigned long /*wParam*/, long /*lParam*/) {
+sptr_t ScintillaWX::DefWndProc(unsigned int /*iMessage*/,
+                               uptr_t /*wParam*/,
+                               sptr_t /*lParam*/) {
     return 0;
 }
 
-long ScintillaWX::WndProc(unsigned int iMessage, unsigned long wParam, long lParam) {
+sptr_t ScintillaWX::WndProc(unsigned int iMessage,
+                            uptr_t wParam,
+                            sptr_t lParam) {
       switch (iMessage) {
       case SCI_CALLTIPSHOW: {
           // NOTE: This is copied here from scintilla/src/ScintillaBase.cxx
@@ -678,7 +753,6 @@ void ScintillaWX::DoPaint(wxDC* dc, wxRect rect) {
     PRectangle rcClient = GetClientRectangle();
     paintingAllText = rcPaint.Contains(rcClient);
 
-    dc->BeginDrawing();
     ClipChildren(*dc, rcPaint);
     Paint(surfaceWindow, rcPaint);
 
@@ -689,7 +763,6 @@ void ScintillaWX::DoPaint(wxDC* dc, wxRect rect) {
         FullPaint();
     }
     paintState = notPainting;
-    dc->EndDrawing();
 }
 
 
@@ -800,6 +873,14 @@ void ScintillaWX::DoLeftButtonDown(Point pt, unsigned int curTime, bool shift, b
 
 void ScintillaWX::DoLeftButtonUp(Point pt, unsigned int curTime, bool ctrl) {
     ButtonUp(pt, curTime, ctrl);
+#if wxUSE_DRAG_AND_DROP
+    if (startDragTimer->IsRunning()) {
+        startDragTimer->Stop();
+        SetDragPosition(invalidPosition);
+        SetEmptySelection(PositionFromLocation(pt));
+        ShowCaretAtCurrentPosition();
+    }
+#endif // wxUSE_DRAG_AND_DROP
 }
 
 void ScintillaWX::DoLeftButtonMove(Point pt) {
@@ -873,10 +954,18 @@ int  ScintillaWX::DoKeyDown(const wxKeyEvent& evt, bool* consumed)
     case WXK_RIGHT:             key = SCK_RIGHT;    break;
     case WXK_HOME:              key = SCK_HOME;     break;
     case WXK_END:               key = SCK_END;      break;
-    case WXK_PAGEUP:            // fall through
-    case WXK_PRIOR:             key = SCK_PRIOR;    break;
-    case WXK_PAGEDOWN:          // fall through
-    case WXK_NEXT:              key = SCK_NEXT;     break;
+    case WXK_PAGEUP:            key = SCK_PRIOR;    break;
+    case WXK_PAGEDOWN:          key = SCK_NEXT;     break;
+    case WXK_NUMPAD_DOWN:       key = SCK_DOWN;     break;
+    case WXK_NUMPAD_UP:         key = SCK_UP;       break;
+    case WXK_NUMPAD_LEFT:       key = SCK_LEFT;     break;
+    case WXK_NUMPAD_RIGHT:      key = SCK_RIGHT;    break;
+    case WXK_NUMPAD_HOME:       key = SCK_HOME;     break;
+    case WXK_NUMPAD_END:        key = SCK_END;      break;
+    case WXK_NUMPAD_PAGEUP:     key = SCK_PRIOR;    break;
+    case WXK_NUMPAD_PAGEDOWN:   key = SCK_NEXT;     break;
+    case WXK_NUMPAD_DELETE:     key = SCK_DELETE;   break;
+    case WXK_NUMPAD_INSERT:     key = SCK_INSERT;   break;
     case WXK_DELETE:            key = SCK_DELETE;   break;
     case WXK_INSERT:            key = SCK_INSERT;   break;
     case WXK_ESCAPE:            key = SCK_ESCAPE;   break;
@@ -1001,7 +1090,7 @@ wxDragResult ScintillaWX::DoDragOver(wxCoord x, wxCoord y, wxDragResult def) {
 void ScintillaWX::DoDragLeave() {
     SetDragPosition(invalidPosition);
 }
-#endif
+#endif // wxUSE_DRAG_AND_DROP
 //----------------------------------------------------------------------
 
 // Force the whole window to be repainted

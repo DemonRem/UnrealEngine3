@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        vscroll.cpp
+// Name:        samples/vscroll/vstest.cpp
 // Purpose:     VScroll wxWidgets sample
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: vstest.cpp,v 1.9 2005/06/02 12:04:48 JS Exp $
+// RCS-ID:      $Id: vstest.cpp 38728 2006-04-14 22:03:07Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@
 // ----------------------------------------------------------------------------
 
 // the application icon (under Windows and OS/2 it is in resources)
-#if !defined(__WXMSW__) && !defined(__WXOS2__)
+#if !defined(__WXMSW__) && !defined(__WXPM__)
     #include "../sample.xpm"
 #endif
 

@@ -5,12 +5,16 @@
 // Modified by:
 // Created:
 // Copyright:   (c) Julian Smart
-// RCS-ID:      $Id: dcprint.h,v 1.8 2005/05/04 18:51:56 JS Exp $
+// RCS-ID:      $Id: dcprint.h 41240 2006-09-15 16:45:48Z PC $
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DCPRINT_H_BASE_
 #define _WX_DCPRINT_H_BASE_
+
+#include "wx/defs.h"
+
+#if wxUSE_PRINTING_ARCHITECTURE
 
 #if defined(__WXPALMOS__)
 #include "wx/palmos/dcprint.h"
@@ -24,5 +28,6 @@
 #include "wx/mac/dcprint.h"
 #endif
 
+#endif // wxUSE_PRINTING_ARCHITECTURE
 #endif
     // _WX_DCPRINT_H_BASE_

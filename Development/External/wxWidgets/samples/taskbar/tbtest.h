@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: tbtest.h,v 1.16 2005/01/23 23:07:45 RR Exp $
+// RCS-ID:      $Id: tbtest.h 36336 2005-12-03 17:55:33Z vell $
 // Copyright:   (c)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,10 @@ public:
     void OnMenuRestore(wxCommandEvent&);
     void OnMenuExit(wxCommandEvent&);
     void OnMenuSetNewIcon(wxCommandEvent&);
+    void OnMenuSetOldIcon(wxCommandEvent&);
        void OnMenuCheckmark(wxCommandEvent&);
        void OnMenuUICheckmark(wxUpdateUIEvent&);
+    void OnMenuSub(wxCommandEvent&);
     virtual wxMenu *CreatePopupMenu();
 
 DECLARE_EVENT_TABLE()

@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxFaceGraph_H__
@@ -16,6 +16,7 @@
 #include "FxBonePoseNode.h"
 #include "FxCombinerNode.h"
 #include "FxGenericTargetNode.h"
+#include "FxStringHash.h"
 
 namespace OC3Ent
 {
@@ -81,17 +82,6 @@ public:
 	/// iterators.
 	Iterator End( const FxClass* fgNodeClass ) const;
 
-	/// Clears all node values in the %Face Graph.
-	void ClearValues( void );
-	/// Clears all values except node user values in the %Face Graph.  This is 
-	/// for internal use only and should not be used as a substitute for 
-	/// ClearValues().
-	void ClearAllButUserValues( void );
-
-	/// Sets the track value of all \ref OC3Ent::Face::FxCurrentTimeNode "current time nodes"
-	/// in the %Face Graph to currentTime.
-	void SetTime( FxReal currentTime );
-
 	/// Adds a node to the %Face Graph.
 	/// \param pNode A pointer to the node to add to the %Face Graph.  
 	/// This pointer \b must be created on the heap with operator \p new and 
@@ -108,6 +98,14 @@ public:
 	/// Finds the node named 'name' (of any type) and returns a pointer to it
 	/// or \p NULL if the node is not found.
 	FxFaceGraphNode* FindNode( const FxName& name );
+
+	/// Renames a node in the %Face Graph.
+	/// \param currName The current name of the node.
+	/// \param newName The desired new name of the node.
+	/// \return \p FxFalse if a node with \a currName does not exist in the 
+	/// graph, or if a node with \a newName already exists in the graph. 
+	/// Otherwise, the node is renamed and FxTrue is returned.
+	FxBool RenameNode( const FxName& currName, const FxName newName );
 
 	/// Returns the number of total nodes in the %Face Graph.  Considerably faster
 	/// than CountNodes(), since the type can be ignored, and the very base list 
@@ -197,6 +195,10 @@ public:
 	/// \note Internal use only.  Licensees should never call this function.
 	void ChangeNodeType( const FxName& nodeToChangeTypeOf, const FxClass* pNewTypeClassDesc );
 
+	/// Notifies the %Face Graph that a rename has taken place.
+	/// \note Internal use only. Licensees should never call this function.
+	void NotifyRenamed( const char* oldName, const char* newName );
+
 	/// An iterator over nodes of a specific type in an FxFaceGraph.
 	/// \note You should never perform operations that may modify the %Face Graph 
 	/// nodes (such as AddNode() or RemoveNode()) during a %Face Graph 
@@ -206,7 +208,7 @@ public:
 	{
 	public:
 		/// Constructor.
-		Iterator( FxArray<FxFaceGraphNode*>::const_iterator fgNodeListIter )
+		Iterator( FxArray<FxFaceGraphNode*>::ConstIterator fgNodeListIter )
 			: _fgNodeListIter(fgNodeListIter) {}
 
 		/// Advance the iterator.
@@ -238,12 +240,14 @@ public:
 
 	private:
 		/// The iterator into the %Face Graph's node list (or a jump list).
-		FxArray<FxFaceGraphNode*>::const_iterator _fgNodeListIter;
+		FxArray<FxFaceGraphNode*>::ConstIterator _fgNodeListIter;
 	};
 
 private:
 	/// The list of nodes stored in the %Face Graph.
 	FxArray<FxFaceGraphNode*> _nodes;
+	/// The node hash.  This contains 2048 (2^11) hash bins.
+	FxStringHash<FxFaceGraphNode*, 11>* _pNodeHash;
 	
 	/// A structure to support super-fast %Face Graph iterators and %Face Graph 
 	/// node class management.  This isn't a "traditional" jump list.
@@ -288,9 +292,9 @@ private:
 		FxBool RemoveNode( FxFaceGraphNode* pNode );
 
 		/// Returns an iterator to the first element of the jump list.
-		FX_INLINE FxArray<FxFaceGraphNode*>::const_iterator Begin( void ) const { return _jumpList.Begin(); }
+		FX_INLINE FxArray<FxFaceGraphNode*>::ConstIterator Begin( void ) const { return _jumpList.Begin(); }
 		/// Returns an iterator to the last element of the jump list.
-		FX_INLINE FxArray<FxFaceGraphNode*>::const_iterator End( void ) const { return _jumpList.End(); }
+		FX_INLINE FxArray<FxFaceGraphNode*>::ConstIterator End( void ) const { return _jumpList.End(); }
 		
 		/// Reserves space in the jump list for numNodes nodes.
 		/// \param numNodes The number of nodes to reserve in the jump list.
@@ -305,15 +309,10 @@ private:
 	};
 	/// The jump list of %Face Graph nodes.
 	FxArray<FxFaceGraphNodeJumpList> _jumpLists;
-	/// The index of the FxCurrentTimeNode jump list.
-	FxSize _currentTimeNodeJumpListIndex;
-
+	
 	/// Finds the node named 'name' (of any type) and returns a pointer to it
-	/// or NULL if the node is not found.  Optionally fills out the fgNodeIter
-	/// parameter to return the node's iterator in the list.  If \p NULL is returned, 
-	/// the value in fgNodeIter is undefined and should not be used.
-	FxFaceGraphNode* _findNode( const FxName& name, 
-		                        FxArray<FxFaceGraphNode*>::iterator* fgNodeIter = NULL );
+	/// or NULL if the node is not found.
+	FxFaceGraphNode* _findNode( const FxName& name );
 
 	/// Performs operations in preparation for deleting the node.
 	void _preRemoveNode( FxFaceGraphNode* nodeToDelete );
@@ -360,17 +359,17 @@ FX_INLINE FxFaceGraph::Iterator FxFaceGraph::Begin( const FxClass* fgNodeClass )
 		FxSize jumpListIndex = _findNodeType(fgNodeClass);
 		if( FxInvalidIndex != jumpListIndex )
 		{
-			FxArray<FxFaceGraphNode*>::const_iterator fgNodeIter = 
+			FxArray<FxFaceGraphNode*>::ConstIterator fgNodeIter = 
 				_jumpLists[jumpListIndex].Begin();
 			return FxFaceGraph::Iterator(fgNodeIter);
 		}
 		else
 		{
-			FxArray<FxFaceGraphNode*>::const_iterator fgNodeIter = _nodes.End();
+			FxArray<FxFaceGraphNode*>::ConstIterator fgNodeIter = _nodes.End();
 			return FxFaceGraph::Iterator(fgNodeIter);
 		}
 	}
-	FxArray<FxFaceGraphNode*>::const_iterator fgNodeIter = _nodes.Begin();
+	FxArray<FxFaceGraphNode*>::ConstIterator fgNodeIter = _nodes.Begin();
 	return FxFaceGraph::Iterator(fgNodeIter);
 }
 
@@ -381,50 +380,18 @@ FX_INLINE FxFaceGraph::Iterator FxFaceGraph::End( const FxClass* fgNodeClass ) c
 		FxSize jumpListIndex = _findNodeType(fgNodeClass);
 		if( FxInvalidIndex != jumpListIndex )
 		{
-			FxArray<FxFaceGraphNode*>::const_iterator fgNodeIter = 
+			FxArray<FxFaceGraphNode*>::ConstIterator fgNodeIter = 
 				_jumpLists[jumpListIndex].End();
 			return FxFaceGraph::Iterator(fgNodeIter);
 		}
 		else
 		{
-			FxArray<FxFaceGraphNode*>::const_iterator fgNodeIter = _nodes.End();
+			FxArray<FxFaceGraphNode*>::ConstIterator fgNodeIter = _nodes.End();
 			return FxFaceGraph::Iterator(fgNodeIter);
 		}
 	}
-	FxArray<FxFaceGraphNode*>::const_iterator fgNodeIter = _nodes.End();
+	FxArray<FxFaceGraphNode*>::ConstIterator fgNodeIter = _nodes.End();
 	return FxFaceGraph::Iterator(fgNodeIter);
-}
-
-FX_INLINE void FxFaceGraph::ClearValues( void )
-{
-	FxSize numNodes = _nodes.Length();
-	for( FxSize i = 0; i < numNodes; ++i )
-	{
-		FxAssert(_nodes[i]);
-		_nodes[i]->ClearValues();
-	}
-}
-
-FX_INLINE void FxFaceGraph::ClearAllButUserValues( void )
-{
-	FxSize numNodes = _nodes.Length();
-	for( FxSize i = 0; i < numNodes; ++i )
-	{
-		FxAssert(_nodes[i]);
-		_nodes[i]->ClearAllButUserValue();
-	}
-}
-
-FX_INLINE void FxFaceGraph::SetTime( FxReal currentTime )
-{
-	if( FxInvalidIndex != _currentTimeNodeJumpListIndex )
-	{
-		FxSize numNodes = _jumpLists[_currentTimeNodeJumpListIndex].GetNumNodes();
-		for( FxSize i = 0; i < numNodes; ++i )
-		{
-			_jumpLists[_currentTimeNodeJumpListIndex].GetNode(i)->SetTrackValue(currentTime);
-		}
-	}
 }
 
 } // namespace Face

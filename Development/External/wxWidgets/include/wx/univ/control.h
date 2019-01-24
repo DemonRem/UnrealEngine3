@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     14.08.00
-// RCS-ID:      $Id: control.h,v 1.10 2004/05/23 20:51:45 JS Exp $
+// RCS-ID:      $Id: control.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2000 SciTech Software, Inc. (www.scitechsoft.com)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_UNIV_CONTROL_H_
 #define _WX_UNIV_CONTROL_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "control.h"
-#endif
 
 class WXDLLEXPORT wxControlRenderer;
 class WXDLLEXPORT wxInputHandler;

@@ -4,14 +4,16 @@
 // Author:      Julian Smart
 // Modified by: Dimitri Schoolwerth
 // Created:     25/10/98
-// RCS-ID:      $Id: notebook.h,v 1.16 2004/11/23 11:44:31 ABX Exp $
+// RCS-ID:      $Id: notebook.h 43049 2006-11-04 18:24:07Z RR $
 // Copyright:   (c) 1998-2002 wxWidgets team
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
 #include "wx/choicebk.h"
 #include "wx/listbook.h"
+#include "wx/treebook.h"
 #include "wx/notebook.h"
+#include "wx/toolbook.h"
 
 #if wxUSE_LOG && !defined( __SMARTPHONE__ )
     #define USE_LOG 1
@@ -28,12 +30,11 @@ public:
 
 DECLARE_APP(MyApp)
 
+
 class MyFrame : public wxFrame
 {
 public:
-    MyFrame(const wxString& title, const wxPoint& pos = wxDefaultPosition,
-        const wxSize& size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE);
-
+    MyFrame();
     virtual ~MyFrame();
 
     void OnType(wxCommandEvent& event);
@@ -43,34 +44,65 @@ public:
     void OnExit(wxCommandEvent& event);
 
     void OnAddPage(wxCommandEvent& event);
+    void OnAddPageNoSelect(wxCommandEvent& event);
     void OnInsertPage(wxCommandEvent& event);
     void OnDeleteCurPage(wxCommandEvent& event);
     void OnDeleteLastPage(wxCommandEvent& event);
     void OnNextPage(wxCommandEvent& event);
+    void OnGoHome(wxCommandEvent &event);
 
+    void OnAddSubPage(wxCommandEvent& event);
+    void OnAddPageBefore(wxCommandEvent& event);
+
+#if wxUSE_HELP
+    void OnContextHelp(wxCommandEvent& event);
+#endif // wxUSE_HELP
+
+    void OnHitTest(wxCommandEvent& event);
+
+    void OnBookCtrl(wxBookCtrlBaseEvent& event);
 #if wxUSE_NOTEBOOK
-    void OnNotebook(wxNotebookEvent& event);
+    void OnNotebook(wxNotebookEvent& event) { OnBookCtrl(event); }
 #endif
 #if wxUSE_CHOICEBOOK
-    void OnChoicebook(wxChoicebookEvent& event);
+    void OnChoicebook(wxChoicebookEvent& event) { OnBookCtrl(event); }
 #endif
 #if wxUSE_LISTBOOK
-    void OnListbook(wxListbookEvent& event);
+    void OnListbook(wxListbookEvent& event) { OnBookCtrl(event); }
+#endif
+#if wxUSE_TREEBOOK
+    void OnTreebook(wxTreebookEvent& event) { OnBookCtrl(event); }
+#endif
+#if wxUSE_TOOLBOOK
+    void OnToolbook(wxToolbookEvent& event) { OnBookCtrl(event); }
 #endif
 
     void OnIdle(wxIdleEvent& event);
 
-    wxBookCtrlBase *GetCurrentBook();
+#if wxUSE_TREEBOOK
+    void OnUpdateTreeMenu(wxUpdateUIEvent& event);
+#endif // wxUSE_TREEBOOK
+
+    wxBookCtrlBase *GetCurrentBook() const { return m_bookCtrl; }
 
 private:
     wxLog *m_logTargetOld;
 
-    int SelectFlag(int id, int nb, int lb, int chb);
-    void ShowCurrentBook();
-    void RecreateBooks();
+    void RecreateBook();
+    wxPanel *CreateNewPage() const;
+    int TranslateBookFlag(int nb, int lb, int chb, int tbk, int toolbk) const;
+    void AddFlagStrIfFlagPresent(wxString & flagStr, long flags, long flag, const wxChar * flagName) const;
 
     // Sample setup
-    int m_type;
+    enum BookType
+    {
+        Type_Notebook,
+        Type_Listbook,
+        Type_Choicebook,
+        Type_Treebook,
+        Type_Toolbook,
+        Type_Max
+    } m_type;
     int m_orient;
     bool m_chkShowImages;
     bool m_multi;
@@ -78,16 +110,7 @@ private:
     // Controls
 
     wxPanel *m_panel; // Panel containing notebook and other controls
-
-#if wxUSE_NOTEBOOK
-    wxNotebook   *m_notebook;
-#endif
-#if wxUSE_CHOICEBOOK
-    wxChoicebook *m_choicebook;
-#endif
-#if wxUSE_LISTBOOK
-    wxListbook   *m_listbook;
-#endif
+    wxBookCtrlBase *m_bookCtrl;
 
 #if USE_LOG
     // Log window
@@ -103,10 +126,14 @@ private:
 
 enum ID_COMMANDS
 {
+    // these should be in the same order as Type_XXX elements above
     ID_BOOK_NOTEBOOK = wxID_HIGHEST,
     ID_BOOK_LISTBOOK,
     ID_BOOK_CHOICEBOOK,
+    ID_BOOK_TREEBOOK,
+    ID_BOOK_TOOLBOOK,
     ID_BOOK_MAX,
+
     ID_ORIENT_DEFAULT,
     ID_ORIENT_TOP,
     ID_ORIENT_BOTTOM,
@@ -116,13 +143,19 @@ enum ID_COMMANDS
     ID_SHOW_IMAGES,
     ID_MULTI,
     ID_ADD_PAGE,
+    ID_ADD_PAGE_NO_SELECT,
     ID_INSERT_PAGE,
     ID_DELETE_CUR_PAGE,
     ID_DELETE_LAST_PAGE,
     ID_NEXT_PAGE,
-    ID_NOTEBOOK,
-    ID_LISTBOOK,
-    ID_CHOICEBOOK
+    ID_ADD_PAGE_BEFORE,
+    ID_ADD_SUB_PAGE,
+    ID_GO_HOME,
+
+#if wxUSE_HELP
+    ID_CONTEXT_HELP,
+#endif // wxUSE_HELP
+    ID_HITTEST
 };
 
 /*
@@ -139,3 +172,7 @@ to decide what type of page it is.
 // Pages that can be added by the user
 #define INSERTED_PAGE_NAME wxT("Inserted ")
 #define ADDED_PAGE_NAME wxT("Added ")
+#define ADDED_PAGE_NAME_BEFORE wxT(" Inserted before ")
+#define ADDED_SUB_PAGE_NAME wxT(" Inserted sub-page ")
+
+

@@ -1,20 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        process.h
+// Name:        wx/process.h
 // Purpose:     wxProcess class
 // Author:      Guilhem Lavaux
 // Modified by: Vadim Zeitlin to check error codes, added Detach() method
 // Created:     24/06/98
-// RCS-ID:      $Id: process.h,v 1.37 2005/03/09 16:29:55 ABX Exp $
+// RCS-ID:      $Id: process.h 42713 2006-10-30 11:56:12Z ABX $
 // Copyright:   (c) 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_PROCESSH__
 #define _WX_PROCESSH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "process.h"
-#endif
 
 #include "wx/event.h"
 
@@ -66,6 +62,9 @@ public:
 
     virtual ~wxProcess();
 
+    // get the process ID of the process executed by Open()
+    long GetPid() const { return m_pid; }
+
     // may be overridden to be notified about process termination
     virtual void OnTerminate(int pid, int status);
 
@@ -105,15 +104,12 @@ public:
                         wxInputStream *errStream);
 #endif // wxUSE_STREAMS
 
-    // for backwards compatibility only, don't use
-#if WXWIN_COMPATIBILITY_2_2
-    wxDEPRECATED( wxProcess(wxEvtHandler *parent, bool redirect) );
-#endif // WXWIN_COMPATIBILITY_2_2
-
 protected:
     void Init(wxEvtHandler *parent, int id, int flags);
+    void SetPid(long pid) { m_pid = pid; }
 
     int m_id;
+    long m_pid;
 
 #if wxUSE_STREAMS
     // these streams are connected to stdout, stderr and stdin of the child

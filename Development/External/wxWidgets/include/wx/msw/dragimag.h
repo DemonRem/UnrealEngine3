@@ -5,7 +5,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     08/04/99
-// RCS-ID:      $Id: dragimag.h,v 1.11 2004/08/24 10:31:35 ABX Exp $
+// RCS-ID:      $Id: dragimag.h 45845 2007-05-05 19:00:35Z PC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -13,9 +13,7 @@
 #ifndef _WX_DRAGIMAG_H_
 #define _WX_DRAGIMAG_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dragimag.h"
-#endif
+#if wxUSE_DRAGIMAGE
 
 #include "wx/bitmap.h"
 #include "wx/icon.h"
@@ -172,7 +170,7 @@ public:
     }
 #endif
 
-    ~wxDragImage();
+    virtual ~wxDragImage();
 
     // Attributes
     ////////////////////////////////////////////////////////////////////////////
@@ -271,5 +269,6 @@ private:
     DECLARE_NO_COPY_CLASS(wxDragImage)
 };
 
+#endif // wxUSE_DRAGIMAGE
 #endif
     // _WX_DRAGIMAG_H_

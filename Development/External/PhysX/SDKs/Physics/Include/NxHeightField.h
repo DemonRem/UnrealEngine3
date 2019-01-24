@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXHEIGHTFIELD
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -68,9 +68,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual		bool						saveToDesc(NxHeightFieldDesc& desc)	const	= 0;
 
@@ -83,9 +84,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc
 	*/
@@ -103,9 +105,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.samples
 	*/
@@ -118,9 +121,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.nbRows
 	*/
@@ -133,9 +137,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.nbColumns
 	*/
@@ -148,9 +153,10 @@ class NxHeightField
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.format NxHeightFieldFormat
 	*/
@@ -163,28 +169,45 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.sampleStride
 	*/
 	virtual		NxU32						getSampleStride()			const = 0;
 
 	/**
-	\brief Retrieves the extent of the height volume in the vertical direction.
+	\brief Deprecated: Retrieves the extent of the height volume in the vertical direction.
 
 	\return The extent of the height volume in the vertical direction.
 
 	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
-	\li PS3  : Yes
-	\li XB360: Yes
+	\li PC SW: Deprecated
+	\li GPU  : Deprecated
+	\li PS3  : Deprecated
+	\li XB360: Deprecated
 
 	@see NxHeightFieldDesc.verticalExtent
 	*/
 	virtual		NxReal						getVerticalExtent()			const = 0;
+
+	/**
+	\brief Retrieves the thickness of the height volume in the vertical direction.
+
+	\return The thickness of the height volume in the vertical direction.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxHeightFieldDesc.thickness
+	*/
+	virtual		NxReal						getThickness()			const = 0;
 
 	/**
 	\brief Retrieves the convex edge threshold.
@@ -193,9 +216,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.convexEdgeThreshold
 	*/
@@ -208,9 +232,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.flags NxHeightFieldFlags
 	*/
@@ -222,9 +247,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual		NxReal						getHeight(NxReal x, NxReal z) const = 0;
 
@@ -236,9 +262,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxHeightFieldDesc.samples
 	*/
@@ -251,9 +278,10 @@ class NxHeightField
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual		NxU32						getReferenceCount()					= 0;
 
@@ -264,9 +292,9 @@ class NxHeightField
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

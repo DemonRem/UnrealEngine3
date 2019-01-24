@@ -4,17 +4,12 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: forty.cpp,v 1.17 2005/01/31 18:14:12 ABX Exp $
+// RCS-ID:      $Id: forty.cpp 52452 2008-03-12 13:45:14Z JS $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------
 // Last modified: 22nd July 1998 - ported to wxWidgets 2.0
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -31,6 +26,7 @@
 #include "forty.h"
 #include "card.h"
 #include "scoredg.h"
+#include "forty.xpm"
 
 #if wxUSE_HTML
 #include "wx/textfile.h"
@@ -129,7 +125,7 @@ const wxColour& FortyApp::TextColour()
 {
     if (!m_textColour)
     {
-        m_textColour = new wxColour(_T("BLACK"));
+        m_textColour = new wxColour(*wxBLACK);
     }
 
     return *m_textColour;
@@ -146,9 +142,7 @@ FortyFrame::FortyFrame(wxFrame* frame, const wxString& title, const wxPoint& pos
 #ifdef __WXMSW__
     SetIcon(wxIcon(_T("CardsIcon")));
 #else
-#ifdef GTK_TBD
-    SetIcon(wxIcon(Cards_bits, Cards_width, Cards_height));
-#endif
+    SetIcon(wxIcon(forty_xpm));
 #endif
 
     // Make a menu bar
@@ -201,11 +195,12 @@ FortyFrame::FortyFrame(wxFrame* frame, const wxString& title, const wxPoint& pos
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
     topsizer->Add( m_canvas, 1, wxEXPAND | wxALL, 0);
     SetSizer( topsizer );
-    topsizer->SetSizeHints( this );
 
 #if wxUSE_STATUSBAR
     CreateStatusBar();
 #endif // wxUSE_STATUSBAR
+
+    topsizer->SetSizeHints( this );
 }
 
 void FortyFrame::OnCloseWindow(wxCloseEvent& event)
@@ -309,10 +304,6 @@ FortyFrame::ToggleCardSize(wxCommandEvent& event)
 // stAboutDialog
 //----------------------------------------------------------------------------
 
-BEGIN_EVENT_TABLE(FortyAboutDialog,wxDialog)
-    EVT_BUTTON(wxID_CLOSE, wxDialog::OnOK)
-END_EVENT_TABLE()
-
 FortyAboutDialog::FortyAboutDialog( wxWindow *parent, wxWindowID id, const wxString &title,
     const wxPoint &position, const wxSize& size, long style ) :
     wxDialog( parent, id, title, position, size, style )
@@ -372,6 +363,7 @@ bool FortyAboutDialog::AddControls(wxWindow* parent)
     wxButton *item2 = new wxButton( parent, wxID_CLOSE );
     item2->SetDefault();
     item2->SetFocus();
+    SetAffirmativeId(wxID_CLOSE);
 
     item0->Add( item2, 0, wxALIGN_RIGHT|wxALL, 5 );
 
@@ -383,4 +375,3 @@ bool FortyAboutDialog::AddControls(wxWindow* parent)
 
     return true;
 }
-

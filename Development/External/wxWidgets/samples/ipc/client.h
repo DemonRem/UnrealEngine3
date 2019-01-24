@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     25/01/99
-// RCS-ID:      $Id: client.h,v 1.6 2005/09/11 18:31:34 JS Exp $
+// RCS-ID:      $Id: client.h 36898 2006-01-16 16:09:49Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
 
     void OnExit(wxCommandEvent& event);
     void OnClose(wxCloseEvent& event);
-    void Enable();
+    void EnableControls();
     void Disconnect();
 
 protected:
@@ -86,8 +86,8 @@ public:
     virtual bool Poke(const wxString& item, wxChar *data, int size = -1, wxIPCFormat format = wxIPC_TEXT);
     virtual bool OnAdvise(const wxString& topic, const wxString& item, wxChar *data, int size, wxIPCFormat format);
     virtual bool OnDisconnect();
-protected:    
-    void MyConnection::Log(const wxString& command, const wxString& topic,
+protected:
+    void Log(const wxString& command, const wxString& topic,
         const wxString& item, wxChar *data, int size, wxIPCFormat format);
 };
 
@@ -105,4 +105,3 @@ public:
 protected:
     MyConnection     *m_connection;
 };
-

@@ -4,7 +4,7 @@
 // Author:      Guillermo Rodriguez Garcia, <guille@iies.es>
 // Modified by:
 // Created:     Jan/2000
-// RCS-ID:      $Id: life.cpp,v 1.41 2005/08/23 15:49:31 ABX Exp $
+// RCS-ID:      $Id: life.cpp 41160 2006-09-11 14:07:41Z VZ $
 // Copyright:   (c) 2000, Guillermo Rodriguez Garcia
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,6 @@
 // ==========================================================================
 // headers, declarations, constants
 // ==========================================================================
-
-#ifdef __GNUG__
-    #pragma implementation "life.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -198,14 +194,14 @@ LifeFrame::LifeFrame() :
     wxMenu *menuGame = new wxMenu(wxMENU_TEAROFF);
     wxMenu *menuHelp = new wxMenu(wxMENU_TEAROFF);
 
-    menuFile->Append(wxID_NEW, wxGetStockLabel(wxID_NEW), _("Start a new game"));
+    menuFile->Append(wxID_NEW, wxEmptyString, _("Start a new game"));
 #if wxUSE_FILEDLG
-    menuFile->Append(wxID_OPEN, wxGetStockLabel(wxID_OPEN), _("Open an existing Life pattern"));
+    menuFile->Append(wxID_OPEN, wxEmptyString, _("Open an existing Life pattern"));
 #endif
     menuFile->Append(ID_SAMPLES, _("&Sample game..."), _("Select a sample configuration"));
 #if ! (defined(__SMARTPHONE__) || defined(__POCKETPC__))
     menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT, wxGetStockLabel(wxID_EXIT, true, _T("Alt-X")), _("Quit this program"));
+    menuFile->Append(wxID_EXIT);
 
     menuView->Append(ID_SHOWNAV, _("Navigation &toolbox"), _("Show or hide toolbox"), wxITEM_CHECK);
     menuView->Check(ID_SHOWNAV, true);
@@ -219,13 +215,13 @@ LifeFrame::LifeFrame() :
     menuView->Append(ID_EAST, _("&East"), _("Find easternmost cell"));
     menuView->Append(ID_WEST, _("&West"), _("Find westernmost cell"));
     menuView->AppendSeparator();
-    menuView->Append(wxID_ZOOM_IN, wxGetStockLabel(wxID_ZOOM_IN, true, _T("Ctrl-I")), _("Zoom in"));
-    menuView->Append(wxID_ZOOM_OUT, wxGetStockLabel(wxID_ZOOM_OUT, true, _T("Ctrl-O")), _("Zoom out"));
+    menuView->Append(wxID_ZOOM_IN, wxEmptyString, _("Zoom in"));
+    menuView->Append(wxID_ZOOM_OUT, wxEmptyString, _("Zoom out"));
     menuView->Append(ID_INFO, _("&Description\tCtrl-D"), _("View pattern description"));
 
     menuGame->Append(ID_START, _("&Start\tCtrl-S"), _("Start"));
     menuGame->Append(ID_STEP, _("&Next\tCtrl-N"), _("Single step"));
-    menuGame->Append(wxID_STOP, wxGetStockLabel(wxID_STOP, true, _T("Ctrl-T")), _("Stop"));
+    menuGame->Append(wxID_STOP, wxEmptyString, _("Stop"));
     menuGame->Enable(wxID_STOP, false);
     menuGame->AppendSeparator();
     menuGame->Append(ID_TOPSPEED, _("T&op speed!"), _("Go as fast as possible"));
@@ -254,20 +250,20 @@ LifeFrame::LifeFrame() :
     toolBar->SetMargins(5, 5);
     toolBar->SetToolBitmapSize(wxSize(16, 16));
 
-    ADD_TOOL(wxID_NEW, tbBitmaps[0], wxGetStockLabel(wxID_NEW, false), _("Start a new game"));
+    ADD_TOOL(wxID_NEW, tbBitmaps[0], wxGetStockLabel(wxID_NEW, wxSTOCK_NOFLAGS), _("Start a new game"));
 #ifndef __POCKETPC__
 #if wxUSE_FILEDLG
-    ADD_TOOL(wxID_OPEN, tbBitmaps[1], wxGetStockLabel(wxID_OPEN, false), _("Open an existing Life pattern"));
+    ADD_TOOL(wxID_OPEN, tbBitmaps[1], wxGetStockLabel(wxID_OPEN, wxSTOCK_NOFLAGS), _("Open an existing Life pattern"));
 #endif // wxUSE_FILEDLG
 
     toolBar->AddSeparator();
-    ADD_TOOL(wxID_ZOOM_IN, tbBitmaps[2], wxGetStockLabel(wxID_ZOOM_IN, false), _("Zoom in"));
-    ADD_TOOL(wxID_ZOOM_OUT, tbBitmaps[3], wxGetStockLabel(wxID_ZOOM_OUT, false), _("Zoom out"));
+    ADD_TOOL(wxID_ZOOM_IN, tbBitmaps[2], wxGetStockLabel(wxID_ZOOM_IN, wxSTOCK_NOFLAGS), _("Zoom in"));
+    ADD_TOOL(wxID_ZOOM_OUT, tbBitmaps[3], wxGetStockLabel(wxID_ZOOM_OUT, wxSTOCK_NOFLAGS), _("Zoom out"));
     ADD_TOOL(ID_INFO, tbBitmaps[4], _("Description"), _("Show description"));
     toolBar->AddSeparator();
 #endif // __POCKETPC__
     ADD_TOOL(ID_START, tbBitmaps[5], _("Start"), _("Start"));
-    ADD_TOOL(wxID_STOP, tbBitmaps[6], wxGetStockLabel(wxID_STOP, false), _("Stop"));
+    ADD_TOOL(wxID_STOP, tbBitmaps[6], _("Stop"), _("Stop"));
 
     toolBar->Realize();
     toolBar->EnableTool(wxID_STOP, false);    // must be after Realize() !
@@ -460,7 +456,7 @@ void LifeFrame::OnOpen(wxCommandEvent& WXUNUSED(event))
                          wxEmptyString,
                          wxEmptyString,
                          _("Life patterns (*.lif)|*.lif|All files (*.*)|*.*"),
-                         wxOPEN | wxFILE_MUST_EXIST);
+                         wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (filedlg.ShowModal() == wxID_OK)
     {
@@ -775,9 +771,7 @@ void LifeCanvas::DrawCell(wxInt32 i, wxInt32 j, bool alive)
     dc.SetPen(alive? *wxBLACK_PEN : *wxWHITE_PEN);
     dc.SetBrush(alive? *wxBLACK_BRUSH : *wxWHITE_BRUSH);
 
-    dc.BeginDrawing();
     DrawCell(i, j, dc);
-    dc.EndDrawing();
 }
 
 void LifeCanvas::DrawCell(wxInt32 i, wxInt32 j, wxDC &dc)
@@ -814,8 +808,6 @@ void LifeCanvas::DrawChanged()
                       m_viewportY + m_viewportH,
                       true);
 
-    dc.BeginDrawing();
-
     if (m_cellsize == 1)
     {
         dc.SetPen(*wxBLACK_PEN);
@@ -834,7 +826,6 @@ void LifeCanvas::DrawChanged()
         for (size_t m = 0; m < ncells; m++)
             DrawCell(cells[m].i, cells[m].j, dc);
     }
-    dc.EndDrawing();
 }
 
 // event handlers
@@ -863,7 +854,6 @@ void LifeCanvas::OnPaint(wxPaintEvent& WXUNUSED(event))
     bool done = m_life->FindMore(&cells, &ncells);
 
     // erase all damaged cells and draw the grid
-    dc.BeginDrawing();
     dc.SetBrush(*wxWHITE_BRUSH);
 
     if (m_cellsize <= 2)
@@ -901,8 +891,6 @@ void LifeCanvas::OnPaint(wxPaintEvent& WXUNUSED(event))
     // last set
     for (size_t m = 0; m < ncells; m++)
         DrawCell(cells[m].i, cells[m].j, dc);
-
-    dc.EndDrawing();
 }
 
 void LifeCanvas::OnMouse(wxMouseEvent& event)
@@ -955,7 +943,6 @@ void LifeCanvas::OnMouse(wxMouseEvent& event)
         wxClientDC dc(this);
         dc.SetPen(alive? *wxBLACK_PEN : *wxWHITE_PEN);
         dc.SetBrush(alive? *wxBLACK_BRUSH : *wxWHITE_BRUSH);
-        dc.BeginDrawing();
 
         // draw a line of cells using Bresenham's algorithm
         wxInt32 d, ii, jj, di, ai, si, dj, aj, sj;
@@ -1011,8 +998,6 @@ void LifeCanvas::OnMouse(wxMouseEvent& event)
         DrawCell(ii, jj, dc);
         m_mi = ii;
         m_mj = jj;
-
-        dc.EndDrawing();
     }
 
     ((LifeFrame *) wxGetApp().GetTopWindow())->UpdateInfoText();

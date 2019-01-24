@@ -1,25 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        printps.cpp
+// Name:        src/generic/printps.cpp
 // Purpose:     Postscript print/preview framework
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: printps.cpp,v 1.37 2004/11/08 19:57:36 ABX Exp $
+// RCS-ID:      $Id: printps.cpp 42522 2006-10-27 13:07:40Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-// ============================================================================
-// declarations
-// ============================================================================
-
-// ----------------------------------------------------------------------------
-// headers
-// ----------------------------------------------------------------------------
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "printps.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -28,7 +16,13 @@
     #pragma hdrstop
 #endif
 
-#include "wx/defs.h"
+// ============================================================================
+// declarations
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// headers
+// ----------------------------------------------------------------------------
 
 #if wxUSE_PRINTING_ARCHITECTURE && wxUSE_POSTSCRIPT && (!defined(__WXMSW__) || wxUSE_POSTSCRIPT_ARCHITECTURE_IN_MSW)
 
@@ -40,10 +34,10 @@
     #include "wx/intl.h"
     #include "wx/progdlg.h"
     #include "wx/log.h"
+    #include "wx/dcprint.h"
 #endif
 
 #include "wx/generic/printps.h"
-#include "wx/dcprint.h"
 #include "wx/printdlg.h"
 #include "wx/generic/prntdlgg.h"
 #include "wx/generic/progdlgg.h"
@@ -128,8 +122,10 @@ bool wxPostScriptPrinter::Print(wxWindow *parent, wxPrintout *printout, bool pro
     int w, h;
     dc->GetSize(&w, &h);
     printout->SetPageSizePixels((int)w, (int)h);
-    dc->GetSizeMM(&w, &h);
-    printout->SetPageSizeMM((int)w, (int)h);
+    printout->SetPaperRectPixels(wxRect(0, 0, w, h));
+    int mw, mh;
+    dc->GetSizeMM(&mw, &mh);
+    printout->SetPageSizeMM((int)mw, (int)mh);
 
     // Create an abort window
     wxBeginBusyCursor();
@@ -152,12 +148,12 @@ bool wxPostScriptPrinter::Print(wxWindow *parent, wxPrintout *printout, bool pro
     // set by the user
     m_printDialogData.SetMinPage(minPage);
     m_printDialogData.SetMaxPage(maxPage);
-    
+
     if (m_printDialogData.GetFromPage() < minPage)
         m_printDialogData.SetFromPage( minPage );
     if (m_printDialogData.GetToPage() > maxPage)
         m_printDialogData.SetToPage( maxPage );
-    
+
     int
        pagesPerCopy = m_printDialogData.GetToPage()-m_printDialogData.GetFromPage()+1,
        totalPages = pagesPerCopy * m_printDialogData.GetNoCopies(),
@@ -237,13 +233,13 @@ bool wxPostScriptPrinter::Print(wxWindow *parent, wxPrintout *printout, bool pro
 wxDC* wxPostScriptPrinter::PrintDialog(wxWindow *parent)
 {
     wxDC* dc = (wxDC*) NULL;
-    
+
     wxGenericPrintDialog dialog( parent, &m_printDialogData );
     if (dialog.ShowModal() == wxID_OK)
     {
         dc = dialog.GetPrintDC();
         m_printDialogData = dialog.GetPrintDialogData();
-        
+
         if (dc == NULL)
             sm_lastError = wxPRINTER_ERROR;
         else
@@ -269,7 +265,7 @@ bool wxPostScriptPrinter::Setup(wxWindow *WXUNUSED(parent))
     }
 
     dialog->Destroy();
-    
+
     return (ret == wxID_OK);
 #endif
 
@@ -311,7 +307,16 @@ bool wxPostScriptPrintPreview::Print(bool interactive)
 {
     if (!m_printPrintout)
         return false;
+
+    // Assume that on Unix, the preview may use the PostScript
+    // (generic) version, but printing using the native system is required.
+    // TODO: make a generic print preview class from which wxPostScriptPrintPreview
+    // is derived.
+#ifdef __UNIX__
+    wxPrinter printer(& m_printDialogData);
+#else
     wxPostScriptPrinter printer(& m_printDialogData);
+#endif
     return printer.Print(m_previewFrame, m_printPrintout, interactive);
 }
 
@@ -346,18 +351,19 @@ void wxPostScriptPrintPreview::DetermineScaling()
             m_pageWidth = sizeDevUnits.y;
             m_pageHeight = sizeDevUnits.x;
             m_previewPrintout->SetPageSizeMM(sizeMM.y, sizeMM.x);
-            m_previewPrintout->SetPageSizePixels(m_pageWidth, m_pageHeight);
         }
         else
         {
             m_pageWidth = sizeDevUnits.x;
             m_pageHeight = sizeDevUnits.y;
             m_previewPrintout->SetPageSizeMM(sizeMM.x, sizeMM.y);
-            m_previewPrintout->SetPageSizePixels(m_pageWidth, m_pageHeight);
         }
+        m_previewPrintout->SetPageSizePixels(m_pageWidth, m_pageHeight);
+        m_previewPrintout->SetPaperRectPixels(wxRect(0, 0, m_pageWidth, m_pageHeight));
 
         // At 100%, the page should look about page-size on the screen.
-        m_previewScale = (float)0.8 * 72.0 / (float)wxPostScriptDC::GetResolution();
+        m_previewScaleX = (float)0.8 * 72.0 / (float)wxPostScriptDC::GetResolution();
+        m_previewScaleY = m_previewScaleX;
     }
 }
 

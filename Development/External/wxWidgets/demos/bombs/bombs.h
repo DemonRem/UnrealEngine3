@@ -4,7 +4,7 @@
 // Author:      P. Foggia 1996
 // Modified by: Wlodzimierz Skiba (ABX) since 2003
 // Created:     1996
-// RCS-ID:      $Id: bombs.h,v 1.7 2005/05/10 19:22:05 ABX Exp $
+// RCS-ID:      $Id: bombs.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) 1996 P. Foggia
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ public:
 
     wxSize GetGridSizeInPixels() const;
 
-    ~BombsCanvas();
+    virtual ~BombsCanvas();
 
 private:
 

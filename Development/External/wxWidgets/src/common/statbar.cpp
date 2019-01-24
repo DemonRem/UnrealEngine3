@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/statbar.cpp
+// Name:        src/common/statbar.cpp
 // Purpose:     wxStatusBarBase implementation
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     14.10.01
-// RCS-ID:      $Id: statbar.cpp,v 1.18 2005/04/12 07:33:20 JS Exp $
+// RCS-ID:      $Id: statbar.cpp 42171 2006-10-20 14:54:14Z VS $
 // Copyright:   (c) 2001 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "statbar.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,15 +24,18 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/frame.h"
-    #include "wx/statusbr.h"
-#endif //WX_PRECOMP
-
 #if wxUSE_STATUSBAR
 
+#include "wx/statusbr.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/frame.h"
+#endif //WX_PRECOMP
+
 #include "wx/listimpl.cpp"
-WX_DEFINE_LIST(wxListString);
+WX_DEFINE_LIST(wxListString)
+
+const wxChar wxStatusBarNameStr[] = wxT("statusBar");
 
 // ============================================================================
 // wxStatusBarBase implementation
@@ -223,12 +222,21 @@ wxArrayInt wxStatusBarBase::CalculateAbsWidths(wxCoord widthTotal) const
     {
         if ( m_nFields )
         {
-            // default: all fields have the same width
-            int nWidth = widthTotal / m_nFields;
-            for ( int i = 0; i < m_nFields; i++ )
+            // Default: all fields have the same width. This is not always
+            // possible to do exactly (if widthTotal is not divisible by
+            // m_nFields) - if that happens, we distribute the extra pixels
+            // among all fields:
+            int widthToUse = widthTotal;
+
+            for ( int i = m_nFields; i > 0; i-- )
             {
-                widths.Add(nWidth);
+                // divide the unassigned width evently between the
+                // not yet processed fields:
+                int w = widthToUse / i;
+                widths.Add(w);
+                widthToUse -= w;
             }
+
         }
         //else: we're empty anyhow
     }
@@ -358,4 +366,3 @@ wxListString *wxStatusBarBase::GetOrCreateStatusStack(int i)
 }
 
 #endif // wxUSE_STATUSBAR
-

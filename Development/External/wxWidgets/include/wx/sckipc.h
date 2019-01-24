@@ -6,7 +6,7 @@
 //              Guillermo Rodriguez (updated for wxSocket v2) Jan 2000
 //                                  (callbacks deprecated)    Mar 2000
 // Created:     1993
-// RCS-ID:      $Id: sckipc.h,v 1.29 2005/08/02 18:16:32 MW Exp $
+// RCS-ID:      $Id: sckipc.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Julian Smart 1993
 //              (c) Guilhem Lavaux 1997, 1998
 //              (c) 2000 Guillermo Rodriguez <guille@iies.es>
@@ -15,10 +15,6 @@
 
 #ifndef _WX_SCKIPC_H
 #define _WX_SCKIPC_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "sckipc.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -53,8 +49,8 @@
  *
  */
 
-class WXDLLIMPEXP_NET wxTCPServer;
-class WXDLLIMPEXP_NET wxTCPClient;
+class WXDLLIMPEXP_FWD_NET wxTCPServer;
+class WXDLLIMPEXP_FWD_NET wxTCPClient;
 
 class WXDLLIMPEXP_NET wxTCPConnection: public wxConnectionBase
 {
@@ -85,6 +81,10 @@ public:
   // To enable the compressor (NOTE: not implemented!)
   void Compress(bool on);
 
+  // unhide the Execute overload from wxConnectionBase
+  virtual bool Execute(const wxString& str)
+    { return Execute(str, -1, wxIPC_TEXT); }
+
 protected:
   wxSocketBase       *m_sock;
   wxSocketStream     *m_sockstrm;
@@ -96,20 +96,11 @@ protected:
   friend class wxTCPClient;
   friend class wxTCPEventHandler;
 
-private:
-  //
-  // We're hiding an Execute method in ConnectionBase
-  //
-  virtual bool Execute(const wxString& str)
-    { return Execute(str, -1, wxIPC_TEXT); }
-
-    DECLARE_NO_COPY_CLASS(wxTCPConnection)
+  DECLARE_NO_COPY_CLASS(wxTCPConnection)
 };
 
 class WXDLLIMPEXP_NET wxTCPServer: public wxServerBase
 {
-  DECLARE_DYNAMIC_CLASS(wxTCPServer)
-
 public:
   wxTCPConnection *topLevelConnection;
 
@@ -130,13 +121,12 @@ protected:
   wxString m_filename;
 #endif // __UNIX_LIKE__
 
-    DECLARE_NO_COPY_CLASS(wxTCPServer)
+  DECLARE_NO_COPY_CLASS(wxTCPServer)
+  DECLARE_DYNAMIC_CLASS(wxTCPServer)
 };
 
 class WXDLLIMPEXP_NET wxTCPClient: public wxClientBase
 {
-  DECLARE_DYNAMIC_CLASS(wxTCPClient)
-
 public:
   wxTCPClient();
   virtual ~wxTCPClient();
@@ -150,6 +140,9 @@ public:
 
   // Callbacks to CLIENT - override at will
   virtual wxConnectionBase *OnMakeConnection();
+
+private:
+  DECLARE_DYNAMIC_CLASS(wxTCPClient)
 };
 
 #endif // wxUSE_SOCKETS && wxUSE_IPC

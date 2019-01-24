@@ -1,32 +1,27 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        htmltag.cpp
+// Name:        src/html/htmltag.cpp
 // Purpose:     wxHtmlTag class (represents single tag)
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: htmltag.cpp,v 1.49 2005/07/22 17:08:42 ABX Exp $
+// RCS-ID:      $Id: htmltag.cpp 53433 2008-05-03 00:40:29Z VZ $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "htmltag.h"
-#endif
-
 #include "wx/wxprec.h"
 
-#include "wx/defs.h"
+#ifdef __BORLANDC__
+    #pragma hdrstop
+#endif
+
 #if wxUSE_HTML
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
+#include "wx/html/htmltag.h"
 
 #ifndef WXPRECOMP
+    #include "wx/colour.h"
 #endif
 
-#include "wx/html/htmltag.h"
 #include "wx/html/htmlpars.h"
-#include "wx/colour.h"
 #include <stdio.h> // for vsscanf
 #include <stdarg.h>
 
@@ -66,7 +61,7 @@ bool wxIsCDATAElement(const wxChar *tag)
 wxHtmlTagsCache::wxHtmlTagsCache(const wxString& source)
 {
     const wxChar *src = source.c_str();
-    int lng = source.Length();
+    int lng = source.length();
     wxChar tagBuffer[256];
 
     m_Cache = NULL;
@@ -416,25 +411,16 @@ int wxHtmlTag::ScanParam(const wxString& par,
 
 bool wxHtmlTag::GetParamAsColour(const wxString& par, wxColour *clr) const
 {
+    wxCHECK_MSG( clr, false, _T("invalid colour argument") );
+
     wxString str = GetParam(par);
 
-    if (str.empty()) return false;
-    if (str.GetChar(0) == wxT('#'))
+    // handle colours defined in HTML 4.0 first:
+    if (str.length() > 1 && str[0] != _T('#'))
     {
-        unsigned long tmp;
-        if (ScanParam(par, wxT("#%lX"), &tmp) != 1)
-            return false;
-        *clr = wxColour((unsigned char)((tmp & 0xFF0000) >> 16),
-                        (unsigned char)((tmp & 0x00FF00) >> 8),
-                        (unsigned char)(tmp & 0x0000FF));
-        return true;
-    }
-    else
-    {
-        // Handle colours defined in HTML 4.0:
-        #define HTML_COLOUR(name,r,g,b)                 \
+        #define HTML_COLOUR(name, r, g, b)              \
             if (str.IsSameAs(wxT(name), false))         \
-                { *clr = wxColour(r,g,b); return true; }
+                { clr->Set(r, g, b); return true; }
         HTML_COLOUR("black",   0x00,0x00,0x00)
         HTML_COLOUR("silver",  0xC0,0xC0,0xC0)
         HTML_COLOUR("gray",    0x80,0x80,0x80)
@@ -454,16 +440,27 @@ bool wxHtmlTag::GetParamAsColour(const wxString& par, wxColour *clr) const
         #undef HTML_COLOUR
     }
 
+    // then try to parse #rrggbb representations or set from other well
+    // known names (note that this doesn't strictly conform to HTML spec,
+    // but it doesn't do real harm -- but it *must* be done after the standard
+    // colors are handled above):
+    if (clr->Set(str))
+        return true;
+
     return false;
 }
 
 bool wxHtmlTag::GetParamAsInt(const wxString& par, int *clr) const
 {
-    if (!HasParam(par)) return false;
+    if ( !HasParam(par) )
+        return false;
+
     long i;
-    bool succ = GetParam(par).ToLong(&i);
+    if ( !GetParam(par).ToLong(&i) )
+        return false;
+
     *clr = (int)i;
-    return succ;
+    return true;
 }
 
 wxString wxHtmlTag::GetAllParams() const
@@ -520,14 +517,5 @@ wxHtmlTag *wxHtmlTag::GetNextTag() const
         cur = cur->m_Parent;
     return cur->m_Next;
 }
-
-#if WXWIN_COMPATIBILITY_2_2
-
-bool wxHtmlTag::IsEnding() const
-{
-    return false;
-}
-
-#endif // WXWIN_COMPATIBILITY_2_2
 
 #endif

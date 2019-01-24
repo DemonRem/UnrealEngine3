@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        view.h
+// Name:        contrib/samples/ogl/studio/view.h
 // Purpose:     View-related classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     12/07/98
-// RCS-ID:      $Id: view.h,v 1.4 2004/06/09 16:42:30 ABX Exp $
+// RCS-ID:      $Id: view.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,12 +12,8 @@
 #ifndef _STUDIO_VIEW_H_
 #define _STUDIO_VIEW_H_
 
-#if defined(__GNUG__) && !defined(__APPLE__)
-// #pragma interface "view.h"
-#endif
-
 #include "doc.h"
-#include <wx/ogl/ogl.h>
+#include "wx/ogl/ogl.h"
 
 class csDiagramView;
 class csCanvas: public wxShapeCanvas

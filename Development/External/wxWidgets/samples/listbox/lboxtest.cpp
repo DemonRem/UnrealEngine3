@@ -2,7 +2,7 @@
 // Name:        lboxtest.cpp
 // Purpose:     wxListBox sample
 // Author:      Vadim Zeitlin
-// Id:          $Id: lboxtest.cpp,v 1.11 2005/06/16 15:18:57 JS Exp $
+// Id:          $Id: lboxtest.cpp 41547 2006-10-02 05:36:31Z PC $
 // Copyright:   (c) 2000 Vadim Zeitlin
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -77,6 +77,7 @@ enum
     LboxTest_Delete,
     LboxTest_DeleteText,
     LboxTest_DeleteSel,
+    LboxTest_DeselectAll,
     LboxTest_Listbox,
     LboxTest_Quit
 };
@@ -113,7 +114,9 @@ protected:
     void OnButtonChange(wxCommandEvent& event);
     void OnButtonDelete(wxCommandEvent& event);
     void OnButtonDeleteSel(wxCommandEvent& event);
+    void OnButtonDeselectAll(wxCommandEvent& event);
     void OnButtonClear(wxCommandEvent& event);
+
 #if wxUSE_LOG
     void OnButtonClearLog(wxCommandEvent& event);
 #endif // wxUSE_LOG
@@ -124,6 +127,7 @@ protected:
 
     void OnListbox(wxCommandEvent& event);
     void OnListboxDClick(wxCommandEvent& event);
+    void OnListboxRDown(wxMouseEvent& event);
 
     void OnCheckOrRadioBox(wxCommandEvent& event);
 
@@ -132,6 +136,7 @@ protected:
     void OnUpdateUIClearButton(wxUpdateUIEvent& event);
     void OnUpdateUIDeleteButton(wxUpdateUIEvent& event);
     void OnUpdateUIDeleteSelButton(wxUpdateUIEvent& event);
+    void OnUpdateUIDeselectAllButton(wxUpdateUIEvent& event);
 
     // reset the listbox parameters
     void Reset();
@@ -174,6 +179,9 @@ protected:
     // the listbox itself and the sizer it is in
     wxListBox *m_lbox;
     wxSizer *m_sizerLbox;
+
+    // panel the controls such as the listbox are in
+    wxPanel* m_panel;
 
 #if wxUSE_LOG
     // the listbox for logging messages
@@ -273,6 +281,7 @@ BEGIN_EVENT_TABLE(LboxTestFrame, wxFrame)
     EVT_BUTTON(LboxTest_Change, LboxTestFrame::OnButtonChange)
     EVT_BUTTON(LboxTest_Delete, LboxTestFrame::OnButtonDelete)
     EVT_BUTTON(LboxTest_DeleteSel, LboxTestFrame::OnButtonDeleteSel)
+    EVT_BUTTON(LboxTest_DeselectAll, LboxTestFrame::OnButtonDeselectAll)
     EVT_BUTTON(LboxTest_Clear, LboxTestFrame::OnButtonClear)
 #if wxUSE_LOG
     EVT_BUTTON(LboxTest_ClearLog, LboxTestFrame::OnButtonClearLog)
@@ -295,6 +304,7 @@ BEGIN_EVENT_TABLE(LboxTestFrame, wxFrame)
     EVT_UPDATE_UI(LboxTest_Change, LboxTestFrame::OnUpdateUIDeleteSelButton)
     EVT_UPDATE_UI(LboxTest_ChangeText, LboxTestFrame::OnUpdateUIDeleteSelButton)
     EVT_UPDATE_UI(LboxTest_DeleteSel, LboxTestFrame::OnUpdateUIDeleteSelButton)
+    EVT_UPDATE_UI(LboxTest_DeselectAll, LboxTestFrame::OnUpdateUIDeselectAllButton)
 
     EVT_LISTBOX(LboxTest_Listbox, LboxTestFrame::OnListbox)
     EVT_LISTBOX_DCLICK(wxID_ANY, LboxTestFrame::OnListboxDClick)
@@ -348,7 +358,7 @@ LboxTestFrame::LboxTestFrame(const wxString& title)
     m_logTarget = (wxLog *)NULL;
 #endif // wxUSE_LOG
 
-    wxPanel *panel = new wxPanel(this, wxID_ANY);
+    m_panel = new wxPanel(this, wxID_ANY);
 
     /*
        What we create here is a frame having 3 panes: the explanatory pane to
@@ -369,15 +379,15 @@ LboxTestFrame::LboxTestFrame(const wxString& title)
         _T("multiple"),
     };
 
-    wxStaticBox *box = new wxStaticBox(panel, wxID_ANY, _T("&Set listbox parameters"));
-    m_radioSelMode = new wxRadioBox(panel, wxID_ANY, _T("Selection &mode:"),
+    wxStaticBox *box = new wxStaticBox(m_panel, wxID_ANY, _T("&Set listbox parameters"));
+    m_radioSelMode = new wxRadioBox(m_panel, wxID_ANY, _T("Selection &mode:"),
                                     wxDefaultPosition, wxDefaultSize,
                                     WXSIZEOF(modes), modes,
                                     1, wxRA_SPECIFY_COLS);
 
-    m_chkVScroll = new wxCheckBox(panel, wxID_ANY, _T("Always show &vertical scrollbar"));
-    m_chkHScroll = new wxCheckBox(panel, wxID_ANY, _T("Show &horizontal scrollbar"));
-    m_chkSort = new wxCheckBox(panel, wxID_ANY, _T("&Sort items"));
+    m_chkVScroll = new wxCheckBox(m_panel, wxID_ANY, _T("Always show &vertical scrollbar"));
+    m_chkHScroll = new wxCheckBox(m_panel, wxID_ANY, _T("Show &horizontal scrollbar"));
+    m_chkSort = new wxCheckBox(m_panel, wxID_ANY, _T("&Sort items"));
 
     sizerLeft = new wxStaticBoxSizer(box, wxVERTICAL);
 
@@ -388,55 +398,53 @@ LboxTestFrame::LboxTestFrame(const wxString& title)
     sizerLeft->Add(m_radioSelMode, 0, wxGROW | wxALL, 5);
 
     wxSizer *sizerBtn = new wxBoxSizer(wxHORIZONTAL);
-    wxButton *btn = new wxButton(panel, LboxTest_Reset, _T("&Reset"));
+    wxButton *btn = new wxButton(m_panel, LboxTest_Reset, _T("&Reset"));
     sizerBtn->Add(btn, 0, wxLEFT | wxRIGHT, 5);
-    btn = new wxButton(panel, LboxTest_Create, _T("&Create"));
+    btn = new wxButton(m_panel, LboxTest_Create, _T("&Create"));
     sizerBtn->Add(btn, 0, wxLEFT | wxRIGHT, 5);
     sizerLeft->Add(sizerBtn, 0, wxALIGN_CENTRE_HORIZONTAL | wxALL, 15);
 
     // middle pane
-    wxStaticBox *box2 = new wxStaticBox(panel, wxID_ANY, _T("&Change listbox contents"));
+    wxStaticBox *box2 = new wxStaticBox(m_panel, wxID_ANY, _T("&Change listbox contents"));
     wxSizer *sizerMiddle = new wxStaticBoxSizer(box2, wxVERTICAL);
 
     wxSizer *sizerRow = new wxBoxSizer(wxHORIZONTAL);
-    btn = new wxButton(panel, LboxTest_Add, _T("&Add this string"));
-    m_textAdd = new wxTextCtrl(panel, LboxTest_AddText, _T("test item 0"));
+    btn = new wxButton(m_panel, LboxTest_Add, _T("&Add this string"));
+    m_textAdd = new wxTextCtrl(m_panel, LboxTest_AddText, _T("test item 0"));
     sizerRow->Add(btn, 0, wxRIGHT, 5);
     sizerRow->Add(m_textAdd, 1, wxLEFT, 5);
     sizerMiddle->Add(sizerRow, 0, wxALL | wxGROW, 5);
 
-    btn = new wxButton(panel, LboxTest_AddSeveral, _T("&Insert a few strings"));
+    btn = new wxButton(m_panel, LboxTest_AddSeveral, _T("&Insert a few strings"));
     sizerMiddle->Add(btn, 0, wxALL | wxGROW, 5);
 
-    btn = new wxButton(panel, LboxTest_AddMany, _T("Add &many strings"));
+    btn = new wxButton(m_panel, LboxTest_AddMany, _T("Add &many strings"));
     sizerMiddle->Add(btn, 0, wxALL | wxGROW, 5);
 
     sizerRow = new wxBoxSizer(wxHORIZONTAL);
-    btn = new wxButton(panel, LboxTest_Change, _T("C&hange current"));
-    m_textChange = new wxTextCtrl(panel, LboxTest_ChangeText, wxEmptyString);
+    btn = new wxButton(m_panel, LboxTest_Change, _T("C&hange current"));
+    m_textChange = new wxTextCtrl(m_panel, LboxTest_ChangeText, wxEmptyString);
     sizerRow->Add(btn, 0, wxRIGHT, 5);
     sizerRow->Add(m_textChange, 1, wxLEFT, 5);
     sizerMiddle->Add(sizerRow, 0, wxALL | wxGROW, 5);
 
     sizerRow = new wxBoxSizer(wxHORIZONTAL);
-    btn = new wxButton(panel, LboxTest_Delete, _T("&Delete this item"));
-    m_textDelete = new wxTextCtrl(panel, LboxTest_DeleteText, wxEmptyString);
+    btn = new wxButton(m_panel, LboxTest_Delete, _T("&Delete this item"));
+    m_textDelete = new wxTextCtrl(m_panel, LboxTest_DeleteText, wxEmptyString);
     sizerRow->Add(btn, 0, wxRIGHT, 5);
     sizerRow->Add(m_textDelete, 1, wxLEFT, 5);
     sizerMiddle->Add(sizerRow, 0, wxALL | wxGROW, 5);
 
-    btn = new wxButton(panel, LboxTest_DeleteSel, _T("Delete &selection"));
+    btn = new wxButton(m_panel, LboxTest_DeleteSel, _T("Delete &selection"));
     sizerMiddle->Add(btn, 0, wxALL | wxGROW, 5);
 
-    btn = new wxButton(panel, LboxTest_Clear, _T("&Clear"));
+    btn = new wxButton(m_panel, LboxTest_DeselectAll, _T("Deselect All"));
+    sizerMiddle->Add(btn, 0, wxALL | wxGROW, 5);
+
+    btn = new wxButton(m_panel, LboxTest_Clear, _T("&Clear"));
     sizerMiddle->Add(btn, 0, wxALL | wxGROW, 5);
 
     // right pane
-    m_lbox = new wxListBox(panel, LboxTest_Listbox,
-                           wxDefaultPosition, wxDefaultSize,
-                           0, NULL,
-                           wxLB_HSCROLL);
-    sizerRight->Add(m_lbox, 1, wxGROW | wxALL, 5);
     sizerRight->SetMinSize(250, 0);
     m_sizerLbox = sizerRight; // save it to modify it later
 
@@ -449,21 +457,21 @@ LboxTestFrame::LboxTestFrame(const wxString& title)
 #if wxUSE_LOG
     wxSizer *sizerDown = new wxStaticBoxSizer
                              (
-                               new wxStaticBox(panel, wxID_ANY, _T("&Log window")),
+                               new wxStaticBox(m_panel, wxID_ANY, _T("&Log window")),
                                wxVERTICAL
                              );
-    m_lboxLog = new wxListBox(panel, wxID_ANY);
+    m_lboxLog = new wxListBox(m_panel, wxID_ANY);
     sizerDown->Add(m_lboxLog, 1, wxGROW | wxALL, 5);
 #else
     wxSizer *sizerDown = new wxBoxSizer(wxVERTICAL);
 #endif // wxUSE_LOG
     wxBoxSizer *sizerBtns = new wxBoxSizer(wxHORIZONTAL);
 #if wxUSE_LOG
-    btn = new wxButton(panel, LboxTest_ClearLog, _T("Clear &log"));
+    btn = new wxButton(m_panel, LboxTest_ClearLog, _T("Clear &log"));
     sizerBtns->Add(btn);
     sizerBtns->Add(10, 0); // spacer
 #endif // wxUSE_LOG
-    btn = new wxButton(panel, LboxTest_Quit, _T("E&xit"));
+    btn = new wxButton(m_panel, LboxTest_Quit, _T("E&xit"));
     sizerBtns->Add(btn);
     sizerDown->Add(sizerBtns, 0, wxALL | wxALIGN_RIGHT, 5);
 
@@ -472,11 +480,11 @@ LboxTestFrame::LboxTestFrame(const wxString& title)
     sizerTop->Add(0, 5, 0, wxGROW); // spacer in between
     sizerTop->Add(sizerDown, 0,  wxGROW | (wxALL & ~wxTOP), 10);
 
-    // final initialization
+    // final initialization and create the listbox
     Reset();
-    m_dirty = false;
+    CreateLbox();
 
-    panel->SetSizer(sizerTop);
+    m_panel->SetSizer(sizerTop);
 
     sizerTop->Fit(this);
     sizerTop->SetSizeHints(this);
@@ -521,7 +529,6 @@ void LboxTestFrame::Reset()
 
 void LboxTestFrame::CreateLbox()
 {
-    wxWindow *parent = m_lbox->GetParent();
     int flags = 0;
     switch ( m_radioSelMode->GetSelection() )
     {
@@ -541,6 +548,9 @@ void LboxTestFrame::CreateLbox()
         flags |= wxLB_SORT;
 
     wxArrayString items;
+    
+    if ( m_lbox ) // cache old items to restore later if listbox existed
+    {
     int count = m_lbox->GetCount();
     for ( int n = 0; n < count; n++ )
     {
@@ -549,16 +559,21 @@ void LboxTestFrame::CreateLbox()
 
     m_sizerLbox->Detach(m_lbox);
     delete m_lbox;
+    }
 
-    m_lbox = new wxListBox(parent, LboxTest_Listbox,
+    m_lbox = new wxListBox(m_panel, LboxTest_Listbox,
                            wxDefaultPosition, wxDefaultSize,
                            0, NULL,
                            flags);
+
     m_lbox->Set(items);
     m_sizerLbox->Add(m_lbox, 1, wxGROW | wxALL, 5);
     m_sizerLbox->Layout();
 
     m_dirty = false;
+
+    m_lbox->Connect(wxEVT_RIGHT_DOWN, 
+        wxMouseEventHandler(LboxTestFrame::OnListboxRDown), NULL, this);
 }
 
 // ----------------------------------------------------------------------------
@@ -613,6 +628,11 @@ void LboxTestFrame::OnButtonDeleteSel(wxCommandEvent& WXUNUSED(event))
     }
 }
 
+void LboxTestFrame::OnButtonDeselectAll(wxCommandEvent& WXUNUSED(event))
+{
+    m_lbox->SetSelection(-1); 
+}
+
 void LboxTestFrame::OnButtonClear(wxCommandEvent& WXUNUSED(event))
 {
     m_lbox->Clear();
@@ -627,7 +647,7 @@ void LboxTestFrame::OnButtonClearLog(wxCommandEvent& WXUNUSED(event))
 
 void LboxTestFrame::OnButtonAdd(wxCommandEvent& WXUNUSED(event))
 {
-    static size_t s_item = 0;
+    static unsigned s_item = 0;
 
     wxString s = m_textAdd->GetValue();
     if ( !m_textAdd->IsModified() )
@@ -642,7 +662,7 @@ void LboxTestFrame::OnButtonAdd(wxCommandEvent& WXUNUSED(event))
 void LboxTestFrame::OnButtonAddMany(wxCommandEvent& WXUNUSED(event))
 {
     // "many" means 1000 here
-    for ( size_t n = 0; n < 1000; n++ )
+    for ( unsigned n = 0; n < 1000; n++ )
     {
         m_lbox->Append(wxString::Format(_T("item #%u"), n));
     }
@@ -675,6 +695,12 @@ void LboxTestFrame::OnUpdateUIDeleteSelButton(wxUpdateUIEvent& event)
     event.Enable(m_lbox->GetSelections(selections) != 0);
 }
 
+void LboxTestFrame::OnUpdateUIDeselectAllButton(wxUpdateUIEvent& event)
+{
+    wxArrayInt selections;
+    event.Enable(m_lbox->GetSelections(selections) != 0);
+}
+
 void LboxTestFrame::OnUpdateUIClearButton(wxUpdateUIEvent& event)
 {
     event.Enable(m_lbox->GetCount() != 0);
@@ -697,6 +723,18 @@ void LboxTestFrame::OnListboxDClick(wxCommandEvent& event)
 {
     int sel = event.GetInt();
     wxLogMessage(_T("Listbox item %d double clicked"), sel);
+}
+
+void LboxTestFrame::OnListboxRDown(wxMouseEvent& event)
+{
+    int item = m_lbox->HitTest(event.GetPosition());
+
+    if ( item != wxNOT_FOUND )
+        wxLogMessage(_T("Listbox item %d right clicked"), item);
+    else
+        wxLogMessage(_T("Listbox right clicked but no item clicked upon"));
+
+    event.Skip();
 }
 
 void LboxTestFrame::OnCheckOrRadioBox(wxCommandEvent& WXUNUSED(event))

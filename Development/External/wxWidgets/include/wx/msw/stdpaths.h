@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     2004-10-19
-// RCS-ID:      $Id: stdpaths.h,v 1.2 2004/10/20 00:34:25 VZ Exp $
+// RCS-ID:      $Id: stdpaths.h 43340 2006-11-12 12:58:10Z RR $
 // Copyright:   (c) 2004 Vadim Zeitlin <vadim@wxwindows.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,16 +20,21 @@ class WXDLLIMPEXP_BASE wxStandardPaths : public wxStandardPathsBase
 {
 public:
     // implement base class pure virtuals
+    virtual wxString GetExecutablePath() const;
     virtual wxString GetConfigDir() const;
     virtual wxString GetUserConfigDir() const;
     virtual wxString GetDataDir() const;
     virtual wxString GetUserDataDir() const;
     virtual wxString GetUserLocalDataDir() const;
     virtual wxString GetPluginsDir() const;
+    virtual wxString GetDocumentsDir() const;
 
 protected:
     // get the path corresponding to the given standard CSIDL_XXX constant
     static wxString DoGetDirectory(int csidl);
+
+    // return the directory of the application itself
+    static wxString GetAppDir();
 };
 
 // ----------------------------------------------------------------------------

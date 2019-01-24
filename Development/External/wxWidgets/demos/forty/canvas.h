@@ -4,7 +4,7 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: canvas.h,v 1.6 2004/06/02 09:14:59 ABX Exp $
+// RCS-ID:      $Id: canvas.h 27580 2004-06-02 09:14:59Z ABX $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------

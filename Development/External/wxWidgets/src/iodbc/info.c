@@ -1,7 +1,7 @@
 /*
  *  info.c
  *
- *  $Id: info.c,v 1.7 2000/01/27 22:47:49 GT Exp $
+ *  $Id: info.c 5714 2000-01-27 22:47:49Z GT $
  *
  *  Information functions
  *

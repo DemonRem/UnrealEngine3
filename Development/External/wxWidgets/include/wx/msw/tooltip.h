@@ -1,13 +1,20 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/tooltip.h
+// Name:        wx/msw/tooltip.h
 // Purpose:     wxToolTip class - tooltip control
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     31.01.99
-// RCS-ID:      $Id: tooltip.h,v 1.13 2005/02/28 01:22:35 VZ Exp $
+// RCS-ID:      $Id: tooltip.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1999 Robert Roebling, Vadim Zeitlin
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifndef _WX_MSW_TOOLTIP_H_
+#define _WX_MSW_TOOLTIP_H_
+
+#include "wx/object.h"
+
+class WXDLLIMPEXP_FWD_CORE wxWindow;
 
 class WXDLLEXPORT wxToolTip : public wxObject
 {
@@ -31,14 +38,20 @@ public:
         // set the delay after which the tooltip appears
     static void SetDelay(long milliseconds);
 
+    // @UE3 12/17/2007: Added to allow tooltips to persist for longer periods of time
+    static void SetDisplayTime(long milliseconds);
+
     // implementation only from now on
     // -------------------------------
 
     // should be called in responde to WM_MOUSEMOVE
-    void RelayEvent(WXMSG *msg);
+    static void RelayEvent(WXMSG *msg);
 
     // add a window to the tooltip control
     void Add(WXHWND hwnd);
+
+    // remove any tooltip from the window
+    static void Remove(WXHWND hwnd);
 
 private:
     // the one and only one tooltip control we use - never access it directly
@@ -58,3 +71,4 @@ private:
     DECLARE_NO_COPY_CLASS(wxToolTip)
 };
 
+#endif // _WX_MSW_TOOLTIP_H_

@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXSIMPLETYPES
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -15,85 +15,27 @@
 // Platform specific types:
 //Design note: Its OK to use int for general loop variables and temps.
 
-#ifdef WIN32
-	typedef __int64				NxI64;
-	typedef signed int			NxI32;
-	typedef signed short		NxI16;
-	typedef signed char			NxI8;
+typedef long long			NxI64;
+typedef signed int			NxI32;
+typedef signed short		NxI16;
+typedef signed char			NxI8;
 
-	typedef unsigned __int64	NxU64;
-	typedef unsigned int		NxU32;
-	typedef unsigned short		NxU16;
-	typedef unsigned char		NxU8;
+typedef unsigned long long	NxU64;
+typedef unsigned int		NxU32;
+typedef unsigned short		NxU16;
+typedef unsigned char		NxU8;
 
-	typedef float				NxF32;
-	typedef double				NxF64;
-		
-#elif LINUX
-	typedef long long			NxI64;
-	typedef signed int			NxI32;
-	typedef signed short		NxI16;
-	typedef signed char			NxI8;
+typedef float				NxF32;
+typedef double				NxF64;
 
-	typedef unsigned long long	NxU64;
-	typedef unsigned int		NxU32;
-	typedef unsigned short		NxU16;
-	typedef unsigned char		NxU8;
+typedef void*				NxPtr;
 
-	typedef float				NxF32;
-	typedef double				NxF64;
+union NxU32F32
+{
+	NxU32 u;
+	NxF32 f;
+};
 
-#elif __APPLE__
-	typedef long long			NxI64;
-	typedef signed int			NxI32;
-	typedef signed short		NxI16;
-	typedef signed char			NxI8;
-
-	typedef unsigned long long	NxU64;
-	typedef unsigned int		NxU32;
-	typedef unsigned short		NxU16;
-	typedef unsigned char		NxU8;
-
-	typedef float				NxF32;
-	typedef double				NxF64;
-
-#elif __CELLOS_LV2__
-	typedef long long			NxI64;
-	typedef signed int			NxI32;
-	typedef signed short		NxI16;
-	typedef signed char			NxI8;
-
-	typedef unsigned long long	NxU64;
-	typedef unsigned int		NxU32;
-	typedef unsigned short		NxU16;
-	typedef unsigned char		NxU8;
-
-	typedef float				NxF32;
-	typedef double				NxF64;
-
-#elif _XBOX
-	typedef __int64				NxI64;
-	typedef signed int			NxI32;
-	typedef signed short		NxI16;
-	typedef signed char			NxI8;
-
-	typedef unsigned __int64	NxU64;
-	typedef unsigned int		NxU32;
-	typedef unsigned short		NxU16;
-	typedef unsigned char		NxU8;
-
-	typedef float				NxF32;
-	typedef double				NxF64;
-    
-#else
-	#error Unknown platform!
-#endif
-
-#if __APPLE__
-    NX_COMPILE_TIME_ASSERT(sizeof(bool)==4);    // PPC has 4 byte bools
-#else
-	NX_COMPILE_TIME_ASSERT(sizeof(bool)==1);	// ...otherwise things might fail with VC++ 4.2 !
-#endif
 	NX_COMPILE_TIME_ASSERT(sizeof(NxI8)==1);
 	NX_COMPILE_TIME_ASSERT(sizeof(NxU8)==1);
 	NX_COMPILE_TIME_ASSERT(sizeof(NxI16)==2);
@@ -103,9 +45,9 @@
 	NX_COMPILE_TIME_ASSERT(sizeof(NxI64)==8);
 	NX_COMPILE_TIME_ASSERT(sizeof(NxU64)==8);
 #if defined(NX64)
-	NX_COMPILE_TIME_ASSERT(sizeof(void*)==8);
+	NX_COMPILE_TIME_ASSERT(sizeof(NxPtr)==8);
 #else
-	NX_COMPILE_TIME_ASSERT(sizeof(void*)==4);
+	NX_COMPILE_TIME_ASSERT(sizeof(NxPtr)==4);
 #endif
 
 	// Type ranges
@@ -143,9 +85,9 @@
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

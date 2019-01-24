@@ -2,17 +2,13 @@
 // Name:        imagtiff.h
 // Purpose:     wxImage TIFF handler
 // Author:      Robert Roebling
-// RCS-ID:      $Id: imagtiff.h,v 1.13 2005/03/16 16:18:19 ABX Exp $
+// RCS-ID:      $Id: imagtiff.h 37393 2006-02-08 21:47:09Z VZ $
 // Copyright:   (c) Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_IMAGTIFF_H_
 #define _WX_IMAGTIFF_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "imagtiff.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -38,8 +34,9 @@ public:
 #if wxUSE_STREAMS
     virtual bool LoadFile( wxImage *image, wxInputStream& stream, bool verbose=true, int index=-1 );
     virtual bool SaveFile( wxImage *image, wxOutputStream& stream, bool verbose=true );
-    virtual bool DoCanRead( wxInputStream& stream );
     virtual int GetImageCount( wxInputStream& stream );
+protected:
+    virtual bool DoCanRead( wxInputStream& stream );
 #endif
 
 private:

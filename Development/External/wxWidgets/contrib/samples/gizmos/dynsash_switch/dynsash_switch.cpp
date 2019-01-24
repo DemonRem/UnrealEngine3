@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dynsash_switch.cpp
+// Name:        contrib/samples/gizmos/dynsash_switch/dynsash_switch.cpp
 // Purpose:     Test custom scrollbar handling of wxDynamicSashWindow by
 //              creating a dynamic sash window where the client scrolls a
 //              a subwindow of the client window by responding to scroll
@@ -7,7 +7,7 @@
 // Author:      Matt Kimball
 // Modified by:
 // Created:     7/15/2001
-// RCS-ID:      $Id: dynsash_switch.cpp,v 1.8 2005/01/18 15:07:35 KH Exp $
+// RCS-ID:      $Id: dynsash_switch.cpp 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) 2001 Matt Kimball
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -25,13 +25,13 @@
     #include "wx/wx.h"
 #endif
 
-#include <wx/app.h>
-#include <wx/frame.h>
-#include <wx/choice.h>
-#include <wx/dcclient.h>
-#include <wx/gizmos/dynamicsash.h>
-#include <wx/layout.h>
-#include <wx/scrolbar.h>
+#include "wx/app.h"
+#include "wx/frame.h"
+#include "wx/choice.h"
+#include "wx/dcclient.h"
+#include "wx/gizmos/dynamicsash.h"
+#include "wx/layout.h"
+#include "wx/scrolbar.h"
 
 class SwitchDemo : public wxApp {
 public:

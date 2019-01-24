@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/tooltip.cpp
+// Name:        src/msw/tooltip.cpp
 // Purpose:     wxToolTip class implementation for MSW
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     31.01.99
-// RCS-ID:      $Id: tooltip.cpp,v 1.43 2005/06/14 17:43:45 ABX Exp $
+// RCS-ID:      $Id: tooltip.cpp 49520 2007-10-29 15:27:40Z VZ $
 // Copyright:   (c) 1999 Vadim Zeitlin
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,17 +23,27 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-    #include "wx/wx.h"
-#endif
-
 #if wxUSE_TOOLTIPS
 
 #include "wx/tooltip.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
+    #include "wx/app.h"
+    #include "wx/control.h"
+    #include "wx/combobox.h"
+#endif
+
+#include "wx/tokenzr.h"
 #include "wx/msw/private.h"
 
-// include <commctrl.h> "properly"
-#include "wx/msw/wrapcctl.h"
+#ifndef TTTOOLINFO_V1_SIZE
+    #define TTTOOLINFO_V1_SIZE 0x28
+#endif
+
+#ifndef TTF_TRANSPARENT
+    #define TTF_TRANSPARENT 0x0100
+#endif
 
 // VZ: normally, the trick with subclassing the tooltip control and processing
 //     TTM_WINDOWFROMPOINT should work but, somehow, it doesn't. I leave the
@@ -77,20 +87,25 @@ public:
         ::ZeroMemory(this, sizeof(TOOLINFO));
 
         // the structure TOOLINFO has been extended with a 4 byte field in
-        // version 4.70 of comctl32.dll and if we compile on a newer machine
-        // but run on one with the old version of comctl32, nothing will work
-        // because the library will detect that we rely on a more recent
-        // version of it. So we always use the old size - if we ever start
-        // using our lParam member, we'd have to check for comctl32 version
-        // during run-time
-#if _WIN32_IE >= 0x0300
-        cbSize = sizeof(TOOLINFO) - sizeof(LPARAM);
-#else // old headers
-        cbSize = sizeof(TOOLINFO);
-#endif // compile-time comctl32.dll version
+        // version 4.70 of comctl32.dll and another one in 5.01 but we don't
+        // use these extended fields so use the old struct size to ensure that
+        // the tooltips work on old (Windows 95) systems too
+        cbSize = TTTOOLINFO_V1_SIZE;
 
         hwnd = hwndOwner;
         uFlags = TTF_IDISHWND;
+
+        // we use TTF_TRANSPARENT to fix a problem which arises at least with
+        // the text controls but may presumably happen with other controls
+        // which display the tooltip at mouse position: it can start flashing
+        // then as the control gets "focus lost" events and dismisses the
+        // tooltip which then reappears because mouse remains hovering over the
+        // control, see SF patch 1821229
+        if ( wxApp::GetComCtl32Version() >= 470 )
+        {
+            uFlags |= TTF_TRANSPARENT;
+        }
+
         uId = (UINT)hwndOwner;
     }
 };
@@ -103,23 +118,20 @@ public:
 // private functions
 // ----------------------------------------------------------------------------
 
-// send a message to the tooltip control
-inline LRESULT SendTooltipMessage(WXHWND hwnd,
-                                  UINT msg,
-                                  WPARAM wParam,
-                                  void *lParam)
+// send a message to the tooltip control if it exists
+//
+// NB: wParam is always 0 for the TTM_XXX messages we use
+static inline LRESULT SendTooltipMessage(WXHWND hwnd, UINT msg, void *lParam)
 {
-    return hwnd ? ::SendMessage((HWND)hwnd, msg, wParam, (LPARAM)lParam)
-                : 0;
+    return hwnd ? ::SendMessage((HWND)hwnd, msg, 0, (LPARAM)lParam) : 0;
 }
 
 // send a message to all existing tooltip controls
-static void SendTooltipMessageToAll(WXHWND hwnd,
-                                    UINT msg,
-                                    WPARAM wParam,
-                                    LPARAM lParam)
+static inline void
+SendTooltipMessageToAll(WXHWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    (void)SendTooltipMessage((WXHWND)hwnd, msg, wParam, (void *)lParam);
+    if ( hwnd )
+        ::SendMessage((HWND)hwnd, msg, wParam, lParam);
 }
 
 // ============================================================================
@@ -192,23 +204,40 @@ void wxToolTip::SetDelay(long milliseconds)
                             TTDT_INITIAL, milliseconds);
 }
 
+// @UE3 12/17/2007: Added to allow tooltips to persist for longer periods of time
+void wxToolTip::SetDisplayTime(long milliseconds)
+{
+    SendTooltipMessageToAll(ms_hwndTT, TTM_SETDELAYTIME,
+                            TTDT_AUTOPOP, milliseconds);
+}
+
 // ---------------------------------------------------------------------------
 // implementation helpers
 // ---------------------------------------------------------------------------
 
 // create the tooltip ctrl for our parent frame if it doesn't exist yet
+/* static */
 WXHWND wxToolTip::GetToolTipCtrl()
 {
     if ( !ms_hwndTT )
     {
-        ms_hwndTT = (WXHWND)::CreateWindow(TOOLTIPS_CLASS,
-                                           (LPCTSTR)NULL,
-                                           TTS_ALWAYSTIP,
-                                           CW_USEDEFAULT, CW_USEDEFAULT,
-                                           CW_USEDEFAULT, CW_USEDEFAULT,
-                                           NULL, (HMENU)NULL,
-                                           wxGetInstance(),
-                                           NULL);
+        WXDWORD exflags = 0;
+        if ( wxTheApp->GetLayoutDirection() == wxLayout_RightToLeft )
+        {
+            exflags |= WS_EX_LAYOUTRTL;
+        }
+
+        // we want to show the tooltips always (even when the window is not
+        // active) and we don't want to strip "&"s from them
+        ms_hwndTT = (WXHWND)::CreateWindowEx(exflags,
+                                             TOOLTIPS_CLASS,
+                                             (LPCTSTR)NULL,
+                                             TTS_ALWAYSTIP | TTS_NOPREFIX,
+                                             CW_USEDEFAULT, CW_USEDEFAULT,
+                                             CW_USEDEFAULT, CW_USEDEFAULT,
+                                             NULL, (HMENU)NULL,
+                                             wxGetInstance(),
+                                             NULL);
        if ( ms_hwndTT )
        {
            HWND hwnd = (HWND)ms_hwndTT;
@@ -225,9 +254,10 @@ WXHWND wxToolTip::GetToolTipCtrl()
     return ms_hwndTT;
 }
 
+/* static */
 void wxToolTip::RelayEvent(WXMSG *msg)
 {
-    (void)SendTooltipMessage(GetToolTipCtrl(), TTM_RELAYEVENT, 0, msg);
+    (void)SendTooltipMessage(GetToolTipCtrl(), TTM_RELAYEVENT, msg);
 }
 
 // ----------------------------------------------------------------------------
@@ -244,21 +274,27 @@ wxToolTip::wxToolTip(const wxString &tip)
 
 wxToolTip::~wxToolTip()
 {
-    // there is no need to Remove() this tool - it will be done automatically
-    // anyhow
+    // the tooltip has to be removed before deleting. Otherwise, if it is visible
+    // while being deleted, there will be a delay before it goes away.
+    Remove();
 }
 
 // ----------------------------------------------------------------------------
 // others
 // ----------------------------------------------------------------------------
 
+void wxToolTip::Remove(WXHWND hWnd)
+{
+    wxToolInfo ti((HWND)hWnd);
+    (void)SendTooltipMessage(GetToolTipCtrl(), TTM_DELTOOL, &ti);
+}
+
 void wxToolTip::Remove()
 {
     // remove this tool from the tooltip control
     if ( m_window )
     {
-        wxToolInfo ti(GetHwndOf(m_window));
-        (void)SendTooltipMessage(GetToolTipCtrl(), TTM_DELTOOL, 0, &ti);
+        Remove(m_window->GetHWND());
     }
 }
 
@@ -277,7 +313,7 @@ void wxToolTip::Add(WXHWND hWnd)
     ti.hwnd = hwnd;
     ti.lpszText = (wxChar *)m_text.c_str(); // const_cast
 
-    if ( !SendTooltipMessage(GetToolTipCtrl(), TTM_ADDTOOL, 0, &ti) )
+    if ( !SendTooltipMessage(GetToolTipCtrl(), TTM_ADDTOOL, &ti) )
     {
         wxLogDebug(_T("Failed to create the tooltip '%s'"), m_text.c_str());
     }
@@ -293,9 +329,9 @@ void wxToolTip::Add(WXHWND hWnd)
             {
                 // use TTM_SETMAXTIPWIDTH to make tooltip multiline using the
                 // extent of its first line as max value
-                HFONT hfont = (HFONT)SendTooltipMessage(GetToolTipCtrl(),
-                                                        WM_GETFONT,
-                                                        0, 0);
+                HFONT hfont = (HFONT)
+                    SendTooltipMessage(GetToolTipCtrl(), WM_GETFONT, 0);
+
                 if ( !hfont )
                 {
                     hfont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
@@ -316,14 +352,27 @@ void wxToolTip::Add(WXHWND hWnd)
                     wxLogLastError(wxT("SelectObject(hfont)"));
                 }
 
-                SIZE sz;
-                if ( !::GetTextExtentPoint32(hdc, m_text, index, &sz) )
+                // find the width of the widest line
+                int max = 0;
+                wxStringTokenizer tokenizer(m_text, _T("\n"));
+                wxString token = tokenizer.GetNextToken();
+                while (token.length())
                 {
-                    wxLogLastError(wxT("GetTextExtentPoint32"));
+                    SIZE sz;
+                    if ( !::GetTextExtentPoint32(hdc, token, token.length(), &sz) )
+                    {
+                        wxLogLastError(wxT("GetTextExtentPoint32"));
+                    }
+                    if ( sz.cx > max )
+                        max = sz.cx;
+
+                    token = tokenizer.GetNextToken();
                 }
 
-                SendTooltipMessage(GetToolTipCtrl(), TTM_SETMAXTIPWIDTH,
-                                   0, (void *)sz.cx);
+                // only set a new width if it is bigger than the current setting
+                if (max > SendTooltipMessage(GetToolTipCtrl(), TTM_GETMAXTIPWIDTH, 0))
+                    SendTooltipMessage(GetToolTipCtrl(), TTM_SETMAXTIPWIDTH,
+                                       (void *)max);
             }
             else
 #endif // comctl32.dll >= 4.70
@@ -333,7 +382,7 @@ void wxToolTip::Add(WXHWND hWnd)
                 m_text.Replace(_T("\n"), _T(" "));
                 ti.lpszText = (wxChar *)m_text.c_str(); // const_cast
 
-                if ( !SendTooltipMessage(GetToolTipCtrl(), TTM_ADDTOOL, 0, &ti) )
+                if ( !SendTooltipMessage(GetToolTipCtrl(), TTM_ADDTOOL, &ti) )
                 {
                     wxLogDebug(_T("Failed to create the tooltip '%s'"), m_text.c_str());
                 }
@@ -407,7 +456,7 @@ void wxToolTip::SetTip(const wxString& tip)
         wxToolInfo ti(GetHwndOf(m_window));
         ti.lpszText = (wxChar *)m_text.c_str();
 
-        (void)SendTooltipMessage(GetToolTipCtrl(), TTM_UPDATETIPTEXT, 0, &ti);
+        (void)SendTooltipMessage(GetToolTipCtrl(), TTM_UPDATETIPTEXT, &ti);
     }
 }
 

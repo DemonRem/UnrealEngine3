@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXBODYDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -30,9 +30,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setCMassOffsetLocalPose() NxActor.getCMassLocalPose() massSpaceInertia mass
 	*/
@@ -48,9 +49,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setMassSpaceInertiaTensor() NxActor.getMassSpaceInertiaTensor() mass massLocalPose
 	*/
@@ -66,9 +68,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setMass() NxActor.getMass() massSpaceInertia
 	*/
@@ -82,9 +85,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setLinearVelocity() NxActor.getLinearVelocity() angularVelocity
 	*/
@@ -98,9 +102,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setAngularVelocity() NxActor.getAngularVelocity() linearVelocity
 	*/
@@ -114,9 +119,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.wakeUp() NxActor.putToSleep()
 	*/
@@ -130,9 +136,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.getLinearDamping() NxActor.setLinearDamping() angularDamping
 	*/
@@ -146,9 +153,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setAngularDamping() NxActor.getAngularDamping() linearDamping
 	*/
@@ -164,9 +172,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	Note: The angular velocity is clamped to the set value <i>before</i> the solver, which means that
 	the limit may still be momentarily exceeded.
@@ -184,9 +193,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setCCDMotionThreshold() NxActor.getCCDMotionThreshold() NxShape.setCCDSkeleton() NxPhysicsSDK.setParameter()
 	*/
@@ -199,9 +209,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial (only supports NX_BF_KINEMATIC, NX_BF_DISABLE_GRAVITY)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBodyFlag NxActor.raiseBodyFlag() NxActor.clearBodyFlag()
 	*/
@@ -223,9 +234,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setSleepLinearVelocity() NxActor.getSleepLinearVelocity() sleepAngularVelocity
 	*/
@@ -245,9 +257,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setSleepAngularVelocity() NxActor.getSleepAngularVelocity() sleepLinearVelocity
 	*/
@@ -262,9 +275,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No (Supported in FW, but will only influence per scene maxIterations)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxActor.setSolverIterationCount() NxActor.getSolverIterationCount()
 	*/
@@ -278,9 +292,10 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxReal		sleepEnergyThreshold;
 
@@ -292,11 +307,29 @@ class NxBodyDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : No
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NxReal		sleepDamping;
+
+	/**
+	\brief The impulse threshold for contact reports.
+
+	<b>Range:</b> (0,inf)<br>
+	<b>Default:</b> NX_MAX_REAL
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxActor.setContactReportThreshold() NxActor.getContactReportThreshold()
+	*/
+	NxReal		contactReportThreshold;
 
 	/**
 	\brief Constructor sets to default, mass == 0 (an immediate call to isValid() will return false). 
@@ -311,7 +344,11 @@ class NxBodyDesc
 
 	\return True if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxBodyDesc::NxBodyDesc()	//constructor sets to default
@@ -338,34 +375,37 @@ NX_INLINE void NxBodyDesc::setToDefault()
 	flags					|= NX_BF_ENERGY_SLEEP_TEST;
 	sleepEnergyThreshold	= -1.0f;
 	sleepDamping			= 0.0f;
+	contactReportThreshold  = NX_MAX_REAL;
 	}
 
-NX_INLINE bool NxBodyDesc::isValid() const
+NX_INLINE NxU32 NxBodyDesc::checkValid() const
 	{
 	if(mass<0.0f)		//no negative masses plz.
-		return false;
+		return 1;
 	if (wakeUpCounter < 0.0f) //must be nonnegative
-		return false;
+		return 2;
 	if (linearDamping < 0.0f) //must be nonnegative
-		return false;
+		return 3;
 	if (angularDamping < 0.0f) //must be nonnegative
-		return false;
+		return 4;
 	if (CCDMotionThreshold < 0.0f) //must be nonnegative
-		return false;
+		return 5;
 	if (solverIterationCount < 1) //must be positive
-		return false;
+		return 6;
 	if (solverIterationCount > 255) 
-		return false;
+		return 7;
+	if (contactReportThreshold < 0.0f) //must be nonnegative
+		return 8;
 	if(!massLocalPose.isFinite())
-		return false;
-	return true;
+		return 8;
+	return 0;
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

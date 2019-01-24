@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXJOINTLIMITSOFTPAIRDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -18,9 +18,10 @@
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxD6Joint NxD6JointDesc
 */
@@ -63,7 +64,11 @@ class NxJointLimitSoftPairDesc
 
 	\return true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+		/**
+		\brief returns 0 if the current settings are valid
+		*/
+		NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxJointLimitSoftPairDesc::NxJointLimitSoftPairDesc()
@@ -76,16 +81,18 @@ NX_INLINE void NxJointLimitSoftPairDesc::setToDefault()
 	//nothing
 	}
 
-NX_INLINE bool NxJointLimitSoftPairDesc::isValid() const
+NX_INLINE NxU32 NxJointLimitSoftPairDesc::checkValid() const
 	{
-	return (low.isValid() && high.isValid() && low.value <= high.value);
+		if(low.value <= high.value)
+			return 1;
+		return 2*low.checkValid()+4*high.checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

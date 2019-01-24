@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        generic/renderg.cpp
+// Name:        src/generic/renderg.cpp
 // Purpose:     generic implementation of wxRendererNative (for any platform)
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     20.07.2003
-// RCS-ID:      $Id: renderg.cpp,v 1.29 2005/04/16 10:38:23 JS Exp $
+// RCS-ID:      $Id: renderg.cpp 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwindows.org>
 // License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -24,18 +24,18 @@
     #pragma hdrstop
 #endif
 
+#include "wx/renderer.h"
+
 #ifndef WX_PRECOMP
     #include "wx/string.h"
+    #include "wx/dc.h"
+    #include "wx/settings.h"
+    #include "wx/gdicmn.h"
+    #include "wx/module.h"
 #endif //WX_PRECOMP
 
-#include "wx/gdicmn.h"
-#include "wx/dc.h"
-
-#include "wx/settings.h"
 #include "wx/splitter.h"
 #include "wx/dcmirror.h"
-#include "wx/module.h"
-#include "wx/renderer.h"
 
 // ----------------------------------------------------------------------------
 // wxRendererGeneric: our wxRendererNative implementation
@@ -46,10 +46,21 @@ class WXDLLEXPORT wxRendererGeneric : public wxRendererNative
 public:
     wxRendererGeneric();
 
-    virtual void DrawHeaderButton(wxWindow *win,
+    virtual int  DrawHeaderButton(wxWindow *win,
                                   wxDC& dc,
                                   const wxRect& rect,
-                                  int flags = 0);
+                                  int flags = 0,
+                                  wxHeaderSortIconType sortArrow = wxHDR_SORT_ICON_NONE,
+                                  wxHeaderButtonParams* params = NULL);
+
+    virtual int  DrawHeaderButtonContents(wxWindow *win,
+                                          wxDC& dc,
+                                          const wxRect& rect,
+                                          int flags = 0,
+                                          wxHeaderSortIconType sortArrow = wxHDR_SORT_ICON_NONE,
+                                          wxHeaderButtonParams* params = NULL);
+
+    virtual int GetHeaderButtonHeight(wxWindow *win);
 
     virtual void DrawTreeItemButton(wxWindow *win,
                                     wxDC& dc,
@@ -77,6 +88,21 @@ public:
                                wxDC& dc,
                                const wxRect& rect,
                                int flags = 0);
+
+    virtual void DrawCheckBox(wxWindow *win,
+                              wxDC& dc,
+                              const wxRect& rect,
+                              int flags = 0);
+
+    virtual void DrawPushButton(wxWindow *win,
+                                wxDC& dc,
+                                const wxRect& rect,
+                                int flags = 0);
+
+    virtual void DrawItemSelectionRect(wxWindow *win,
+                                       wxDC& dc,
+                                       const wxRect& rect,
+                                       int flags = 0);
 
     virtual wxSplitterRenderParams GetSplitterParams(const wxWindow *win);
 
@@ -178,11 +204,13 @@ wxRendererGeneric::DrawShadedRect(wxDC& dc,
 // tree/list ctrl drawing
 // ----------------------------------------------------------------------------
 
-void
-wxRendererGeneric::DrawHeaderButton(wxWindow * WXUNUSED(win),
+int
+wxRendererGeneric::DrawHeaderButton(wxWindow* win,
                                     wxDC& dc,
                                     const wxRect& rect,
-                                    int WXUNUSED(flags))
+                                    int flags,
+                                    wxHeaderSortIconType sortArrow,
+                                    wxHeaderButtonParams* params)
 {
     const int CORNER = 1;
 
@@ -191,6 +219,10 @@ wxRendererGeneric::DrawHeaderButton(wxWindow * WXUNUSED(win),
                   w = rect.width,
                   h = rect.height;
 
+    dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE)));
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.DrawRectangle(rect);
+    
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
 
     dc.SetPen(m_penBlack);
@@ -206,7 +238,188 @@ wxRendererGeneric::DrawHeaderButton(wxWindow * WXUNUSED(win),
     dc.DrawRectangle( x, y, 1, h );            // left (outer)
     dc.DrawLine( x, y+h-1, x+1, y+h-1 );
     dc.DrawLine( x+w-1, y, x+w-1, y+1 );
+
+    return DrawHeaderButtonContents(win, dc, rect, flags, sortArrow, params);
 }
+
+
+int
+wxRendererGeneric::DrawHeaderButtonContents(wxWindow *win,
+                                            wxDC& dc,
+                                            const wxRect& rect,
+                                            int flags,
+                                            wxHeaderSortIconType sortArrow,
+                                            wxHeaderButtonParams* params)
+{
+    int labelWidth = 0;
+    
+    // Mark this item as selected.  For the generic version we'll just draw an
+    // underline
+    if ( flags & wxCONTROL_SELECTED )
+    {
+        // draw a line at the bottom of the header button, overlaying the
+        // native hot-tracking line (on XP)
+        const int penwidth = 3;
+        int y = rect.y + rect.height + 1 - penwidth;
+        wxColour c = (params && params->m_selectionColour.Ok()) ?
+            params->m_selectionColour : wxColour(0x66, 0x66, 0x66);
+        wxPen pen(c, penwidth);
+        pen.SetCap(wxCAP_BUTT);
+        dc.SetPen(pen);
+        dc.DrawLine(rect.x, y, rect.x + rect.width, y);
+    }
+
+    // Draw an up or down arrow
+    int arrowSpace = 0;
+    if (sortArrow != wxHDR_SORT_ICON_NONE )
+    {
+        wxRect ar = rect;
+
+        // make a rect for the arrow
+        ar.height = 4;
+        ar.width = 8;
+        ar.y += (rect.height - ar.height)/2;
+        ar.x = ar.x + rect.width - 3*ar.width/2;
+        arrowSpace = 3*ar.width/2; // space to preserve when drawing the label
+        
+        wxPoint triPt[3];
+        if ( sortArrow & wxHDR_SORT_ICON_UP )
+        {
+            triPt[0].x = ar.width / 2;
+            triPt[0].y = 0;
+            triPt[1].x = ar.width;
+            triPt[1].y = ar.height;
+            triPt[2].x = 0;
+            triPt[2].y = ar.height;
+        }
+        else
+        {
+            triPt[0].x = 0;
+            triPt[0].y = 0;
+            triPt[1].x = ar.width;
+            triPt[1].y = 0;
+            triPt[2].x = ar.width / 2;
+            triPt[2].y = ar.height;
+        }
+
+        wxColour c = (params && params->m_arrowColour.Ok()) ?
+            params->m_arrowColour : wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW);
+        dc.SetPen(wxPen(c));
+        dc.SetBrush(wxBrush(c));
+        dc.DrawPolygon( 3, triPt, ar.x, ar.y);                  
+    }
+    labelWidth += arrowSpace;
+    
+    const int margin = 5;   // number of pixels to reserve on either side of the label
+    int bmpWidth = 0;
+    int txtEnd = 0;
+    
+    if ( params && params->m_labelBitmap.Ok() )
+        bmpWidth = params->m_labelBitmap.GetWidth() + 2;
+
+    labelWidth += bmpWidth + 2*margin;
+    
+    // Draw a label if one is given
+    if ( params && !params->m_labelText.empty() )
+    {
+        wxFont font  = params->m_labelFont.Ok() ?
+            params->m_labelFont : win->GetFont();
+        wxColour clr = params->m_labelColour.Ok() ?
+            params->m_labelColour : win->GetForegroundColour();
+
+        wxString label( params->m_labelText );
+        
+        dc.SetFont(font);
+        dc.SetTextForeground(clr);
+        dc.SetBackgroundMode(wxTRANSPARENT);
+
+        int tw, th, td, x, y;
+        dc.GetTextExtent( label, &tw, &th, &td);
+        labelWidth += tw;
+        y = rect.y + wxMax(0, (rect.height - (th+td)) / 2);
+        
+        // truncate and add an ellipsis (...) if the text is too wide.
+        int targetWidth = rect.width - arrowSpace - bmpWidth - 2*margin;
+        if ( tw > targetWidth )        
+        {
+            int ellipsisWidth;
+            dc.GetTextExtent( wxT("..."), &ellipsisWidth, NULL);
+            do {
+                label.Truncate( label.length() - 1 );
+                dc.GetTextExtent( label, &tw, &th);
+            } while (tw + ellipsisWidth > targetWidth && label.length() );
+            label.append( wxT("...") );
+            tw += ellipsisWidth;
+        }
+        
+        switch (params->m_labelAlignment)
+        {
+            default:
+            case wxALIGN_LEFT:
+                x = rect.x + margin;
+                break;
+            case wxALIGN_CENTER:
+                x = rect.x + wxMax(0, (rect.width - arrowSpace  - tw - bmpWidth)/2);
+                break;
+            case wxALIGN_RIGHT:
+                x = rect.x + wxMax(0, rect.width - arrowSpace - margin - tw - bmpWidth);
+                break;
+        }
+
+        dc.DrawText(label, x, y);
+        txtEnd = x + tw + 2;
+    }
+
+    // draw the bitmap if there is one
+    if ( params && params->m_labelBitmap.Ok() )
+    {
+        int w, h, x, y;
+        w = params->m_labelBitmap.GetWidth();
+        h = params->m_labelBitmap.GetHeight();
+
+        y = rect.y + wxMax(1, (rect.height - h) / 2);
+
+        // if there is a text label, then put the bitmap at the end of the label
+        if ( txtEnd != 0 )
+        {
+            x = txtEnd;
+        }
+        // otherwise use the alignment flags
+        else
+        {
+            switch (params->m_labelAlignment)
+            {
+                default:
+                case wxALIGN_LEFT:
+                    x = rect.x + margin;
+                    break;
+                case wxALIGN_CENTER:
+                    x = rect.x + wxMax(1, (rect.width - arrowSpace - w)/2);
+                    break;
+                case wxALIGN_RIGHT:
+                    x = rect.x + wxMax(1, rect.width - arrowSpace - margin - w);
+                    break;
+            }
+        }
+        dc.DrawBitmap(params->m_labelBitmap, x, y, true);
+    }
+    return labelWidth;
+}
+
+
+int wxRendererGeneric::GetHeaderButtonHeight(wxWindow *win)
+{
+    // Copied and adapted from src/generic/listctrl.cpp
+    const int HEADER_OFFSET_Y = 1;
+    const int EXTRA_HEIGHT = 4;
+
+    int w=0, h=14, d=0;
+    if (win)
+        win->GetTextExtent(wxT("Hg"), &w, &h, &d);
+
+    return h + d + 2 * HEADER_OFFSET_Y + EXTRA_HEIGHT;
+}
+
 
 // draw the plus or minus sign
 void
@@ -215,9 +428,10 @@ wxRendererGeneric::DrawTreeItemButton(wxWindow * WXUNUSED(win),
                                       const wxRect& rect,
                                       int flags)
 {
-    // white background
-    dc.SetPen(*wxGREY_PEN);
-    dc.SetBrush(*wxWHITE_BRUSH);
+    // store settings
+    wxDCPenChanger penChanger(dc, *wxGREY_PEN);
+    wxDCBrushChanger brushChanger(dc, *wxWHITE_BRUSH);
+
     dc.DrawRectangle(rect);
 
     // black lines
@@ -355,20 +569,11 @@ void
 wxRendererGeneric::DrawComboBoxDropButton(wxWindow *win,
                                           wxDC& dc,
                                           const wxRect& rect,
-                                          int WXUNUSED(flags))
+                                          int flags)
 {
-    // Creating a generic button background that would actually be
-    // useful is rather difficult to accomplish. Best compromise
-    // is to use window's background colour to achieve transparent'
-    // ish appearance that should look decent in combo box style
-    // controls.
-    wxColour col = win->GetBackgroundColour();
-    dc.SetBrush(wxBrush(col));
-    dc.SetPen(wxPen(col));
-    dc.DrawRectangle(rect);
-    DrawDropArrow(win,dc,rect);
+    DrawPushButton(win,dc,rect,flags);
+    DrawDropArrow(win,dc,rect,flags);
 }
-
 
 void
 wxRendererGeneric::DrawDropArrow(wxWindow *win,
@@ -395,6 +600,68 @@ wxRendererGeneric::DrawDropArrow(wxWindow *win,
     dc.DrawPolygon(WXSIZEOF(pt), pt, rect.x, rect.y);
 }
 
+void
+wxRendererGeneric::DrawCheckBox(wxWindow *WXUNUSED(win),
+                                wxDC& dc,
+                                const wxRect& rect,
+                                int flags)
+{
+    dc.SetPen(*(flags & wxCONTROL_DISABLED ? wxGREY_PEN : wxBLACK_PEN));
+    dc.SetBrush( *wxTRANSPARENT_BRUSH );
+    dc.DrawRectangle(rect);
+
+    if ( flags & wxCONTROL_CHECKED )
+    {
+        dc.DrawCheckMark(rect.Deflate(2, 2));
+    }
+}
+
+void
+wxRendererGeneric::DrawPushButton(wxWindow *win,
+                                  wxDC& dc,
+                                  const wxRect& rect,
+                                  int flags)
+{
+    // Don't try anything too fancy. It'll just turn out looking
+    // out-of-place on most platforms.
+    wxColour bgCol = flags & wxCONTROL_DISABLED ?
+                        wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE) :
+                        win->GetBackgroundColour();
+    dc.SetBrush(wxBrush(bgCol));
+    dc.SetPen(wxPen(bgCol));
+    dc.DrawRectangle(rect);
+}
+
+void
+wxRendererGeneric::DrawItemSelectionRect(wxWindow * WXUNUSED(win),
+                                         wxDC& dc,
+                                         const wxRect& rect,
+                                         int flags)
+{
+    wxBrush brush;
+    if ( flags & wxCONTROL_SELECTED )
+    {
+        if ( flags & wxCONTROL_FOCUSED )
+        {
+            brush = wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
+        }
+        else // !focused
+        {
+            brush = wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW));
+        }
+    }
+    else // !selected
+    {
+        brush = *wxTRANSPARENT_BRUSH;
+    }
+
+    dc.SetBrush(brush);
+    dc.SetPen(flags & wxCONTROL_CURRENT ? *wxBLACK_PEN : *wxTRANSPARENT_PEN);
+
+    dc.DrawRectangle( rect );
+}
+
+
 // ----------------------------------------------------------------------------
 // A module to allow cleanup of generic renderer.
 // ----------------------------------------------------------------------------
@@ -404,9 +671,8 @@ class wxGenericRendererModule: public wxModule
 DECLARE_DYNAMIC_CLASS(wxGenericRendererModule)
 public:
     wxGenericRendererModule() {}
-    bool OnInit() { return true; };
-    void OnExit() { wxRendererGeneric::Cleanup(); };
+    bool OnInit() { return true; }
+    void OnExit() { wxRendererGeneric::Cleanup(); }
 };
 
 IMPLEMENT_DYNAMIC_CLASS(wxGenericRendererModule, wxModule)
-

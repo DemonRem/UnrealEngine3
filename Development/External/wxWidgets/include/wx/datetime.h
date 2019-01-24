@@ -5,17 +5,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     10.02.99
-// RCS-ID:      $Id: datetime.h,v 1.64 2005/08/28 13:06:33 VZ Exp $
+// RCS-ID:      $Id: datetime.h 54669 2008-07-17 20:03:11Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_DATETIME_H
 #define _WX_DATETIME_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "datetime.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -31,9 +27,9 @@
 
 #include "wx/longlong.h"
 
-class WXDLLIMPEXP_BASE wxDateTime;
-class WXDLLIMPEXP_BASE wxTimeSpan;
-class WXDLLIMPEXP_BASE wxDateSpan;
+class WXDLLIMPEXP_FWD_BASE wxDateTime;
+class WXDLLIMPEXP_FWD_BASE wxTimeSpan;
+class WXDLLIMPEXP_FWD_BASE wxDateSpan;
 
 #include "wx/dynarray.h"
 
@@ -55,6 +51,27 @@ class WXDLLIMPEXP_BASE wxDateSpan;
  * + 4. pluggable modules for the workdays calculations
  *   5. wxDateTimeHolidayAuthority for Easter and other christian feasts
  */
+
+/* Two wrapper functions for thread safety */
+#ifdef HAVE_LOCALTIME_R
+#define wxLocaltime_r localtime_r
+#else
+WXDLLIMPEXP_BASE struct tm *wxLocaltime_r(const time_t*, struct tm*);
+#if wxUSE_THREADS && !defined(__WINDOWS__) && !defined(__WATCOMC__)
+     // On Windows, localtime _is_ threadsafe!
+#warning using pseudo thread-safe wrapper for localtime to emulate localtime_r
+#endif
+#endif
+
+#ifdef HAVE_GMTIME_R
+#define wxGmtime_r gmtime_r
+#else
+WXDLLIMPEXP_BASE struct tm *wxGmtime_r(const time_t*, struct tm*);
+#if wxUSE_THREADS && !defined(__WINDOWS__) && !defined(__WATCOMC__)
+     // On Windows, gmtime _is_ threadsafe!
+#warning using pseudo thread-safe wrapper for gmtime to emulate gmtime_r
+#endif
+#endif
 
 /*
   The three (main) classes declared in this header represent:
@@ -108,7 +125,7 @@ class WXDLLIMPEXP_BASE wxDateSpan;
 // argument for arguments of type wxDateTime; it is also returned by all
 // functions returning wxDateTime on failure (this is why it is also called
 // wxInvalidDateTime)
-class WXDLLIMPEXP_BASE wxDateTime;
+class WXDLLIMPEXP_FWD_BASE wxDateTime;
 
 extern WXDLLIMPEXP_DATA_BASE(const wxChar*) wxDefaultDateTimeFormat;
 extern WXDLLIMPEXP_DATA_BASE(const wxChar*) wxDefaultTimeSpanFormat;
@@ -151,7 +168,7 @@ public:
         GMT_6, GMT_5, GMT_4, GMT_3, GMT_2, GMT_1,
         GMT0,
         GMT1, GMT2, GMT3, GMT4, GMT5, GMT6,
-        GMT7, GMT8, GMT9, GMT10, GMT11, GMT12,
+        GMT7, GMT8, GMT9, GMT10, GMT11, GMT12, GMT13,
         // Note that GMT12 and GMT_12 are not the same: there is a difference
         // of exactly one day between them
 
@@ -185,9 +202,13 @@ public:
         // Australia
 
         A_WST = GMT8,                       // Western Standard Time
-        A_CST = GMT12 + 1,                  // Central Standard Time (+9.5)
+        A_CST = GMT13 + 1,                  // Central Standard Time (+9.5)
         A_EST = GMT10,                      // Eastern Standard Time
         A_ESST = GMT11,                     // Eastern Summer Time
+
+        // New Zealand
+        NZST = GMT12,                       // Standard Time
+        NZDT = GMT13,                       // Daylight Saving Time
 
         // TODO add more symbolic timezone names here
 
@@ -400,7 +421,20 @@ public:
     {
     public:
         TimeZone(TZ tz);
+
+        // don't use this ctor, it doesn't work for negative offsets (but can't
+        // be removed or changed to avoid breaking ABI in 2.8)
         TimeZone(wxDateTime_t offset = 0) { m_offset = offset; }
+
+#if wxABI_VERSION >= 20808
+        // create time zone object with the given offset
+        static TimeZone Make(long offset)
+        {
+            TimeZone tz;
+            tz.m_offset = offset;
+            return tz;
+        }
+#endif // wxABI 2.8.8+
 
         long GetOffset() const { return m_offset; }
 
@@ -486,7 +520,7 @@ public:
     static bool IsLeapYear(int year = Inv_Year, Calendar cal = Gregorian);
 
         // get the century (19 for 1999, 20 for 2000 and -5 for 492 BC)
-    static int GetCentury(int year = Inv_Year);
+    static int GetCentury(int year);
 
         // returns the number of days in this year (356 or 355 for Gregorian
         // calendar usually :-)
@@ -543,7 +577,7 @@ public:
     // ------------------------------------------------------------------------
 
         // default ctor does not initialize the object, use Set()!
-    wxDateTime() { m_time = wxLongLong((long)ULONG_MAX, ULONG_MAX); }
+    wxDateTime() { m_time = wxLongLong((wxInt32)UINT_MAX, UINT_MAX); }
 
         // from time_t: seconds since the Epoch 00:00:00 UTC, Jan 1, 1970)
 #if (!(defined(__VISAGECPP__) && __IBMCPP__ >= 400))
@@ -618,6 +652,12 @@ public:
         // resets time to 00:00:00, doesn't change the date
     wxDateTime& ResetTime();
 
+#if wxABI_VERSION >= 20802
+        // get the date part of this object only, i.e. the object which has the
+        // same date as this one but time of 00:00:00
+    wxDateTime GetDateOnly() const;
+#endif // wxABI 2.8.1+
+
         // the following functions don't change the values of the other
         // fields, i.e. SetMinute() won't change either hour or seconds value
 
@@ -687,6 +727,7 @@ public:
                                      Month month = Inv_Month,
                                      int year = Inv_Year);
 
+#if WXWIN_COMPATIBILITY_2_6
         // sets the date to the given day of the given week in the year,
         // returns true on success and false if given date doesn't exist (e.g.
         // numWeek is > 53)
@@ -699,6 +740,7 @@ public:
     wxDEPRECATED( wxDateTime GetWeek(wxDateTime_t numWeek,
                                      WeekDay weekday = Mon,
                                      WeekFlags flags = Monday_First) const );
+#endif // WXWIN_COMPATIBILITY_2_6
 
         // returns the date corresponding to the given week day of the given
         // week (in ISO notation) of the specified year
@@ -773,12 +815,10 @@ public:
     inline wxDateTime ToTimezone(const TimeZone& tz, bool noDST = false) const;
     wxDateTime& MakeTimezone(const TimeZone& tz, bool noDST = false);
 
-#if wxABI_VERSION >= 20602
         // interpret current value as being in another timezone and transform
         // it to local one
     inline wxDateTime FromTimezone(const TimeZone& tz, bool noDST = false) const;
     wxDateTime& MakeFromTimezone(const TimeZone& tz, bool noDST = false);
-#endif // ABI >= 2.6.2
 
         // transform to/from GMT/UTC
     wxDateTime ToUTC(bool noDST = false) const { return ToTimezone(UTC, noDST); }
@@ -787,12 +827,10 @@ public:
     wxDateTime ToGMT(bool noDST = false) const { return ToUTC(noDST); }
     wxDateTime& MakeGMT(bool noDST = false) { return MakeUTC(noDST); }
 
-#if wxABI_VERSION >= 20602
     wxDateTime FromUTC(bool noDST = false) const
         { return FromTimezone(UTC, noDST); }
     wxDateTime& MakeFromUTC(bool noDST = false)
         { return MakeFromTimezone(UTC, noDST); }
-#endif // ABI >= 2.6.2
 
         // is daylight savings time in effect at this moment according to the
         // rules of the specified country?
@@ -823,6 +861,9 @@ public:
         // if the value is out of range
     inline time_t GetTicks() const;
 
+        // get the century, same as GetCentury(GetYear())
+    int GetCentury(const TimeZone& tz = Local) const
+            { return GetCentury(GetYear(tz)); }
         // get the year (returns Inv_Year if date is invalid)
     int GetYear(const TimeZone& tz = Local) const
             { return GetTm(tz).year; }
@@ -1059,9 +1100,17 @@ public:
     // another one to get the current time broken down
     static struct tm *GetTmNow()
     {
+#ifdef __WXWINCE__
+        static struct tm l_CurrentTime;
+        return GetTmNow(&l_CurrentTime);
+#else
         time_t t = GetTimeNow();
         return localtime(&t);
+#endif
     }
+
+    // get current time using thread-safe function
+    static struct tm *GetTmNow(struct tm *tmstruct);
 
 private:
     // the current country - as it's the same for all program objects (unless
@@ -1096,8 +1145,12 @@ public:
     // constructors
     // ------------------------------------------------------------------------
 
+        // return the timespan for the given number of milliseconds
+    static wxTimeSpan Milliseconds(wxLongLong ms) { return wxTimeSpan(0, 0, 0, ms); }
+    static wxTimeSpan Millisecond() { return Milliseconds(1); }
+
         // return the timespan for the given number of seconds
-    static wxTimeSpan Seconds(long sec) { return wxTimeSpan(0, 0, sec); }
+    static wxTimeSpan Seconds(wxLongLong sec) { return wxTimeSpan(0, 0, sec); }
     static wxTimeSpan Second() { return Seconds(1); }
 
         // return the timespan for the given number of minutes
@@ -1124,8 +1177,8 @@ public:
         // milliseconds)
     inline wxTimeSpan(long hours,
                       long minutes = 0,
-                      long seconds = 0,
-                      long milliseconds = 0);
+                      wxLongLong seconds = 0,
+                      wxLongLong milliseconds = 0);
 
         // default copy ctor is ok
 
@@ -1454,7 +1507,7 @@ WX_DECLARE_USER_EXPORTED_OBJARRAY(wxDateTime, wxDateTimeArray, WXDLLIMPEXP_BASE)
 //     virtual methods to work with the holidays they correspond to.
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_BASE wxDateTimeHolidayAuthority;
+class WXDLLIMPEXP_FWD_BASE wxDateTimeHolidayAuthority;
 WX_DEFINE_USER_EXPORTED_ARRAY_PTR(wxDateTimeHolidayAuthority *,
                               wxHolidayAuthoritiesArray,
                               class WXDLLIMPEXP_BASE);
@@ -1545,7 +1598,8 @@ inline bool wxDateTime::IsInStdRange() const
 /* static */
 inline wxDateTime wxDateTime::Now()
 {
-    return wxDateTime(*GetTmNow());
+    struct tm tmstruct;
+    return wxDateTime(*GetTmNow(&tmstruct));
 }
 
 /* static */
@@ -1642,7 +1696,7 @@ inline time_t wxDateTime::GetTicks() const
         return (time_t)-1;
     }
 
-    return (time_t)((m_time / (long)TIME_T_FACTOR).GetLo())+WX_TIME_BASE_OFFSET ;
+    return (time_t)((m_time / (long)TIME_T_FACTOR).ToLong()) + WX_TIME_BASE_OFFSET;
 }
 
 inline bool wxDateTime::SetToLastWeekDay(WeekDay weekday,
@@ -1862,15 +1916,11 @@ wxDateTime::ToTimezone(const wxDateTime::TimeZone& tz, bool noDST) const
     MODIFY_AND_RETURN( MakeTimezone(tz, noDST) );
 }
 
-#if wxABI_VERSION >= 20602
-
 inline wxDateTime
 wxDateTime::FromTimezone(const wxDateTime::TimeZone& tz, bool noDST) const
 {
     MODIFY_AND_RETURN( MakeFromTimezone(tz, noDST) );
 }
-
-#endif // ABI >= 2.6.2
 
 // ----------------------------------------------------------------------------
 // wxTimeSpan construction
@@ -1878,8 +1928,8 @@ wxDateTime::FromTimezone(const wxDateTime::TimeZone& tz, bool noDST) const
 
 inline wxTimeSpan::wxTimeSpan(long hours,
                               long minutes,
-                              long seconds,
-                              long milliseconds)
+                              wxLongLong seconds,
+                              wxLongLong milliseconds)
 {
     // assign first to avoid precision loss
     m_diff = hours;
@@ -1902,7 +1952,9 @@ inline wxLongLong wxTimeSpan::GetSeconds() const
 
 inline int wxTimeSpan::GetMinutes() const
 {
-    return (GetSeconds() / 60l).GetLo();
+    // explicit cast to int suppresses a warning with CodeWarrior and possibly
+    // others (changing the return type to long from int is impossible in 2.8)
+    return (int)((GetSeconds() / 60l).GetLo());
 }
 
 inline int wxTimeSpan::GetHours() const

@@ -7,14 +7,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: laywin.cpp,v 1.23 2005/03/31 05:11:34 SC Exp $
+// RCS-ID:      $Id: laywin.cpp 35688 2005-09-25 19:59:19Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "laywin.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -163,12 +159,12 @@ void wxSashLayoutWindow::OnCalculateLayout(wxCalculateLayoutEvent& event)
     {
         // If not in query mode, resize the window.
         // TODO: add wxRect& form to wxWindow::SetSize
-        wxSize sz = GetSize();
+        wxSize sz2 = GetSize();
         wxPoint pos = GetPosition();
         SetSize(thisRect.x, thisRect.y, thisRect.width, thisRect.height);
 
         // Make sure the sash is erased when the window is resized
-        if ((pos.x != thisRect.x || pos.y != thisRect.y || sz.x != thisRect.width || sz.y != thisRect.height) &&
+        if ((pos.x != thisRect.x || pos.y != thisRect.y || sz2.x != thisRect.width || sz2.y != thisRect.height) &&
             (GetSashVisible(wxSASH_TOP) || GetSashVisible(wxSASH_RIGHT) || GetSashVisible(wxSASH_BOTTOM) || GetSashVisible(wxSASH_LEFT)))
             Refresh(true);
 

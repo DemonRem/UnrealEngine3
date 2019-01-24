@@ -1,20 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        memory.h
-// Purpose:     MDI classes
+// Name:        wx/memory.h
+// Purpose:     Memory operations
 // Author:      Arthur Seaton, Julian Smart
 // Modified by:
 // Created:     29/01/98
-// RCS-ID:      $Id: memory.h,v 1.47 2005/02/09 21:36:08 JS Exp $
+// RCS-ID:      $Id: memory.h 39634 2006-06-08 12:51:01Z ABX $
 // Copyright:   (c) 1998 Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MEMORYH__
 #define _WX_MEMORYH__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "memory.h"
-#endif
 
 #include "wx/defs.h"
 #include "wx/string.h"
@@ -74,33 +70,33 @@ WXDLLIMPEXP_BASE void wxDebugFree(void * buf, bool isVect = false);
 #if defined(__WXMSW__) && (defined(WXUSINGDLL) || defined(WXMAKINGDLL_BASE))
 inline void * operator new (size_t size, wxChar * fileName, int lineNum)
 {
-  return wxDebugAlloc(size, fileName, lineNum, FALSE, FALSE);
+    return wxDebugAlloc(size, fileName, lineNum, false, false);
 }
 
 inline void * operator new (size_t size)
 {
-  return wxDebugAlloc(size, NULL, 0, FALSE);
+    return wxDebugAlloc(size, NULL, 0, false);
 }
 
 inline void operator delete (void * buf)
 {
-  wxDebugFree(buf, FALSE);
+    wxDebugFree(buf, false);
 }
 
 #if wxUSE_ARRAY_MEMORY_OPERATORS
 inline void * operator new[] (size_t size)
 {
-  return wxDebugAlloc(size, NULL, 0, FALSE, TRUE);
+    return wxDebugAlloc(size, NULL, 0, false, true);
 }
 
 inline void * operator new[] (size_t size, wxChar * fileName, int lineNum)
 {
-  return wxDebugAlloc(size, fileName, lineNum, FALSE, TRUE);
+    return wxDebugAlloc(size, fileName, lineNum, false, true);
 }
 
 inline void operator delete[] (void * buf)
 {
-  wxDebugFree(buf, TRUE);
+    wxDebugFree(buf, true);
 }
 #endif // wxUSE_ARRAY_MEMORY_OPERATORS
 
@@ -375,4 +371,3 @@ void WXDLLIMPEXP_BASE wxTraceLevel(int level, const wxChar *fmt ...) ATTRIBUTE_P
 
 #endif
     // _WX_MEMORYH__
-

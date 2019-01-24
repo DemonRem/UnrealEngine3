@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXPLANE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -33,9 +33,9 @@ class NxPlane
 	/**
 	\brief Constructor from a normal and a distance
 	*/
-	NX_INLINE NxPlane(NxF32 nx, NxF32 ny, NxF32 nz, NxF32 d)
+	NX_INLINE NxPlane(NxF32 nx, NxF32 ny, NxF32 nz, NxF32 _d)
 		{
-		set(nx, ny, nz, d);
+		set(nx, ny, nz, _d);
 		}
 
 	/**
@@ -175,16 +175,16 @@ class NxPlane
 		return normal;
 		}
 
-	NX_INLINE void transform(const NxMat34 & transform, NxPlane & transformed) const
+	NX_INLINE void transform(const NxMat34 & _transform, NxPlane & transformed) const
 		{
-		transformed.normal = transform.M * normal;
-		transformed.d = d - (transform.t | transformed.normal);
+		transformed.normal = _transform.M * normal;
+		transformed.d = d - (_transform.t | transformed.normal);
 		}
 
-	NX_INLINE void inverseTransform(const NxMat34 & transform, NxPlane & transformed) const
+	NX_INLINE void inverseTransform(const NxMat34 & _transform, NxPlane & transformed) const
 		{
-		transformed.normal = transform.M % normal;
-		NxVec3 it = transform.M %  transform.t;
+		transformed.normal = _transform.M % normal;
+		NxVec3 it = _transform.M %  _transform.t;
 		transformed.d = d + (it | transformed.normal);
 		}
 
@@ -194,9 +194,9 @@ class NxPlane
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        generic/scrolwin.cpp
-// Purpose:     wxGenericScrolledWindow implementation
+// Name:        src/generic/scrlwing.cpp
+// Purpose:     wxScrolledWindow implementation
 // Author:      Julian Smart
 // Modified by: Vadim Zeitlin on 31.08.00: wxScrollHelper allows to implement.
 //              Ron Lee on 10.4.02:  virtual size / auto scrollbars et al.
 // Created:     01/02/97
-// RCS-ID:      $Id: scrlwing.cpp,v 1.69 2005/04/29 09:14:23 JS Exp $
+// RCS-ID:      $Id: scrlwing.cpp 55010 2008-08-07 15:58:51Z JS $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -18,14 +18,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "genscrolwin.h"
-#endif
-
-#ifdef __VMS
-#define XtDisplay XTDISPLAY
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -33,17 +25,23 @@
     #pragma hdrstop
 #endif
 
-#if !defined(__WXGTK__) || defined(__WXUNIVERSAL__)
-
-#include "wx/utils.h"
-#include "wx/dcclient.h"
-
 #include "wx/scrolwin.h"
-#include "wx/panel.h"
-#if wxUSE_TIMER
-#include "wx/timer.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/utils.h"
+    #include "wx/panel.h"
+    #include "wx/dcclient.h"
+    #if wxUSE_TIMER
+        #include "wx/timer.h"
+    #endif
+    #include "wx/sizer.h"
+    #include "wx/settings.h"
 #endif
-#include "wx/sizer.h"
+
+#ifdef __WXMAC__
+#include "wx/scrolbar.h"
+#endif
+
 #include "wx/recguard.h"
 
 #ifdef __WXMSW__
@@ -62,8 +60,6 @@
 # pragma message enable nosimpint
 #endif
 #endif
-
-IMPLEMENT_CLASS(wxScrolledWindow, wxGenericScrolledWindow)
 
 /*
     TODO PROPERTIES
@@ -230,7 +226,7 @@ bool wxScrollHelperEvtHandler::ProcessEvent(wxEvent& event)
         // normally, nothing more to do here - except if it was a paint event
         // which wasn't really processed, then we'll try to call our
         // OnDraw() below (from HandleOnPaint)
-        if ( m_hasDrawnWindow )
+        if ( m_hasDrawnWindow || event.IsCommandEvent() )
         {
             return true;
         }
@@ -243,6 +239,12 @@ bool wxScrollHelperEvtHandler::ProcessEvent(wxEvent& event)
     if ( evType == wxEVT_PAINT )
     {
         m_scrollHelper->HandleOnPaint((wxPaintEvent &)event);
+        return true;
+    }
+
+    if ( evType == wxEVT_CHILD_FOCUS )
+    {
+        m_scrollHelper->HandleOnChildFocus((wxChildFocusEvent &)event);
         return true;
     }
 
@@ -271,6 +273,7 @@ bool wxScrollHelperEvtHandler::ProcessEvent(wxEvent& event)
     else if ( evType == wxEVT_MOUSEWHEEL )
     {
         m_scrollHelper->HandleOnMouseWheel((wxMouseEvent &)event);
+        return true;
     }
 #endif // wxUSE_MOUSEWHEEL
     else if ( evType == wxEVT_CHAR )
@@ -288,6 +291,8 @@ bool wxScrollHelperEvtHandler::ProcessEvent(wxEvent& event)
 
 wxScrollHelper::wxScrollHelper(wxWindow *win)
 {
+    wxASSERT_MSG( win, _T("associated window can't be NULL in wxScrollHelper") );
+
     m_xScrollPixelsPerLine =
     m_yScrollPixelsPerLine =
     m_xScrollPosition =
@@ -313,8 +318,12 @@ wxScrollHelper::wxScrollHelper(wxWindow *win)
 
     m_handler = NULL;
 
-    if ( win )
-        SetWindow(win);
+    m_win = win;
+    
+    m_win->SetScrollHelper( this );
+
+    // by default, the associated window is also the target window
+    DoSetTargetWindow(win);
 }
 
 wxScrollHelper::~wxScrollHelper()
@@ -411,16 +420,6 @@ void wxScrollHelper::DeleteEvtHandler()
     }
 }
 
-void wxScrollHelper::SetWindow(wxWindow *win)
-{
-    wxCHECK_RET( win, _T("wxScrollHelper needs a window to scroll") );
-
-    m_win = win;
-
-    // by default, the associated window is also the target window
-    DoSetTargetWindow(win);
-}
-
 void wxScrollHelper::DoSetTargetWindow(wxWindow *target)
 {
     m_targetWindow = target;
@@ -471,21 +470,11 @@ void wxScrollHelper::HandleOnScroll(wxScrollWinEvent& event)
         return;
     }
 
-    int orient = event.GetOrientation();
-    if (orient == wxHORIZONTAL)
-    {
-        m_xScrollPosition += nScrollInc;
-        m_win->SetScrollPos(wxHORIZONTAL, m_xScrollPosition);
-    }
-    else
-    {
-        m_yScrollPosition += nScrollInc;
-        m_win->SetScrollPos(wxVERTICAL, m_yScrollPosition);
-    }
-
     bool needsRefresh = false;
+
     int dx = 0,
         dy = 0;
+    int orient = event.GetOrientation();
     if (orient == wxHORIZONTAL)
     {
        if ( m_xScrollingEnabled )
@@ -507,6 +496,30 @@ void wxScrollHelper::HandleOnScroll(wxScrollWinEvent& event)
         {
             needsRefresh = true;
         }
+    }
+
+    if ( !needsRefresh )
+    {
+        // flush all pending repaints before we change m_{x,y}ScrollPosition, as
+        // otherwise invalidated area could be updated incorrectly later when
+        // ScrollWindow() makes sure they're repainted before scrolling them
+#ifdef __WXMAC__
+        // wxWindowMac is taking care of making sure the update area is correctly
+        // set up, while not forcing an immediate redraw
+#else
+        m_targetWindow->Update();
+#endif
+    }
+
+    if (orient == wxHORIZONTAL)
+    {
+        m_xScrollPosition += nScrollInc;
+        m_win->SetScrollPos(wxHORIZONTAL, m_xScrollPosition);
+    }
+    else
+    {
+        m_yScrollPosition += nScrollInc;
+        m_win->SetScrollPos(wxVERTICAL, m_yScrollPosition);
     }
 
     if ( needsRefresh )
@@ -655,7 +668,7 @@ void wxScrollHelper::AdjustScrollbars()
     do
     {
         iterationCount ++;
-        
+
         GetTargetSize(&w, 0);
 
         // scroll lines per page: if 0, no scrolling is needed
@@ -824,8 +837,17 @@ void wxScrollHelper::AdjustScrollbars()
 void wxScrollHelper::DoPrepareDC(wxDC& dc)
 {
     wxPoint pt = dc.GetDeviceOrigin();
-    dc.SetDeviceOrigin( pt.x - m_xScrollPosition * m_xScrollPixelsPerLine,
-                        pt.y - m_yScrollPosition * m_yScrollPixelsPerLine );
+#ifdef __WXGTK__
+    // It may actually be correct to always query
+    // the m_sign from the DC here, but I leve the
+    // #ifdef GTK for now.
+    if (m_win->GetLayoutDirection() == wxLayout_RightToLeft)
+        dc.SetDeviceOrigin( pt.x + m_xScrollPosition * m_xScrollPixelsPerLine,
+                            pt.y - m_yScrollPosition * m_yScrollPixelsPerLine );
+    else
+#endif
+        dc.SetDeviceOrigin( pt.x - m_xScrollPosition * m_xScrollPixelsPerLine,
+                            pt.y - m_yScrollPosition * m_yScrollPixelsPerLine );
     dc.SetUserScale( m_scaleX, m_scaleY );
 }
 
@@ -855,6 +877,15 @@ void wxScrollHelper::GetScrollPixelsPerUnit (int *x_unit, int *y_unit) const
         *y_unit = m_yScrollPixelsPerLine;
 }
 
+
+int wxScrollHelper::GetScrollLines( int orient ) const
+{
+    if ( orient == wxHORIZONTAL )
+        return m_xScrollLines;
+    else
+        return m_yScrollLines;
+}
+
 int wxScrollHelper::GetScrollPageSize(int orient) const
 {
     if ( orient == wxHORIZONTAL )
@@ -882,50 +913,67 @@ void wxScrollHelper::Scroll( int x_pos, int y_pos )
     if (((x_pos == -1) || (x_pos == m_xScrollPosition)) &&
         ((y_pos == -1) || (y_pos == m_yScrollPosition))) return;
 
-    int w, h;
+    int w = 0, h = 0;
     GetTargetSize(&w, &h);
+
+    // compute new position:
+    int new_x = m_xScrollPosition;
+    int new_y = m_yScrollPosition;
 
     if ((x_pos != -1) && (m_xScrollPixelsPerLine))
     {
-        int old_x = m_xScrollPosition;
-        m_xScrollPosition = x_pos;
+        new_x = x_pos;
 
         // Calculate page size i.e. number of scroll units you get on the
         // current client window
-        int noPagePositions = (int) ( (w/(double)m_xScrollPixelsPerLine) + 0.5 );
+        int noPagePositions = w/m_xScrollPixelsPerLine;
         if (noPagePositions < 1) noPagePositions = 1;
 
         // Correct position if greater than extent of canvas minus
         // the visible portion of it or if below zero
-        m_xScrollPosition = wxMin( m_xScrollLines-noPagePositions, m_xScrollPosition );
-        m_xScrollPosition = wxMax( 0, m_xScrollPosition );
-
-        if (old_x != m_xScrollPosition) {
-            m_win->SetScrollPos( wxHORIZONTAL, m_xScrollPosition );
-            m_targetWindow->ScrollWindow( (old_x-m_xScrollPosition)*m_xScrollPixelsPerLine, 0,
-                                          GetScrollRect() );
-        }
+        new_x = wxMin( m_xScrollLines-noPagePositions, new_x );
+        new_x = wxMax( 0, new_x );
     }
     if ((y_pos != -1) && (m_yScrollPixelsPerLine))
     {
-        int old_y = m_yScrollPosition;
-        m_yScrollPosition = y_pos;
+        new_y = y_pos;
 
         // Calculate page size i.e. number of scroll units you get on the
         // current client window
-        int noPagePositions = (int) ( (h/(double)m_yScrollPixelsPerLine) + 0.5 );
+        int noPagePositions = h/m_yScrollPixelsPerLine;
         if (noPagePositions < 1) noPagePositions = 1;
 
         // Correct position if greater than extent of canvas minus
         // the visible portion of it or if below zero
-        m_yScrollPosition = wxMin( m_yScrollLines-noPagePositions, m_yScrollPosition );
-        m_yScrollPosition = wxMax( 0, m_yScrollPosition );
+        new_y = wxMin( m_yScrollLines-noPagePositions, new_y );
+        new_y = wxMax( 0, new_y );
+    }
 
-        if (old_y != m_yScrollPosition) {
-            m_win->SetScrollPos( wxVERTICAL, m_yScrollPosition );
-            m_targetWindow->ScrollWindow( 0, (old_y-m_yScrollPosition)*m_yScrollPixelsPerLine,
-                                          GetScrollRect() );
-        }
+    if ( new_x == m_xScrollPosition && new_y == m_yScrollPosition )
+        return; // nothing to do, the position didn't change
+
+    // flush all pending repaints before we change m_{x,y}ScrollPosition, as
+    // otherwise invalidated area could be updated incorrectly later when
+    // ScrollWindow() makes sure they're repainted before scrolling them
+    m_targetWindow->Update();
+
+    // update the position and scroll the window now:
+    if (m_xScrollPosition != new_x)
+    {
+        int old_x = m_xScrollPosition;
+        m_xScrollPosition = new_x;
+        m_win->SetScrollPos( wxHORIZONTAL, new_x );
+        m_targetWindow->ScrollWindow( (old_x-new_x)*m_xScrollPixelsPerLine, 0,
+                                      GetScrollRect() );
+    }
+
+    if (m_yScrollPosition != new_y)
+    {
+        int old_y = m_yScrollPosition;
+        m_yScrollPosition = new_y;
+        m_win->SetScrollPos( wxVERTICAL, new_y );
+        m_targetWindow->ScrollWindow( 0, (old_y-new_y)*m_yScrollPixelsPerLine,
+                                      GetScrollRect() );
     }
 }
 
@@ -944,15 +992,6 @@ void wxScrollHelper::GetViewStart (int *x, int *y) const
         *y = m_yScrollPosition;
 }
 
-#if WXWIN_COMPATIBILITY_2_2
-
-void wxScrollHelper::ViewStart(int *x, int *y) const
-{
-    GetViewStart( x, y );
-}
-
-#endif // WXWIN_COMPATIBILITY_2_2
-
 void wxScrollHelper::DoCalcScrolledPosition(int x, int y, int *xx, int *yy) const
 {
     if ( xx )
@@ -970,6 +1009,69 @@ void wxScrollHelper::DoCalcUnscrolledPosition(int x, int y, int *xx, int *yy) co
 }
 
 // ----------------------------------------------------------------------------
+// geometry
+// ----------------------------------------------------------------------------
+
+bool wxScrollHelper::ScrollLayout()
+{
+    if ( m_win->GetSizer() && m_targetWindow == m_win )
+    {
+        // If we're the scroll target, take into account the
+        // virtual size and scrolled position of the window.
+
+        int x = 0, y = 0, w = 0, h = 0;
+        CalcScrolledPosition(0,0, &x,&y);
+        m_win->GetVirtualSize(&w, &h);
+        m_win->GetSizer()->SetDimension(x, y, w, h);
+        return true;
+    }
+
+    // fall back to default for LayoutConstraints
+    return m_win->wxWindow::Layout();
+}
+
+void wxScrollHelper::ScrollDoSetVirtualSize(int x, int y)
+{
+    m_win->wxWindow::DoSetVirtualSize( x, y );
+    AdjustScrollbars();
+
+    if (m_win->GetAutoLayout())
+        m_win->Layout();
+}
+
+// wxWindow's GetBestVirtualSize returns the actual window size,
+// whereas we want to return the virtual size
+wxSize wxScrollHelper::ScrollGetBestVirtualSize() const
+{
+    wxSize clientSize(m_win->GetClientSize());
+    if ( m_win->GetSizer() )
+        clientSize.IncTo(m_win->GetSizer()->CalcMin());
+
+    return clientSize;
+}
+
+// return the window best size from the given best virtual size
+wxSize
+wxScrollHelper::ScrollGetWindowSizeForVirtualSize(const wxSize& size) const
+{
+    // Only use the content to set the window size in the direction
+    // where there's no scrolling; otherwise we're going to get a huge
+    // window in the direction in which scrolling is enabled
+    int ppuX, ppuY;
+    GetScrollPixelsPerUnit(&ppuX, &ppuY);
+
+    wxSize minSize = m_win->GetMinSize();
+
+    wxSize best(size);
+    if (ppuX > 0)
+        best.x = minSize.x + wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
+    if (ppuY > 0)
+        best.y = minSize.y + wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+
+    return best;
+}
+
+// ----------------------------------------------------------------------------
 // event handlers
 // ----------------------------------------------------------------------------
 
@@ -979,7 +1081,7 @@ void wxScrollHelper::HandleOnSize(wxSizeEvent& WXUNUSED(event))
     if ( m_targetWindow->GetAutoLayout() )
     {
         wxSize size = m_targetWindow->GetBestVirtualSize();
-        
+
         // This will call ::Layout() and ::AdjustScrollbars()
         m_win->SetVirtualSize( size );
     }
@@ -1006,9 +1108,9 @@ void wxScrollHelper::HandleOnPaint(wxPaintEvent& WXUNUSED(event))
 // this they always have the priority
 void wxScrollHelper::HandleOnChar(wxKeyEvent& event)
 {
-    int stx, sty,       // view origin
-        szx, szy,       // view size (total)
-        clix, cliy;     // view size (on screen)
+    int stx = 0, sty = 0,       // view origin
+        szx = 0, szy = 0,       // view size (total)
+        clix = 0, cliy = 0;     // view size (on screen)
 
     GetViewStart(&stx, &sty);
     GetTargetSize(&clix, &cliy);
@@ -1042,13 +1144,11 @@ void wxScrollHelper::HandleOnChar(wxKeyEvent& event)
     switch ( event.GetKeyCode() )
     {
         case WXK_PAGEUP:
-        case WXK_PRIOR:
             dsty = sty - (5 * cliy / 6);
             Scroll(-1, (dsty == -1) ? 0 : dsty);
             break;
 
         case WXK_PAGEDOWN:
-        case WXK_NEXT:
             Scroll(-1, sty + (5 * cliy / 6));
             break;
 
@@ -1240,17 +1340,139 @@ void wxScrollHelper::HandleOnMouseWheel(wxMouseEvent& event)
 
 #endif // wxUSE_MOUSEWHEEL
 
+void wxScrollHelper::HandleOnChildFocus(wxChildFocusEvent& event)
+{
+    // this event should be processed by all windows in parenthood chain,
+    // e.g. so that nested wxScrolledWindows work correctly
+    event.Skip();
+
+    // find the immediate child under which the window receiving focus is:
+    wxWindow *win = event.GetWindow();
+
+    if ( win == m_targetWindow )
+        return; // nothing to do
+
+#ifdef __WXMAC__
+    if (wxDynamicCast(win, wxScrollBar))
+        return;
+#endif
+
+    // Fixing ticket: http://trac.wxwidgets.org/ticket/9563
+    // When a child inside a wxControlContainer receives a focus, the
+    // wxControlContainer generates an artificial wxChildFocusEvent for
+    // itself, telling its parent that 'it' received the focus. The effect is
+    // that this->HandleOnChildFocus is called twice, first with the
+    // artificial wxChildFocusEvent and then with the original event.  We need
+    // to ignore the artificial event here or otherwise HandleOnChildFocus
+    // would first scroll the target window to make the entire
+    // wxControlContainer visible and immediately afterwards scroll the target
+    // window again to make the child widget visible. This leads to ugly
+    // flickering when using nested wxPanels/wxScrolledWindows.
+    //
+    // Ignore this event if 'win' is derived from wxControlContainer AND its
+    // parent is the m_targetWindow AND 'win' is not actually reciving the
+    // focus (win != FindFocus).  TODO: This affects all wxControlContainer
+    // objects, but wxControlContainer is not part of the wxWidgets RTTI and
+    // so wxDynamicCast(win, wxControlContainer) does not compile.  Find a way
+    // to determine if 'win' derives from wxControlContainer. Until then,
+    // testing if 'win' derives from wxPanel will probably get >90% of all
+    // cases.
+
+    wxWindow *actual_focus=wxWindow::FindFocus();
+    if (win != actual_focus &&
+        wxDynamicCast(win, wxPanel) != 0 &&
+        win->GetParent() == m_targetWindow)
+        // if win is a wxPanel and receives the focus, it should not be
+        // scrolled into view
+        return; 
+
+    wxSize view(m_targetWindow->GetClientSize());
+
+    // For composite controls such as wxComboCtrl we should try to fit the
+    // entire control inside the visible area of the target window, not just
+    // the focused child of the control. Otherwise we'd make only the textctrl
+    // part of a wxComboCtrl visible and the button would still be outside the
+    // scrolled area.  But do so only if the parent fits *entirely* inside the
+    // scrolled window. In other situations, such as nested wxPanel or
+    // wxScrolledWindows, the parent might be way to big to fit inside the
+    // scrolled window. If that is the case, then make only the focused window
+    // visible
+    if ( win->GetParent() != m_targetWindow)
+    {
+        wxWindow *parent=win->GetParent();
+        wxSize parent_size=parent->GetSize();
+        if (parent_size.GetWidth() <= view.GetWidth() &&
+            parent_size.GetHeight() <= view.GetHeight())
+            // make the immediate parent visible instead of the focused control
+            win=parent; 
+    }
+
+    // if the child is not fully visible, try to scroll it into view:
+    int stepx, stepy;
+    GetScrollPixelsPerUnit(&stepx, &stepy);
+
+    // 'win' position coordinates are relative to it's parent
+    // convert them so that they are relative to the m_targetWindow viewing area
+    wxRect winrect(m_targetWindow->ScreenToClient(win->GetScreenPosition()),
+                   win->GetSize());
+
+    int startx, starty;
+    GetViewStart(&startx, &starty);
+
+    // first in vertical direction:
+    if ( stepy > 0 )
+    {
+        int diff = 0;
+
+        if ( winrect.GetTop() < 0 )
+        {
+            diff = winrect.GetTop();
+        }
+        else if ( winrect.GetBottom() > view.y )
+        {
+            diff = winrect.GetBottom() - view.y + 1;
+            // round up to next scroll step if we can't get exact position,
+            // so that the window is fully visible:
+            diff += stepy - 1;
+        }
+
+        starty = (starty * stepy + diff) / stepy;
+    }
+
+    // then horizontal:
+    if ( stepx > 0 )
+    {
+        int diff = 0;
+
+        if ( winrect.GetLeft() < 0 )
+        {
+            diff = winrect.GetLeft();
+        }
+        else if ( winrect.GetRight() > view.x )
+        {
+            diff = winrect.GetRight() - view.x + 1;
+            // round up to next scroll step if we can't get exact position,
+            // so that the window is fully visible:
+            diff += stepx - 1;
+        }
+
+        startx = (startx * stepx + diff) / stepx;
+    }
+
+    Scroll(startx, starty);
+}
+
 // ----------------------------------------------------------------------------
-// wxGenericScrolledWindow implementation
+// wxScrolledWindow implementation
 // ----------------------------------------------------------------------------
 
-IMPLEMENT_DYNAMIC_CLASS(wxGenericScrolledWindow, wxPanel)
+IMPLEMENT_DYNAMIC_CLASS(wxScrolledWindow, wxPanel)
 
-BEGIN_EVENT_TABLE(wxGenericScrolledWindow, wxPanel)
-    EVT_PAINT(wxGenericScrolledWindow::OnPaint)
+BEGIN_EVENT_TABLE(wxScrolledWindow, wxPanel)
+    EVT_PAINT(wxScrolledWindow::OnPaint)
 END_EVENT_TABLE()
 
-bool wxGenericScrolledWindow::Create(wxWindow *parent,
+bool wxScrolledWindow::Create(wxWindow *parent,
                               wxWindowID id,
                               const wxPoint& pos,
                               const wxSize& size,
@@ -1267,92 +1489,11 @@ bool wxGenericScrolledWindow::Create(wxWindow *parent,
     return ok;
 }
 
-wxGenericScrolledWindow::~wxGenericScrolledWindow()
+wxScrolledWindow::~wxScrolledWindow()
 {
 }
 
-bool wxGenericScrolledWindow::Layout()
-{
-    if (GetSizer() && m_targetWindow == this)
-    {
-        // If we're the scroll target, take into account the
-        // virtual size and scrolled position of the window.
-
-        int x, y, w, h;
-        CalcScrolledPosition(0,0, &x,&y);
-        GetVirtualSize(&w, &h);
-        GetSizer()->SetDimension(x, y, w, h);
-        return true;
-    }
-
-    // fall back to default for LayoutConstraints
-    return wxPanel::Layout();
-}
-
-void wxGenericScrolledWindow::DoSetVirtualSize(int x, int y)
-{
-    wxPanel::DoSetVirtualSize( x, y );
-    AdjustScrollbars();
-
-    if (GetAutoLayout())
-        Layout();
-}
-
-// wxWindow's GetBestVirtualSize returns the actual window size,
-// whereas we want to return the virtual size
-wxSize wxGenericScrolledWindow::GetBestVirtualSize() const
-{
-    wxSize  clientSize( GetClientSize() );
-    if (GetSizer())
-    {
-        wxSize minSize( GetSizer()->CalcMin() );
-
-        return wxSize( wxMax( clientSize.x, minSize.x ), wxMax( clientSize.y, minSize.y ) );
-    }
-    else
-        return clientSize;
-}
-
-// return the size best suited for the current window
-// (this isn't a virtual size, this is a sensible size for the window)
-wxSize wxGenericScrolledWindow::DoGetBestSize() const
-{
-    wxSize best;
-
-    if ( GetSizer() )
-    {
-        wxSize b = GetSizer()->GetMinSize();
-
-        // Only use the content to set the window size in the direction
-        // where there's no scrolling; otherwise we're going to get a huge
-        // window in the direction in which scrolling is enabled
-        int ppuX, ppuY;
-        GetScrollPixelsPerUnit(& ppuX, & ppuY);
-
-        wxSize minSize;
-        if ( GetMinSize().IsFullySpecified() )
-            minSize = GetMinSize();
-        else
-            minSize = GetSize();
-
-        if (ppuX > 0)
-            b.x = minSize.x;
-        if (ppuY > 0)
-            b.y = minSize.y;
-        best = b;
-    }
-    else
-        return wxWindow::DoGetBestSize();
-
-    // Add any difference between size and client size
-    wxSize diff = GetSize() - GetClientSize();
-    best.x += wxMax(0, diff.x);
-    best.y += wxMax(0, diff.y);
-
-    return best;
-}
-
-void wxGenericScrolledWindow::OnPaint(wxPaintEvent& event)
+void wxScrolledWindow::OnPaint(wxPaintEvent& event)
 {
     // the user code didn't really draw the window if we got here, so set this
     // flag to try to call OnDraw() later
@@ -1362,8 +1503,7 @@ void wxGenericScrolledWindow::OnPaint(wxPaintEvent& event)
 }
 
 #ifdef __WXMSW__
-WXLRESULT
-wxGenericScrolledWindow::MSWWindowProc(WXUINT nMsg,
+WXLRESULT wxScrolledWindow::MSWWindowProc(WXUINT nMsg,
                                        WXWPARAM wParam,
                                        WXLPARAM lParam)
 {
@@ -1381,7 +1521,3 @@ wxGenericScrolledWindow::MSWWindowProc(WXUINT nMsg,
 }
 
 #endif // __WXMSW__
-
-#endif // !wxGTK
-
-// vi:sts=4:sw=4:et

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/radiobut.cpp
+// Name:        src/msw/radiobut.cpp
 // Purpose:     wxRadioButton
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: radiobut.cpp,v 1.58 2005/05/18 02:22:59 RD Exp $
+// RCS-ID:      $Id: radiobut.cpp 55212 2008-08-23 18:38:24Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "radiobut.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,8 +26,9 @@
 
 #if wxUSE_RADIOBTN
 
+#include "wx/radiobut.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/radiobut.h"
     #include "wx/settings.h"
     #include "wx/dcscreen.h"
 #endif
@@ -123,18 +120,14 @@ bool wxRadioButton::Create(wxWindow *parent,
     if ( HasFlag(wxRB_GROUP) )
         msStyle |= WS_GROUP;
 
-    /*
-       wxRB_SINGLE is a temporary workaround for the following problem: if you
-       have 2 radiobuttons in the same group but which are not consecutive in
-       the dialog, Windows can enter an infinite loop! The simplest way to
-       reproduce it is to create radio button, then a panel and then another
-       radio button: then checking the last button hangs the app.
-
-       Ideally, we'd detect (and avoid) such situation automatically but for
-       now, as I don't know how to do it, just allow the user to create
-       BS_RADIOBUTTON buttons for such situations.
-     */
-    msStyle |= HasFlag(wxRB_SINGLE) ? BS_RADIOBUTTON : BS_AUTORADIOBUTTON;
+    // we use BS_RADIOBUTTON and not BS_AUTORADIOBUTTON because the use of the
+    // latter can easily result in the application entering an infinite loop
+    // inside IsDialogMessage()
+    //
+    // we used to use BS_RADIOBUTTON only for wxRB_SINGLE buttons but there
+    // doesn't seem to be any harm to always use it and it prevents some hangs,
+    // see #9786
+    msStyle |= BS_RADIOBUTTON;
 
     if ( HasFlag(wxCLIP_SIBLINGS) )
         msStyle |= WS_CLIPSIBLINGS;
@@ -146,7 +139,7 @@ bool wxRadioButton::Create(wxWindow *parent,
 
     // for compatibility with wxGTK, the first radio button in a group is
     // always checked (this makes sense anyhow as you need to ensure that at
-    // least one button in the group is checked and this is the simlpest way to
+    // least one button in the group is checked and this is the simplest way to
     // do it)
     if ( HasFlag(wxRB_GROUP) )
         SetValue(true);
@@ -168,8 +161,8 @@ void wxRadioButton::SetValue(bool value)
     // buttons in the same group: Windows doesn't do it automatically
     if ( m_isChecked )
     {
-        // If another radiobutton in the group currently has the focus, we have to 
-        // set it to this radiobutton, else the old readiobutton will be reselected
+        // If another radiobutton in the group currently has the focus, we have to
+        // set it to this radiobutton, else the old radiobutton will be reselected
         // automatically, if a parent window loses the focus and regains it.
         bool shouldSetFocus = false;
         wxWindow* pFocusWnd = FindFocus();
@@ -193,7 +186,7 @@ void wxRadioButton::SetValue(bool value)
                     // A wxRB_SINGLE button isn't part of this group
                     break;
                 }
-                
+
                 if (btn)
                 {
                     if (btn == pFocusWnd)
@@ -264,9 +257,8 @@ bool wxRadioButton::MSWCommand(WXUINT param, WXWORD WXUNUSED(id))
 
     if ( !m_isChecked )
     {
-        // we have to do this for BS_RADIOBUTTON anyhow and, strangely enough,
-        // sometimes this is needed even for BS_AUTORADIOBUTTON (when we
-        // receive focus the button gets BN_CLICKED but stays unchecked!)
+        // we need to manually update the button state as we use BS_RADIOBUTTON
+        // and not BS_AUTORADIOBUTTON
         SetValue(true);
 
         wxCommandEvent event(wxEVT_COMMAND_RADIOBUTTON_SELECTED, GetId());
@@ -300,7 +292,7 @@ wxSize wxRadioButton::DoGetBestSize() const
     int wRadio, hRadio;
     if ( !str.empty() )
     {
-        GetTextExtent(str, &wRadio, &hRadio);
+        GetTextExtent(GetLabelText(str), &wRadio, &hRadio);
         wRadio += s_radioSize + GetCharWidth();
 
         if ( hRadio < s_radioSize )
@@ -317,5 +309,14 @@ wxSize wxRadioButton::DoGetBestSize() const
     return best;
 }
 
-#endif // wxUSE_RADIOBTN
+WXDWORD wxRadioButton::MSWGetStyle(long style, WXDWORD *exstyle) const
+{
+    WXDWORD styleMSW = wxControl::MSWGetStyle(style, exstyle);
 
+    if ( style & wxRB_GROUP )
+        styleMSW |= WS_GROUP;
+
+    return styleMSW;
+}
+
+#endif // wxUSE_RADIOBTN

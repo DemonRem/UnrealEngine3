@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXBOXCONTROLLER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -34,7 +34,11 @@ class NxBoxControllerDesc : public NxControllerDesc
 
 	\return True if the descriptor is valid.
 	*/
-	NX_INLINE virtual	bool				isValid()		const;
+	NX_INLINE virtual	bool				isValid()		const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 						/**
 						\brief The extents of the box controller.
@@ -58,19 +62,17 @@ NX_INLINE NxBoxControllerDesc::~NxBoxControllerDesc()
 NX_INLINE void NxBoxControllerDesc::setToDefault()
 	{
 	NxControllerDesc::setToDefault();
-  extents.x = 0.5f;
-  extents.y = 1.0f;
-  extents.z = 0.5f;
-
+	extents.x = 0.5f;
+	extents.y = 1.0f;
+	extents.z = 0.5f;
 	}
 
-NX_INLINE bool NxBoxControllerDesc::isValid() const
+NX_INLINE NxU32 NxBoxControllerDesc::checkValid() const
 	{
-	if(!NxControllerDesc::isValid())	return false;
-	if(extents.x<=0.0f)					return false;
-	if(extents.y<=0.0f)					return false;
-	if(extents.z<=0.0f)					return false;
-	return true;
+	if(extents.x<=0.0f)					return 1;
+	if(extents.y<=0.0f)					return 2;
+	if(extents.z<=0.0f)					return 3;
+	return 4*NxControllerDesc::checkValid();
 	}
 
 /**
@@ -123,9 +125,9 @@ class NxBoxController : public NxController
 	};
 
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

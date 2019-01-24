@@ -1,23 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        tabg.cpp
+// Name:        src/generic/tabg.cpp
 // Purpose:     Generic tabbed dialogs
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: tabg.cpp,v 1.26 2005/08/25 21:58:22 CE Exp $
+// RCS-ID:      $Id: tabg.cpp 39745 2006-06-15 17:58:49Z ABX $
 // Copyright:   (c)
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "tabg.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_TAB_DIALOG
@@ -26,17 +22,17 @@
     #include "wx/settings.h"
     #include "wx/intl.h"
     #include "wx/dcclient.h"
+    #include "wx/math.h"
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "wx/math.h"
 #include "wx/tab.h"
 #include "wx/listimpl.cpp"
 
-WX_DEFINE_LIST(wxTabLayerList);
+WX_DEFINE_LIST(wxTabLayerList)
 
 // not defined: use old, square tab implementation (fills in tabs)
 // defined: use new, rounded tab implementation (doesn't colour in tabs)

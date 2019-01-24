@@ -4,7 +4,7 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: pile.h,v 1.6 2004/10/05 15:38:08 ABX Exp $
+// RCS-ID:      $Id: pile.h 29660 2004-10-05 15:38:40Z ABX $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 //---------------------------------------------------------------------------

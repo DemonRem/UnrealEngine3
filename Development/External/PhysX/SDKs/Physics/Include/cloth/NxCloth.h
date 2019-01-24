@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -37,9 +37,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc
 	*/
@@ -52,9 +53,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.clothMesh
 	*/
@@ -67,9 +69,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.bendingStiffness getBendingStiffness()
 	*/
@@ -82,9 +85,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.bendingStiffness setBendingStiffness()
 	*/
@@ -99,9 +103,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.stretchingStiffness getStretchingStiffness()
 	*/
@@ -114,13 +119,32 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.stretchingStiffness setStretchingStiffness()
 	*/
 	virtual NxReal getStretchingStiffness() const = 0;
+
+	/**
+	\brief Sets the cloth hard stretch elongation limit
+
+	\param[in] factor Hard stretch elongation limit.
+
+	@see NxClothDesc.hardStretchLimitationFactor NxCloth.setHardStretchLimitationFactor()
+	*/
+	virtual void setHardStretchLimitationFactor(NxReal factor) = 0;
+
+	/**
+	\brief Retrieves the cloth hard stretch elongation limit.
+
+	\return Hard stretch elongation limit.
+
+	@see NxClothDesc.hardStretchLimitationFactor NxCloth.getHardStretchLimitationFactor()
+	*/
+	virtual NxReal getHardStretchLimitationFactor() const = 0;
 
 	/**
 	\brief Sets the damping coefficient in the range from 0 to 1.
@@ -129,9 +153,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.dampingCoefficient getDampingCoefficient()
 	*/
@@ -144,9 +169,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxClothDesc.dampingCoefficient setDampingCoefficient()
 	*/
@@ -159,9 +185,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.friction getFriction()
 	*/
@@ -174,9 +201,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	
 	@see NxClothDesc.friction setFriction()
 	*/
@@ -189,9 +217,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.pressure getPressure()
 	*/
@@ -204,9 +233,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.pressure setPressure()
 	*/
@@ -219,9 +249,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.tearFactor getTearFactor()
 	*/
@@ -234,9 +265,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.tearFactor setTearFactor()
 	*/
@@ -249,9 +281,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.attachmentTearFactor getAttachmentTearFactor()
 	*/
@@ -264,9 +297,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.attachmentTearFactor setAttachmentTearFactor()
 	*/
@@ -279,9 +313,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.thickness getThickness()
 	*/
@@ -294,13 +329,44 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.thickness setThickness()
 	*/
 	virtual NxReal getThickness() const = 0;
+
+	/**
+	\brief Sets the cloth self collision thickness (must be positive).
+
+	\param[in] selfCollisionThickness The particle diameter to use for self collision.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+
+	@see NxClothDesc.selfCollisionThickness getSelfCollisionThickness()
+	*/
+	virtual void setSelfCollisionThickness(NxReal selfCollisionThickness) = 0;
+
+	/**
+	\brief Gets the cloth self collision thickness.
+
+	\return The particle diameter used for self collision.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Maybe
+	\li XB360: Maybe
+
+	@see NxClothDesc.selfCollisionThickness setSelfCollisionThickness()
+	*/
+	virtual NxReal getSelfCollisionThickness() const = 0;
 
 	/**
 	\brief Gets the cloth density.
@@ -309,9 +375,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.density
 	*/
@@ -327,9 +394,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.relativeGridSpacing
 	*/
@@ -342,13 +410,34 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.solverIterations setSolverIterations()
 	*/
 	virtual NxU32 getSolverIterations() const = 0;
+
+	/**
+	\brief Retrieves the number of iterations of the hierarchical cloth solver.
+
+	For the this value to have an effect, the parameter NxClothMeshDesc.numHierarchyLevels
+	must be greater then one when cooking the cloth mesh. In this case, the hierarchical
+	cloth solver uses the mesh hierarchy to speed up convergence, i.e. makes large
+	pieces of cloth less stretchy.
+
+	\return number of iterations of the hierarchical cloth solver.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+
+	@see NxClothDesc.hierarchicalSolverIterations setHierarchicalSolverIterations() NxClothMeshDesc.numHierarchyLevels
+	*/
+	virtual NxU32 getHierarchicalSolverIterations() const = 0;
 
 	/**
 	\brief Sets the cloth solver iterations.
@@ -357,13 +446,34 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.solverIterations getSolverIterations()
 	*/
 	virtual void setSolverIterations(NxU32 iterations) = 0;
+
+	/**
+	\brief Sets the number of iterations of the hierarchical cloth solver.
+
+	For the this value to have an effect, the parameter NxClothMeshDesc.numHierarchyLevels
+	must be greater then one when cooking the cloth mesh. In this case, the hierarchical
+	cloth solver uses the mesh hierarchy to speed up convergence, i.e. makes large
+	pieces of cloth less stretchy.
+
+	\param[in] number of iterations of the hierarchical cloth solver.
+	
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: Yes
+
+	@see NxClothDesc.hierarchicalSolverIterations getHierarchicalSolverIterations() NxClothMeshDesc.numHierarchyLevels
+	*/
+	virtual void setHierarchicalSolverIterations(NxU32 iterations) = 0;
 
 	/**
 	\brief Returns a world space AABB enclosing all cloth points.
@@ -372,9 +482,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3
 	*/
@@ -391,9 +502,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothAttachmentFlag freeVertex() attachToCollidingShapes()
 	*/
@@ -409,9 +521,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothAttachmentFlag NxClothDesc.attachmentTearFactor NxClothDesc.attachmentResponseCoefficient freeVertex()
 	*/
@@ -426,9 +539,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothAttachmentFlag NxClothDesc.attachmentTearFactor NxClothDesc.attachmentResponseCoefficient freeVertex() attachToShape()
 	*/
@@ -444,9 +558,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShape freeVertex() NxClothAttachmentFlag attachToShape()
 	*/
@@ -460,9 +575,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothAttachmentFlag NxClothDesc.attachmentTearFactor NxClothDesc.attachmentResponseCoefficient freeVertex() attachToShape()
 	*/
@@ -475,13 +591,105 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see attachVertexToGlobalPosition() attachVertexToShape() detachFromShape()
 	*/
 	virtual void freeVertex(const NxU32 vertexId) = 0;
+
+	/**
+	\brief Changes the weight of a vertex in the cloth solver for a period of time.
+
+	If this method is called for some vertex, the cloth solver will, during a time
+	period of length expirationTime, assign a different weight to the vertex
+	while internal cloth constraints (i.e. bending & stretching) are being resolved.
+
+	With a high dominanceWeight, the modified vertex will force neighboring vertices
+	to strongly accommodate their positions while its own is kept fairly constant. 
+	The reverse holds for smaller dominanceWeights. 
+
+	Using a dominanceWeight of +infinity has a similar effect as temporarily attaching 
+	the vertex to a global position. However, unlike using attachments, the velocity 
+	of the vertex is kept intact when using this method.
+
+	\note The current implementation will not support the full range of dominanceWeights.
+	All dominanceWeights > 0.0 are treated equally as being +infinity.
+
+	\note An expiration time of 0.0 is legal and will result in dominance being
+	applied throughout one substep before being discarded immediately.
+
+	\note Having a large number of vertices dominant at once may result in a performance penalty.
+
+	\param[in] vertexId Index of the vertex.
+	\param[in] expirationTime Time period where dominance will be active for this vertex.
+	\param[in] dominanceWeight Dominance weight for this vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see attachVertexToGlobalPosition()
+	*/
+	virtual void dominateVertex(NxU32 vertexId, NxReal expirationTime, NxReal dominanceWeight) = 0;
+
+	/**
+	\brief Return the attachment status of the given vertex.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getVertexAttachmentShape() getVertexAttachmentPosition()
+	*/
+	virtual NxClothVertexAttachmentStatus getVertexAttachmentStatus(NxU32 vertexId) const = 0;
+
+	/**
+	\brief Returns the pointer to an attached shape pointer of the given vertex.
+
+	If the vertex is not attached or attached to a global position, NULL is returned.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getVertexAttachmentStatus() getVertexAttachmentPosition()
+	*/
+	virtual NxShape* getVertexAttachmentShape(NxU32 vertexId) const = 0;
+
+	/**
+	\brief Returns the attachment position of the given vertex.
+
+	If the vertex is attached to shape, the position local to the shape's pose is returned.
+	If the vertex is not attached, the return value is undefined.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getVertexAttachmentStatus() getVertexAttachmentShape()
+	*/
+	virtual NxVec3 getVertexAttachmentPosition(NxU32 vertexId) const = 0;
 
 	/**
 	\brief Attaches the cloth to an actor. 
@@ -501,13 +709,8 @@ public:
 	At impacts, colliding objects are moved closer to the cloth by the value provided in 
 	penetrationDepth which causes a more dramatic collision result.
 
-	The actor must meet the following restrictions:
-	First, it must be dynamic, i.e. must have a body associated with it. A kinematic core can be used
-	but it will currently not deform. You can work around this by using a dynamic actor with body flags
-	NX_BF_FROZEN_POS and NX_BF_FROZEN_ROT set.
-
-	Second, the actor must have a shape.
-	Currently supported shapes are spheres, capsules, boxes and compounds of spheres.
+	The core actor must have at least one shape, and currently supported shapes are 
+	spheres, capsules, boxes and compounds of spheres.
 	It is recommended to specify the density rather than the mass of the core body. 
 	This way the mass and inertia tensor are updated when the core deforms.
 
@@ -523,9 +726,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	*/
 	virtual void attachToCore(NxActor *actor, NxReal impulseThreshold, NxReal penetrationDepth = 0.0f, NxReal maxDeformationDistance = 0.0f) = 0;
@@ -553,9 +757,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool tearVertex(const NxU32 vertexId, const NxVec3 &normal) = 0;
 
@@ -570,9 +775,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual bool raycast(const NxRay& worldRay, NxVec3 &hit, NxU32 &vertexId) = 0;
 
@@ -583,9 +789,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCollisionGroup
 	*/
@@ -598,9 +805,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCollisionGroup
 	*/
@@ -613,9 +821,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getGroupsMask() NxGroupsMask
 	*/
@@ -628,9 +837,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setGroupsMask() NxGroupsMask
 	*/
@@ -643,9 +853,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshData NxClothDesc.meshData
 	*/
@@ -658,13 +869,46 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxMeshData setMeshData() NxClothDesc.meshData
 	*/
 	virtual NxMeshData getMeshData() = 0;
+
+	/**
+	\brief Sets the user buffer wrapper for the cloth split pairs.
+
+	\param[in,out] splitPairData User buffer wrapper.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxClothSplitPairData NxClothDesc.splitPairData
+	*/
+	virtual	void setSplitPairData(NxClothSplitPairData& splitPairData) = 0;
+
+	/**
+	\brief Returns a copy of the user buffer wrapper for the cloth split pairs.
+
+	\return User buffer wrapper.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxClothSplitPairData setSplitPairData() NxClothDesc.splitPairData
+	*/
+	virtual	NxClothSplitPairData	getSplitPairData() = 0;
 
 	/**
 	\brief Sets the valid bounds of the cloth in world space.
@@ -676,9 +920,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.validBounds getValidBounds() NxBounds3
 	*/
@@ -691,13 +936,31 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.validBounds setValidBounds() NxBounds3
 	*/
 	virtual void getValidBounds(NxBounds3& validBounds) const = 0;
+
+	/**
+	\brief Sets the position of a particular vertex of the cloth.
+
+	\param[in] position New position of the vertex.
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see getPosition() setPositions() getPositions() setVelocity() getVelocity() getNumberOfParticles()
+	*/
+	virtual void setPosition(const NxVec3& position, NxU32 vertexId) = 0;
 
 	/**
 	\brief Sets the positions of the cloth.
@@ -709,13 +972,30 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getPositions() setVelocities() getVelocities() getNumberOfParticles()
 	*/
 	virtual void setPositions(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+	/**
+	\brief Gets the position of a particular vertex of the cloth.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setPosition() setPositions() getPositions() setVelocity() getVelocity() getNumberOfParticles()
+	*/
+	virtual NxVec3 getPosition(NxU32 vertexId) const = 0;
 
 	/**
 	\brief Gets the positions of the cloth.
@@ -727,14 +1007,32 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setPositions() setVelocities() getVelocities() getNumberOfParticles()
 	*/
 	virtual void getPositions(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
 
+	/**
+	\brief Sets the velocity of a particular vertex of the cloth.
+
+	\param[in] position New velocity of the vertex.
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setPosition() getPosition() getVelocity() setVelocities() getVelocities()  getNumberOfParticles()
+	*/
+	virtual void setVelocity(const NxVec3& velocity, NxU32 vertexId) = 0;
+	
 	/**
 	\brief Sets the velocities of the cloth.
 
@@ -745,14 +1043,31 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getVelocities() setPositions() getPositions() getNumberOfParticles()
 	*/
 	virtual void setVelocities(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
 
+	/**
+	\brief Gets the velocity of a particular vertex of the cloth.
+
+	\param[in] vertexId Index of the vertex.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see setPosition() getPosition() setVelocity() setVelocities() getVelocities()  getNumberOfParticles()
+	*/
+	virtual NxVec3 getVelocity(NxU32 vertexId) const = 0;
+	
 	/**
 	\brief Gets the velocities of the cloth.
 
@@ -763,22 +1078,87 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setVelocities() setPositions() getPositions() getNumberOfParticles()
 	*/
 	virtual void getVelocities(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
 
 	/**
+	\brief Sets the buffer of constrain positions.
+
+	The user can supply a buffer of positions and normals coming from an animation of the cloth
+	for instance. The simulated vertices are then corrected via the constrain positions, normals
+	and the constrain coefficiens.
+
+	\param[in] buffer The user supplied buffer containing all constrain positions for the cloth.
+	The number of positions provided must correspond to the number returned by getNumberOfParticles().
+	\param[in] byteStride The stride in bytes between the position vectors in the buffer. Default is size of NxVec3.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+
+	@see setConstrainCoefficients() setConstrainNormals()
+	*/
+	virtual void setConstrainPositions(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+		/**
+	\brief Sets the buffer of constrain normals.
+
+	The user can supply a buffer of positions and normals coming from an animation of the cloth
+	for instance. The simulated vertices are then corrected via the constrain positions, normals
+	and the constrain coefficiens set by setConstrainCoefficients.
+
+	\param[in] buffer The user supplied buffer containing all constrain normals for the cloth.
+	The number of normals provided must correspond to the number returned by getNumberOfParticles().
+	\param[in] byteStride The stride in bytes between the position vectors in the buffer. Default is size of NxVec3.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+
+	@see setConstrainCoefficients() setConstrainPositions()
+	*/
+	virtual void setConstrainNormals(void* buffer, NxU32 byteStride = sizeof(NxVec3)) = 0;
+
+	/**
+	\brief Sets the buffer of constrain coefficients of the type NxReal.
+
+	The user can supply a buffer of positions and normals coming from an animation of the cloth
+	for instance. The simulated vertices are then corrected via the constrain positions, normals
+	and the constrain coefficiens set by setConstrainCoefficients.
+
+	\param[in] buffer The user supplied buffer containing all constrain coefficients for the cloth.
+	The number of coefficients provided must correspond to the number returned by getNumberOfParticles().
+	\param[in] byteStride The stride in bytes between the position vectors in the buffer. Default is size of NxReal.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+
+	@see setConstrainPositions() setConstrainNormals()
+	*/
+	virtual void setConstrainCoefficients(const NxClothConstrainCoefficients *coefficients, NxU32 byteStride = sizeof(NxClothConstrainCoefficients)) = 0;
+
+	/**
 	\brief Gets the number of cloth particles.
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setVelocities() getVelocities() setPositions() getPositions() 
 	*/
@@ -789,9 +1169,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getShapePointers() setShapePointers() saveStateToStream() loadStateFromStream()
 	*/
@@ -802,9 +1183,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNumberOfParticles()
 	*/
@@ -814,17 +1196,18 @@ public:
 	\brief Saves pointers to the currently interacting shapes to memory
 
 	\param[in] shapePointers The user supplied array to hold the shape pointers.
-	\param[in] flags         The optional user supplied array to hold the cloth attachment flags for each attached shape
+	\param[in] flags         Unused, was cloth attachment flags which is not unique per shape.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see queryShapePointers() setShapePointers() saveStateToStream() loadStateFromStream()
 	*/
-	virtual void getShapePointers(NxShape** shapePointers,NxU32 *flags=0) = 0;
+	virtual void getShapePointers(NxShape** shapePointers, NxU32* flags=0) = 0;
 
 	/**
 	\brief Loads pointers to the currently interacting shapes from memory.
@@ -834,9 +1217,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see queryShapePointers() getShapePointers() saveStateToStream() loadStateFromStream()
 	*/
@@ -851,14 +1235,15 @@ public:
 
 	\param[in] stream The user supplied stream to hold the cloth state.
 	\param[in] permute If true, the order of the vertices output will correspond to that of the associated
-	NxSoftBodyMesh's saveToDesc mehod; if false (the default), it will correspond to the original NxSoftBodyMesh descriptor
+	NxClothMesh's saveToDesc mehod; if false (the default), it will correspond to the original NxClothMesh descriptor
 	used to create the mesh. These may differ due to cooking.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see loadStateFromStream() queryShapePointers() getShapePointers() setShapePointers() 
 	*/
@@ -875,9 +1260,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see saveStateToStream() queryShapePointers() getShapePointers() setShapePointers() 
 	*/
@@ -890,9 +1276,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.collisionResponseCoefficient getCollisionResponseCoefficient()
 	*/
@@ -905,9 +1292,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.collisionResponseCoefficient setCollisionResponseCoefficient()
 	*/
@@ -920,9 +1308,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.attachmentResponseCoefficient getAttachmentResponseCoefficient()
 	*/
@@ -935,9 +1324,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.attachmentResponseCoefficient setAttachmentResponseCoefficient()
 	*/
@@ -950,9 +1340,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.fromFluidResponseCoefficient getFromFluidResponseCoefficient()
 	*/
@@ -965,9 +1356,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.fromFluidResponseCoefficient setFromFluidResponseCoefficient()
 	*/
@@ -980,9 +1372,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.toFluidResponseCoefficient getToFluidResponseCoefficient()
 	*/
@@ -995,13 +1388,80 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.toFluidResponseCoefficient setToFluidResponseCoefficient()
 	*/
 	virtual NxReal getToFluidResponseCoefficient() const = 0;
+
+	/**
+	\brief Sets the limit up to which the cloth is weak under compression
+
+	\param[in] limit The compression limit 
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothDesc.compressionLimit getCompressionLimit()
+	*/
+	virtual void setCompressionLimit(NxReal limit) = 0;
+
+	/**
+	\brief Retrieves the limit up to which the cloth is weak under compression
+
+	\return The compression limit.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothDesc.compressionLimit setCompressionLimit()
+	*/
+
+	virtual NxReal getCompressionLimit() const = 0;
+
+	/**
+	\brief Sets the stiffness for weak compression
+
+	\param[in] stiffness The compression stiffness 
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothDesc.compressionStiffness getCompressionStiffness()
+	*/
+	virtual void setCompressionStiffness(NxReal stiffness) = 0;
+
+	/**
+	\brief Retrieves the stiffness for weak compression
+
+	\return The compression stiffness.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxClothDesc.compressionStiffness setCompressionStiffness()
+	*/
+
+	virtual NxReal getCompressionStiffness() const = 0;
 
 	/**
 	\brief Sets an external acceleration which affects all non attached particles of the cloth
@@ -1010,9 +1470,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.externalAcceleration getExternalAcceleration()
 	*/
@@ -1025,13 +1486,88 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.externalAcceleration setExternalAcceleration()
 	*/
 	virtual NxVec3 getExternalAcceleration() const = 0;
+
+	/**
+	\brief If the NX_CLF_ADHERE flag is set the cloth moves partially in the frame 
+	of the attached actor. 
+
+	This feature is useful when the cloth is attached to a fast moving character.
+	In that case the cloth adheres to the shape it is attached to while only 
+	velocities below the parameter minAdhereVelocity are used for secondary effects.
+
+	\param[in] velocity The minimal velocity for cloth to adhere (unit length / s)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxClothDesc.minAdhereVelocity getMinAdhereVelocity()
+	*/
+	virtual void setMinAdhereVelocity(NxReal velocity) = 0;
+
+	/**
+	\brief If the NX_CLF_ADHERE flag is set the cloth moves partially in the frame 
+	of the attached actor. 
+
+	This feature is useful when the cloth is attached to a fast moving character.
+	In that case the cloth adheres to the shape it is attached to while only 
+	velocities below the parameter minAdhereVelocity are used for secondary effects.
+
+	\return Returns the minimal velocity for cloth to adhere (unit length / s)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxClothDesc.minAdhereVelocity setMinAdhereVelocity()
+	*/
+	virtual NxReal getMinAdhereVelocity() const = 0;
+
+	/**
+	\brief Sets an acceleration acting normal to the cloth surface at each vertex.
+
+	\param[in] acceleration The acceleration vector (unit length / s^2)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxClothDesc.windAcceleration getWindAcceleration()
+	*/
+	virtual void setWindAcceleration(NxVec3 acceleration) = 0;
+
+	/**
+	\brief Retrieves the acceleration acting normal to the cloth surface at each vertex.
+
+	\return The acceleration vector (unit length / s^2)
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxClothDesc.windAcceleration setWindAcceleration()
+	*/
+	virtual NxVec3 getWindAcceleration() const = 0;
 
 	/**
 	\brief Returns true if this cloth is sleeping.
@@ -1047,9 +1583,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp() putToSleep()
 	*/
@@ -1066,9 +1603,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp() putToSleep() setSleepLinearVelocity()
 	*/
@@ -1086,9 +1624,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp() putToSleep()
 	*/
@@ -1104,9 +1643,10 @@ public:
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() putToSleep()
 	*/
@@ -1119,9 +1659,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see isSleeping() getSleepLinearVelocity() wakeUp()
 	*/
@@ -1134,9 +1675,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.flags NxClothFlag getFlags()
 	*/
@@ -1149,9 +1691,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxClothDesc.flags NxClothFlag setFlags()
 	*/
@@ -1167,9 +1710,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
@@ -1191,9 +1735,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	*/
@@ -1216,9 +1761,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	*/
@@ -1241,9 +1787,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceMode 
 	*/
@@ -1264,9 +1811,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBounds3 NxClothDesc NxMeshData
 	*/
@@ -1279,9 +1827,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene
 	*/
@@ -1294,26 +1843,70 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
 	virtual const char* getName() const = 0;
 
 	/**
-	\brief Retrieves the cloth's simulation compartment, if any.
+	\brief Retrieves the cloth's simulation compartment, as specified by the user at creation time.
+	\return NULL if the cloth is not simulated in a compartment or if it was specified to run in 
+	the default cloth compartment, otherwise the simulation compartment.
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCompartment
 	*/
 	virtual NxCompartment *			getCompartment() const = 0;
+
+	/**
+	\brief Get the PPU simulation time.
+
+	This method returns the time taken to simulate the fluid on the PPU in units
+	which are proportional to time but whose units are otherwise unspecified.
+
+	\return the simulation time
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+
+	*/
+    virtual		NxU32			    getPPUTime()									const	= 0;
+
+	/**
+	\brief Retrieves the actor's force field material index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual NxForceFieldMaterial	getForceFieldMaterial() const = 0;
+
+	/**
+	\brief Sets the actor's force field material index, default index is 0
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	virtual void					setForceFieldMaterial(NxForceFieldMaterial)  = 0;
 
 	//public variables:
 public:
@@ -1322,9 +1915,9 @@ public:
 /** @} */
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

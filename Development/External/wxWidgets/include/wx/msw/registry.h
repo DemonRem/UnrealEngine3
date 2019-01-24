@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     03.04.1998
-// RCS-ID:      $Id: registry.h,v 1.33 2005/05/18 23:29:50 VZ Exp $
+// RCS-ID:      $Id: registry.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,11 +12,7 @@
 #ifndef _WX_MSW_REGISTRY_H_
 #define _WX_MSW_REGISTRY_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "registry.h"
-#endif
-
-class WXDLLIMPEXP_BASE wxOutputStream;
+class WXDLLIMPEXP_FWD_BASE wxOutputStream;
 
 // ----------------------------------------------------------------------------
 // class wxRegKey encapsulates window HKEY handle
@@ -52,16 +48,11 @@ public:
     HKCR,       // classes root
     HKCU,       // current user
     HKLM,       // local machine
-    HKUSR       // users
-#ifndef __WXWINCE__
-    ,
-    HKPD        // performance data (WinNT/2K only)
-#endif
-#if WINVER >= 0x0400
-    ,
-    HKCC,       // current config (starting from Win95/NT 4.0)
-    HKDD        // dynamic data (Win95/98 only)
-#endif  // Winver
+    HKUSR,      // users
+    HKPD,       // performance data (WinNT/2K only)
+    HKCC,       // current config
+    HKDD,       // dynamic data (Win95/98 only)
+    HKMAX
   };
 
   // access mode for the key

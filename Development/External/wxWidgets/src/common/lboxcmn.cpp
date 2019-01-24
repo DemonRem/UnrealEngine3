@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/lboxcmn.cpp
+// Name:        src/common/lboxcmn.cpp
 // Purpose:     wxListBox class methods common to all platforms
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     22.10.99
-// RCS-ID:      $Id: lboxcmn.cpp,v 1.14 2005/01/18 15:06:18 KH Exp $
+// RCS-ID:      $Id: lboxcmn.cpp 39964 2006-07-04 00:31:52Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "listboxbase.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -30,8 +26,9 @@
 
 #if wxUSE_LISTBOX
 
+#include "wx/listbox.h"
+
 #ifndef WX_PRECOMP
-    #include "wx/listbox.h"
     #include "wx/dynarray.h"
     #include "wx/arrstr.h"
 #endif
@@ -49,10 +46,10 @@ wxListBoxBase::~wxListBoxBase()
 // adding items
 // ----------------------------------------------------------------------------
 
-void wxListBoxBase::InsertItems(int nItems, const wxString *items, int pos)
+void wxListBoxBase::InsertItems(unsigned int nItems, const wxString *items, unsigned int pos)
 {
     wxArrayString aItems;
-    for ( int n = 0; n < nItems; n++ )
+    for ( unsigned int n = 0; n < nItems; n++ )
     {
         aItems.Add(items[n]);
     }
@@ -78,9 +75,9 @@ void wxListBoxBase::Set(int nItems, const wxString* items, void **clientData)
 
 bool wxListBoxBase::SetStringSelection(const wxString& s, bool select)
 {
-    int sel = FindString(s);
-    wxCHECK_MSG( sel != wxNOT_FOUND, false,
-                 wxT("invalid string in SetStringSelection") );
+    const int sel = FindString(s);
+    if ( sel == wxNOT_FOUND )
+        return false;
 
     SetSelection(sel, select);
 

@@ -2,18 +2,10 @@
 // Name:        myframe.cpp
 // Purpose:     XML resources sample: A derived frame, called MyFrame
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: myframe.cpp,v 1.7 2005/07/13 18:04:55 VZ Exp $
+// RCS-ID:      $Id: myframe.cpp 43298 2006-11-11 01:15:42Z VZ $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// GCC implementation
-//-----------------------------------------------------------------------------
-
-#ifdef __GNUG__
-    #pragma implementation "myframe.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Standard wxWidgets headers
@@ -31,6 +23,8 @@
 #ifndef WX_PRECOMP
     #include "wx/wx.h"
 #endif
+
+#include "wx/sysopt.h"
 
 //-----------------------------------------------------------------------------
 // Header of this .cpp file
@@ -84,8 +78,7 @@
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(XRCID("unload_resource_menuitem"), MyFrame::OnUnloadResourceMenuCommand)
     EVT_MENU(XRCID("reload_resource_menuitem"), MyFrame::OnReloadResourceMenuCommand)
-    EVT_MENU(XRCID("exit_tool_or_menuitem"),  MyFrame::OnExitToolOrMenuCommand)
-    EVT_MENU(XRCID("exit_tool_or_menuitem"),  MyFrame::OnExitToolOrMenuCommand)
+    EVT_MENU(wxID_EXIT,  MyFrame::OnExitToolOrMenuCommand)
     EVT_MENU(XRCID("non_derived_dialog_tool_or_menuitem"), MyFrame::OnNonDerivedDialogToolOrMenuCommand)
     EVT_MENU(XRCID("derived_tool_or_menuitem"), MyFrame::OnDerivedDialogToolOrMenuCommand)
     EVT_MENU(XRCID("controls_tool_or_menuitem"), MyFrame::OnControlsToolOrMenuCommand)
@@ -94,7 +87,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(XRCID("platform_property_tool_or_menuitem"), MyFrame::OnPlatformPropertyToolOrMenuCommand)
     EVT_MENU(XRCID("art_provider_tool_or_menuitem"), MyFrame::OnArtProviderToolOrMenuCommand)
     EVT_MENU(XRCID("variable_expansion_tool_or_menuitem"), MyFrame::OnVariableExpansionToolOrMenuCommand)
-    EVT_MENU(XRCID("about_tool_or_menuitem"), MyFrame::OnAboutToolOrMenuCommand)
+    EVT_MENU(wxID_ABOUT, MyFrame::OnAboutToolOrMenuCommand)
 END_EVENT_TABLE()
 
 //-----------------------------------------------------------------------------
@@ -123,6 +116,7 @@ MyFrame::MyFrame(wxWindow* parent)
     // NOTE: For toolbars you currently should do it exactly like this.
     // With toolbars, you currently can't create one, and set it later. It
     // needs to be all in one step.
+    wxSystemOptions::SetOption ( wxT("msw.remap"), 0 );
     SetToolBar(wxXmlResource::Get()->LoadToolBar(this, wxT("main_toolbar")));
 
 #if wxUSE_STATUSBAR
@@ -183,6 +177,29 @@ void MyFrame::OnDerivedDialogToolOrMenuCommand(wxCommandEvent& WXUNUSED(event))
     preferencesDialog.ShowModal();
 }
 
+void MyFrame::OnAnimationCtrlPlay(wxCommandEvent& event)
+{
+#if wxUSE_ANIMATIONCTRL
+    // get the pointers we need
+    wxButton *btn = wxDynamicCast(event.GetEventObject(), wxButton);
+    if (!btn || !btn->GetParent()) return;
+
+    wxWindow *win = btn->GetParent();
+    wxAnimationCtrl *ctrl = XRCCTRL(*win, "controls_animation_ctrl", wxAnimationCtrl);
+    if (ctrl->IsPlaying())
+    {
+        ctrl->Stop();
+        btn->SetLabel(wxT("Play"));
+    }
+    else
+    {
+        if (ctrl->Play())
+            btn->SetLabel(wxT("Stop"));
+        else
+            wxLogError(wxT("Cannot play the animation..."));
+    }
+#endif
+}
 
 void MyFrame::OnControlsToolOrMenuCommand(wxCommandEvent& WXUNUSED(event))
 {
@@ -222,6 +239,13 @@ void MyFrame::OnControlsToolOrMenuCommand(wxCommandEvent& WXUNUSED(event))
     treectrl->AppendItem(treectrl->GetRootItem(), _("Evil henchman 1"));
     treectrl->AppendItem(treectrl->GetRootItem(), _("Evil henchman 2"));
     treectrl->AppendItem(treectrl->GetRootItem(), _("Evil accountant"));
+#endif
+
+#if wxUSE_ANIMATIONCTRL
+    // dynamically connect our event handler for the "clicked" event of the "play" button
+    // in the animation ctrl page of our dialog
+    dlg.Connect(XRCID("controls_animation_button_play"), wxEVT_COMMAND_BUTTON_CLICKED,
+                wxCommandEventHandler(MyFrame::OnAnimationCtrlPlay));
 #endif
 
     // All done. Show the dialog.

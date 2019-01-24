@@ -7,10 +7,6 @@
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "encconv.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -54,7 +50,7 @@
     #include "wx/msw/wince/missing.h"       // for bsearch()
 #endif
 
-static wxUint16* GetEncTable(wxFontEncoding enc)
+static const wxUint16* GetEncTable(wxFontEncoding enc)
 {
 #ifdef __WXMAC__
     if( enc >= wxFONTENCODING_MACMIN && enc <= wxFONTENCODING_MACMAX )
@@ -102,7 +98,7 @@ CompareCharsetItems(const void *i1, const void *i2)
 }
 
 
-static CharsetItem* BuildReverseTable(wxUint16 *tbl)
+static CharsetItem* BuildReverseTable(const wxUint16 *tbl)
 {
     CharsetItem *rev = new CharsetItem[128];
 
@@ -128,7 +124,8 @@ wxEncodingConverter::wxEncodingConverter()
 bool wxEncodingConverter::Init(wxFontEncoding input_enc, wxFontEncoding output_enc, int method)
 {
     unsigned i;
-    wxUint16 *in_tbl, *out_tbl = NULL;
+    const wxUint16 *in_tbl;
+    const wxUint16 *out_tbl = NULL;
 
     if (m_Table) {delete[] m_Table; m_Table = NULL;}
 
@@ -378,11 +375,12 @@ wxString wxEncodingConverter::Convert(const wxString& input) const
 #define STOP wxFONTENCODING_SYSTEM
 
 #define NUM_OF_PLATFORMS  4 /*must conform to enum wxPLATFORM_XXXX !!!*/
-#define ENC_PER_PLATFORM  5
-           // max no. of encodings for one language used on one platform
-           // Anybody thinks 5 is not enough? ;-)
+#define ENC_PER_PLATFORM  3
+           // max no. of encodings for one language used on one platform.
+           // Using maximum of everything at the current moment to not make the
+           // library larger than necessary. Make larger only if necessary - MR
 
-static wxFontEncoding
+static const wxFontEncoding
     EquivalentEncodings[][NUM_OF_PLATFORMS][ENC_PER_PLATFORM+1] = {
 
     // *** Please put more common encodings as first! ***
@@ -473,7 +471,7 @@ wxFontEncodingArray wxEncodingConverter::GetPlatformEquivalents(wxFontEncoding e
         platform = wxPLATFORM_WINDOWS;
 #elif defined(__WXGTK__) || defined(__WXMOTIF__)
         platform = wxPLATFORM_UNIX;
-#elif defined(__WXOS2__)
+#elif defined(__WXPM__)
         platform = wxPLATFORM_OS2;
 #elif defined(__WXMAC__)
         platform = wxPLATFORM_MAC;
@@ -481,7 +479,7 @@ wxFontEncodingArray wxEncodingConverter::GetPlatformEquivalents(wxFontEncoding e
     }
 
     int i, clas, e ;
-    wxFontEncoding *f;
+    const wxFontEncoding *f;
     wxFontEncodingArray arr;
 
     clas = 0;
@@ -508,7 +506,7 @@ wxFontEncodingArray wxEncodingConverter::GetPlatformEquivalents(wxFontEncoding e
 wxFontEncodingArray wxEncodingConverter::GetAllEquivalents(wxFontEncoding enc)
 {
     int i, clas, e, j ;
-    wxFontEncoding *f;
+    const wxFontEncoding *f;
     wxFontEncodingArray arr;
 
     arr = GetPlatformEquivalents(enc); // we want them to be first items in array

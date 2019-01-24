@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        image.h
+// Name:        wx/image.h
 // Purpose:     wxImage class
 // Author:      Robert Roebling
-// RCS-ID:      $Id: image.h,v 1.108 2005/07/28 22:50:19 VZ Exp $
+// RCS-ID:      $Id: image.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -10,11 +10,10 @@
 #ifndef _WX_IMAGE_H_
 #define _WX_IMAGE_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "image.h"
-#endif
-
 #include "wx/defs.h"
+
+#if wxUSE_IMAGE
+
 #include "wx/object.h"
 #include "wx/string.h"
 #include "wx/gdicmn.h"
@@ -23,8 +22,6 @@
 #if wxUSE_STREAMS
 #  include "wx/stream.h"
 #endif
-
-#if wxUSE_IMAGE
 
 // on some systems (Unixware 7.x) index is defined as a macro in the headers
 // which breaks the compilation below
@@ -46,6 +43,13 @@ enum
     wxIMAGE_RESOLUTION_CM = 2
 };
 
+// Constants for wxImage::Scale() for determining the level of quality
+enum
+{
+    wxIMAGE_QUALITY_NORMAL = 0,
+    wxIMAGE_QUALITY_HIGH = 1
+};
+
 // alpha channel values: fully transparent, default threshold separating
 // transparent pixels from opaque for a few functions dealing with alpha and
 // fully opaque
@@ -57,9 +61,18 @@ const unsigned char wxIMAGE_ALPHA_OPAQUE = 0xff;
 // classes
 //-----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxImageHandler;
-class WXDLLEXPORT wxImage;
-class WXDLLEXPORT wxPalette;
+class WXDLLIMPEXP_FWD_CORE wxImageHandler;
+class WXDLLIMPEXP_FWD_CORE wxImage;
+class WXDLLIMPEXP_FWD_CORE wxPalette;
+
+//-----------------------------------------------------------------------------
+// wxVariant support
+//-----------------------------------------------------------------------------
+
+#if wxUSE_VARIANT
+#include "wx/variant.h"
+DECLARE_VARIANT_OBJECT_EXPORTED(wxImage,WXDLLEXPORT)
+#endif
 
 //-----------------------------------------------------------------------------
 // wxImageHandler
@@ -86,10 +99,10 @@ public:
     void SetExtension(const wxString& ext) { m_extension = ext; }
     void SetType(long type) { m_type = type; }
     void SetMimeType(const wxString& type) { m_mime = type; }
-    wxString GetName() const { return m_name; }
-    wxString GetExtension() const { return m_extension; }
+    const wxString& GetName() const { return m_name; }
+    const wxString& GetExtension() const { return m_extension; }
     long GetType() const { return m_type; }
-    wxString GetMimeType() const { return m_mime; }
+    const wxString& GetMimeType() const { return m_mime; }
 
 protected:
 #if wxUSE_STREAMS
@@ -157,7 +170,6 @@ public:
 class WXDLLEXPORT wxImage: public wxObject
 {
 public:
-#if wxABI_VERSION >= 20602
     // red, green and blue are 8 bit unsigned integers in the range of 0..255
     // We use the identifier RGBValue instead of RGB, since RGB is #defined
     class RGBValue
@@ -165,7 +177,7 @@ public:
     public:
       RGBValue(unsigned char r=0, unsigned char g=0, unsigned char b=0)
         : red(r), green(g), blue(b) {}
-        unsigned char red;  
+        unsigned char red;
         unsigned char green;
         unsigned char blue;
     };
@@ -176,11 +188,10 @@ public:
     public:
         HSVValue(double h=0.0, double s=0.0, double v=0.0)
             : hue(h), saturation(s), value(v) {}
-        double hue;  
+        double hue;
         double saturation;
         double value;
     };
-#endif // wxABI_VERSION >= 2.6.2
 
     wxImage(){}
     wxImage( int width, int height, bool clear = true );
@@ -188,21 +199,22 @@ public:
     wxImage( int width, int height, unsigned char* data, unsigned char* alpha, bool static_data = false );
     wxImage( const wxString& name, long type = wxBITMAP_TYPE_ANY, int index = -1 );
     wxImage( const wxString& name, const wxString& mimetype, int index = -1 );
-    wxImage( const char** xpmData );
-    wxImage( char** xpmData );
+    wxImage( const char* const* xpmData );
 
 #if wxUSE_STREAMS
     wxImage( wxInputStream& stream, long type = wxBITMAP_TYPE_ANY, int index = -1 );
     wxImage( wxInputStream& stream, const wxString& mimetype, int index = -1 );
 #endif // wxUSE_STREAMS
 
-    wxImage( const wxImage& image );
-    wxImage( const wxImage* image );
-
     bool Create( int width, int height, bool clear = true );
     bool Create( int width, int height, unsigned char* data, bool static_data = false );
     bool Create( int width, int height, unsigned char* data, unsigned char* alpha, bool static_data = false );
-    bool Create( const char** xpmData );
+    bool Create( const char* const* xpmData );
+#ifdef __BORLANDC__
+    // needed for Borland 5.5
+    wxImage( char** xpmData ) { Create(wx_const_cast(const char* const*, xpmData)); }
+    bool Create( char** xpmData ) { return Create(wx_const_cast(const char* const*, xpmData)); }
+#endif
     void Destroy();
 
     // creates an identical copy of the image (the = operator
@@ -224,12 +236,21 @@ public:
     void Paste( const wxImage &image, int x, int y );
 
     // return the new image with size width*height
-    wxImage Scale( int width, int height ) const;
+    wxImage Scale( int width, int height, int quality = wxIMAGE_QUALITY_NORMAL ) const;
+
+    // box averager and bicubic filters for up/down sampling
+    wxImage ResampleBox(int width, int height) const;
+    wxImage ResampleBicubic(int width, int height) const;
+
+    // blur the image according to the specified pixel radius
+    wxImage Blur(int radius);
+    wxImage BlurHorizontal(int radius);
+    wxImage BlurVertical(int radius);
 
     wxImage ShrinkBy( int xFactor , int yFactor ) const ;
 
     // rescales the image in place
-    wxImage& Rescale( int width, int height ) { return *this = Scale(width, height); }
+    wxImage& Rescale( int width, int height, int quality = wxIMAGE_QUALITY_NORMAL ) { return *this = Scale(width, height, quality); }
 
     // resizes the image in place
     wxImage& Resize( const wxSize& size, const wxPoint& pos,
@@ -246,6 +267,10 @@ public:
     // replace one colour with another
     void Replace( unsigned char r1, unsigned char g1, unsigned char b1,
                   unsigned char r2, unsigned char g2, unsigned char b2 );
+
+    // Convert to greyscale image. Uses the luminance component (Y) of the image.
+    // The luma value (YUV) is calculated using (R * lr) + (G * lg) + (B * lb), defaults to ITU-T BT.601
+    wxImage ConvertToGreyscale( double lr = 0.299, double lg = 0.587, double lb = 0.114 ) const;
 
     // convert to monochrome image (<r,g,b> will be replaced by white,
     // everything else by black)
@@ -307,7 +332,8 @@ public:
     virtual bool SaveFile( wxOutputStream& stream, const wxString& mimetype ) const;
 #endif
 
-    bool Ok() const;
+    bool Ok() const { return IsOk(); }
+    bool IsOk() const;
     int GetWidth() const;
     int GetHeight() const;
 
@@ -362,23 +388,9 @@ public:
     // Returned value: # of entries in the histogram
     unsigned long ComputeHistogram( wxImageHistogram &h ) const;
 
-#if wxABI_VERSION >= 20602
     // Rotates the hue of each pixel of the image. angle is a double in the range
     // -1.0..1.0 where -1.0 is -360 degrees and 1.0 is 360 degrees
     void RotateHue(double angle);
-#endif // wxABI_VERSION >= 2.6.2
-
-    wxImage& operator = (const wxImage& image)
-    {
-        if ( (*this) != image )
-            Ref(image);
-        return *this;
-    }
-
-    bool operator == (const wxImage& image) const
-        { return m_refData == image.m_refData; }
-    bool operator != (const wxImage& image) const
-        { return m_refData != image.m_refData; }
 
     static wxList& GetHandlers() { return sm_handlers; }
     static void AddHandler( wxImageHandler *handler );
@@ -394,10 +406,8 @@ public:
     static void CleanUpHandlers();
     static void InitStandardHandlers();
 
-#if wxABI_VERSION >= 20602
     static HSVValue RGBtoHSV(const RGBValue& rgb);
     static RGBValue HSVtoRGB(const HSVValue& hsv);
-#endif // wxABI_VERSION >= 2.6.2
 
 
 protected:
@@ -409,8 +419,11 @@ protected:
     // note that index must be multiplied by 3 when using it with RGB array
     long XYToIndex(int x, int y) const;
 
+    virtual wxObjectRefData* CreateRefData() const;
+    virtual wxObjectRefData* CloneRefData(const wxObjectRefData* data) const;
+
 private:
-    friend class WXDLLEXPORT wxImageHandler;
+    friend class WXDLLIMPEXP_FWD_CORE wxImageHandler;
 
     DECLARE_DYNAMIC_CLASS(wxImage)
 };
@@ -429,6 +442,7 @@ extern WXDLLEXPORT_DATA(wxImage)    wxNullImage;
 #include "wx/imaggif.h"
 #include "wx/imagpcx.h"
 #include "wx/imagjpeg.h"
+#include "wx/imagtga.h"
 #include "wx/imagtiff.h"
 #include "wx/imagpnm.h"
 #include "wx/imagxpm.h"
@@ -438,4 +452,3 @@ extern WXDLLEXPORT_DATA(wxImage)    wxNullImage;
 
 #endif
   // _WX_IMAGE_H_
-

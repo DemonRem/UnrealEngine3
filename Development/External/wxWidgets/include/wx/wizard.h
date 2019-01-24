@@ -9,7 +9,7 @@
 //              Added wxWIZARD_HELP event
 //              Robert Vazan (sizers)
 // Created:     15.08.99
-// RCS-ID:      $Id: wizard.h,v 1.44 2005/08/04 00:22:42 VZ Exp $
+// RCS-ID:      $Id: wizard.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,20 +25,16 @@
 // headers and other simple declarations
 // ----------------------------------------------------------------------------
 
-#ifndef WX_PRECOMP
-    #include "wx/dialog.h"      // the base class
-    #include "wx/panel.h"       // ditto
-
-    #include "wx/event.h"       // wxEVT_XXX constants
-#endif // WX_PRECOMP
-
+#include "wx/dialog.h"      // the base class
+#include "wx/panel.h"       // ditto
+#include "wx/event.h"       // wxEVT_XXX constants
 #include "wx/bitmap.h"
 
 // Extended style to specify a help button
 #define wxWIZARD_EX_HELPBUTTON   0x00000010
 
 // forward declarations
-class WXDLLIMPEXP_ADV wxWizard;
+class WXDLLIMPEXP_FWD_ADV wxWizard;
 
 // ----------------------------------------------------------------------------
 // wxWizardPage is one of the wizards screen: it must know what are the
@@ -76,9 +72,7 @@ public:
     // wxNullBitmap from here - the default one will be used then.
     virtual wxBitmap GetBitmap() const { return m_bitmap; }
 
-    // due to a typo in #if condition, the validation functions were disabled
-    // in 2.6.[01] releases so check for wxABI_VERSION here
-#if wxUSE_VALIDATORS && (wxABI_VERSION >= 20602)
+#if wxUSE_VALIDATORS
     // Override the base functions to allow a validator to be assigned to this page.
     virtual bool TransferDataToWindow()
     {
@@ -227,16 +221,6 @@ public:
     // Set border around page area. Default is 0 if you add at least one
     // page to GetPageAreaSizer and 5 if you don't.
     virtual void SetBorder(int border) = 0;
-
-    // wxWizard should be created using "new wxWizard" now, not with Create()
-#if WXWIN_COMPATIBILITY_2_2
-    wxDEPRECATED( static wxWizard *Create(wxWindow *parent,
-                                          int id = wxID_ANY,
-                                          const wxString& title = wxEmptyString,
-                                          const wxBitmap& bitmap = wxNullBitmap,
-                                          const wxPoint& pos = wxDefaultPosition,
-                                          const wxSize& size = wxDefaultSize) );
-#endif // WXWIN_COMPATIBILITY_2_2
 
     // the methods below may be overridden by the derived classes to provide
     // custom logic for determining the pages order

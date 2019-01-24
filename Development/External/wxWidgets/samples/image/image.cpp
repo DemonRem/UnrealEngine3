@@ -4,7 +4,7 @@
 // Author:      Robert Roebling
 // Modified by:
 // Created:     1998
-// RCS-ID:      $Id: image.cpp,v 1.107 2005/08/24 17:46:59 ABX Exp $
+// RCS-ID:      $Id: image.cpp 43832 2006-12-06 17:13:11Z VZ $
 // Copyright:   (c) 1998-2005 Robert Roebling
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,7 +17,7 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include "wx/wx.h"
+    #include "wx/wx.h"
 #endif
 
 #include "wx/image.h"
@@ -56,45 +56,54 @@ class MyApp;
 class MyCanvas: public wxScrolledWindow
 {
 public:
-    MyCanvas() {}
     MyCanvas( wxWindow *parent, wxWindowID, const wxPoint &pos, const wxSize &size );
     ~MyCanvas();
     void OnPaint( wxPaintEvent &event );
     void CreateAntiAliasedBitmap();
 
-    wxBitmap  *my_horse_png;
-    wxBitmap  *my_horse_jpeg;
-    wxBitmap  *my_horse_gif;
-    wxBitmap  *my_horse_bmp;
-    wxBitmap  *my_horse_bmp2;
-    wxBitmap  *my_horse_pcx;
-    wxBitmap  *my_horse_pnm;
-    wxBitmap  *my_horse_tiff;
-    wxBitmap  *my_horse_xpm;
-    wxBitmap  *my_horse_ico32;
-    wxBitmap  *my_horse_ico16;
-    wxBitmap  *my_horse_ico;
-    wxBitmap  *my_horse_cur;
-    wxBitmap  *my_horse_ani;
+    wxBitmap  my_horse_png;
+    wxBitmap  my_horse_jpeg;
+    wxBitmap  my_horse_gif;
+    wxBitmap  my_horse_bmp;
+    wxBitmap  my_horse_bmp2;
+    wxBitmap  my_horse_pcx;
+    wxBitmap  my_horse_pnm;
+    wxBitmap  my_horse_tiff;
+    wxBitmap  my_horse_tga;
+    wxBitmap  my_horse_xpm;
+    wxBitmap  my_horse_ico32;
+    wxBitmap  my_horse_ico16;
+    wxBitmap  my_horse_ico;
+    wxBitmap  my_horse_cur;
 
-    wxBitmap  *my_smile_xbm;
-    wxBitmap  *my_square;
-    wxBitmap  *my_anti;
+    wxBitmap  my_smile_xbm;
+    wxBitmap  my_square;
+    wxBitmap  my_anti;
 
-    wxBitmap  *my_horse_asciigrey_pnm;
-    wxBitmap  *my_horse_rawgrey_pnm;
+    wxBitmap  my_horse_asciigrey_pnm;
+    wxBitmap  my_horse_rawgrey_pnm;
 
-    wxBitmap  *colorized_horse_jpeg;
+    wxBitmap  colorized_horse_jpeg;
+    wxBitmap  my_cmyk_jpeg;
+
+    wxBitmap my_toucan;
+    wxBitmap my_toucan_flipped_horiz;
+    wxBitmap my_toucan_flipped_vert;
+    wxBitmap my_toucan_flipped_both;
+    wxBitmap my_toucan_grey;
+    wxBitmap my_toucan_head;
+    wxBitmap my_toucan_scaled_normal;
+    wxBitmap my_toucan_scaled_high;
+    wxBitmap my_toucan_blur;
 
     int xH, yH ;
-    int m_ani_images ;
+    int m_ani_images;
+    wxBitmap *my_horse_ani;
 
-protected:
+private:
     wxBitmap m_bmpSmileXpm;
     wxIcon   m_iconSmileXpm;
 
-private:
-    DECLARE_DYNAMIC_CLASS(MyCanvas)
     DECLARE_EVENT_TABLE()
 };
 
@@ -166,7 +175,7 @@ public:
                                                 wxT("PCX files (*.pcx)|*.pcx|")
                                                 wxT("ICO files (*.ico)|*.ico|")
                                                 wxT("CUR files (*.cur)|*.cur"),
-                                                wxSAVE,
+                                                wxFD_SAVE,
                                                 this);
 
         if ( savefilename.empty() )
@@ -176,7 +185,7 @@ public:
         wxFileName::SplitPath(savefilename, NULL, NULL, &extension);
 
         bool saved = false;
-        if ( extension == _T("bpp") )
+        if ( extension == _T("bmp") )
         {
             static const int bppvalues[] =
             {
@@ -297,15 +306,44 @@ public:
 
     MyRawBitmapFrame(wxFrame *parent)
         : wxFrame(parent, wxID_ANY, _T("Raw bitmaps (how exciting)")),
-          m_bitmap(SIZE, SIZE, 32)
+          m_bitmap(SIZE, SIZE, 24),
+          m_alphaBitmap(SIZE, SIZE, 32)
     {
-        SetClientSize(SIZE, SIZE);
+        SetClientSize(SIZE, SIZE*2+25);
 
-        // another possibility: wxNativePixelData (don't forget to remove code
-        // setting alpha in the loop below then)
-        typedef wxAlphaPixelData Data;
+        InitAlphaBitmap();
+        InitBitmap();
 
-        Data data(m_bitmap, wxPoint(BORDER, BORDER), wxSize(REAL_SIZE, REAL_SIZE));
+    }
+
+    void InitAlphaBitmap()
+    {
+        // First, clear the whole bitmap by making it alpha
+        {
+            wxAlphaPixelData data( m_alphaBitmap, wxPoint(0,0), wxSize(SIZE, SIZE) );
+            if ( !data )
+            {
+                wxLogError(_T("Failed to gain raw access to bitmap data"));
+                return;
+            }
+            data.UseAlpha();
+            wxAlphaPixelData::Iterator p(data);
+            for ( int y = 0; y < SIZE; ++y )
+            {
+                wxAlphaPixelData::Iterator rowStart = p;
+                for ( int x = 0; x < SIZE; ++x )
+                {
+                    p.Alpha() = 0;
+                    ++p; // same as p.OffsetX(1)
+                }
+                p = rowStart;
+                p.OffsetY(data, 1);
+            }
+        }
+
+        // Then, draw colourful alpha-blended stripes
+        wxAlphaPixelData data(m_alphaBitmap, wxPoint(BORDER, BORDER),
+                              wxSize(REAL_SIZE, REAL_SIZE));
         if ( !data )
         {
             wxLogError(_T("Failed to gain raw access to bitmap data"));
@@ -313,12 +351,11 @@ public:
         }
 
         data.UseAlpha();
-
-        Data::Iterator p(data);
+        wxAlphaPixelData::Iterator p(data);
 
         for ( int y = 0; y < REAL_SIZE; ++y )
         {
-            Data::Iterator rowStart = p;
+            wxAlphaPixelData::Iterator rowStart = p;
 
             int r = y < REAL_SIZE/3 ? 255 : 0,
                 g = (REAL_SIZE/3 <= y) && (y < 2*(REAL_SIZE/3)) ? 255 : 0,
@@ -327,12 +364,44 @@ public:
             for ( int x = 0; x < REAL_SIZE; ++x )
             {
                 // note that RGB must be premultiplied by alpha
-                unsigned a = (Data::Iterator::ChannelType)((x*255.)/REAL_SIZE);
+                unsigned a = (wxAlphaPixelData::Iterator::ChannelType)((x*255.)/REAL_SIZE);
                 p.Red() = r * a / 256;
                 p.Green() = g * a / 256;
                 p.Blue() = b * a / 256;
                 p.Alpha() = a;
 
+                ++p; // same as p.OffsetX(1)
+            }
+
+            p = rowStart;
+            p.OffsetY(data, 1);
+        }
+    }
+
+    void InitBitmap()
+    {
+        // draw some colourful stripes without alpha
+        wxNativePixelData data(m_bitmap);
+        if ( !data )
+        {
+            wxLogError(_T("Failed to gain raw access to bitmap data"));
+            return;
+        }
+
+        wxNativePixelData::Iterator p(data);
+        for ( int y = 0; y < SIZE; ++y )
+        {
+            wxNativePixelData::Iterator rowStart = p;
+
+            int r = y < SIZE/3 ? 255 : 0,
+                g = (SIZE/3 <= y) && (y < 2*(SIZE/3)) ? 255 : 0,
+                b = 2*(SIZE/3) <= y ? 255 : 0;
+
+            for ( int x = 0; x < SIZE; ++x )
+            {
+                p.Red() = r;
+                p.Green() = g;
+                p.Blue() = b;
                 ++p; // same as p.OffsetX(1)
             }
 
@@ -347,11 +416,15 @@ public:
         dc.DrawText(_T("This is alpha and raw bitmap test"), 0, BORDER);
         dc.DrawText(_T("This is alpha and raw bitmap test"), 0, SIZE/2 - BORDER);
         dc.DrawText(_T("This is alpha and raw bitmap test"), 0, SIZE - 2*BORDER);
-        dc.DrawBitmap( m_bitmap, 0, 0, true /* use mask */ );
+        dc.DrawBitmap( m_alphaBitmap, 0, 0, true /* use mask */ );
+
+        dc.DrawText(_T("Raw bitmap access without alpha"), 0, SIZE+5);
+        dc.DrawBitmap( m_bitmap, 0, SIZE+5+dc.GetCharHeight());
     }
 
 private:
     wxBitmap m_bitmap;
+    wxBitmap m_alphaBitmap;
 
     DECLARE_EVENT_TABLE()
 };
@@ -372,8 +445,6 @@ IMPLEMENT_APP(MyApp)
 
 // MyCanvas
 
-IMPLEMENT_DYNAMIC_CLASS(MyCanvas, wxScrolledWindow)
-
 BEGIN_EVENT_TABLE(MyImageFrame, wxFrame)
     EVT_ERASE_BACKGROUND(MyImageFrame::OnEraseBackground)
     EVT_PAINT(MyImageFrame::OnPaint)
@@ -389,38 +460,16 @@ END_EVENT_TABLE()
 #endif // wxHAVE_RAW_BITMAP
 
 BEGIN_EVENT_TABLE(MyCanvas, wxScrolledWindow)
-  EVT_PAINT(MyCanvas::OnPaint)
+    EVT_PAINT(MyCanvas::OnPaint)
 END_EVENT_TABLE()
 
 MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
                     const wxPoint &pos, const wxSize &size )
-        : wxScrolledWindow( parent, id, pos, size, wxSUNKEN_BORDER )
-          , m_bmpSmileXpm((const char **) smile_xpm)
-          , m_iconSmileXpm((const char **) smile_xpm)
+    : wxScrolledWindow( parent, id, pos, size, wxSUNKEN_BORDER )
+    , m_bmpSmileXpm(smile_xpm)
+    , m_iconSmileXpm(smile_xpm)
 {
-    my_horse_png = (wxBitmap*) NULL;
-    my_horse_jpeg = (wxBitmap*) NULL;
-    my_horse_gif = (wxBitmap*) NULL;
-    my_horse_bmp = (wxBitmap*) NULL;
-    my_horse_bmp2 = (wxBitmap*) NULL;
-    my_horse_pcx = (wxBitmap*) NULL;
-    my_horse_pnm = (wxBitmap*) NULL;
-    my_horse_tiff = (wxBitmap*) NULL;
-    my_horse_xpm = (wxBitmap*) NULL;
-    my_horse_ico32 = (wxBitmap*) NULL;
-    my_horse_ico16 = (wxBitmap*) NULL;
-    my_horse_ico = (wxBitmap*) NULL;
-    my_horse_cur = (wxBitmap*) NULL;
-    my_horse_ani = (wxBitmap*) NULL;
-    colorized_horse_jpeg = (wxBitmap*) NULL;
-
-    my_smile_xbm = (wxBitmap*) NULL;
-    my_square = (wxBitmap*) NULL;
-    my_anti = (wxBitmap*) NULL;
-
-    my_horse_asciigrey_pnm = (wxBitmap*) NULL;
-    my_horse_rawgrey_pnm = (wxBitmap*) NULL;
-
+    my_horse_ani = NULL;
     m_ani_images = 0 ;
 
     SetBackgroundColour(* wxWHITE);
@@ -454,14 +503,29 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     image.Destroy();
 
     if ( image.LoadFile( dir + _T("test.png") ) )
-        my_square = new wxBitmap( image );
+        my_square = wxBitmap( image );
 
     image.Destroy();
 
     if ( !image.LoadFile( dir + _T("horse.png")) )
         wxLogError(wxT("Can't load PNG image"));
     else
-        my_horse_png = new wxBitmap( image );
+        my_horse_png = wxBitmap( image );
+
+    if ( !image.LoadFile( dir + _T("toucan.png")) )
+        wxLogError(wxT("Can't load PNG image"));
+    else
+        my_toucan = wxBitmap(image);
+
+    my_toucan_flipped_horiz = wxBitmap(image.Mirror(true));
+    my_toucan_flipped_vert = wxBitmap(image.Mirror(false));
+    my_toucan_flipped_both = wxBitmap(image.Mirror(true).Mirror(false));
+    my_toucan_grey = wxBitmap(image.ConvertToGreyscale());
+    my_toucan_head = wxBitmap(image.GetSubImage(wxRect(40, 7, 80, 60)));
+    my_toucan_scaled_normal = wxBitmap(image.Scale(110,90,wxIMAGE_QUALITY_NORMAL));
+    my_toucan_scaled_high = wxBitmap(image.Scale(110,90,wxIMAGE_QUALITY_HIGH));
+    my_toucan_blur = wxBitmap(image.Blur(10));
+
 #endif // wxUSE_LIBPNG
 
 #if wxUSE_LIBJPEG
@@ -471,13 +535,19 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
         wxLogError(wxT("Can't load JPG image"));
     else
     {
-        my_horse_jpeg = new wxBitmap( image );
+        my_horse_jpeg = wxBitmap( image );
+
         // Colorize by rotating green hue to red
         wxImage::HSVValue greenHSV = wxImage::RGBtoHSV(wxImage::RGBValue(0, 255, 0));
         wxImage::HSVValue redHSV = wxImage::RGBtoHSV(wxImage::RGBValue(255, 0, 0));
         image.RotateHue(redHSV.hue - greenHSV.hue);
-        colorized_horse_jpeg = new wxBitmap( image );
+        colorized_horse_jpeg = wxBitmap( image );
     }
+
+    if ( !image.LoadFile( dir + _T("cmyk.jpg")) )
+        wxLogError(_T("Can't load CMYK JPG image"));
+    else
+        my_cmyk_jpeg = wxBitmap(image);
 #endif // wxUSE_LIBJPEG
 
 #if wxUSE_GIF
@@ -486,7 +556,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.gif" )) )
         wxLogError(wxT("Can't load GIF image"));
     else
-        my_horse_gif = new wxBitmap( image );
+        my_horse_gif = wxBitmap( image );
 #endif
 
 #if wxUSE_PCX
@@ -495,7 +565,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.pcx"), wxBITMAP_TYPE_PCX ) )
         wxLogError(wxT("Can't load PCX image"));
     else
-        my_horse_pcx = new wxBitmap( image );
+        my_horse_pcx = wxBitmap( image );
 #endif
 
     image.Destroy();
@@ -503,7 +573,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.bmp"), wxBITMAP_TYPE_BMP ) )
         wxLogError(wxT("Can't load BMP image"));
     else
-        my_horse_bmp = new wxBitmap( image );
+        my_horse_bmp = wxBitmap( image );
 
 #if wxUSE_XPM
     image.Destroy();
@@ -511,7 +581,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.xpm"), wxBITMAP_TYPE_XPM ) )
         wxLogError(wxT("Can't load XPM image"));
     else
-        my_horse_xpm = new wxBitmap( image );
+        my_horse_xpm = wxBitmap( image );
 
     if ( !image.SaveFile( dir + _T("test.xpm"), wxBITMAP_TYPE_XPM ))
         wxLogError(wxT("Can't save file"));
@@ -523,21 +593,21 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.pnm"), wxBITMAP_TYPE_PNM ) )
         wxLogError(wxT("Can't load PNM image"));
     else
-        my_horse_pnm = new wxBitmap( image );
+        my_horse_pnm = wxBitmap( image );
 
     image.Destroy();
 
     if ( !image.LoadFile( dir + _T("horse_ag.pnm"), wxBITMAP_TYPE_PNM ) )
         wxLogError(wxT("Can't load PNM image"));
     else
-        my_horse_asciigrey_pnm = new wxBitmap( image );
+        my_horse_asciigrey_pnm = wxBitmap( image );
 
     image.Destroy();
 
     if ( !image.LoadFile( dir + _T("horse_rg.pnm"), wxBITMAP_TYPE_PNM ) )
         wxLogError(wxT("Can't load PNM image"));
     else
-        my_horse_rawgrey_pnm = new wxBitmap( image );
+        my_horse_rawgrey_pnm = wxBitmap( image );
 #endif
 
 #if wxUSE_LIBTIFF
@@ -546,12 +616,21 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.tif"), wxBITMAP_TYPE_TIF ) )
         wxLogError(wxT("Can't load TIFF image"));
     else
-        my_horse_tiff = new wxBitmap( image );
+        my_horse_tiff = wxBitmap( image );
+#endif
+
+#if wxUSE_LIBTIFF
+    image.Destroy();
+
+    if ( !image.LoadFile( dir + _T("horse.tga"), wxBITMAP_TYPE_TGA ) )
+        wxLogError(wxT("Can't load TGA image"));
+    else
+        my_horse_tga = wxBitmap( image );
 #endif
 
     CreateAntiAliasedBitmap();
 
-    my_smile_xbm = new wxBitmap( (const char*)smile_bits, smile_width,
+    my_smile_xbm = wxBitmap( (const char*)smile_bits, smile_width,
                                  smile_height, 1 );
 
     // demonstrates XPM automatically using the mask when saving
@@ -564,21 +643,21 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
     if ( !image.LoadFile( dir + _T("horse.ico"), wxBITMAP_TYPE_ICO, 0 ) )
         wxLogError(wxT("Can't load first ICO image"));
     else
-        my_horse_ico32 = new wxBitmap( image );
+        my_horse_ico32 = wxBitmap( image );
 
     image.Destroy();
 
     if ( !image.LoadFile( dir + _T("horse.ico"), wxBITMAP_TYPE_ICO, 1 ) )
         wxLogError(wxT("Can't load second ICO image"));
     else
-        my_horse_ico16 = new wxBitmap( image );
+        my_horse_ico16 = wxBitmap( image );
 
     image.Destroy();
 
     if ( !image.LoadFile( dir + _T("horse.ico") ) )
         wxLogError(wxT("Can't load best ICO image"));
     else
-        my_horse_ico = new wxBitmap( image );
+        my_horse_ico = wxBitmap( image );
 
     image.Destroy();
 
@@ -586,7 +665,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
         wxLogError(wxT("Can't load best ICO image"));
     else
     {
-        my_horse_cur = new wxBitmap( image );
+        my_horse_cur = wxBitmap( image );
         xH = 30 + image.GetOptionInt(wxIMAGE_OPTION_CUR_HOTSPOT_X) ;
         yH = 2420 + image.GetOptionInt(wxIMAGE_OPTION_CUR_HOTSPOT_Y) ;
     }
@@ -628,7 +707,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
             if ( !image.LoadFile(mis) )
                 wxLogError(wxT("Can't load BMP image from stream"));
             else
-                my_horse_bmp2 = new wxBitmap( image );
+                my_horse_bmp2 = wxBitmap( image );
         }
 
         free(data);
@@ -637,26 +716,7 @@ MyCanvas::MyCanvas( wxWindow *parent, wxWindowID id,
 
 MyCanvas::~MyCanvas()
 {
-    delete my_horse_pnm;
-    delete my_horse_png;
-    delete my_horse_jpeg;
-    delete my_horse_gif;
-    delete my_horse_bmp;
-    delete my_horse_bmp2;
-    delete my_horse_pcx;
-    delete my_horse_tiff;
-    delete my_horse_xpm;
-    delete my_horse_ico32;
-    delete my_horse_ico16;
-    delete my_horse_ico;
-    delete my_horse_cur;
     delete [] my_horse_ani;
-    delete my_smile_xbm;
-    delete my_square;
-    delete my_anti;
-    delete my_horse_asciigrey_pnm;
-    delete my_horse_rawgrey_pnm;
-    delete colorized_horse_jpeg;
 }
 
 void MyCanvas::OnPaint( wxPaintEvent &WXUNUSED(event) )
@@ -665,7 +725,8 @@ void MyCanvas::OnPaint( wxPaintEvent &WXUNUSED(event) )
     PrepareDC( dc );
 
     dc.DrawText( _T("Loaded image"), 30, 10 );
-    if (my_square && my_square->Ok()) dc.DrawBitmap( *my_square, 30, 30 );
+    if (my_square.Ok())
+        dc.DrawBitmap( my_square, 30, 30 );
 
     dc.DrawText( _T("Drawn directly"), 150, 10 );
     dc.SetBrush( wxBrush( wxT("orange"), wxSOLID ) );
@@ -674,80 +735,130 @@ void MyCanvas::OnPaint( wxPaintEvent &WXUNUSED(event) )
     dc.SetBrush( *wxWHITE_BRUSH );
     dc.DrawRectangle( 170, 50, 60, 60 );
 
-    if (my_anti && my_anti->Ok())
-        dc.DrawBitmap( *my_anti, 280, 30 );
+    if (my_anti.Ok())
+        dc.DrawBitmap( my_anti, 280, 30 );
 
     dc.DrawText( _T("PNG handler"), 30, 135 );
-    if (my_horse_png && my_horse_png->Ok())
+    if (my_horse_png.Ok())
     {
-        dc.DrawBitmap( *my_horse_png, 30, 150 );
+        dc.DrawBitmap( my_horse_png, 30, 150 );
         wxRect rect(0,0,100,100);
-        wxBitmap sub( my_horse_png->GetSubBitmap(rect) );
-        dc.DrawText( _T("GetSubBitmap()"), 280, 190 );
-        dc.DrawBitmap( sub, 280, 210 );
+        wxBitmap sub( my_horse_png.GetSubBitmap(rect) );
+        dc.DrawText( _T("GetSubBitmap()"), 280, 175 );
+        dc.DrawBitmap( sub, 280, 195 );
     }
 
     dc.DrawText( _T("JPEG handler"), 30, 365 );
-    if (my_horse_jpeg && my_horse_jpeg->Ok())
-        dc.DrawBitmap( *my_horse_jpeg, 30, 380 );
+    if (my_horse_jpeg.Ok())
+        dc.DrawBitmap( my_horse_jpeg, 30, 380 );
+
+    dc.DrawText( _T("Green rotated to red"), 280, 365 );
+    if (colorized_horse_jpeg.Ok())
+        dc.DrawBitmap( colorized_horse_jpeg, 280, 380 );
+
+    dc.DrawText( _T("CMYK JPEG image"), 530, 365 );
+    if (my_cmyk_jpeg.Ok())
+        dc.DrawBitmap( my_cmyk_jpeg, 530, 380 );
 
     dc.DrawText( _T("GIF handler"), 30, 595 );
-    if (my_horse_gif && my_horse_gif->Ok())
-        dc.DrawBitmap( *my_horse_gif, 30, 610 );
+    if (my_horse_gif.Ok())
+        dc.DrawBitmap( my_horse_gif, 30, 610 );
 
     dc.DrawText( _T("PCX handler"), 30, 825 );
-    if (my_horse_pcx && my_horse_pcx->Ok())
-        dc.DrawBitmap( *my_horse_pcx, 30, 840 );
+    if (my_horse_pcx.Ok())
+        dc.DrawBitmap( my_horse_pcx, 30, 840 );
 
     dc.DrawText( _T("BMP handler"), 30, 1055 );
-    if (my_horse_bmp && my_horse_bmp->Ok())
-        dc.DrawBitmap( *my_horse_bmp, 30, 1070 );
+    if (my_horse_bmp.Ok())
+        dc.DrawBitmap( my_horse_bmp, 30, 1070 );
 
     dc.DrawText( _T("BMP read from memory"), 280, 1055 );
-    if (my_horse_bmp2 && my_horse_bmp2->Ok())
-        dc.DrawBitmap( *my_horse_bmp2, 280, 1070 );
+    if (my_horse_bmp2.Ok())
+        dc.DrawBitmap( my_horse_bmp2, 280, 1070 );
 
     dc.DrawText( _T("PNM handler"), 30, 1285 );
-    if (my_horse_pnm && my_horse_pnm->Ok())
-        dc.DrawBitmap( *my_horse_pnm, 30, 1300 );
+    if (my_horse_pnm.Ok())
+        dc.DrawBitmap( my_horse_pnm, 30, 1300 );
 
     dc.DrawText( _T("PNM handler (ascii grey)"), 280, 1285 );
-    if (my_horse_asciigrey_pnm && my_horse_asciigrey_pnm->Ok())
-        dc.DrawBitmap( *my_horse_asciigrey_pnm, 280, 1300 );
+    if (my_horse_asciigrey_pnm.Ok())
+        dc.DrawBitmap( my_horse_asciigrey_pnm, 280, 1300 );
 
     dc.DrawText( _T("PNM handler (raw grey)"), 530, 1285 );
-    if (my_horse_rawgrey_pnm && my_horse_rawgrey_pnm->Ok())
-        dc.DrawBitmap( *my_horse_rawgrey_pnm, 530, 1300 );
+    if (my_horse_rawgrey_pnm.Ok())
+        dc.DrawBitmap( my_horse_rawgrey_pnm, 530, 1300 );
 
     dc.DrawText( _T("TIFF handler"), 30, 1515 );
-    if (my_horse_tiff && my_horse_tiff->Ok())
-        dc.DrawBitmap( *my_horse_tiff, 30, 1530 );
+    if (my_horse_tiff.Ok())
+        dc.DrawBitmap( my_horse_tiff, 30, 1530 );
 
-    dc.DrawText( _T("XPM handler"), 30, 1745 );
-    if (my_horse_xpm && my_horse_xpm->Ok())
-        dc.DrawBitmap( *my_horse_xpm, 30, 1760 );
+    dc.DrawText( _T("TGA handler"), 30, 1745 );
+    if (my_horse_tga.Ok())
+        dc.DrawBitmap( my_horse_tga, 30, 1760 );
 
+    dc.DrawText( _T("XPM handler"), 30, 1975 );
+    if (my_horse_xpm.Ok())
+        dc.DrawBitmap( my_horse_xpm, 30, 2000 );
 
-    if (my_smile_xbm && my_smile_xbm->Ok())
+    // toucans
     {
-        dc.DrawText( _T("XBM bitmap"), 30, 1975 );
-        dc.DrawText( _T("(green on red)"), 30, 1990 );
+        int x = 750, y = 10, yy = 170;
+
+        dc.DrawText(wxT("Original toucan"), x+50, y);
+        dc.DrawBitmap(my_toucan, x, y+15, true);
+        y += yy;
+        dc.DrawText(wxT("Flipped horizontally"), x+50, y);
+        dc.DrawBitmap(my_toucan_flipped_horiz, x, y+15, true);
+        y += yy;
+        dc.DrawText(wxT("Flipped vertically"), x+50, y);
+        dc.DrawBitmap(my_toucan_flipped_vert, x, y+15, true);
+        y += yy;
+        dc.DrawText(wxT("Flipped both h&v"), x+50, y);
+        dc.DrawBitmap(my_toucan_flipped_both, x, y+15, true);
+
+        y += yy;
+        dc.DrawText(wxT("In greyscale"), x+50, y);
+        dc.DrawBitmap(my_toucan_grey, x, y+15, true);
+
+        y += yy;
+        dc.DrawText(wxT("Toucan's head"), x+50, y);
+        dc.DrawBitmap(my_toucan_head, x, y+15, true);
+
+        y += yy;
+        dc.DrawText(wxT("Scaled with normal quality"), x+50, y);
+        dc.DrawBitmap(my_toucan_scaled_normal, x, y+15, true);
+
+        y += yy;
+        dc.DrawText(wxT("Scaled with high quality"), x+50, y);
+        dc.DrawBitmap(my_toucan_scaled_high, x, y+15, true);
+
+        y += yy;
+        dc.DrawText(wxT("Blured"), x+50, y);
+        dc.DrawBitmap(my_toucan_blur, x, y+15, true);
+    }
+
+    if (my_smile_xbm.Ok())
+    {
+        int x = 300, y = 1800;
+
+        dc.DrawText( _T("XBM bitmap"), x, y );
+        dc.DrawText( _T("(green on red)"), x, y + 15 );
         dc.SetTextForeground( _T("GREEN") );
         dc.SetTextBackground( _T("RED") );
-        dc.DrawBitmap( *my_smile_xbm, 30, 2010 );
+        dc.DrawBitmap( my_smile_xbm, x, y + 30 );
 
-        dc.SetTextForeground( wxT("BLACK") );
-        dc.DrawText( _T("After wxImage conversion"), 150, 1975 );
-        dc.DrawText( _T("(red on white)"), 150, 1990 );
+        dc.SetTextForeground( *wxBLACK );
+        dc.DrawText( _T("After wxImage conversion"), x + 120, y );
+        dc.DrawText( _T("(red on white)"), x + 120, y + 15 );
         dc.SetTextForeground( wxT("RED") );
-        wxImage i = my_smile_xbm->ConvertToImage();
+        wxImage i = my_smile_xbm.ConvertToImage();
         i.SetMaskColour( 255, 255, 255 );
         i.Replace( 0, 0, 0,
                wxRED_PEN->GetColour().Red(),
                wxRED_PEN->GetColour().Green(),
                wxRED_PEN->GetColour().Blue() );
-        dc.DrawBitmap( wxBitmap(i), 150, 2010, true );
-        dc.SetTextForeground( wxT("BLACK") );
+        dc.DrawBitmap( wxBitmap(i), x + 120, y + 30, true );
+        dc.SetTextForeground( *wxBLACK );
     }
 
 
@@ -770,15 +881,17 @@ void MyCanvas::OnPaint( wxPaintEvent &WXUNUSED(event) )
 
     if (mono.Ok())
     {
-        dc.DrawText( _T("Mono bitmap"), 30, 2095 );
-        dc.DrawText( _T("(red on green)"), 30, 2110 );
+        int x = 300, y = 1900;
+
+        dc.DrawText( _T("Mono bitmap"), x, y );
+        dc.DrawText( _T("(red on green)"), x, y + 15 );
         dc.SetTextForeground( wxT("RED") );
         dc.SetTextBackground( wxT("GREEN") );
-        dc.DrawBitmap( mono, 30, 2130 );
+        dc.DrawBitmap( mono, x, y + 30 );
 
-        dc.SetTextForeground( wxT("BLACK") );
-        dc.DrawText( _T("After wxImage conversion"), 150, 2095 );
-        dc.DrawText( _T("(red on white)"), 150, 2110 );
+        dc.SetTextForeground( *wxBLACK );
+        dc.DrawText( _T("After wxImage conversion"), x + 120, y );
+        dc.DrawText( _T("(red on white)"), x + 120, y + 15 );
         dc.SetTextForeground( wxT("RED") );
         wxImage i = mono.ConvertToImage();
         i.SetMaskColour( 255,255,255 );
@@ -786,8 +899,8 @@ void MyCanvas::OnPaint( wxPaintEvent &WXUNUSED(event) )
                wxRED_PEN->GetColour().Red(),
                wxRED_PEN->GetColour().Green(),
                wxRED_PEN->GetColour().Blue() );
-        dc.DrawBitmap( wxBitmap(i), 150, 2130, true );
-        dc.SetTextForeground( wxT("BLACK") );
+        dc.DrawBitmap( wxBitmap(i), x + 120, y + 30, true );
+        dc.SetTextForeground( *wxBLACK );
     }
 
     // For testing transparency
@@ -830,40 +943,34 @@ void MyCanvas::OnPaint( wxPaintEvent &WXUNUSED(event) )
     }
 
     dc.DrawText( _T("ICO handler (1st image)"), 30, 2290 );
-    if (my_horse_ico32 && my_horse_ico32->Ok())
-        dc.DrawBitmap( *my_horse_ico32, 30, 2330, true );
+    if (my_horse_ico32.Ok())
+        dc.DrawBitmap( my_horse_ico32, 30, 2330, true );
 
     dc.DrawText( _T("ICO handler (2nd image)"), 230, 2290 );
-    if (my_horse_ico16 && my_horse_ico16->Ok())
-        dc.DrawBitmap( *my_horse_ico16, 230, 2330, true );
+    if (my_horse_ico16.Ok())
+        dc.DrawBitmap( my_horse_ico16, 230, 2330, true );
 
     dc.DrawText( _T("ICO handler (best image)"), 430, 2290 );
-    if (my_horse_ico && my_horse_ico->Ok())
-        dc.DrawBitmap( *my_horse_ico, 430, 2330, true );
+    if (my_horse_ico.Ok())
+        dc.DrawBitmap( my_horse_ico, 430, 2330, true );
 
     dc.DrawText( _T("CUR handler"), 30, 2390 );
-    if (my_horse_cur && my_horse_cur->Ok())
+    if (my_horse_cur.Ok())
     {
-        dc.DrawBitmap( *my_horse_cur, 30, 2420, true );
+        dc.DrawBitmap( my_horse_cur, 30, 2420, true );
         dc.SetPen (*wxRED_PEN);
         dc.DrawLine (xH-10,yH,xH+10,yH);
         dc.DrawLine (xH,yH-10,xH,yH+10);
     }
+
     dc.DrawText( _T("ANI handler"), 230, 2390 );
-    int i ;
-    for (i=0; i < m_ani_images; i ++)
+    for ( int i=0; i < m_ani_images; i++ )
+    {
         if (my_horse_ani[i].Ok())
         {
             dc.DrawBitmap( my_horse_ani[i], 230 + i * 2 * my_horse_ani[i].GetWidth() , 2420, true );
         }
-#if wxUSE_LIBJPEG
-    if (colorized_horse_jpeg)
-    {
-        dc.DrawText( _T("Colorize image by rotating green hue to red"), 30, 2490 );
-        dc.DrawBitmap( *colorized_horse_jpeg, 30, 2520 );
     }
-#endif // wxUSE_LIBJPEG
-
 }
 
 void MyCanvas::CreateAntiAliasedBitmap()
@@ -878,12 +985,12 @@ void MyCanvas::CreateAntiAliasedBitmap()
 
   dc.SetFont( wxFont( 24, wxDECORATIVE, wxNORMAL, wxNORMAL) );
   dc.SetTextForeground( wxT("RED") );
-  dc.DrawText( _T("This is anti-aliased Text."), 20, 20 );
-  dc.DrawText( _T("And a Rectangle."), 20, 60 );
+  dc.DrawText( _T("This is anti-aliased Text."), 20, 5 );
+  dc.DrawText( _T("And a Rectangle."), 20, 45 );
 
   dc.SetBrush( *wxRED_BRUSH );
   dc.SetPen( *wxTRANSPARENT_PEN );
-  dc.DrawRoundedRectangle( 20, 100, 200, 180, 20 );
+  dc.DrawRoundedRectangle( 20, 85, 200, 180, 20 );
 
   wxImage original= bitmap.ConvertToImage();
   wxImage anti( 150, 150 );
@@ -912,7 +1019,7 @@ void MyCanvas::CreateAntiAliasedBitmap()
        blue = blue/4;
        anti.SetRGB( x, y, (unsigned char)red, (unsigned char)green, (unsigned char)blue );
     }
-  my_anti = new wxBitmap(anti);
+  my_anti = wxBitmap(anti);
 }
 
 // MyFrame
@@ -943,7 +1050,7 @@ END_EVENT_TABLE()
 
 MyFrame::MyFrame()
        : wxFrame( (wxFrame *)NULL, wxID_ANY, _T("wxImage sample"),
-                  wxPoint(20,20), wxSize(470,360) )
+                  wxPoint(20, 20), wxSize(950, 700) )
 {
   wxMenuBar *menu_bar = new wxMenuBar();
 
@@ -1025,7 +1132,7 @@ void MyFrame::OnTestRawBitmap( wxCommandEvent &WXUNUSED(event) )
 void MyFrame::OnCopy(wxCommandEvent& WXUNUSED(event))
 {
     wxBitmapDataObject *dobjBmp = new wxBitmapDataObject;
-    dobjBmp->SetBitmap(*m_canvas->my_horse_png);
+    dobjBmp->SetBitmap(m_canvas->my_horse_png);
 
     wxTheClipboard->Open();
 
@@ -1061,42 +1168,10 @@ void MyFrame::OnPaste(wxCommandEvent& WXUNUSED(event))
 
 bool MyApp::OnInit()
 {
-#if wxUSE_LIBPNG
-  wxImage::AddHandler( new wxPNGHandler );
-#endif
+    wxInitAllImageHandlers();
 
-#if wxUSE_LIBJPEG
-  wxImage::AddHandler( new wxJPEGHandler );
-#endif
+    wxFrame *frame = new MyFrame();
+    frame->Show( true );
 
-#if wxUSE_LIBTIFF
-  wxImage::AddHandler( new wxTIFFHandler );
-#endif
-
-#if wxUSE_GIF
-  wxImage::AddHandler( new wxGIFHandler );
-#endif
-
-#if wxUSE_PCX
-  wxImage::AddHandler( new wxPCXHandler );
-#endif
-
-#if wxUSE_PNM
-  wxImage::AddHandler( new wxPNMHandler );
-#endif
-
-#if wxUSE_XPM
-  wxImage::AddHandler( new wxXPMHandler );
-#endif
-
-#if wxUSE_ICO_CUR
-  wxImage::AddHandler( new wxICOHandler );
-  wxImage::AddHandler( new wxCURHandler );
-  wxImage::AddHandler( new wxANIHandler );
-#endif
-
-  wxFrame *frame = new MyFrame();
-  frame->Show( true );
-
-  return true;
+    return true;
 }

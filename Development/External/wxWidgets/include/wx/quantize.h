@@ -1,13 +1,18 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        quantize.h
+// Name:        wx/quantize.h
 // Purpose:     wxQuantizer class
 // Author:      Julian Smart
 // Modified by:
 // Created:     22/6/2000
-// RCS-ID:      $Id: quantize.h,v 1.7 2004/09/20 11:31:41 ABX Exp $
+// RCS-ID:      $Id: quantize.h 49804 2007-11-10 01:09:42Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:
 /////////////////////////////////////////////////////////////////////////////
+
+#ifndef _WX_QUANTIZE_H_
+#define _WX_QUANTIZE_H_
+
+#include "wx/object.h"
 
 /*
  * From jquant2.c
@@ -17,14 +22,8 @@
  * For conditions of distribution and use, see the accompanying README file.
  */
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "quantize.h"
-#endif
-
-#ifndef _WX_QUANTIZE_H_
-#define _WX_QUANTIZE_H_
-
-class WXDLLEXPORT wxImage;
+class WXDLLIMPEXP_FWD_CORE wxImage;
+class WXDLLIMPEXP_FWD_CORE wxPalette;
 
 /*
  * wxQuantize
@@ -43,7 +42,7 @@ DECLARE_DYNAMIC_CLASS(wxQuantize)
 //// Constructor
 
     wxQuantize() {}
-    ~wxQuantize() {}
+    virtual ~wxQuantize() {}
 
 //// Operations
 
@@ -75,4 +74,3 @@ DECLARE_DYNAMIC_CLASS(wxQuantize)
 
 #endif
     // _WX_QUANTIZE_H_
-

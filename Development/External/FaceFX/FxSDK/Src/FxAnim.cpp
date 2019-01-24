@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxAnim.h"
@@ -20,8 +20,7 @@ namespace Face
 // Serializes an FxAnimBoneWeight to an archive.
 FxArchive& operator<<( FxArchive& arc, FxAnimBoneWeight& animBoneWeight )
 {
-	FxUInt16 version = kCurrentFxAnimBoneWeightVersion;
-	arc << version;
+	arc.SerializeClassVersion("FxAnimBoneWeight", FxTrue, kCurrentFxAnimBoneWeightVersion);
 	arc << animBoneWeight.boneName << animBoneWeight.boneWeight;
 	return arc;
 }
@@ -35,7 +34,6 @@ FxAnim::FxAnim()
 	, _endTime(1.0f)
 	, _blendInTime(0.16f)
 	, _blendOutTime(0.22f)
-	, _isLinked(FxFalse)
 	, _soundCueIndex(FxInvalidIndex)
 	, _soundCuePointer(NULL)
 {
@@ -50,7 +48,6 @@ FxAnim::FxAnim( const FxAnim& other )
 	, _blendInTime(other._blendInTime)
 	, _blendOutTime(other._blendOutTime)
 	, _boneWeights(other._boneWeights)
-	, _isLinked(other._isLinked)
 	, _soundCuePath(other._soundCuePath)
 	, _soundNodeWave(other._soundNodeWave)
 	, _soundCueIndex(other._soundCueIndex)
@@ -69,7 +66,6 @@ FxAnim& FxAnim::operator=( const FxAnim& other )
 	_blendInTime     = other._blendInTime;
 	_blendOutTime    = other._blendOutTime;
 	_boneWeights     = other._boneWeights;
-	_isLinked		 = other._isLinked;
 	_soundCuePath    = other._soundCuePath;
 	_soundNodeWave   = other._soundNodeWave;
 	_soundCueIndex   = other._soundCueIndex;
@@ -79,19 +75,6 @@ FxAnim& FxAnim::operator=( const FxAnim& other )
 
 FxAnim::~FxAnim()
 {
-}
-
-FxBool FxAnim::Tick( const FxReal time ) const
-{
-	// Update all of the curves.
-	FxSize numAnimCurves = _animCurves.Length();
-	for( FxSize i = 0; i < numAnimCurves; ++i )
-	{
-		_animCurves[i].EvaluateAt(time);
-	}
-
-	// If the animation is finished return FxFalse.
-	return time <= _endTime;
 }
 
 FxSize FxAnim::FindAnimCurve( const FxName& name ) const
@@ -105,16 +88,6 @@ FxSize FxAnim::FindAnimCurve( const FxName& name ) const
 		}
 	}
 	return FxInvalidIndex;
-}
-
-const FxAnimCurve& FxAnim::GetAnimCurve( FxSize index ) const
-{
-	return _animCurves[index];
-}
-
-FxAnimCurve& FxAnim::GetAnimCurveM( FxSize index )
-{
-	return _animCurves[index];
 }
 
 FxBool FxAnim::AddAnimCurve( const FxAnimCurve& curve )
@@ -193,40 +166,15 @@ void FxAnim::RemoveAllBoneWeights( void )
 	_boneWeights.Clear();
 }
 
-FxBool FxAnim::IsLinked( void ) const
-{
-	return _isLinked;
-}
-
-void FxAnim::Link( const FxFaceGraph& faceGraph )
-{
-	FxSize numAnimCurves = _animCurves.Length();
-	for( FxSize i = 0; i < numAnimCurves; ++i )
-	{
-		_animCurves[i].Link(&faceGraph);
-	}
-	_isLinked = FxTrue;
-}
-
-void FxAnim::Unlink( void )
-{
-	FxSize numAnimCurves = _animCurves.Length();
-	for( FxSize i = 0; i < numAnimCurves; ++i )
-	{
-		_animCurves[i].Unlink();
-	}
-	_isLinked = FxFalse;
-}
-
 void FxAnim::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxAnim);
-	arc << version;
-	
+	FxUInt16 version = arc.SerializeClassVersion("FxAnim");
+		
 	if( arc.IsSaving() )
 	{
+#ifndef NO_SAVE_VERSION
 		arc << _animCurves;
 
 		// Optimized key saving.
@@ -275,6 +223,7 @@ void FxAnim::Serialize( FxArchive& arc )
 		arc << _blendInTime  << _blendOutTime 
 			<< _boneWeights << _soundCuePath << _soundNodeWave 
 			<< _soundCueIndex;
+#endif
 	}
 	else
 	{
@@ -452,30 +401,12 @@ FxBool FxAnimGroup::RemoveAnim( const FxName& name )
 	return FxFalse;
 }
 
-void FxAnimGroup::Link( const FxFaceGraph& faceGraph )
-{
-	FxSize numAnims = _anims.Length();
-	for( FxSize i = 0; i < numAnims; ++i )
-	{
-		_anims[i].Link(faceGraph);
-	}
-}
-
-void FxAnimGroup::Unlink( void )
-{
-	FxSize numAnims = _anims.Length();
-	for( FxSize i = 0; i < numAnims; ++i )
-	{
-		_anims[i].Unlink();
-	}
-}
-
 void FxAnimGroup::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxAnimGroup);
-	arc << version;
+	arc.SerializeClassVersion("FxAnimGroup");
+	
 	arc << _anims;
 }
 

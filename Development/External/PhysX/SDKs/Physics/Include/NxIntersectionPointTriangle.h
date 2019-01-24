@@ -2,9 +2,9 @@
 #define NX_INTERSECTION_POINT_TRIANGLE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -30,9 +30,10 @@
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPointTriangleIntersect2D
 	*/
@@ -52,9 +53,10 @@
 		NxReal y = (e*a) - (d*b);
 		NxReal z = x + y - ac_bb;
 
-		// Same as: if(x>0.0f && y>0.0f && z<0.0f)	return TRUE;
-		//			else							return FALSE;
-		return (( NX_IR(z) & ~(NX_IR(x)|NX_IR(y)) ) & NX_SIGN_BITMASK);
+		if ((x > 0.0f) && (y > 0.0f) && (z < 0.0f))
+			return NX_TRUE;
+		else
+			return NX_FALSE;
 		}
 
 	/**
@@ -73,9 +75,10 @@
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPointTriangleIntersect
 	*/
@@ -100,18 +103,19 @@
 		NxReal y = (e*a) - (d*b);
 		NxReal z = x + y - ac_bb;
 
-		// Same as: if(x>0.0f && y>0.0f && z<0.0f)	return TRUE;
-		//			else							return FALSE;
-		return (( NX_IR(z) & ~(NX_IR(x)|NX_IR(y)) ) & NX_SIGN_BITMASK);
+		if ((x > 0.0f) && (y > 0.0f) && (z < 0.0f))
+			return NX_TRUE;
+		else
+			return NX_FALSE;
 		}
 
 //}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/fmapbase.cpp
+// Name:        src/common/fmapbase.cpp
 // Purpose:     wxFontMapperBase class implementation
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     21.06.2003 (extracted from common/fontmap.cpp)
-// RCS-ID:      $Id: fmapbase.cpp,v 1.20 2005/09/18 20:08:17 VZ Exp $
+// RCS-ID:      $Id: fmapbase.cpp 43063 2006-11-04 20:48:04Z VZ $
 // Copyright:   (c) 1999-2003 Vadim Zeitlin <vadim@wxwindows.org>
 // License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,18 +30,18 @@
     #include "wx/app.h"
     #include "wx/log.h"
     #include "wx/intl.h"
+    #include "wx/module.h"
 #endif //WX_PRECOMP
 
 #if defined(__WXMSW__)
-  #include  "wx/msw/private.h"  // includes windows.h for LOGFONT
-  #include  "wx/msw/winundef.h"
+    #include  "wx/msw/private.h"  // includes windows.h for LOGFONT
+    #include  "wx/msw/winundef.h"
 #endif
 
 #include "wx/fontmap.h"
 #include "wx/fmappriv.h"
 
 #include "wx/apptrait.h"
-#include "wx/module.h"
 
 // wxMemoryConfig uses wxFileConfig
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
@@ -89,10 +89,8 @@ static wxFontEncoding gs_encodings[] =
     wxFONTENCODING_CP437,
     wxFONTENCODING_UTF7,
     wxFONTENCODING_UTF8,
-    wxFONTENCODING_UTF16,
     wxFONTENCODING_UTF16BE,
     wxFONTENCODING_UTF16LE,
-    wxFONTENCODING_UTF32,
     wxFONTENCODING_UTF32BE,
     wxFONTENCODING_UTF32LE,
     wxFONTENCODING_EUC_JP,
@@ -138,12 +136,17 @@ static const wxChar* gs_encodingDescs[] =
     wxTRANSLATE( "Windows/DOS OEM (CP 437)" ),
     wxTRANSLATE( "Unicode 7 bit (UTF-7)" ),
     wxTRANSLATE( "Unicode 8 bit (UTF-8)" ),
+#ifdef WORDS_BIGENDIAN
     wxTRANSLATE( "Unicode 16 bit (UTF-16)" ),
-    wxTRANSLATE( "Unicode 16 bit Big Endian (UTF-16BE)" ),
     wxTRANSLATE( "Unicode 16 bit Little Endian (UTF-16LE)" ),
     wxTRANSLATE( "Unicode 32 bit (UTF-32)" ),
-    wxTRANSLATE( "Unicode 32 bit Big Endian (UTF-32BE)" ),
     wxTRANSLATE( "Unicode 32 bit Little Endian (UTF-32LE)" ),
+#else // WORDS_BIGENDIAN
+    wxTRANSLATE( "Unicode 16 bit Big Endian (UTF-16BE)" ),
+    wxTRANSLATE( "Unicode 16 bit (UTF-16)" ),
+    wxTRANSLATE( "Unicode 32 bit Big Endian (UTF-32BE)" ),
+    wxTRANSLATE( "Unicode 32 bit (UTF-32)" ),
+#endif // WORDS_BIGENDIAN
     wxTRANSLATE( "Extended Unix Codepage for Japanese (EUC-JP)" ),
     wxTRANSLATE( "US-ASCII" ),
     wxTRANSLATE( "BIG5" ),
@@ -152,25 +155,25 @@ static const wxChar* gs_encodingDescs[] =
 };
 
 // and the internal names (these are not translated on purpose!)
-static const wxChar* gs_encodingNames[WXSIZEOF(gs_encodingDescs)][10] =
+static const wxChar* gs_encodingNames[WXSIZEOF(gs_encodingDescs)][9] =
 {
-    // names from the first column are used under Linux, from the second one
-    // under Solaris and IRIX and from the third one -- under AIX
-    { wxT( "ISO-8859-1" ), wxT( "ISO8859-1" ), wxT( "8859-1" ), wxT("iso_8859_1"), NULL },
-    { wxT( "ISO-8859-2" ), wxT( "ISO8859-2" ), wxT( "8859-2" ), NULL },
-    { wxT( "ISO-8859-3" ), wxT( "ISO8859-3" ), wxT( "8859-3" ), NULL },
-    { wxT( "ISO-8859-4" ), wxT( "ISO8859-4" ), wxT( "8859-4" ), NULL },
-    { wxT( "ISO-8859-5" ), wxT( "ISO8859-5" ), wxT( "8859-5" ), NULL },
-    { wxT( "ISO-8859-6" ), wxT( "ISO8859-6" ), wxT( "8859-6" ), NULL },
-    { wxT( "ISO-8859-7" ), wxT( "ISO8859-7" ), wxT( "8859-7" ), NULL },
-    { wxT( "ISO-8859-8" ), wxT( "ISO8859-8" ), wxT( "8859-8" ), NULL },
-    { wxT( "ISO-8859-9" ), wxT( "ISO8859-9" ), wxT( "8859-9" ), NULL },
-    { wxT( "ISO-8859-10" ), wxT( "ISO8859-10" ), wxT( "8859-10" ), NULL },
-    { wxT( "ISO-8859-11" ), wxT( "ISO8859-11" ), wxT( "8859-11" ), NULL },
-    { wxT( "ISO-8859-12" ), wxT( "ISO8859-12" ), wxT( "8859-12" ), NULL },
-    { wxT( "ISO-8859-13" ), wxT( "ISO8859-13" ), wxT( "8859-13" ), NULL },
-    { wxT( "ISO-8859-14" ), wxT( "ISO8859-14" ), wxT( "8859-14" ), NULL },
-    { wxT( "ISO-8859-15" ), wxT( "ISO8859-15" ), wxT( "8859-15" ), NULL },
+    // names from the columns correspond to these OS:
+    //      Linux        Solaris and IRIX       HP-UX             AIX
+    { _T("ISO-8859-1"),  _T("ISO8859-1"),  _T("iso88591"),  _T("8859-1"), wxT("iso_8859_1"), NULL },
+    { _T("ISO-8859-2"),  _T("ISO8859-2"),  _T("iso88592"),  _T("8859-2"), NULL },
+    { _T("ISO-8859-3"),  _T("ISO8859-3"),  _T("iso88593"),  _T("8859-3"), NULL },
+    { _T("ISO-8859-4"),  _T("ISO8859-4"),  _T("iso88594"),  _T("8859-4"), NULL },
+    { _T("ISO-8859-5"),  _T("ISO8859-5"),  _T("iso88595"),  _T("8859-5"), NULL },
+    { _T("ISO-8859-6"),  _T("ISO8859-6"),  _T("iso88596"),  _T("8859-6"), NULL },
+    { _T("ISO-8859-7"),  _T("ISO8859-7"),  _T("iso88597"),  _T("8859-7"), NULL },
+    { _T("ISO-8859-8"),  _T("ISO8859-8"),  _T("iso88598"),  _T("8859-8"), NULL },
+    { _T("ISO-8859-9"),  _T("ISO8859-9"),  _T("iso88599"),  _T("8859-9"), NULL },
+    { _T("ISO-8859-10"), _T("ISO8859-10"), _T("iso885910"), _T("8859-10"), NULL },
+    { _T("ISO-8859-11"), _T("ISO8859-11"), _T("iso885911"), _T("8859-11"), NULL },
+    { _T("ISO-8859-12"), _T("ISO8859-12"), _T("iso885912"), _T("8859-12"), NULL },
+    { _T("ISO-8859-13"), _T("ISO8859-13"), _T("iso885913"), _T("8859-13"), NULL },
+    { _T("ISO-8859-14"), _T("ISO8859-14"), _T("iso885914"), _T("8859-14"), NULL },
+    { _T("ISO-8859-15"), _T("ISO8859-15"), _T("iso885915"), _T("8859-15"), NULL },
 
     // although koi8-ru is not strictly speaking the same as koi8-r,
     // they are similar enough to make mapping it to koi8 better than
@@ -193,14 +196,19 @@ static const wxChar* gs_encodingNames[WXSIZEOF(gs_encodingDescs)][10] =
     { wxT( "WINDOWS-1257" ),wxT( "CP-1257" ), NULL },
     { wxT( "WINDOWS-437" ), wxT( "CP-437" ), NULL },
 
-    { wxT( "UTF-7" ), NULL },
-    { wxT( "UTF-8" ), NULL },
-    { wxT( "UTF-16" ), NULL },
-    { wxT( "UTF-16BE" ), NULL },
-    { wxT( "UTF-16LE" ), NULL },
-    { wxT( "UTF-32" ), wxT( "UCS-4" ), NULL },
-    { wxT( "UTF-32BE" ), wxT( "UCS-4BE" ), NULL },
+    { wxT( "UTF-7" ), wxT("utf7"), NULL },
+    { wxT( "UTF-8" ), wxT("utf8"), NULL },
+#ifdef WORDS_BIGENDIAN
+    { wxT( "UTF-16BE" ), wxT("UCS-2BE"), wxT( "UTF-16" ), wxT("UCS-2"), wxT("UCS2"), NULL },
+    { wxT( "UTF-16LE" ), wxT("UCS-2LE"), NULL },
+    { wxT( "UTF-32BE" ), wxT( "UCS-4BE" ), wxT( "UTF-32" ), wxT( "UCS-4" ), wxT("UCS4"), NULL },
     { wxT( "UTF-32LE" ), wxT( "UCS-4LE" ), NULL },
+#else // WORDS_BIGENDIAN
+    { wxT( "UTF-16BE" ), wxT("UCS-2BE"), NULL },
+    { wxT( "UTF-16LE" ), wxT("UCS-2LE"), wxT( "UTF-16" ), wxT("UCS-2"), wxT("UCS2"), NULL },
+    { wxT( "UTF-32BE" ), wxT( "UCS-4BE" ), NULL },
+    { wxT( "UTF-32LE" ), wxT( "UCS-4LE" ), wxT( "UTF-32" ), wxT( "UCS-4" ), wxT("UCS4"), NULL },
+#endif // WORDS_BIGENDIAN
 
     { wxT( "EUC-JP" ), wxT( "eucJP" ), wxT( "euc_jp" ), wxT( "IBM-eucJP" ), NULL },
 
@@ -208,8 +216,8 @@ static const wxChar* gs_encodingNames[WXSIZEOF(gs_encodingDescs)][10] =
     { wxT( "US-ASCII" ), wxT( "ASCII" ), wxT("C"), wxT("POSIX"), wxT("ANSI_X3.4-1968"),
       wxT("646"), wxT("roman8"), wxT( "" ), NULL },
 
-    { wxT( "BIG5" ), NULL },
-    { wxT( "shift-jis" ), wxT( "shift_jis" ), wxT( "sjis" ), NULL },
+    { wxT( "BIG5" ), wxT("big5"), NULL },
+    { wxT( "SJIS" ), wxT( "SHIFT-JIS" ), wxT( "SHIFT_JIS" ), NULL },
     { wxT( "GB2312" ), NULL },
 };
 
@@ -225,8 +233,25 @@ class wxFontMapperModule : public wxModule
 {
 public:
     wxFontMapperModule() : wxModule() { }
-    virtual bool OnInit() { return true; }
-    virtual void OnExit() { delete (wxFontMapperBase*)wxFontMapperBase::Set(NULL); }
+
+    virtual bool OnInit()
+    {
+        // a dummy wxFontMapperBase object could have been created during the
+        // program startup before wxApp was created, we have to delete it to
+        // allow creating the real font mapper next time it is needed now that
+        // we can create it (when the modules are initialized, wxApp object
+        // already exists)
+        wxFontMapperBase *fm = wxFontMapperBase::Get();
+        if ( fm && fm->IsDummy() )
+            wxFontMapperBase::Reset();
+
+        return true;
+    }
+
+    virtual void OnExit()
+    {
+        wxFontMapperBase::Reset();
+    }
 
     DECLARE_DYNAMIC_CLASS(wxFontMapperModule)
 };
@@ -247,21 +272,17 @@ wxFontMapper *wxFontMapperBase::sm_instance = NULL;
 wxFontMapperBase::wxFontMapperBase()
 {
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
-    m_config = NULL;
-    m_configIsDummy = false;
+    m_configDummy = NULL;
 #endif // wxUSE_CONFIG
 }
 
 wxFontMapperBase::~wxFontMapperBase()
 {
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
-    if ( m_configIsDummy )
-        delete m_config;
+    if ( m_configDummy )
+        delete m_configDummy;
 #endif // wxUSE_CONFIG
 }
-
-bool wxFontMapperBase::IsWxFontMapper()
-{   return false; }
 
 /* static */
 wxFontMapperBase *wxFontMapperBase::Get()
@@ -296,6 +317,19 @@ wxFontMapper *wxFontMapperBase::Set(wxFontMapper *mapper)
     return old;
 }
 
+/* static */
+void wxFontMapperBase::Reset()
+{
+    if ( sm_instance )
+    {
+        // we need a cast as wxFontMapper is not fully declared here and so the
+        // compiler can't know that it derives from wxFontMapperBase (but
+        // run-time behaviour will be correct because the dtor is virtual)
+        delete (wxFontMapperBase *)sm_instance;
+        sm_instance = NULL;
+    }
+}
+
 #if wxUSE_CONFIG && wxUSE_FILECONFIG
 
 // ----------------------------------------------------------------------------
@@ -310,7 +344,7 @@ const wxChar *wxFontMapperBase::GetDefaultConfigPath()
 
 void wxFontMapperBase::SetConfigPath(const wxString& prefix)
 {
-    wxCHECK_RET( !prefix.IsEmpty() && prefix[0] == wxCONFIG_PATH_SEPARATOR,
+    wxCHECK_RET( !prefix.empty() && prefix[0] == wxCONFIG_PATH_SEPARATOR,
                  wxT("an absolute path should be given to wxFontMapper::SetConfigPath()") );
 
     m_configRootPath = prefix;
@@ -322,42 +356,23 @@ void wxFontMapperBase::SetConfigPath(const wxString& prefix)
 
 wxConfigBase *wxFontMapperBase::GetConfig()
 {
-    if ( !m_config )
-    {
-        // try the default
-        m_config = wxConfig::Get(false /*don't create on demand*/ );
+    wxConfigBase *config = wxConfig::Get(false);
 
-        if ( !m_config )
-        {
-            // we still want to have a config object because otherwise we would
-            // keep asking the user the same questions in the interactive mode,
-            // so create a dummy config which won't write to any files/registry
-            // but will allow us to remember the results of the questions at
-            // least during this run
-            m_config = new wxMemoryConfig;
-            m_configIsDummy = true;
-            // VS: we can't call wxConfig::Set(m_config) here because that would
-            //     disable automatic wxConfig instance creation if this code was
-            //     called before wxApp::OnInit (this happens in wxGTK -- it sets
-            //     default wxFont encoding in wxApp::Initialize())
-        }
-    }
-
-    if ( m_configIsDummy && wxConfig::Get(false) != NULL )
+    // If there is no global configuration, use an internal memory configuration
+    if ( !config )
     {
-        // VS: in case we created dummy m_config (see above), we want to switch back
-        //     to the real one as soon as one becomes available.
-        delete m_config;
-        m_config = wxConfig::Get(false);
-        m_configIsDummy = false;
-        // FIXME: ideally, we should add keys from dummy config to the real one now,
+        if ( !m_configDummy )
+            m_configDummy = new wxMemoryConfig;
+        config = m_configDummy;
+
+        // FIXME: ideally, we should add keys from dummy config to a real one later,
         //        but it is a low-priority task because typical wxWin application
         //        either doesn't use wxConfig at all or creates wxConfig object in
         //        wxApp::OnInit(), before any real interaction with the user takes
         //        place...
     }
 
-    return m_config;
+    return config;
 }
 
 const wxString& wxFontMapperBase::GetConfigPath()
@@ -384,7 +399,7 @@ bool wxFontMapperBase::ChangePath(const wxString& pathNew, wxString *pathOld)
     *pathOld = config->GetPath();
 
     wxString path = GetConfigPath();
-    if ( path.IsEmpty() || path.Last() != wxCONFIG_PATH_SEPARATOR )
+    if ( path.empty() || path.Last() != wxCONFIG_PATH_SEPARATOR )
     {
         path += wxCONFIG_PATH_SEPARATOR;
     }
@@ -467,7 +482,7 @@ wxFontMapperBase::NonInteractiveCharsetToEncoding(const wxString& charset)
             config->SetPath(FONTMAPPER_CHARSET_ALIAS_PATH);
 
             wxString alias = config->Read(charset);
-            if ( !alias.IsEmpty() )
+            if ( !alias.empty() )
             {
                 // yes, we do - use it instead
                 cs = alias;
@@ -573,7 +588,7 @@ wxFontMapperBase::NonInteractiveCharsetToEncoding(const wxString& charset)
                 if ( *p == wxT('-') )
                     p++;
 
-                int value;
+                unsigned int value;
                 if ( wxSscanf(p, wxT("%u"), &value) == 1 )
                 {
                     if ( value >= 1250 )
@@ -590,6 +605,10 @@ wxFontMapperBase::NonInteractiveCharsetToEncoding(const wxString& charset)
 
                     switch ( value )
                     {
+                        case 866:
+                            encoding = wxFONTENCODING_CP866;
+                            break;
+
                         case 874:
                             encoding = wxFONTENCODING_CP874;
                             break;
@@ -716,4 +735,3 @@ wxFontEncoding wxFontMapperBase::GetEncodingFromName(const wxString& name)
 }
 
 #endif // wxUSE_FONTMAP
-

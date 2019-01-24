@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        common/textcmn.cpp
+// Name:        src/common/textcmn.cpp
 // Purpose:     implementation of platform-independent functions of wxTextCtrl
 // Author:      Julian Smart
 // Modified by:
 // Created:     13.07.99
-// RCS-ID:      $Id: textcmn.cpp,v 1.43 2005/07/21 16:19:40 ABX Exp $
+// RCS-ID:      $Id: textcmn.cpp 41754 2006-10-08 22:40:14Z VZ $
 // Copyright:   (c) wxWidgets team
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,10 +13,6 @@
 // declarations
 // ============================================================================
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "textctrlbase.h"
-#endif
-
 // for compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -24,12 +20,17 @@
     #pragma hdrstop
 #endif
 
+#ifndef WX_PRECOMP
+    #include "wx/event.h"
+#endif // WX_PRECOMP
+
 #if wxUSE_TEXTCTRL
+
+#include "wx/textctrl.h"
 
 #ifndef WX_PRECOMP
     #include "wx/intl.h"
     #include "wx/log.h"
-    #include "wx/textctrl.h"
 #endif // WX_PRECOMP
 
 #include "wx/ffile.h"
@@ -52,6 +53,8 @@ DEFINE_EVENT_TYPE(wxEVT_COMMAND_TEXT_UPDATED)
 DEFINE_EVENT_TYPE(wxEVT_COMMAND_TEXT_ENTER)
 DEFINE_EVENT_TYPE(wxEVT_COMMAND_TEXT_URL)
 DEFINE_EVENT_TYPE(wxEVT_COMMAND_TEXT_MAXLEN)
+
+IMPLEMENT_ABSTRACT_CLASS(wxTextCtrlBase, wxControl)
 
 // ----------------------------------------------------------------------------
 // style functions - not implemented here
@@ -193,7 +196,7 @@ const wxTextAttr& wxTextCtrlBase::GetDefaultStyle() const
 // file IO functions
 // ----------------------------------------------------------------------------
 
-bool wxTextCtrlBase::LoadFile(const wxString& filename)
+bool wxTextCtrlBase::DoLoadFile(const wxString& filename, int WXUNUSED(fileType))
 {
 #if wxUSE_FFILE
     wxFFile file(filename);
@@ -218,7 +221,7 @@ bool wxTextCtrlBase::LoadFile(const wxString& filename)
     return false;
 }
 
-bool wxTextCtrlBase::SaveFile(const wxString& filename)
+bool wxTextCtrlBase::SaveFile(const wxString& filename, int fileType)
 {
     wxString filenameToUse = filename.empty() ? m_filename : filename;
     if ( filenameToUse.empty() )
@@ -229,15 +232,20 @@ bool wxTextCtrlBase::SaveFile(const wxString& filename)
         return false;
     }
 
+    return DoSaveFile(filenameToUse, fileType);
+}
+
+bool wxTextCtrlBase::DoSaveFile(const wxString& filename, int WXUNUSED(fileType))
+{
 #if wxUSE_FFILE
-    wxFFile file(filenameToUse, _T("w"));
+    wxFFile file(filename, _T("w"));
     if ( file.IsOpened() && file.Write(GetValue()) )
     {
+        // if it worked, save for future calls
+        m_filename = filename;
+
         // it's not modified any longer
         DiscardEdits();
-
-        // if it worked, save for future calls
-        m_filename = filenameToUse;
 
         return true;
     }
@@ -475,9 +483,12 @@ wxString wxTextCtrlBase::GetRange(long from, long to) const
 // do the window-specific processing after processing the update event
 void wxTextCtrlBase::DoUpdateWindowUI(wxUpdateUIEvent& event)
 {
-    if ( event.GetSetEnabled() )
-        Enable(event.GetEnabled());
+    // call inherited, but skip the wxControl's version, and call directly the
+    // wxWindow's one instead, because the only reason why we are overriding this
+    // function is that we want to use SetValue() instead of wxControl::SetLabel()
+    wxWindowBase::DoUpdateWindowUI(event);
 
+    // update text
     if ( event.GetSetText() )
     {
         if ( event.GetText() != GetValue() )
@@ -514,11 +525,28 @@ wxTextCtrlBase::HitTest(const wxPoint& WXUNUSED(pt),
     return wxTE_HT_UNKNOWN;
 }
 
+// ----------------------------------------------------------------------------
+// events
+// ----------------------------------------------------------------------------
+
+void wxTextCtrlBase::SendTextUpdatedEvent()
+{
+    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, GetId());
+
+    // do not do this as it could be very inefficient if the text control
+    // contains a lot of text and we're not using ref-counted wxString
+    // implementation -- instead, event.GetString() will query the control for
+    // its current text if needed
+    //event.SetString(GetValue());
+
+    event.SetEventObject(this);
+    GetEventHandler()->ProcessEvent(event);
+}
+
 #else // !wxUSE_TEXTCTRL
 
 // define this one even if !wxUSE_TEXTCTRL because it is also used by other
 // controls (wxComboBox and wxSpinCtrl)
-#include "wx/event.h"
 
 DEFINE_EVENT_TYPE(wxEVT_COMMAND_TEXT_UPDATED)
 

@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/popupwin.cpp
+// Name:        src/msw/popupwin.cpp
 // Purpose:     implements wxPopupWindow for MSW
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     08.05.02
-// RCS-ID:      $Id: popupwin.cpp,v 1.17 2005/04/12 04:28:27 RD Exp $
+// RCS-ID:      $Id: popupwin.cpp 38791 2006-04-18 09:56:17Z ABX $
 // Copyright:   (c) 2002 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // License:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "popup.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,11 +24,10 @@
     #pragma hdrstop
 #endif
 
-#ifndef WX_PRECOMP
-#include "wx/defs.h"
-#endif //WX_PRECOMP
-
 #if wxUSE_POPUPWIN
+
+#ifndef WX_PRECOMP
+#endif //WX_PRECOMP
 
 #include "wx/popupwin.h"
 
@@ -116,4 +111,3 @@ bool wxPopupWindow::Show(bool show)
 }
 
 #endif // #if wxUSE_POPUPWIN
-

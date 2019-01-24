@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     2002-02-12
-// RCS-ID:      $Id: accesstest.cpp,v 1.8 2004/05/27 17:50:06 ABX Exp $
+// RCS-ID:      $Id: accesstest.cpp 27472 2004-05-27 17:50:54Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////

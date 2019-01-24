@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXBOUNDS3
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -302,10 +302,12 @@ NX_INLINE void NxBounds3::setCenterExtents(const NxVec3& c, const NxVec3& e)
 	max = c + e;
 	}
 
-NX_INLINE void NxBounds3::scale(NxF32 scale)
+NX_INLINE void NxBounds3::scale(NxF32 _scale)
 	{
-	min *= scale;
-	max *= scale;
+	NxVec3 center, extents;
+	getCenter(center);
+	getExtents(extents);
+	setCenterExtents(center, extents * _scale);
 	}
 
 NX_INLINE void NxBounds3::fatten(NxReal distance)
@@ -319,10 +321,11 @@ NX_INLINE void NxBounds3::fatten(NxReal distance)
 	max.z += distance;
 	}
 
+/** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

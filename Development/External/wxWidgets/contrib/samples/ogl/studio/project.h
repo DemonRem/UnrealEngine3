@@ -1,19 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        project.h
+// Name:        contrib/samples/ogl/studio/project.h
 // Purpose:     Studio project classes
 // Author:      Julian Smart
 // Modified by:
 // Created:     27/7/98
-// RCS-ID:      $Id: project.h,v 1.2 2004/12/17 12:09:55 ABX Exp $
+// RCS-ID:      $Id: project.h 37440 2006-02-10 11:59:52Z ABX $
 // Copyright:   (c) Julian Smart
-// Licence:
+// Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _STUDIO_PROJECT_H_
 #define _STUDIO_PROJECT_H_
 
-#include <wx/treectrl.h>
-#include <wx/imaglist.h>
+#include "wx/treectrl.h"
+#include "wx/imaglist.h"
 
 /*
  * This is the project tree control.
@@ -39,4 +39,3 @@ DECLARE_EVENT_TABLE()
 
 #endif
   // _STUDIO_PROJECT_H_
-

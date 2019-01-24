@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXPMAP
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -28,9 +28,10 @@ Example:
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes (Software fallback)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxTriangleMesh.loadPMap() NxConvexShape.loadPMap()
 */
@@ -63,9 +64,10 @@ class NxPMap
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPMap NxTriangleMesh.loadPMap() NxConvexShape.loadPMap() NxReleasePMap
 	*/
@@ -83,9 +85,10 @@ class NxPMap
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxPMap NxTriangleMesh.loadPMap() NxConvexShape.loadPMap() NxCreatePMap
 	*/
@@ -94,9 +97,9 @@ class NxPMap
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

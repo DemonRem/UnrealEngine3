@@ -12,7 +12,7 @@ USERC("svg.rc");
 // Purpose:     SVG sample
 // Author:      Chris Elliott
 // Modified by:
-// RCS-ID:      $Id: svgtest.cpp,v 1.10 2005/08/23 16:02:29 ABX Exp $
+// RCS-ID:      $Id: svgtest.cpp 39402 2006-05-28 23:32:12Z VZ $
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
@@ -36,8 +36,8 @@ USERC("svg.rc");
 #include "wx/mdi.h"
 #endif
 
-#include <wx/toolbar.h>
-#include <wx/svg/dcsvg.h>
+#include "wx/toolbar.h"
+#include "wx/svg/dcsvg.h"
 
 #include "mondrian.xpm"
 
@@ -350,7 +350,7 @@ void MyFrame::FileSavePicture (wxCommandEvent & WXUNUSED(event) )
 
     wxFileDialog dialog(this, wxT("Save Picture as"), wxEmptyString, pChild->GetTitle(),
         wxT("SVG vector picture files (*.svg)|*.svg"),
-        wxSAVE|wxOVERWRITE_PROMPT);
+        wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 
     if (dialog.ShowModal() == wxID_OK)
     {

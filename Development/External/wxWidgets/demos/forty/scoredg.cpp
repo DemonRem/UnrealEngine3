@@ -4,15 +4,10 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: scoredg.cpp,v 1.14 2005/01/31 18:14:12 ABX Exp $
+// RCS-ID:      $Id: scoredg.cpp 42816 2006-10-31 08:50:17Z RD $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -186,7 +181,7 @@ ScoreDialog::ScoreDialog(wxWindow* parent, ScoreFile* file) :
     ScoreCanvas* list = new ScoreCanvas(this, m_scoreFile, wxDefaultPosition, sz);
 #endif
 
-    list->SetBestFittingSize(sz);
+    list->SetInitialSize(sz);
 
     // locate and resize with sizers
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );

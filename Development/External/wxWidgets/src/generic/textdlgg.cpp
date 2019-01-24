@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        textdlgg.cpp
+// Name:        src/generic/textdlgg.cpp
 // Purpose:     wxTextEntryDialog
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: textdlgg.cpp,v 1.35 2005/04/02 17:44:12 JS Exp $
+// RCS-ID:      $Id: textdlgg.cpp 41838 2006-10-09 21:08:45Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "textdlgg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,6 +25,8 @@
 #endif
 
 #if wxUSE_TEXTDLG
+
+#include "wx/generic/textdlgg.h"
 
 #ifndef WX_PRECOMP
     #include "wx/utils.h"
@@ -44,27 +42,14 @@
     #include "wx/statline.h"
 #endif
 
-#include "wx/generic/textdlgg.h"
+const wxChar wxGetTextFromUserPromptStr[] = wxT("Input Text");
+const wxChar wxGetPasswordFromUserPromptStr[] = wxT("Enter Password");
 
 // ----------------------------------------------------------------------------
 // constants
 // ----------------------------------------------------------------------------
 
 static const int wxID_TEXT = 3000;
-
-// ---------------------------------------------------------------------------
-// macros
-// ---------------------------------------------------------------------------
-
-/* Macro for avoiding #ifdefs when value have to be different depending on size of
-   device we display on - take it from something like wxDesktopPolicy in the future
- */
-
-#if defined(__SMARTPHONE__)
-    #define wxLARGESMALL(large,small) small
-#else
-    #define wxLARGESMALL(large,small) large
-#endif
 
 // ============================================================================
 // implementation
@@ -87,7 +72,7 @@ wxTextEntryDialog::wxTextEntryDialog(wxWindow *parent,
                                      long style,
                                      const wxPoint& pos)
                  : wxDialog(parent, wxID_ANY, caption, pos, wxDefaultSize,
-                            wxDEFAULT_DIALOG_STYLE | wxDIALOG_MODAL),
+                            wxDEFAULT_DIALOG_STYLE),
                    m_value(value)
 {
     m_dialogStyle = style;
@@ -97,50 +82,44 @@ wxTextEntryDialog::wxTextEntryDialog(wxWindow *parent,
 
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
 
+    wxSizerFlags flagsBorder2;
+    flagsBorder2.DoubleBorder();
+
 #if wxUSE_STATTEXT
     // 1) text message
-    topsizer->Add( CreateTextSizer( message ), 0, wxALL, wxLARGESMALL(10,0) );
-#endif        
+    topsizer->Add(CreateTextSizer(message), flagsBorder2);
+#endif
 
     // 2) text ctrl
     m_textctrl = new wxTextCtrl(this, wxID_TEXT, value,
                                 wxDefaultPosition, wxSize(300, wxDefaultCoord),
                                 style & ~wxTextEntryDialogStyle);
-    topsizer->Add( m_textctrl, style & wxTE_MULTILINE ? 1 : 0, wxEXPAND | wxLEFT|wxRIGHT, wxLARGESMALL(15,0) );
+
+    topsizer->Add(m_textctrl,
+                  wxSizerFlags(style & wxTE_MULTILINE ? 1 : 0).
+                    Expand().
+                    TripleBorder(wxLEFT | wxRIGHT));
 
 #if wxUSE_VALIDATORS
     wxTextValidator validator( wxFILTER_NONE, &m_value );
     m_textctrl->SetValidator( validator );
-#endif
-  // wxUSE_VALIDATORS
+#endif // wxUSE_VALIDATORS
 
-    // smart phones does not support or do not waste space for wxButtons
-#ifdef __SMARTPHONE__
-
-    SetRightMenu(wxID_CANCEL, _("Cancel"));
-
-#else // __SMARTPHONE__/!__SMARTPHONE__
-
-#if wxUSE_STATLINE
-    // 3) static line
-    topsizer->Add( new wxStaticLine( this, wxID_ANY ), 0, wxEXPAND | wxLEFT|wxRIGHT|wxTOP, 10 );
-#endif
-
-    // 4) buttons
-    topsizer->Add( CreateButtonSizer( style ), 0, wxEXPAND | wxALL, 10 );
-
-#endif // !__SMARTPHONE__
+    // 3) buttons if any
+    wxSizer *buttonSizer = CreateSeparatedButtonSizer(style & ButtonSizerFlags);
+    if ( buttonSizer )
+    {
+        topsizer->Add(buttonSizer, wxSizerFlags(flagsBorder2).Expand());
+    }
 
     SetAutoLayout( true );
     SetSizer( topsizer );
 
-#if !defined(__SMARTPHONE__) && !defined(__POCKETPC__)
     topsizer->SetSizeHints( this );
     topsizer->Fit( this );
 
     if ( style & wxCENTRE )
         Centre( wxBOTH );
-#endif
 
     m_textctrl->SetSelection(-1, -1);
     m_textctrl->SetFocus();
@@ -177,7 +156,7 @@ void wxTextEntryDialog::SetTextValidator( long style )
     m_textctrl->SetValidator( validator );
 }
 
-void wxTextEntryDialog::SetTextValidator( wxTextValidator& validator )
+void wxTextEntryDialog::SetTextValidator( const wxTextValidator& validator )
 {
     m_textctrl->SetValidator( validator );
 }

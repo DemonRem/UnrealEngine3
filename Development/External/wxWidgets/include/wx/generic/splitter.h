@@ -4,22 +4,18 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: splitter.h,v 1.53 2005/03/17 21:21:41 JS Exp $
+// RCS-ID:      $Id: splitter.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef __SPLITTERH_G__
-#define __SPLITTERH_G__
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "splitter.h"
-#endif
+#ifndef _WX_GENERIC_SPLITTER_H_
+#define _WX_GENERIC_SPLITTER_H_
 
 #include "wx/window.h"                      // base class declaration
 #include "wx/containr.h"                    // wxControlContainer
 
-class WXDLLEXPORT wxSplitterEvent;
+class WXDLLIMPEXP_FWD_CORE wxSplitterEvent;
 
 // ---------------------------------------------------------------------------
 // splitter constants
@@ -101,7 +97,7 @@ public:
     }
 
     // Gets the split mode
-    wxSplitMode GetSplitMode() const { return m_splitMode; };
+    wxSplitMode GetSplitMode() const { return m_splitMode; }
 
     // Initialize with one window
     void Initialize(wxWindow *window);
@@ -230,7 +226,7 @@ protected:
 
     // send the given event, return false if the event was processed and vetoed
     // by the user code
-    inline bool DoSendEvent(wxSplitterEvent& event);
+    bool DoSendEvent(wxSplitterEvent& event);
 
     // common part of all ctors
     void Init();
@@ -371,7 +367,7 @@ public:
     }
 
 private:
-    friend class WXDLLEXPORT wxSplitterWindow;
+    friend class WXDLLIMPEXP_FWD_CORE wxSplitterWindow;
 
     // data for the different types of event
     union
@@ -407,4 +403,4 @@ typedef void (wxEvtHandler::*wxSplitterEventFunction)(wxSplitterEvent&);
 #define EVT_SPLITTER_UNSPLIT(id, fn) \
     wx__DECLARE_SPLITTEREVT(UNSPLIT, id, fn)
 
-#endif // __SPLITTERH_G__
+#endif // _WX_GENERIC_SPLITTER_H_

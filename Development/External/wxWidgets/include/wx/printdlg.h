@@ -4,17 +4,13 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:
-// RCS-ID:      $Id: printdlg.h,v 1.20 2005/05/04 18:52:01 JS Exp $
+// RCS-ID:      $Id: printdlg.h 41020 2006-09-05 20:47:48Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_PRINTDLG_H_BASE_
 #define _WX_PRINTDLG_H_BASE_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "printdlg.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -59,7 +55,7 @@ class WXDLLEXPORT wxPrintDialog : public wxObject
 public:
     wxPrintDialog(wxWindow *parent, wxPrintDialogData* data = NULL);
     wxPrintDialog(wxWindow *parent, wxPrintData* data);
-    ~wxPrintDialog();
+    virtual ~wxPrintDialog();
 
     virtual int ShowModal();
 
@@ -105,7 +101,7 @@ class WXDLLEXPORT wxPageSetupDialog: public wxObject
 {
 public:
     wxPageSetupDialog(wxWindow *parent, wxPageSetupDialogData *data = NULL);
-    ~wxPageSetupDialog();
+    virtual ~wxPageSetupDialog();
 
     int ShowModal();
     wxPageSetupDialogData& GetPageSetupDialogData();

@@ -4,7 +4,7 @@
 // Purpose:     Part of the widgets sample showing various static controls
 // Author:      Vadim Zeitlin
 // Created:     11.04.01
-// Id:          $Id: static.cpp,v 1.16 2005/08/28 08:54:55 MBN Exp $
+// Id:          $Id: static.cpp 43755 2006-12-03 13:43:44Z VZ $
 // Copyright:   (c) 2001 Vadim Zeitlin
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@
 // control ids
 enum
 {
-    StaticPage_Reset = 100,
+    StaticPage_Reset = wxID_HIGHEST,
     StaticPage_BoxText,
     StaticPage_LabelText
 };
@@ -139,10 +139,14 @@ END_EVENT_TABLE()
 class StaticWidgetsPage : public WidgetsPage
 {
 public:
-    StaticWidgetsPage(wxBookCtrlBase *book, wxImageList *imaglist);
+    StaticWidgetsPage(WidgetsBookCtrl *book, wxImageList *imaglist);
     virtual ~StaticWidgetsPage(){};
 
     virtual wxControl *GetWidget() const { return m_statText; }
+    virtual void RecreateWidget() { CreateStatic(); }
+
+    // lazy creation of the content
+    virtual void CreateContent();
 
 protected:
     // event handlers
@@ -203,14 +207,14 @@ END_EVENT_TABLE()
 // implementation
 // ============================================================================
 
-IMPLEMENT_WIDGETS_PAGE(StaticWidgetsPage, _T("Static"));
+IMPLEMENT_WIDGETS_PAGE(StaticWidgetsPage, _T("Static"),
+                       (int)wxPlatform(GENERIC_CTRLS).If(wxOS_WINDOWS,NATIVE_CTRLS)
+                       );
 
-StaticWidgetsPage::StaticWidgetsPage(wxBookCtrlBase *book,
+StaticWidgetsPage::StaticWidgetsPage(WidgetsBookCtrl *book,
                                      wxImageList *imaglist)
-                  : WidgetsPage(book)
+                  : WidgetsPage(book, imaglist, statbox_xpm)
 {
-    imaglist->Add(wxBitmap(statbox_xpm));
-
     // init everything
     m_chkVert =
     m_chkAutoResize = (wxCheckBox *)NULL;
@@ -226,7 +230,10 @@ StaticWidgetsPage::StaticWidgetsPage(wxBookCtrlBase *book,
     m_staticBox = (wxStaticBox *)NULL;
     m_sizerStatBox = (wxStaticBoxSizer *)NULL;
     m_sizerStatic = (wxSizer *)NULL;
+}
 
+void StaticWidgetsPage::CreateContent()
+{
     wxSizer *sizerTop = new wxBoxSizer(wxHORIZONTAL);
 
     // left pane
@@ -300,8 +307,6 @@ StaticWidgetsPage::StaticWidgetsPage(wxBookCtrlBase *book,
     Reset();
 
     SetSizer(sizerTop);
-
-    sizerTop->Fit(this);
 }
 
 // ----------------------------------------------------------------------------
@@ -333,7 +338,7 @@ void StaticWidgetsPage::CreateStatic()
     }
 
     int flagsBox = 0,
-        flagsText = 0;
+        flagsText = ms_defaultFlags;
 
     if ( !m_chkAutoResize->GetValue() )
     {

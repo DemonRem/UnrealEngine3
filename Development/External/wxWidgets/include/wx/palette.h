@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:
-// RCS-ID:      $Id: palette.h,v 1.16 2005/05/04 18:52:00 JS Exp $
+// RCS-ID:      $Id: palette.h 41751 2006-10-08 21:56:55Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows Licence
 /////////////////////////////////////////////////////////////////////////////
@@ -19,14 +19,15 @@
 #include "wx/object.h"
 #include "wx/gdiobj.h"
 
-// wxBrushBase
+// wxPaletteBase
 class WXDLLEXPORT wxPaletteBase: public wxGDIObject
 {
 public:
     virtual ~wxPaletteBase() { }
 
-    virtual bool Ok() const = 0;
-    virtual int GetColoursCount() const { wxFAIL_MSG( _T("not implemented") ); return 0; };
+    virtual bool Ok() const { return IsOk(); }
+    virtual bool IsOk() const = 0;
+    virtual int GetColoursCount() const { wxFAIL_MSG( _T("not implemented") ); return 0; }
 };
 
 #if defined(__WXPALMOS__)

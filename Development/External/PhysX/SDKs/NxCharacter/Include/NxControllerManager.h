@@ -2,9 +2,9 @@
 #define NX_CHARACTER_NXCONTROLLERMANAGER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -12,6 +12,8 @@
 
 #include "Nxp.h"
 #include "NxArray.h"
+#include "NxDebugRenderable.h"
+
 class NxScene;
 class Controller;
 class NxController;
@@ -75,19 +77,29 @@ public:
 	*/
 	virtual void			updateControllers() = 0;
 
+	/**
+	\brief Retrieves debug data. Note that debug rendering is not enabled until this method is called.
+	*/
+	virtual	NxDebugRenderable	getDebugData()		= 0;
+
+	/**
+	\brief Resets debug data
+	*/
+	virtual	void				resetDebugData()	= 0;
+
 protected:
 	NxControllerManager() {}
 	virtual ~NxControllerManager() {}
 
-	friend NXCHARACTER_API void NxReleaseControllerManager(NxControllerManager* manager);
+	friend NXCHARACTER_API void NX_CALL_CONV NxReleaseControllerManager(NxControllerManager* manager);
 	virtual void release() = 0;
 };
 
 
 #endif //NX_CHARACTER_NXCONTROLLERMANAGER
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2006 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

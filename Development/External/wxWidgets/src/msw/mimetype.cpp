@@ -1,40 +1,38 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/mimetype.cpp
+// Name:        src/msw/mimetype.cpp
 // Purpose:     classes and functions to manage MIME types
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     23.09.98
-// RCS-ID:      $Id: mimetype.cpp,v 1.33 2005/07/22 17:13:45 ABX Exp $
+// RCS-ID:      $Id: mimetype.cpp 52153 2008-02-27 18:07:23Z JS $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence (part of wxExtra library)
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "mimetype.h"
-#endif
 
 // for compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_MIMETYPE
 
+#include "wx/msw/mimetype.h"
+
 #ifndef WX_PRECOMP
+    #include "wx/dynarray.h"
     #include "wx/string.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
     #if wxUSE_GUI
         #include "wx/icon.h"
         #include "wx/msgdlg.h"
     #endif
 #endif //WX_PRECOMP
 
-#include "wx/log.h"
 #include "wx/file.h"
 #include "wx/iconloc.h"
-#include "wx/intl.h"
-#include "wx/dynarray.h"
 #include "wx/confbase.h"
 
 #ifdef __WXMSW__
@@ -42,13 +40,11 @@
     #include "wx/msw/private.h"
 #endif // OS
 
-#include "wx/msw/mimetype.h"
-
 // other standard headers
 #include <ctype.h>
 
 // in case we're compiling in non-GUI mode
-class WXDLLEXPORT wxIcon;
+class WXDLLIMPEXP_FWD_CORE wxIcon;
 
 // These classes use Windows registry to retrieve the required information.
 //
@@ -203,16 +199,47 @@ bool wxFileTypeImpl::EnsureExtKeyExists()
 // get the command to use
 // ----------------------------------------------------------------------------
 
+static wxString wxFileTypeImplGetCurVer(const wxString& progId)
+{
+    wxRegKey key(wxRegKey::HKCR, progId + wxT("\\CurVer"));
+    if (key.Exists())
+    {
+        wxString value;
+        if (key.QueryValue(wxEmptyString, value))
+            return value;
+    }
+    return progId;
+}
+
 wxString wxFileTypeImpl::GetCommand(const wxChar *verb) const
 {
     // suppress possible error messages
     wxLogNull nolog;
     wxString strKey;
 
-    if ( wxRegKey(wxRegKey::HKCR, m_ext + _T("\\shell")).Exists() )
+    {
+        wxRegKey explorerKey(wxRegKey::HKCU, wxT("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\") + m_ext);
+        if (explorerKey.Exists())
+        {
+            if (explorerKey.Open(wxRegKey::Read))
+            {
+                if (explorerKey.QueryValue(wxT("Progid"), strKey))
+                {
+                    strKey = wxFileTypeImplGetCurVer(strKey);
+                }
+            }
+        }
+    }
+
+    if (!strKey && wxRegKey(wxRegKey::HKCR, m_ext + _T("\\shell")).Exists())
         strKey = m_ext;
-    if ( wxRegKey(wxRegKey::HKCR, m_strFileType + _T("\\shell")).Exists() )
-        strKey = m_strFileType;
+
+    if ( !strKey && !m_strFileType.empty())
+    {
+        wxString fileType = wxFileTypeImplGetCurVer(m_strFileType);
+        if (wxRegKey(wxRegKey::HKCR, fileType + _T("\\shell")).Exists())
+            strKey = fileType;
+    }
 
     if ( !strKey )
     {
@@ -513,7 +540,7 @@ wxFileType *wxMimeTypesManagerImpl::Associate(const wxFileTypeInfo& ftInfo)
                  _T("Associate() needs extension") );
 
     bool ok;
-    int iExtCount = 0 ;
+    size_t iExtCount = 0;
     wxString filetype;
     wxString extWithDot;
 

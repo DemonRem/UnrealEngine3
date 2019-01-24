@@ -3,7 +3,7 @@
 //
 // Owner: John Briggs
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxAnimCurve.h"
@@ -23,7 +23,6 @@ FxAnimCurve::FxAnimCurve()
 	: FxDataContainer()
 	, _cachedPos(FxInvalidIndex)
 	, _interp(IT_Hermite)
-	, _controlNode(NULL)
 {
 }
 
@@ -33,7 +32,6 @@ FxAnimCurve::FxAnimCurve( const FxAnimCurve& other )
 	, _keys(other._keys)
 	, _cachedPos(FxInvalidIndex)
 	, _interp(other._interp)
-	, _controlNode(other._controlNode)
 {
 }
 
@@ -42,11 +40,10 @@ FxAnimCurve& FxAnimCurve::operator=( const FxAnimCurve& other )
 	if( this == &other ) return *this;
 	Super::operator=(other);
 	FxDataContainer::operator=(other);
-	_keys           = other._keys;
-	_cachedPos		= FxInvalidIndex;
-	_interp			= other._interp;
-	_controlNode    = other._controlNode;
-	_userData       = other._userData;
+	_keys      = other._keys;
+	_cachedPos = FxInvalidIndex;
+	_interp	   = other._interp;
+	_userData  = other._userData;
 	return *this;
 }
 
@@ -84,7 +81,7 @@ FxSize FxAnimCurve::InsertKey( const FxAnimKey& key, FxBool autocomputeSlope )
 		{
 			FxReal t = (key.GetTime() - prev->GetTime()) / deltaTime;
 			FxReal s0 = prev->GetSlopeOut() * deltaTime;
-			FxReal s1 = next->GetSlopeOut() * deltaTime;
+			FxReal s1 = next->GetSlopeIn() * deltaTime;
 			FxReal slope = (6.0f * prev->GetValue() - 6.0f * next->GetValue() + 3.0f * s0 + 3.0f * s1) * (t * t) + 
 				(-6.0f * prev->GetValue() + 6.0f * next->GetValue() - 4.0f * s0 - 2.0f * s1) * t + 
 				s0;
@@ -145,13 +142,13 @@ FxSize FxAnimCurve::FindKey( FxReal time ) const
 	for( FxSize i = 0; i < numKeys; ++i )
 	{
 		FxReal currTime = _keys[i].GetTime();
-		// If we found the key, set the index and break early.
+		// If the key was found, set the index and break early.
 		if( FxRealEquality(currTime, time) )
 		{
 			retval = i;
 			break;
 		}
-		// If we've passed the place where the key should be, break early.
+		// If the time where the key should be was passed, break early.
 		if( currTime > time )
 		{
 			break;
@@ -184,32 +181,26 @@ FxReal FxAnimCurve::EvaluateAt( const FxReal time ) const
 		else
 		{
 			// The time is in range.
-			if( _keys.Length() == 1 )
+			if( 1 == _keys.Length() )
 			{
 				value = _keys.Front().GetValue();
 			}
 			else
 			{
-				const FxAnimKey* thisKey = NULL;
-				const FxAnimKey* nextKey = NULL;
+				FxAnimKey thisKey;
+				FxAnimKey nextKey;
 				_findBoundingKeys(time, thisKey, nextKey);
 
-				if( _interp == IT_Hermite )
+				if( IT_Hermite == _interp )
 				{
-					value = FxHermiteInterpolate(*thisKey, *nextKey, time);
+					value = FxHermiteInterpolate(thisKey, nextKey, time);
 				}
-				else if( _interp == IT_Linear )
+				else if( IT_Linear == _interp )
 				{
-					value = FxLinearInterpolate(*thisKey, *nextKey, time);
+					value = FxLinearInterpolate(thisKey, nextKey, time);
 				}
 			}
 		}
-	}
-
-	// Set the value if we're linked to a node in the face graph.
-	if( _controlNode )
-	{
-		_controlNode->SetTrackValue(value);
 	}
 
 	return value;
@@ -266,47 +257,14 @@ void FxAnimCurve::FindValueExtents( FxReal& minValue, FxReal& maxValue ) const
 		minValue = 0.0f;
 		maxValue = 0.0f;
 	}
-
-	// Make sure that the node's minimum and maximum values are properly
-	// taken into account.
-	if( _controlNode )
-	{
-		// We only want to clamp to the node's minimum and maximum values
-		// if the curve is a non-offset curve.
-		if( 0 == _controlNode->GetNumInputLinks() )
-		{
-			FxReal nodeMin = _controlNode->GetMin();
-			FxReal nodeMax = _controlNode->GetMax();
-			minValue = minValue < nodeMin ? nodeMin : minValue;
-			minValue = minValue > nodeMax ? nodeMax : minValue;
-			maxValue = maxValue > nodeMax ? nodeMax : maxValue;
-			maxValue = maxValue < nodeMin ? nodeMin : maxValue;
-		}
-	}
-
-	// Make a pass through the keys to adjust minValue and maxValue so that
-	// no keys become "hidden" in FaceFX Studio.
-	for( FxSize i = 0; i < numKeys; ++i )
-	{
-		FxReal keyValue = GetKey(i).GetValue();
-		minValue = minValue > keyValue ? keyValue : minValue;
-		maxValue = maxValue < keyValue ? keyValue : maxValue;
-	}
-}
-
-void FxAnimCurve::Link( const FxFaceGraph* faceGraph )
-{
-	// Cast away const so that we can get the pointer to the node.
-	_controlNode = const_cast<FxFaceGraph*>(faceGraph)->FindNode(GetName());
 }
 
 void FxAnimCurve::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxAnimCurve);
-	arc << version;
-
+	FxUInt16 version = arc.SerializeClassVersion("FxAnimCurve");
+	
 	FxInt32 tempInterp = static_cast<FxInt32>(_interp);
 	arc << tempInterp;
 	_interp = static_cast<FxInterpolationType>(tempInterp);

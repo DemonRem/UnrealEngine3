@@ -4,17 +4,13 @@
 // Authors:     Guilhem Lavaux, Guillermo Rodriguez Garcia
 // Modified by:
 // Created:     April 1997
-// RCS-ID:      $Id: socket.h,v 1.65 2005/03/08 20:53:16 ABX Exp $
+// RCS-ID:      $Id: socket.h 45498 2007-04-16 13:03:05Z VZ $
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_SOCKET_H_
 #define _WX_SOCKET_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma interface "socket.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -112,11 +108,12 @@ public:
   bool Destroy();
 
   // state
-  inline bool Ok() const { return (m_socket != NULL); };
-  inline bool Error() const { return m_error; };
-  inline bool IsConnected() const { return m_connected; };
-  inline bool IsData() { return WaitForRead(0, 0); };
-  inline bool IsDisconnected() const { return !IsConnected(); };
+  inline bool Ok() const { return IsOk(); }
+  inline bool IsOk() const { return (m_socket != NULL); }
+  inline bool Error() const { return m_error; }
+  inline bool IsConnected() const { return m_connected; }
+  inline bool IsData() { return WaitForRead(0, 0); }
+  inline bool IsDisconnected() const { return !IsConnected(); }
   inline wxUint32 LastCount() const { return m_lcount; }
   inline wxSocketError LastError() const { return (wxSocketError)m_socket->GetError(); }
   void SaveState();
@@ -125,6 +122,7 @@ public:
   // addresses
   virtual bool GetLocal(wxSockAddress& addr_man) const;
   virtual bool GetPeer(wxSockAddress& addr_man) const;
+  virtual bool SetLocal(wxIPV4address& local);
 
   // base IO
   virtual bool  Close();
@@ -136,7 +134,7 @@ public:
   wxSocketBase& Write(const void *buffer, wxUint32 nbytes);
   wxSocketBase& WriteMsg(const void *buffer, wxUint32 nbytes);
 
-  void InterruptWait() { m_interrupt = true; };
+  void InterruptWait() { m_interrupt = true; }
   bool Wait(long seconds = -1, long milliseconds = 0);
   bool WaitForRead(long seconds = -1, long milliseconds = 0);
   bool WaitForWrite(long seconds = -1, long milliseconds = 0);
@@ -148,7 +146,7 @@ public:
 
   bool GetOption(int level, int optname, void *optval, int *optlen);
   bool SetOption(int level, int optname, const void *optval, int optlen);
-  inline wxUint32 GetLastIOSize() const { return m_lcount; };
+  inline wxUint32 GetLastIOSize() const { return m_lcount; }
 
   // event handling
   void *GetClientData() const { return m_clientData; }
@@ -205,6 +203,7 @@ private:
   wxList        m_states;           // stack of states
   bool          m_interrupt;        // interrupt ongoing wait operations?
   bool          m_beingDeleted;     // marked for delayed deletion?
+  wxIPV4address m_localAddress;     // bind to local address?
 
   // pushback buffer
   void         *m_unread;           // pushback buffer
@@ -221,7 +220,7 @@ private:
   // the initialization count, GSocket is initialized if > 0
   static size_t m_countInit;
 
-    DECLARE_NO_COPY_CLASS(wxSocketBase)
+  DECLARE_NO_COPY_CLASS(wxSocketBase)
 };
 
 
@@ -234,7 +233,7 @@ class WXDLLIMPEXP_NET wxSocketServer : public wxSocketBase
   DECLARE_CLASS(wxSocketServer)
 
 public:
-  wxSocketServer(wxSockAddress& addr, wxSocketFlags flags = wxSOCKET_NONE);
+  wxSocketServer(const wxSockAddress& addr, wxSocketFlags flags = wxSOCKET_NONE);
 
   wxSocketBase* Accept(bool wait = true);
   bool AcceptWith(wxSocketBase& socket, bool wait = true);
@@ -258,8 +257,12 @@ public:
   virtual ~wxSocketClient();
 
   virtual bool Connect(wxSockAddress& addr, bool wait = true);
+  bool Connect(wxSockAddress& addr, wxSockAddress& local, bool wait = true);
 
   bool WaitOnConnect(long seconds = -1, long milliseconds = 0);
+
+private:
+  virtual bool DoConnect(wxSockAddress& addr, wxSockAddress* local, bool wait = true);
 
   DECLARE_NO_COPY_CLASS(wxSocketClient)
 };
@@ -276,12 +279,12 @@ class WXDLLIMPEXP_NET wxDatagramSocket : public wxSocketBase
   DECLARE_CLASS(wxDatagramSocket)
 
 public:
-  wxDatagramSocket(wxSockAddress& addr, wxSocketFlags flags = wxSOCKET_NONE);
+  wxDatagramSocket(const wxSockAddress& addr, wxSocketFlags flags = wxSOCKET_NONE);
 
   wxDatagramSocket& RecvFrom( wxSockAddress& addr,
                               void* buf,
                               wxUint32 nBytes );
-  wxDatagramSocket& SendTo( wxSockAddress& addr,
+  wxDatagramSocket& SendTo( const wxSockAddress& addr,
                             const void* buf,
                             wxUint32 nBytes );
 

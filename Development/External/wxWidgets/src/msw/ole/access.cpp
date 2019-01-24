@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        msw/ole/access.cpp
+// Name:        src/msw/ole/access.cpp
 // Purpose:     implementation of wxIAccessible and wxAccessible
 // Author:      Julian Smart
 // Modified by:
 // Created:     2003-02-12
-// RCS-ID:      $Id: access.cpp,v 1.16 2004/08/16 12:45:45 ABX Exp $
+// RCS-ID:      $Id: access.cpp 51833 2008-02-16 11:15:07Z JS $
 // Copyright:   (c) 2003 Julian Smart
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,28 +17,22 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma implementation "access.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #if defined(__BORLANDC__)
   #pragma hdrstop
 #endif
-#ifndef WX_PRECOMP
-#include "wx/window.h"
-#endif
-
-#include "wx/setup.h"
 
 #if wxUSE_OLE && wxUSE_ACCESSIBILITY
 
-#include "wx/log.h"
 #include "wx/access.h"
 
-#include "wx/msw/wrapwin.h"
+#ifndef WX_PRECOMP
+    #include "wx/msw/wrapwin.h"
+    #include "wx/window.h"
+    #include "wx/log.h"
+#endif
 
 // for some compilers, the entire ole2.h must be included, not only oleauto.h
 #if wxUSE_NORLANDER_HEADERS || defined(__WATCOMC__)
@@ -47,7 +41,6 @@
 
 #include <oleauto.h>
 #include <oleacc.h>
-#include <winable.h>
 
 #include "wx/msw/ole/oleutils.h"
 
@@ -71,6 +64,7 @@ int wxConvertToWindowsSelFlag(wxAccSelectionFlags sel);
 // Convert from Windows selection flag
 wxAccSelectionFlags wxConvertFromWindowsSelFlag(int sel);
 
+#if wxUSE_VARIANT
 // ----------------------------------------------------------------------------
 // wxIEnumVARIANT interface implementation
 // ----------------------------------------------------------------------------
@@ -182,6 +176,7 @@ STDMETHODIMP wxIEnumVARIANT::Clone(IEnumVARIANT **ppenum)
     return S_OK;
 }
 
+#endif // wxUSE_VARIANT
 
 // ----------------------------------------------------------------------------
 // wxIAccessible implementation of IAccessible interface
@@ -302,8 +297,8 @@ public:
 
 // Obsolete
 
-    STDMETHODIMP put_accName(VARIANT varChild, BSTR szName) { return E_FAIL; }
-    STDMETHODIMP put_accValue(VARIANT varChild, BSTR szName) { return E_FAIL; }
+    STDMETHODIMP put_accName(VARIANT WXUNUSED(varChild), BSTR WXUNUSED(szName)) { return E_FAIL; }
+    STDMETHODIMP put_accValue(VARIANT WXUNUSED(varChild), BSTR WXUNUSED(szName)) { return E_FAIL; }
 
 // IDispatch
 
@@ -966,7 +961,7 @@ STDMETHODIMP wxIAccessible::get_accDescription ( VARIANT varID, BSTR* pszDescrip
     }
     else
     {
-        if (description.IsEmpty())
+        if (description.empty())
         {
             * pszDescription = NULL;
             return S_FALSE;
@@ -1023,7 +1018,7 @@ STDMETHODIMP wxIAccessible::get_accHelp ( VARIANT varID, BSTR* pszHelp)
     }
     else
     {
-        if (helpString.IsEmpty())
+        if (helpString.empty())
         {
             * pszHelp = NULL;
             return S_FALSE;
@@ -1128,7 +1123,7 @@ STDMETHODIMP wxIAccessible::get_accKeyboardShortcut ( VARIANT varID, BSTR* pszKe
     }
     else
     {
-        if (keyboardShortcut.IsEmpty())
+        if (keyboardShortcut.empty())
         {
             * pszKeyboardShortcut = NULL;
             return S_FALSE;
@@ -1477,6 +1472,7 @@ STDMETHODIMP wxIAccessible::get_accFocus ( VARIANT* pVarID)
 
 STDMETHODIMP wxIAccessible::get_accSelection ( VARIANT * pVarChildren)
 {
+#if wxUSE_VARIANT
     wxLogTrace(wxT("access"), wxT("get_accSelection"));
     wxASSERT (m_pAccessible != NULL);
     if (!m_pAccessible)
@@ -1534,6 +1530,9 @@ STDMETHODIMP wxIAccessible::get_accSelection ( VARIANT * pVarChildren)
             return S_OK;
         }
     }
+#else
+    wxUnusedVar(pVarChildren);
+#endif // wxUSE_VARIANT
 
     return E_NOTIMPL;
 }
@@ -1748,6 +1747,8 @@ int wxConvertToWindowsRole(wxAccRole wxrole)
 {
     switch (wxrole)
     {
+    case wxROLE_NONE:
+        return 0;
     case wxROLE_SYSTEM_ALERT:
         return ROLE_SYSTEM_ALERT;
     case wxROLE_SYSTEM_ANIMATION:
@@ -1996,4 +1997,4 @@ wxAccSelectionFlags wxConvertFromWindowsSelFlag(int sel)
 }
 
 
-#endif  //USE_ACCESSIBILITY
+#endif  // wxUSE_OLE && wxUSE_ACCESSIBILITY

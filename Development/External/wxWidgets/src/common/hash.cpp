@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        hash.cpp
+// Name:        src/common/hash.cpp
 // Purpose:     wxHashTable implementation
 // Author:      Julian Smart
 // Modified by: VZ at 25.02.00: type safe hashes with WX_DECLARE_HASH()
 // Created:     01/02/97
-// RCS-ID:      $Id: hash.cpp,v 1.37 2005/02/02 13:56:59 ABX Exp $
+// RCS-ID:      $Id: hash.cpp 49529 2007-10-30 00:32:18Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,22 +17,17 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "hash.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
-#include "wx/list.h"
+    #include "wx/list.h"
+    #include "wx/hash.h"
 #endif
-
-#include "wx/hash.h"
 
 #if wxUSE_OLD_HASH_TABLE
 
@@ -411,7 +406,7 @@ void wxHashTable::DoCopy(const wxHashTable& table)
       hash_table[i] = NULL;
     else {
       hash_table[i] = new wxList(key_type);
-      *(hash_table[i]) = *(table.hash_table[i]);
+      *hash_table[i] = *(table.hash_table[i]);
     }
   }
 }
@@ -1040,7 +1035,7 @@ void wxHashTable::DoCopy( const wxHashTable& WXUNUSED(table) )
 {
     Create( m_keyType, m_size );
 
-    wxASSERT( false );
+    wxFAIL;
 }
 
 void wxHashTable::DoDeleteContents( wxHashTableBase_Node* node )

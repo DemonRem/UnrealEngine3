@@ -4,14 +4,10 @@
 // Author:      Aleksandras Gluchovas
 // Modified by:
 // Created:     ??/09/98
-// RCS-ID:      $Id: newbmpbtn.cpp,v 1.18 2005/08/23 16:02:44 ABX Exp $
+// RCS-ID:      $Id: newbmpbtn.cpp 36920 2006-01-17 15:05:08Z JS $
 // Copyright:   (c) Aleksandras Gluchovas
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-    #pragma implementation "newbmpbtn.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -324,20 +320,21 @@ void wxNewBitmapButton::DrawShade( int outerLevel,
                                    wxPen& lowerRightSidePen )
 {
     wxBitmap* pBmp = GetStateLabel();
-
     int x = mMarginX - (outerLevel + 2);
     int y = mMarginY - (outerLevel + 2);
-
     int height = pBmp->GetHeight() + (outerLevel + 2)*2 - 1;
     int width  = pBmp->GetWidth()  + (outerLevel + 2)*2 - 1;
-
     dc.SetPen( upperLeftSidePen );
     dc.DrawLine( x,y, x + width, y  );
     dc.DrawLine( x,y, x, y + height );
+    dc.DrawLine( x,y+1, x + width , y +1 );  // top
+    dc.DrawLine( x+1,y, x+1, y + height );  // left
 
     dc.SetPen( lowerRightSidePen );
     dc.DrawLine( x + width, y, x + width, y + height + 1  );
     dc.DrawLine( x, y + height, x + width, y + height );
+    dc.DrawLine( x + width-1, y+1, x + width-1, y + height +1  );  // right
+    dc.DrawLine( x +1, y + height-1, x + width, y + height-1 );  // bottom
 }
 
 void wxNewBitmapButton::DestroyLabels()

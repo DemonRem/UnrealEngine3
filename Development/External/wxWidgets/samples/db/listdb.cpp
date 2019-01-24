@@ -4,7 +4,7 @@
 // Author:      George Tasker/Doug Card
 // Modified by:
 // Created:     1996
-// RCS-ID:      $Id: listdb.cpp,v 1.28 2005/05/31 09:19:07 JS Exp $
+// RCS-ID:      $Id: listdb.cpp 40587 2006-08-13 01:17:53Z VZ $
 // Copyright:   (c) 1996 Remstar International, Inc.
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,10 +39,6 @@
 
 // SYNOPSIS STOP
 */
-
-#ifdef __GNUG__
-#pragma implementation "listdb.h"
-#endif
 
 #include  "wx/wxprec.h"
 
@@ -517,6 +513,6 @@ void ClookUpDlg::OnCommand(wxWindow& win, wxCommandEvent& WXUNUSED(event))
 
     }
 
-};  // ClookUpDlg::OnCommand
+}  // ClookUpDlg::OnCommand
 
 // *********************************** listdb.cpp **********************************

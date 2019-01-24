@@ -4,21 +4,19 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: dcscreen.cpp,v 1.12 2004/05/23 20:52:58 JS Exp $
+// RCS-ID:      $Id: dcscreen.cpp 39123 2006-05-09 13:55:29Z ABX $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dcscreen.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
+
+#include "wx/dcscreen.h"
 
 #ifndef WX_PRECOMP
    #include "wx/string.h"
@@ -27,9 +25,7 @@
 
 #include "wx/msw/private.h"
 
-#include "wx/dcscreen.h"
-
-IMPLEMENT_DYNAMIC_CLASS(wxScreenDC, wxWindowDC)
+IMPLEMENT_DYNAMIC_CLASS(wxScreenDC, wxDC)
 
 // Create a DC representing the whole screen
 wxScreenDC::wxScreenDC()
@@ -40,11 +36,3 @@ wxScreenDC::wxScreenDC()
     // DrawText() to OPAQUE as required, otherwise always TRANSPARENT
     ::SetBkMode( GetHdc(), TRANSPARENT );
 }
-
-void wxScreenDC::DoGetSize(int *width, int *height) const
-{
-    // skip wxWindowDC version because it doesn't work without a valid m_canvas
-    // (which we don't have)
-    wxDC::DoGetSize(width, height);
-}
-

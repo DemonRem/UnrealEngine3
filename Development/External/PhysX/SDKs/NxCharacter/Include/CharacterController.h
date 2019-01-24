@@ -2,84 +2,39 @@
 #define NX_CHARACTER_CONTROLLER
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
-//#define NEW_CALLBACKS_DESIGN
 //#define USE_CONTACT_NORMAL_FOR_SLOPE_TEST
-//#define GROUP_TRIANGLE_DATA
+
+#include "NxBox.h"
+#include "NxSphere.h"
+#include "NxCapsule.h"
+#include "NxTriangle.h"
+#include "NxExtended.h"
+#include "NxArray.h"
+#include "CCTAllocator.h"
+
+	template<class T>
+	NX_INLINE T* reserve(NxArray<T, CCTAllocator>& array, NxU32 nb)
+	{
+		NxU32 currentSize = array.size();
+		array.insert(array.begin() + currentSize, nb, T());
+		return array.begin() + currentSize;
+	}
+
+// Sigh. The function above doesn't work with typedefs apparently
+//typedef NxArray<NxTriangle, CCTAllocator>	TriArray;
+//typedef NxArray<NxTriangle, NxU32>		IntArray;
+
+#define TriArray	NxArray<NxTriangle, CCTAllocator>
+#define IntArray	NxArray<NxU32, CCTAllocator>
 
 /* Exclude from documentation */
 /** \cond */
-
-enum TriangleCollisionFlag
-	{
-	// Must be the 3 first ones to be indexed by (flags & (1<<edge_index))
-	TCF_ACTIVE_EDGE01	= (1<<0),
-	TCF_ACTIVE_EDGE12	= (1<<1),
-	TCF_ACTIVE_EDGE20	= (1<<2),
-	TCF_DOUBLE_SIDED	= (1<<3),
-//	TCF_WALKABLE		= (1<<4),
-	};
-
-#ifdef GROUP_TRIANGLE_DATA
-
-	struct TriangleData
-		{
-			Triangle			mTri;
-			Triangle			mEdges;
-			udword				mEdgeFlags;
-			udword				mOriginalIndex;
-		};
-	const udword TriangleDataSize = sizeof(TriangleData)/sizeof(udword);
-
-		// Customized container for triangle data
-	class TriangleCollisionData : private Container
-		{
-			public:
-			// Constructor / Destructor
-										TriangleCollisionData()		{}
-										~TriangleCollisionData()	{}
-
-			inline_		void			ForceSize(udword i)			{ Container::ForceSize(i);								}
-			inline_		void			Reset()						{ Container::Reset();									}
-			inline_		const udword*	GetBase()			const	{ return GetEntries();									}
-			inline_		udword			GetCurrentIndex()	const	{ return GetNbEntries();								}
-			inline_		udword			GetNbTriangles()	const	{ return GetNbEntries()/TriangleDataSize;				}
-			inline_		TriangleData*	GetTriangleData()	const	{ return (TriangleData*)GetEntries();					}
-			inline_		TriangleData*	ReserveData(udword nb)		{ return (TriangleData*)Reserve(nb*TriangleDataSize);	}
-		};
-
-/*
-class TriangleMeshShape;
-
-struct triangleData
-	{
-		NxVec3				verts[3];	// triangle vertices in world space
-		TriangleMeshShape*	owner;		// mesh owner
-		NxU32				edgeFlags;	// misc edge flags
-		NxU32				index;		// triangle index in original database
-	};
-const NxU32 triangleDataSize = sizeof(triangleData)/sizeof(NxU32);
-
-	// Customized container for triangle data
-class triangleCollisionData : private Container
-	{
-		public:
-		// Constructor / Destructor
-									triangleCollisionData()		{}
-									~triangleCollisionData()	{}
-
-		NX_INLINE	void			reset()						{ Reset();												}
-		NX_INLINE	udword			getNbTriangles()	const	{ return GetNbEntries()/triangleDataSize;				}
-		NX_INLINE	triangleData*	getTriangleData()	const	{ return (triangleData*)GetEntries();					}
-		NX_INLINE	triangleData*	reserve(NxU32 nb)			{ return (triangleData*)Reserve(nb*triangleDataSize);	}
-	};
-*/
-#endif
 
 	enum TouchedGeomType
 	{
@@ -95,61 +50,81 @@ class triangleCollisionData : private Container
 		TOUCHED_FORCE_DWORD	= 0x7fffffff
 	};
 
-	class SweepTest;
+	class SweptVolume;
 
 // PT: apparently stupid .Net aligns some of them on 8-bytes boundaries for no good reason. This is bad.
 #pragma pack(4)
 
 	struct TouchedGeom
 	{
-		TouchedGeomType	mType;
-		void*			mUserData;	// NxController or NxShape pointer
-		BigPoint		mOffset;	// Local origin, typically the center of the world bounds around the character. We translate both
-									// touched shapes & the character so that they are nearby this point, then add the offset back to
-									// computed "world" impacts.
+		TouchedGeomType		mType;
+		const void*			mUserData;	// NxController or NxShape NxVec3er
+		NxExtendedVec3		mOffset;	// Local origin, typically the center of the world bounds around the character. We translate both
+										// touched shapes & the character so that they are nearby this NxVec3, then add the offset back to
+										// computed "world" impacts.
 	};
 
 	struct TouchedUserBox : public TouchedGeom
 	{
-		PruningAABB		mBox;
+		NxExtendedBounds3		mBox;
+
+		NX_INLINE	void	Relocate(NxBox& box)	const
+		{
+			box.center.x = float(mBox.getCenter(0) - mOffset.x);
+			box.center.y = float(mBox.getCenter(1) - mOffset.y);
+			box.center.z = float(mBox.getCenter(2) - mOffset.z);
+
+			box.extents.x = (float)mBox.getExtents(0);
+			box.extents.y = (float)mBox.getExtents(1);
+			box.extents.z = (float)mBox.getExtents(2);
+
+			box.rot.id();
+		}
 	};
-	ICE_COMPILE_TIME_ASSERT(sizeof(TouchedUserBox)==sizeof(TouchedGeom)+sizeof(PruningAABB));
+	NX_COMPILE_TIME_ASSERT(sizeof(TouchedUserBox)==sizeof(TouchedGeom)+sizeof(NxExtendedBounds3));
 
 	struct TouchedUserCapsule : public TouchedGeom
 	{
-		PruningLSS		mCapsule;
+		NxExtendedCapsule		mCapsule;
+
+		NX_INLINE	void	Relocate(NxCapsule& capsule)	const
+		{
+			capsule.radius = mCapsule.radius;
+			capsule.p0.x = float(mCapsule.p0.x - mOffset.x);
+			capsule.p0.y = float(mCapsule.p0.y - mOffset.y);
+			capsule.p0.z = float(mCapsule.p0.z - mOffset.z);
+			capsule.p1.x = float(mCapsule.p1.x - mOffset.x);
+			capsule.p1.y = float(mCapsule.p1.y - mOffset.y);
+			capsule.p1.z = float(mCapsule.p1.z - mOffset.z);
+		}
 	};
-	ICE_COMPILE_TIME_ASSERT(sizeof(TouchedUserCapsule)==sizeof(TouchedGeom)+sizeof(PruningLSS));
+	NX_COMPILE_TIME_ASSERT(sizeof(TouchedUserCapsule)==sizeof(TouchedGeom)+sizeof(NxExtendedCapsule));
 
 	struct TouchedMesh : public TouchedGeom
 	{
-		udword			mNbTris;
-#ifdef GROUP_TRIANGLE_DATA
-		udword			mIndexTriangleData;
-#else
-		udword			mIndexWorldTriangles;
-		udword			mIndexWorldEdgeNormals;
-		udword			mIndexEdgeFlags;
-#endif
+		NxU32			mNbTris;
+		NxU32			mIndexWorldTriangles;
+		NxU32			mIndexWorldEdgeNormals;
+		NxU32			mIndexEdgeFlags;
 	};
 
 	struct TouchedBox : public TouchedGeom
 	{
-		OBB				mBox;
+		NxBox			mBox;
 	};
-	ICE_COMPILE_TIME_ASSERT(sizeof(TouchedBox)==sizeof(TouchedGeom)+sizeof(OBB));
+	NX_COMPILE_TIME_ASSERT(sizeof(TouchedBox)==sizeof(TouchedGeom)+sizeof(NxBox));
 
 	struct TouchedSphere : public TouchedGeom
 	{
-		Sphere			mSphere;
+		NxSphere		mSphere;
 	};
-	ICE_COMPILE_TIME_ASSERT(sizeof(TouchedSphere)==sizeof(TouchedGeom)+sizeof(Sphere));
+	NX_COMPILE_TIME_ASSERT(sizeof(TouchedSphere)==sizeof(TouchedGeom)+sizeof(NxSphere));
 
 	struct TouchedCapsule : public TouchedGeom
 	{
-		LSS				mCapsule;
+		NxCapsule		mCapsule;
 	};
-	ICE_COMPILE_TIME_ASSERT(sizeof(TouchedCapsule)==sizeof(TouchedGeom)+sizeof(LSS));
+	NX_COMPILE_TIME_ASSERT(sizeof(TouchedCapsule)==sizeof(TouchedGeom)+sizeof(NxCapsule));
 
 #pragma pack()
 
@@ -161,221 +136,111 @@ class triangleCollisionData : private Container
 
 	struct SweptContact
 	{
-		BigPoint			mWorldPos;		// Contact position in world space
-		Point				mWorldNormal;	// Contact normal in world space
-		float				mDistance;		// Contact distance
-		udword				mIndex;			// Feature identifier (e.g. triangle index for meshes)
+		NxExtendedVec3		mWorldPos;		// Contact position in world space
+		NxVec3				mWorldNormal;	// Contact normal in world space
+		NxF32				mDistance;		// Contact distance
+		NxU32				mIndex;			// Feature identifier (e.g. triangle index for meshes)
 		TouchedGeom*		mGeom;
 	};
 
-	enum SweptVolumeType
-	{
-		SWEPT_BOX,
-		SWEPT_CAPSULE,
-
-		SWEPT_LAST
-	};
-
-	class SweptVolume
-	{
-		public:
-			SweptVolume();
-			~SweptVolume();
-
-		virtual void ComputeTemporalBox(const SweepTest&, PruningAABB& box, const Point& direction)							const	= 0;
-		virtual void ComputeTemporalBox(const SweepTest&, PruningAABB& box, const BigPoint& center, const Point& direction)	const	= 0;
-
-		inline_	SweptVolumeType	GetType()	const	{ return mType;	}
-
-		BigPoint		mCenter;
-		float			mHalfHeight;	// UBI
-		protected:
-		SweptVolumeType	mType;
-	};
-
-	class SweptBox : public SweptVolume
-	{
-		public:
-			SweptBox();
-			~SweptBox();
-
-		virtual void ComputeTemporalBox(const SweepTest&, PruningAABB& box, const Point& direction)							const;
-		virtual void ComputeTemporalBox(const SweepTest&, PruningAABB& box, const BigPoint& center, const Point& direction)	const;
-
-		Point	mExtents;
-	};
-
-	class SweptCapsule : public SweptVolume
-	{
-		public:
-						SweptCapsule();
-						~SweptCapsule();
-
-		virtual void	ComputeTemporalBox(const SweepTest&, PruningAABB& box, const Point& direction)							const;
-		virtual void	ComputeTemporalBox(const SweepTest&, PruningAABB& box, const BigPoint& center, const Point& direction)	const;
-
-		inline_	void	GetCapsule(const BigPoint& center, PruningLSS& capsule, udword axis) const
-						{
-							capsule.mRadius		= mRadius;
-							capsule.mP0			= center;
-							capsule.mP1			= center;
-							capsule.mP0[axis]	+= mHeight*0.5f;
-							capsule.mP1[axis]	-= mHeight*0.5f;
-						}
-		inline_	void	GetLocalCapsule(LSS& capsule, udword axis) const
-						{
-							capsule.mRadius		= mRadius;
-							capsule.mP0.Zero();
-							capsule.mP1.Zero();
-							capsule.mP0[axis]	+= mHeight*0.5f;
-							capsule.mP1[axis]	-= mHeight*0.5f;
-						}
-
-		float	mRadius;
-		float	mHeight;
-	};
-
-#ifdef NEW_CALLBACKS_DESIGN
-	class CCT_HitReport;
-#endif
 	class NxGroupsMask;
+	class CCTDebugData;
 
 	class SweepTest
 	{
 		public:
-							SweepTest();
-							~SweepTest();
+									SweepTest();
+									~SweepTest();
 
-				void		MoveCharacter(
-							void* user_data,
-#ifdef NEW_CALLBACKS_DESIGN
-							CCT_HitReport* report,
-#else
-							void* user_data2,
-#endif
-							SweptVolume& volume,
-							const Point& direction,
-							udword nb_boxes, const PruningAABB* boxes, const void** box_user_data,
-							udword nb_capsules, const PruningLSS* capsules, const void** capsule_user_data,
-							udword groups, float min_dist,
-							udword& collision_flags,
-							const NxGroupsMask* groupsMask,
-							bool apply_ubi_fix
-							);
+				void				MoveCharacter(
+										void* user_data,
+										void* user_data2,
+										SweptVolume& volume,
+										const NxVec3& direction,
+										NxU32 nb_boxes, const NxExtendedBounds3* boxes, const void** box_user_data,
+										NxU32 nb_capsules, const NxExtendedCapsule* capsules, const void** capsule_user_data,
+										NxU32 groups, NxF32 min_dist,
+										NxU32& collision_flags,
+										const NxGroupsMask* groupsMask,
+										bool constrainedClimbingMode
+										);
 
-				bool		DoSweepTest(
-								void* user_data,
-#ifdef NEW_CALLBACKS_DESIGN
-							CCT_HitReport* report,
-#else
-								void* user_data2,
-#endif
-								udword nb_boxes, const PruningAABB* boxes, const void** box_user_data,
-								udword nb_capsules, const PruningLSS* capsules, const void** capsule_user_data,
-								SweptVolume& swept_volume,
-								const Point& direction, float bump, float friction, udword max_iter,
-								udword* nb_collisions, udword group_flags, float min_dist, const NxGroupsMask* groupsMask, bool down_pass=false);
+				bool				DoSweepTest(
+										void* user_data,
+										void* user_data2,
+										NxU32 nb_boxes, const NxExtendedBounds3* boxes, const void** box_user_data,
+										NxU32 nb_capsules, const NxExtendedCapsule* capsules, const void** capsule_user_data,
+										SweptVolume& swept_volume,
+										const NxVec3& direction, NxU32 max_iter,
+										NxU32* nb_collisions, NxU32 group_flags, NxF32 min_dist, const NxGroupsMask* groupsMask, bool down_pass=false);
 
-				void		FindTouchedCCTs(
-									udword nb_boxes, const PruningAABB* boxes, const void** box_user_data,
-									udword nb_capsules, const PruningLSS* capsules, const void** capsule_user_data,
-									const PruningAABB& world_box
+				void				FindTouchedCCTs(
+										NxU32 nb_boxes, const NxExtendedBounds3* boxes, const void** box_user_data,
+										NxU32 nb_capsules, const NxExtendedCapsule* capsules, const void** capsule_user_data,
+										const NxExtendedBounds3& world_box
 									);
 
-				void		VoidTestCache() { mCachedTBV.SetEmpty(); }
+				void				VoidTestCache()	{ mCachedTBV.setEmpty();	}
 
 //		private:
-#ifdef GROUP_TRIANGLE_DATA
-	TriangleCollisionData	mTriangleData;
-#else
-				TriList		mWorldTriangles;
-				TriList		mWorldEdgeNormals;
-				Container	mEdgeFlags;
-#endif
-				Container	mGeoms;
-				PruningAABB	mCachedTBV;
-				udword		mNbCachedStatic;
-#ifdef GROUP_TRIANGLE_DATA
-				udword		mNbCachedTris;
-#else
-				udword		mNbCachedT;
-				udword		mNbCachedEN;
-				udword		mNbCachedF;
-#endif
+				CCTDebugData*		debugData;
+				TriArray			mWorldTriangles;
+				TriArray			mWorldEdgeNormals;
+				IntArray			mEdgeFlags;
+				IntArray			mGeomStream;
+				NxExtendedBounds3	mCachedTBV;
+				NxU32				mCachedTriIndexIndex;
+		mutable	NxU32				mCachedTriIndex[3];
+				NxU32				mNbCachedStatic;
+				NxU32				mNbCachedT;
+				NxU32				mNbCachedEN;
+				NxU32				mNbCachedF;
 		public:
 #ifdef USE_CONTACT_NORMAL_FOR_SLOPE_TEST
-				Point		mCN;
+				NxVec3				mCN;
 #else
-				Triangle	mTouched;
+				NxTriangle			mTouched;
 #endif
-				float		mSlopeLimit;
-				float		mSkinWidth;
-				float		mStepOffset;
-				float		mVolumeGrowth;	// Must be >1.0f and not too big
-				float		mContactPointHeight;	// UBI
-				udword		mUpDirection;
-				udword		mMaxIter;
-				bool		mHitNonWalkable;
-				bool		mWalkExperiment;
-				bool		mHandleSlope;
-				bool		mValidTri;
-				bool		mValidateCallback;
-				bool		mNormalizeResponse;
+				NxF32				mSlopeLimit;
+				NxF32				mSkinWidth;
+				NxF32				mStepOffset;
+				NxF32				mVolumeGrowth;	// Must be >1.0f and not too big
+				NxF32				mContactPointHeight;	// UBI
+				NxU32				mUpDirection;
+				NxU32				mMaxIter;
+				bool				mHitNonWalkable;
+				bool				mWalkExperiment;
+				bool				mHandleSlope;
+				bool				mValidTri;
+				bool				mValidateCallback;
+				bool				mNormalizeResponse;
+				bool				mFirstUpdate;
 		private:
-				void		UpdateTouchedGeoms(void* user_data,
-												udword nb_boxes, const PruningAABB* boxes, const void** box_user_data,
-												udword nb_capsules, const PruningLSS* capsules, const void** capsule_user_data,
-												udword group_flags, const PruningAABB& world_box, bool first_iter, const NxGroupsMask* groupsMask);
+				void				UpdateTouchedGeoms(void* user_data, const SweptVolume& swept_volume,
+												NxU32 nb_boxes, const NxExtendedBounds3* boxes, const void** box_user_data,
+												NxU32 nb_capsules, const NxExtendedCapsule* capsules, const void** capsule_user_data,
+												NxU32 group_flags, const NxExtendedBounds3& world_box, const NxGroupsMask* groupsMask);
 	};
 
-bool FindTouchedGeometry(
-	void* user_data,
-	const PruningAABB& world_aabb,
+	bool FindTouchedGeometry(void* user_data,
+							const NxExtendedBounds3& world_aabb,
 
-#ifdef GROUP_TRIANGLE_DATA
-	TriangleCollisionData& triangles_data,
-#else
-	TriList& world_triangles,
-	TriList& world_edge_normals,
-	Container& edge_flags,
-#endif
-	Container& geoms,
-	udword group_flags,
-	bool static_shapes, bool dynamic_shapes, const NxGroupsMask* groupsMask);
+							TriArray& world_triangles,
+							TriArray* world_edge_normals,
+							IntArray& edge_flags,
+							IntArray& geom_stream,
 
-#ifdef NEW_CALLBACKS_DESIGN
-	class CCT_HitReport
-	{
-		public:
-						CCT_HitReport()		{}
-		virtual			~CCT_HitReport()	{}
+							NxU32 group_flags,
+							bool static_shapes, bool dynamic_shapes, const NxGroupsMask* groupsMask);
 
-		virtual	void	ShapeHitCallback(const SweptContact& contact, const Point& dir, float length)	= 0;
-		virtual	void	UserHitCallback(const SweptContact& contact, const Point& dir, float length)	= 0;
-	};
-#else
-	void ShapeHitCallback(void* user_data2, const SweptContact& contact, const Point& dir, float length);
-	void UserHitCallback(void* user_data2, const SweptContact& contact, const Point& dir, float length);
-#endif
-
-	// On the NX side:
-
-	// User-defined structure passed to callbacks
-	class NxScene;
-	class NxActor;
-	class NxShape;
-	struct CallbackData
-	{
-		NxScene*	scene;
-		NxShape*	shape;
-		NxActor*	actor;
-	};
+	void ShapeHitCallback(void* user_data2, const SweptContact& contact, const NxVec3& dir, NxF32 length);
+	void UserHitCallback(void* user_data2, const SweptContact& contact, const NxVec3& dir, NxF32 length);
 
 /** \endcond */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

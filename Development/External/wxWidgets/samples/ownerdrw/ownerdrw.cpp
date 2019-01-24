@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     13.11.97
-// RCS-ID:      $Id: ownerdrw.cpp,v 1.18 2004/10/06 20:54:03 ABX Exp $
+// RCS-ID:      $Id: ownerdrw.cpp 40587 2006-08-13 01:17:53Z VZ $
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ class OwnerDrawnFrame : public wxFrame
 {
 public:
     // ctor & dtor
-    OwnerDrawnFrame(wxFrame *frame, wxChar *title, int x, int y, int w, int h);
+    OwnerDrawnFrame(wxFrame *frame, const wxChar *title, int x, int y, int w, int h);
     ~OwnerDrawnFrame(){};
 
     // notifications
@@ -70,7 +70,7 @@ enum
     Menu_Submenu, Menu_Sub1, Menu_Sub2, Menu_Sub3,
     Menu_Toggle, Menu_About,
     Control_First = 1000,
-    Control_Listbox, Control_Listbox2,
+    Control_Listbox, Control_Listbox2
 };
 
 BEGIN_EVENT_TABLE(OwnerDrawnFrame, wxFrame)
@@ -83,7 +83,7 @@ BEGIN_EVENT_TABLE(OwnerDrawnFrame, wxFrame)
                 OwnerDrawnFrame::OnListboxDblClick)
 END_EVENT_TABLE()
 
-IMPLEMENT_APP(OwnerDrawnApp);
+IMPLEMENT_APP(OwnerDrawnApp)
 
 // init our app: create windows
 bool OwnerDrawnApp::OnInit(void)
@@ -202,7 +202,7 @@ void OwnerDrawnFrame::InitMenu()
 }
 
 // main frame constructor
-OwnerDrawnFrame::OwnerDrawnFrame(wxFrame *frame, wxChar *title,
+OwnerDrawnFrame::OwnerDrawnFrame(wxFrame *frame, const wxChar *title,
                                  int x, int y, int w, int h)
          : wxFrame(frame, wxID_ANY, title, wxPoint(x, y), wxSize(w, h))
 {

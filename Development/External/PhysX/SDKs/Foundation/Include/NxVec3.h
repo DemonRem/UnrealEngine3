@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NXVEC3
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -12,7 +12,9 @@
   @{
 */
 
-
+#ifdef __PPCGEKKO__
+#include "wii\NxVec3_Wii.h"
+#else
 
 #include "Nxf.h"
 #include "NxMath.h"
@@ -201,7 +203,7 @@ class NxVec3
 	*/
 	NX_INLINE NX_BOOL isZero()	const
 		{
-		if(NX_AIR(x) || NX_AIR(y) || NX_AIR(z))	return NX_FALSE;
+		if((x != 0.0f) || (y != 0.0f) || (z != 0.0f))	return NX_FALSE;
 		return NX_TRUE;
 		}
 
@@ -383,7 +385,7 @@ NX_INLINE const _Nx3F32& Nx3F32::operator=(const NxVec3& d)
 /** \endcond */
 
 //NX_INLINE implementations:
-NX_INLINE NxVec3::NxVec3(NxReal v) : x(v), y(v), z(v)
+NX_INLINE NxVec3::NxVec3(NxReal a) : x(a), y(a), z(a)
 	{
 	}
 
@@ -551,11 +553,11 @@ NX_INLINE void  NxVec3::set(const NxF64 * v)
 
 
  
-NX_INLINE void  NxVec3::set(NxReal x, NxReal y, NxReal z)
+NX_INLINE void  NxVec3::set(NxReal _x, NxReal _y, NxReal _z)
 	{
-	this->x = x;
-	this->y = y;
-	this->z = z;
+	this->x = _x;
+	this->y = _y;
+	this->z = _z;
 	}
 
  
@@ -687,8 +689,8 @@ NX_INLINE NxU32 NxVec3::closestAxis() const
 	{
 	const NxF32* vals = &x;
 	NxU32 m = 0;
-	if(NX_AIR(vals[1]) > NX_AIR(vals[m])) m = 1;
-	if(NX_AIR(vals[2]) > NX_AIR(vals[m])) m = 2;
+	if(NxMath::abs(vals[1]) > NxMath::abs(vals[m])) m = 1;
+	if(NxMath::abs(vals[2]) > NxMath::abs(vals[m])) m = 2;
 	return m;
 	}
 
@@ -756,24 +758,6 @@ NX_INLINE void NxVec3::cross(const NxVec3 &left, const NxVec3 & right)	//prefere
 	}
 
  
-NX_INLINE void NxVec3::setNotUsed()
-	{
-	// We use a particular integer pattern : 0xffffffff everywhere. This is a NAN.
-	NX_IR(x) = 0xffffffff;
-	NX_IR(y) = 0xffffffff;
-	NX_IR(z) = 0xffffffff;
-	}
-
- 
-NX_INLINE NX_BOOL NxVec3::isNotUsed() const
-	{
-	if(NX_IR(x)!=0xffffffff)	return NX_FALSE;
-	if(NX_IR(y)!=0xffffffff)	return NX_FALSE;
-	if(NX_IR(z)!=0xffffffff)	return NX_FALSE;
-	return NX_TRUE;
-	}
-
- 
 NX_INLINE bool NxVec3::equals(const NxVec3 & v, NxReal epsilon) const
 	{
 	return 
@@ -838,6 +822,7 @@ NX_INLINE NxVec3& NxVec3::operator *=(NxReal f)
 	x *= f;
 	y *= f;
 	z *= f;
+	
 	return *this;
 	}
 
@@ -848,6 +833,7 @@ NX_INLINE NxVec3& NxVec3::operator /=(NxReal f)
 	x *= f;
 	y *= f;
 	z *= f;
+	
 	return *this;
 	}
 
@@ -884,9 +870,10 @@ NX_INLINE NxVec3 operator *(NxReal f, const NxVec3& v)
 
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+#endif
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

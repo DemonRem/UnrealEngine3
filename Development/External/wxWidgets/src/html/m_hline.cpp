@@ -1,24 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        m_hline.cpp
+// Name:        src/html/m_hline.cpp
 // Purpose:     wxHtml module for horizontal line (HR tag)
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: m_hline.cpp,v 1.25 2004/11/25 08:32:49 VS Exp $
+// RCS-ID:      $Id: m_hline.cpp 38788 2006-04-18 08:11:26Z ABX $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation
-#endif
-
 #include "wx/wxprec.h"
 
-
-#include "wx/defs.h"
-#if wxUSE_HTML && wxUSE_STREAMS
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
+
+#if wxUSE_HTML && wxUSE_STREAMS
 
 #ifndef WXPRECOMP
     #include "wx/brush.h"

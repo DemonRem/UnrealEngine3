@@ -2,7 +2,7 @@
 // Name:        mfctest.cpp
 // Purpose:     Sample to demonstrate mixing MFC and wxWidgets code
 // Author:      Julian Smart
-// Id:          $Id: mfctest.cpp,v 1.17 2005/04/16 12:33:50 JS Exp $
+// Id:          $Id: mfctest.cpp 53058 2008-04-06 16:01:01Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -40,6 +40,10 @@
 //
 //     Unless the run-time library settings match for wxWidgets and MFC, you will get
 //     link errors for symbols such as __mbctype, __argc, and __argv 
+//
+// (3) Unicode builds may produce the linker error "unresolved external symbol _WinMain@16".
+//     MFC requires you to manually add the Unicode entry point to the linker settings,
+//     Entry point symbol -> wWinMainCRTStartup
 
 #include "stdafx.h"
 
@@ -74,6 +78,10 @@ class MyApp: public wxApp
 {
 public:
     virtual bool OnInit();
+
+    // we need to override this as the default behaviour only works when we're
+    // running wxWidgets main loop, not MFC one
+    virtual void ExitMainLoop();
 
     wxFrame *CreateFrame();
 };
@@ -113,14 +121,14 @@ IMPLEMENT_APP_NO_MAIN(MyApp)
 
 CMainWindow::CMainWindow()
 {
-    LoadAccelTable( "MainAccelTable" );
-    Create( NULL, "Hello Foundation Application",
-        WS_OVERLAPPEDWINDOW, rectDefault, NULL, "MainMenu" );
+    LoadAccelTable( _T("MainAccelTable") );
+    Create( NULL, _T("Hello Foundation Application"),
+        WS_OVERLAPPEDWINDOW, rectDefault, NULL, _T("MainMenu") );
 }
 
 void CMainWindow::OnPaint()
 {
-    CString s = "Hello, Windows!";
+    CString s = _T("Hello, Windows!");
     CPaintDC dc( this );
     CRect rect;
 
@@ -134,13 +142,13 @@ void CMainWindow::OnPaint()
 
 void CMainWindow::OnAbout()
 {
-    CDialog about( "AboutBox", this );
+    CDialog about( _T("AboutBox"), this );
     about.DoModal();
 }
 
 void CMainWindow::OnTest()
 {
-    wxMessageBox("This is a wxWidgets message box.\nWe're about to create a new wxWidgets frame.", "wxWidgets", wxOK);
+    wxMessageBox(_T("This is a wxWidgets message box.\nWe're about to create a new wxWidgets frame."), _T("wxWidgets"), wxOK);
     wxGetApp().CreateFrame();
 }
 
@@ -171,7 +179,7 @@ BOOL CTheApp::InitInstance()
     wxSetInstance(m_hInstance);
     wxApp::m_nCmdShow = m_nCmdShow;
     int argc = 0;
-    char **argv = NULL;
+    wxChar **argv = NULL;
     wxEntryStart(argc, argv);
     if ( !wxTheApp || !wxTheApp->CallOnInit() )
         return FALSE;
@@ -229,22 +237,28 @@ BOOL CTheApp::OnIdle(LONG WXUNUSED(lCount))
 bool MyApp::OnInit()
 {
 #if !START_WITH_MFC_WINDOW
-
-    // Exit app when the top level frame is deleted
-    SetExitOnFrameDelete(TRUE);
+    // as we're not inside wxWidgets main loop, the default logic doesn't work
+    // in our case and we need to do this explicitly
+    SetExitOnFrameDelete(true);
 
     (void) CreateFrame();
 #endif
 
-    return TRUE;
+    return true;
+}
+
+void MyApp::ExitMainLoop()
+{
+    // instead of existing wxWidgets main loop, terminate the MFC one
+    ::PostQuitMessage(0);
 }
 
 wxFrame *MyApp::CreateFrame()
 {
-    MyChild *subframe = new MyChild(NULL, "Canvas Frame", wxPoint(10, 10), wxSize(300, 300),
+    MyChild *subframe = new MyChild(NULL, _T("Canvas Frame"), wxPoint(10, 10), wxSize(300, 300),
         wxDEFAULT_FRAME_STYLE);
 
-    subframe->SetTitle("wxWidgets canvas frame");
+    subframe->SetTitle(_T("wxWidgets canvas frame"));
 
     // Give it a status line
     subframe->CreateStatusBar();
@@ -252,12 +266,12 @@ wxFrame *MyApp::CreateFrame()
     // Make a menubar
     wxMenu *file_menu = new wxMenu;
 
-    file_menu->Append(HELLO_NEW, "&New MFC Window");
-    file_menu->Append(HELLO_QUIT, "&Close");
+    file_menu->Append(HELLO_NEW, _T("&New MFC Window"));
+    file_menu->Append(HELLO_QUIT, _T("&Close"));
 
     wxMenuBar *menu_bar = new wxMenuBar;
 
-    menu_bar->Append(file_menu, "&File");
+    menu_bar->Append(file_menu, _T("&File"));
 
     // Associate the menu bar with the frame
     subframe->SetMenuBar(menu_bar);
@@ -268,7 +282,7 @@ wxFrame *MyApp::CreateFrame()
     MyCanvas *canvas = new MyCanvas(subframe, wxPoint(0, 0), wxSize(width, height));
     canvas->SetCursor(wxCursor(wxCURSOR_PENCIL));
     subframe->canvas = canvas;
-    subframe->Show(TRUE);
+    subframe->Show(true);
 
     // Return the main frame window
     return subframe;
@@ -302,7 +316,7 @@ void MyCanvas::OnPaint(wxPaintEvent& WXUNUSED(event))
 
     dc.DrawEllipse(250, 250, 100, 50);
     dc.DrawLine(50, 230, 200, 230);
-    dc.DrawText("This is a test string", 50, 230);
+    dc.DrawText(_T("This is a test string"), 50, 230);
 }
 
 // This implements a tiny doodling program! Drag the mouse using
@@ -344,7 +358,7 @@ MyChild::~MyChild()
 
 void MyChild::OnQuit(wxCommandEvent& WXUNUSED(event))
 {
-    Close(TRUE);
+    Close(true);
 }
 
 void MyChild::OnNew(wxCommandEvent& WXUNUSED(event))

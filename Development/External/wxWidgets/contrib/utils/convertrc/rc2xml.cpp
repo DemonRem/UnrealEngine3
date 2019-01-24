@@ -12,12 +12,8 @@ trans->Convert("Myfile.rc","Myfile.xml");
 1.  Figure how to fix memory leaks in all wxLists in this class
 2.  Find a way to rename MS Windows fonts so that they work
 cross platform (wxGTK,etc)
-3.  Be able to abort incorrectly formated files without crashing
+3.  Be able to abort incorrectly formatted files without crashing
 */
-
-#ifdef __GNUG__
-#pragma implementation "rc2xml.h"
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"

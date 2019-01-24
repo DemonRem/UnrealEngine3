@@ -4,17 +4,13 @@
 // Author:      Guilhem Lavaux
 // Modified by:
 // Created:     26/04/1997
-// RCS-ID:      $Id: sckaddr.h,v 1.31 2005/08/04 00:28:58 VZ Exp $
+// RCS-ID:      $Id: sckaddr.h 35665 2005-09-24 21:43:15Z VZ $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_NETWORK_ADDRESS_H
 #define _WX_NETWORK_ADDRESS_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "sckaddr.h"
-#endif
 
 #include "wx/defs.h"
 
@@ -108,7 +104,7 @@ public:
   virtual int Type() { return wxSockAddress::IPV4; }
   virtual wxSockAddress *Clone() const;
 
-  bool operator==(wxIPV4address& addr);
+  bool operator==(const wxIPV4address& addr) const;
 
 private:
   wxString m_origHostname;

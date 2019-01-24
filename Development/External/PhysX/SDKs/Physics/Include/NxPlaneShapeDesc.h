@@ -2,9 +2,9 @@
 #define NX_COLLISION_NXPLANESHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -20,9 +20,10 @@ See also the #NxPlane.
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes (Hardware rigid body only)
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
 @see NxPlane NxPlaneShape NxShapeDesc NxActor.createShape()
 */
@@ -70,7 +71,11 @@ class NxPlaneShapeDesc : public NxShapeDesc
 
 	\return return true if the current settings are valid
 	*/
-	NX_INLINE virtual	bool	isValid() const;
+	NX_INLINE virtual	bool	isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 	};
 
 NX_INLINE NxPlaneShapeDesc::NxPlaneShapeDesc() : NxShapeDesc(NX_SHAPE_PLANE)	//constructor sets to default
@@ -86,18 +91,18 @@ NX_INLINE void NxPlaneShapeDesc::setToDefault()
 	d=NxReal(0.0);
 	}
 
-NX_INLINE bool NxPlaneShapeDesc::isValid() const
+NX_INLINE NxU32 NxPlaneShapeDesc::checkValid() const
 	{
-	if(!normal.isFinite())		return false;
-	if(!NxMath::isFinite(d))	return false;
-	return NxShapeDesc::isValid();
+	if(!normal.isFinite())		return 1;
+	if(!NxMath::isFinite(d))	return 2;
+	return 3*NxShapeDesc::checkValid();
 	}
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

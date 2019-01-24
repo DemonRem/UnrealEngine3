@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NX_PHYSICS_SDK
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -59,7 +59,7 @@ enum NxCookingValue
 	NX_COOKING_CONVEX_VERSION_XENON,
 	NX_COOKING_MESH_VERSION_XENON,
 	NX_COOKING_CONVEX_VERSION_PLAYSTATION3,
-	NX_COOKING_MESH_VERSION_PLAYSTATION3,
+	NX_COOKING_MESH_VERSION_PLAYSTATION3
 	};
 
 /**
@@ -68,22 +68,38 @@ enum NxCookingValue
 enum NxSDKCreationFlag
 {
 	/**
-	\brief Disallows the use of the hardware for the application.
+	\brief Disallows the use of the GPU acceleration for the application.
 	
-	A good example of when this flag is useful is when a client and server app must be run on the same
-	machine. Under normal circumstances the SDK will lock the use of the hardware to the first application
-	which attempts to use it. In the case of a client and server it is desirable to have the server run in 
-	software mode and allow the client to use the hardware.
+	When GPU acceleration is enabled some video memory will be set aside for GPU-accelerated features,
+	making that memory unavailable to the application. This flag should be set unless the application
+	is taking advantage of GPU-accelerated features.
 
 	<b>Platform:</b>
 	\li PC SW: No
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : No
 	\li XB360: No
 
 	@see NxPhysicsSDKDesc
 	*/
 	NX_SDKF_NO_HARDWARE							= (1<<0),
+
+	/**
+	\brief batches GPU work on a per-scene basis rather than for all work in all scenes.
+
+	Performance for GPU-optimized applications can often be improved with this flag, but
+	some legacy applications may perform better with it unset.
+	
+	@see NxPhysicsSDKDesc
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+
+	*/
+	NX_SDKF_PER_SCENE_BATCHING					= (1<<1)
 };
 
 /**
@@ -113,6 +129,24 @@ class NxPhysicsSDKDesc
 	NxU32 flags;
 
 	/**
+	\brief Sets the amount of GPU memory which will be reserved for the SDK. 
+	
+	The valid value must be power of 2. 
+	Unit is megabyte.
+	Default value is 32 MB. 
+	*/
+	NxU32 gpuHeapSize;
+	
+	/**
+	\brief Amount of SDK GPU heap memory used by the mesh cache for fluids. 
+
+	The valid value must be power of 2 and smaller than the GPU heap size.
+	Unit is megabyte.
+	The default value (0xffffffff) sets the mesh cache size to 1/8 of the GPU heap size.
+	*/
+	NxU32 meshCacheSize;
+
+	/**
 	\brief (re)sets the structure to the default.	
 	*/
 
@@ -121,8 +155,10 @@ class NxPhysicsSDKDesc
 		hwPageSize = 65536;
 		hwConvexMax = 2048;
 		hwPageMax = 256;
-		flags = 0;
+		flags = (NxU32) NX_SDKF_NO_HARDWARE | (NxU32) NX_SDKF_PER_SCENE_BATCHING;
 		cookerThreadMask = 0;
+		gpuHeapSize = 32;
+		meshCacheSize = 0xffffffff;
 		}
 
 	/**
@@ -133,9 +169,12 @@ class NxPhysicsSDKDesc
 
 	NX_INLINE bool isValid() const
 		{
-		if (hwPageSize != 65536) return false;
+		if ( hwPageSize != 65536 ) return false;
 		if ( hwConvexMax & (hwConvexMax - 1) ) return false; //check if power of two
 		if ( hwPageMax & (hwPageMax - 1) ) return false; //check if power of two
+		if ( gpuHeapSize & (gpuHeapSize - 1) ) return false; //check if power of two
+		if ( (meshCacheSize != 0xffffffff) && (meshCacheSize & (meshCacheSize - 1)) ) return false;  //check if power of two
+		if ( (meshCacheSize != 0xffffffff) && (meshCacheSize >= gpuHeapSize) && (meshCacheSize != 0) ) return false; //check if smaller than heap
 		return true;
 		}
 
@@ -176,9 +215,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCreatePhysicsSDK()
 	*/
@@ -199,9 +239,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial
+	\li GPU  : Yes 
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxParameter getParameter
 	*/
@@ -217,9 +258,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Partial
+	\li GPU  : Yes 
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setParameter NxParameter
 	*/
@@ -237,9 +279,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	<b>Limitations:</b>
 
@@ -273,9 +316,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxScene createScene() shutdownWorkerThreads()
 	*/
@@ -288,9 +332,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getScene()
 	*/
@@ -304,9 +349,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getNbScenes() NxScene
 	*/
@@ -322,9 +368,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxTriangleMesh NxStream releaseTriangleMesh() createConvexMesh()
 	*/
@@ -341,9 +388,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createTriangleMesh NxTriangleMesh
 	*/
@@ -366,9 +414,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see releaseHeightField() NxHeightField NxHeightFieldDesc NxHeightFieldShape
 	*/
@@ -385,9 +434,10 @@ class NxPhysicsSDK
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createHeightField() NxHeightField NxHeightFieldDesc NxHeightFieldShape
 	*/
@@ -433,9 +483,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSimpleTriangleMesh releaseCCDSkeleton() NxShape.setCCDSkeleton()
 	*/
@@ -454,9 +505,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createCCDSkeleton()
 	*/
@@ -473,9 +525,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createCCDSkeleton() NxShape.setCCDSkeleton()
 	*/
@@ -498,9 +551,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes (Software fallback for > 32 vertices or faces)
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see releaseConvexMesh() NxConvexMesh NxStream createTriangleMesh() NxConvexShape
 	*/
@@ -517,9 +571,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see createConvexMesh() NxConvexMesh NxConvexShape
 	*/
@@ -545,6 +600,8 @@ class NxPhysicsSDK
 
 	/**
 	\brief Deletes the specified cloth mesh. The cloth mesh must be in this scene.
+
+	The cloth mesh can be release after the corresponding cloth has been created to save memory.
 
 	Do not keep a reference to the deleted instance.
 	Avoid release calls while the scene is simulating (in between simulate() and fetchResults() calls).
@@ -613,9 +670,10 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	*/
 	virtual NxU32 getInternalVersion(NxU32& apiRev, NxU32& descRev, NxU32& branchId)			const	= 0;
@@ -634,11 +692,31 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxU32 getNbPPUs() const = 0;
+
+	/**
+	\brief Attempt to resize the GPU memory heap and mesh cache.
+
+	For the resize to be successful there must be no GPU memory currently allocated.
+	This generally means all GPU fluids, cloths, and soft bodies must be released before calling this function.
+
+	\param[in] gpuHeapSize Unit is MB, must be a power of two.
+	\param[in] meshCacheSize Unit is MB, must be a power of two and smaller than gpuHeapSize. The default value (0xffffffff) sets the mesh cache size to 1/8 of the GPU heap size.
+	\return True if resize was successful.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : Yes
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+	*/
+	virtual bool resizeGpuHeap(NxU32 gpuHeapSize, NxU32 meshCacheSize = 0xffffffff) = 0;
 
 	/**
 	\brief Retrieves the FoundationSDK instance.
@@ -646,18 +724,25 @@ class NxPhysicsSDK
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	virtual NxFoundationSDK& getFoundationSDK() const = 0;
 
+	/**
+	\brief Unsupported customer specific extension.  May be removed in future releases.
+	*/
+	virtual       void              releaseInternalMeshOnly(NxTriangleMesh& m) = 0;
+
 	};
 
+	/** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright ?2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright ?2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

@@ -77,9 +77,9 @@ in wx.bkl:
 === EOF ===
 
 Author:  VZ
-Version: $Id: tn0002.txt,v 1.7 2005/08/12 15:34:01 MW Exp $
+Version: $Id: tn0002.txt 35181 2005-08-12 15:34:01Z MW $
 
-$Log: tn0002.txt,v $
+$Log$
 Revision 1.7  2005/08/12 15:34:01  MW
 Typo
 

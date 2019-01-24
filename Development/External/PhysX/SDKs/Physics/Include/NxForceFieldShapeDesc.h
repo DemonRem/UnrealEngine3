@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXFORCEFIELDSHAPEDESC
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -13,34 +13,16 @@
 
 #include "Nxp.h"
 
-
-/**
- \brief flags for NxForceFieldShape
- 
-
-<b>Platform:</b>
-\li PC SW: Yes
-\li PPU  : Yes
-\li PS3  : Yes
-\li XB360: Yes
-
- @see NxForceFieldShape NxForceFieldShapeDesc
-*/
-enum NxForceFieldShapeFlags 
-	{ 
-	NX_FFS_EXCLUDE	 		= (1<<0),	//!< this is an exclude volume
-	};
-
-
 /**
  \brief Descriptor class for NxForceFieldShape
  
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxForceFieldShape, NxForceField
 */
@@ -53,8 +35,20 @@ class NxForceFieldShapeDesc
 	NxShapeType type;
 
 	public:
-	NxMat34  pose;				//!< force field to shape transform
-	NxU32 flags;				//!< various force field shape flags
+	
+	/**
+	\brief shape's pose
+
+	<b>Default:</b> Identity
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW]
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NxMat34  pose;
 
 	
 	/**
@@ -64,9 +58,10 @@ class NxForceFieldShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	void* userData;
 
@@ -77,9 +72,10 @@ class NxForceFieldShapeDesc
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	const char* name;
 
@@ -98,7 +94,11 @@ class NxForceFieldShapeDesc
 
 	\return true if the current settings are valid
 	*/
-	virtual NX_INLINE bool isValid() const;
+	virtual NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Retrieves the shape type.
@@ -130,15 +130,14 @@ NX_INLINE NxForceFieldShapeDesc::~NxForceFieldShapeDesc()
 NX_INLINE void NxForceFieldShapeDesc::setToDefault()
 	{
 	pose.id();
-	flags = 0;
 
 	name = NULL;
 	userData = NULL;
 	}
 
-NX_INLINE bool NxForceFieldShapeDesc::isValid() const
+NX_INLINE NxU32 NxForceFieldShapeDesc::checkValid() const
 	{
-	return true;
+	return 0;
 	}
 
 NX_INLINE NxShapeType   NxForceFieldShapeDesc::getType() const
@@ -151,9 +150,9 @@ NX_INLINE NxShapeType   NxForceFieldShapeDesc::getType() const
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

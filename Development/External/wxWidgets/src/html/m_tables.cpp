@@ -1,23 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        m_tables.cpp
+// Name:        src/html/m_tables.cpp
 // Purpose:     wxHtml module for tables
 // Author:      Vaclav Slavik
-// RCS-ID:      $Id: m_tables.cpp,v 1.36 2004/09/27 19:15:06 ABX Exp $
+// RCS-ID:      $Id: m_tables.cpp 53446 2008-05-04 09:37:00Z VS $
 // Copyright:   (c) 1999 Vaclav Slavik
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation
-#endif
-
 #include "wx/wxprec.h"
 
-#include "wx/defs.h"
-#if wxUSE_HTML && wxUSE_STREAMS
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
+
+#if wxUSE_HTML && wxUSE_STREAMS
 
 #ifndef WXPRECOMP
 #endif
@@ -102,7 +98,10 @@ private:
 
 public:
     wxHtmlTableCell(wxHtmlContainerCell *parent, const wxHtmlTag& tag, double pixel_scale = 1.0);
-    ~wxHtmlTableCell();
+    virtual ~wxHtmlTableCell();
+
+    virtual void RemoveExtraSpacing(bool top, bool bottom);
+
     virtual void Layout(int w);
 
     void AddRow(const wxHtmlTag& tag);
@@ -137,7 +136,11 @@ wxHtmlTableCell::wxHtmlTableCell(wxHtmlContainerCell *parent, const wxHtmlTag& t
 
     /* scan params: */
     if (tag.HasParam(wxT("BGCOLOR")))
+    {
         tag.GetParamAsColour(wxT("BGCOLOR"), &m_tBkg);
+        if (m_tBkg.Ok())
+            SetBackgroundColour(m_tBkg);
+    }
     if (tag.HasParam(wxT("VALIGN")))
         m_tValign = tag.GetParam(wxT("VALIGN"));
     else
@@ -167,6 +170,15 @@ wxHtmlTableCell::~wxHtmlTableCell()
 }
 
 
+void wxHtmlTableCell::RemoveExtraSpacing(bool WXUNUSED(top),
+                                         bool WXUNUSED(bottom))
+{
+    // Don't remove any spacing in the table -- it's always desirable,
+    // because it's part of table's definition.
+    // (If wxHtmlContainerCell::RemoveExtraSpacing() was applied to tables,
+    // then upper left cell of a table would be positioned above other cells
+    // if the table was the first element on the page.)
+}
 
 void wxHtmlTableCell::ReallocCols(int cols)
 {
@@ -267,16 +279,21 @@ void wxHtmlTableCell::AddCell(wxHtmlContainerCell *cell, const wxHtmlTag& tag)
         {
             wxString wd = tag.GetParam(wxT("WIDTH"));
 
-            if (wd[wd.Length()-1] == wxT('%'))
+            if (wd[wd.length()-1] == wxT('%'))
             {
-                wxSscanf(wd.c_str(), wxT("%i%%"), &m_ColsInfo[c].width);
-                m_ColsInfo[c].units = wxHTML_UNITS_PERCENT;
+                if ( wxSscanf(wd.c_str(), wxT("%i%%"), &m_ColsInfo[c].width) == 1 )
+                {
+                    m_ColsInfo[c].units = wxHTML_UNITS_PERCENT;
+                }
             }
             else
             {
-                wxSscanf(wd.c_str(), wxT("%i"), &m_ColsInfo[c].width);
-                m_ColsInfo[c].width = (int)(m_PixelScale * (double)m_ColsInfo[c].width);
-                m_ColsInfo[c].units = wxHTML_UNITS_PIXELS;
+                long width;
+                if ( wd.ToLong(&width) )
+                {
+                    m_ColsInfo[c].width = (int)(m_PixelScale * (double)width);
+                    m_ColsInfo[c].units = wxHTML_UNITS_PIXELS;
+                }
             }
         }
     }
@@ -563,6 +580,10 @@ void wxHtmlTableCell::Layout(int w)
             m_ColsInfo[i].leftpos = wpos;
             wpos += m_ColsInfo[i].pixwidth + m_Spacing;
         }
+
+        // add the remaining space to the last column
+        if (m_NumCols > 0 && wpos < m_Width)
+            m_ColsInfo[m_NumCols-1].pixwidth += m_Width - wpos;
     }
 
     /* 3.  sub-layout all cells: */
@@ -664,7 +685,7 @@ TAG_HANDLER_BEGIN(TABLE, "TABLE,TR,TD,TH")
 
             oldcont = c = m_WParser->OpenContainer();
 
-            m_Table = new wxHtmlTableCell(c, tag);
+            m_Table = new wxHtmlTableCell(c, tag, m_WParser->GetPixelScale());
 
             // width:
             {
@@ -672,7 +693,7 @@ TAG_HANDLER_BEGIN(TABLE, "TABLE,TR,TD,TH")
                 {
                     wxString wd = tag.GetParam(wxT("WIDTH"));
 
-                    if (wd[wd.Length()-1] == wxT('%'))
+                    if (wd[wd.length()-1] == wxT('%'))
                     {
                         int width = 0;
                         wxSscanf(wd.c_str(), wxT("%i%%"), &width);

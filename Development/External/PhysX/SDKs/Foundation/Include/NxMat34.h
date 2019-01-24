@@ -2,9 +2,9 @@
 #define NX_FOUNDATION_NxMat34T
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup foundation
@@ -107,17 +107,33 @@ class NxMat34
 	*/
 	NX_INLINE void setColumnMajor44(const NxF32 *);
 	/**
+	\brief convert from a matrix format appropriate for rendering
+	*/
+	NX_INLINE void setColumnMajor44(const NxF32 d[4][4]);
+	/**
 	\brief convert to a matrix format appropriate for rendering
 	*/
 	NX_INLINE void getColumnMajor44(NxF32 *) const;
+	/**
+	\brief convert to a matrix format appropriate for rendering
+	*/
+	NX_INLINE void getColumnMajor44(NxF32 d[4][4]) const;
 	/**
 	\brief set the matrix given a row major matrix.
 	*/
 	NX_INLINE void setRowMajor44(const NxF32 *);
 	/**
+	\brief set the matrix given a row major matrix.
+	*/
+	NX_INLINE void setRowMajor44(const NxF32 d[4][4]);
+	/**
 	\brief retrieve the matrix in a row major format.
 	*/
 	NX_INLINE void getRowMajor44(NxF32 *) const;
+	/**
+	\brief retrieve the matrix in a row major format.
+	*/
+	NX_INLINE void getRowMajor44(NxF32 d[4][4]) const;
 	};
 
 
@@ -224,6 +240,14 @@ NX_INLINE void NxMat34::setColumnMajor44(const NxF32 * d)
 	t.z = d[14];
 	}
 
+NX_INLINE void NxMat34::setColumnMajor44(const NxF32 d[4][4]) 
+	{
+	M.setColumnMajorStride4(d);
+    t.x = d[3][0];
+	t.y = d[3][1];
+	t.z = d[3][2];
+	}
+
 NX_INLINE void NxMat34::getColumnMajor44(NxF32 * d) const
 	{
 	M.getColumnMajorStride4(d);
@@ -234,12 +258,30 @@ NX_INLINE void NxMat34::getColumnMajor44(NxF32 * d) const
 	d[15] = 1.0f;
 	}
 
+NX_INLINE void NxMat34::getColumnMajor44(NxF32 d[4][4]) const
+	{
+	M.getColumnMajorStride4(d);
+    d[3][0] = t.x;
+	d[3][1] = t.y;
+	d[3][2] = t.z;
+	d[0][3] = d[1][3] = d[2][3] = 0.0f;
+	d[3][3] = 1.0f;
+	}
+
 NX_INLINE void NxMat34::setRowMajor44(const NxF32 * d) 
 	{
 	M.setRowMajorStride4(d);
     t.x = d[3];
 	t.y = d[7];
 	t.z = d[11];
+	}
+
+NX_INLINE void NxMat34::setRowMajor44(const NxF32 d[4][4])
+	{
+	M.setRowMajorStride4(d);
+    t.x = d[0][3];
+	t.y = d[1][3];
+	t.z = d[2][3];
 	}
 
 NX_INLINE void NxMat34::getRowMajor44(NxF32 * d) const
@@ -252,11 +294,21 @@ NX_INLINE void NxMat34::getRowMajor44(NxF32 * d) const
 	d[15] = 1.0f;
 	}
 
+NX_INLINE void NxMat34::getRowMajor44(NxF32 d[4][4]) const
+	{
+	M.getRowMajorStride4(d);
+    d[0][3] = t.x;
+	d[1][3] = t.y;
+	d[2][3] = t.z;
+	d[3][0] = d[3][1] = d[3][2] = 0.0f;
+	d[3][3] = 1.0f;
+	}
+
  /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

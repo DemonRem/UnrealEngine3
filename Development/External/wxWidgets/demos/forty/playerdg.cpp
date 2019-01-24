@@ -4,15 +4,10 @@
 // Author:      Chris Breeze
 // Modified by:
 // Created:     21/07/97
-// RCS-ID:      $Id: playerdg.cpp,v 1.11 2005/01/31 18:14:12 ABX Exp $
+// RCS-ID:      $Id: playerdg.cpp 50452 2007-12-03 09:45:13Z JS $
 // Copyright:   (c) 1993-1998 Chris Breeze
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#ifdef __GNUG__
-#pragma implementation
-#pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -49,7 +44,7 @@ PlayerSelectionDialog::PlayerSelectionDialog(
 
     wxListBox* list = new wxListBox(
                         this, ID_LISTBOX,
-                        wxDefaultPosition, wxDefaultSize,
+                        wxDefaultPosition, wxSize(-1, 150),
                         0, 0,
                         wxLB_SINGLE
                         );
@@ -81,6 +76,8 @@ PlayerSelectionDialog::PlayerSelectionDialog(
     topsizer->SetSizeHints( this );
 
     CentreOnParent();
+
+    m_OK->SetDefault();
 }
 
 void PlayerSelectionDialog::OnSize(wxSizeEvent& WXUNUSED(event))

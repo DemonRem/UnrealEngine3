@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     08.12.99
-// RCS-ID:      $Id: dir.h,v 1.18 2005/02/24 14:33:28 VZ Exp $
+// RCS-ID:      $Id: dir.h 53135 2008-04-12 02:31:04Z VZ $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,15 +12,10 @@
 #ifndef _WX_DIR_H_
 #define _WX_DIR_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "dir.h"
-#endif
+#include "wx/longlong.h"
+#include "wx/string.h"
 
-#ifndef WX_PRECOMP
-    #include "wx/string.h"
-#endif
-
-class WXDLLIMPEXP_BASE wxArrayString;
+class WXDLLIMPEXP_FWD_BASE wxArrayString;
 
 // ----------------------------------------------------------------------------
 // constants
@@ -83,7 +78,7 @@ public:
 // wxDir: portable equivalent of {open/read/close}dir functions
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_BASE wxDirData;
+class WXDLLIMPEXP_FWD_BASE wxDirData;
 
 class WXDLLIMPEXP_BASE wxDir
 {
@@ -143,6 +138,16 @@ public:
                               wxArrayString *files,
                               const wxString& filespec = wxEmptyString,
                               int flags = wxDIR_DEFAULT);
+
+    // check if there any files matching the given filespec under the given
+    // directory (i.e. searches recursively), return the file path if found or
+    // empty string otherwise
+    static wxString FindFirst(const wxString& dirname,
+                              const wxString& filespec,
+                              int flags = wxDIR_DEFAULT);
+
+    // returns the size of all directories recursively found in given path
+    static wxULongLong GetTotalSize(const wxString &dir, wxArrayString *filesSkipped = NULL);
 
 private:
     friend class wxDirData;

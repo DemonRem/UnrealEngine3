@@ -1,58 +1,58 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dirctrlg.cpp
+// Name:        src/generic/dirctrlg.cpp
 // Purpose:     wxGenericDirCtrl
 // Author:      Harm van der Heijden, Robert Roebling, Julian Smart
 // Modified by:
 // Created:     12/12/98
-// RCS-ID:      $Id: dirctrlg.cpp,v 1.129 2005/07/01 13:38:55 ABX Exp $
+// RCS-ID:      $Id: dirctrlg.cpp 46614 2007-06-22 12:12:10Z JS $
 // Copyright:   (c) Harm van der Heijden, Robert Roebling and Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dirctrlg.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-#pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_DIRDLG || wxUSE_FILEDLG
 
 #include "wx/generic/dirctrlg.h"
-#include "wx/module.h"
-#include "wx/utils.h"
-#include "wx/button.h"
-#include "wx/layout.h"
-#include "wx/msgdlg.h"
-#include "wx/textctrl.h"
-#include "wx/textdlg.h"
+
+#ifndef WX_PRECOMP
+    #include "wx/hash.h"
+    #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/utils.h"
+    #include "wx/button.h"
+    #include "wx/icon.h"
+    #include "wx/settings.h"
+    #include "wx/msgdlg.h"
+    #include "wx/cmndata.h"
+    #include "wx/choice.h"
+    #include "wx/textctrl.h"
+    #include "wx/layout.h"
+    #include "wx/sizer.h"
+    #include "wx/textdlg.h"
+    #include "wx/gdicmn.h"
+    #include "wx/image.h"
+    #include "wx/module.h"
+#endif
+
 #include "wx/filefn.h"
-#include "wx/cmndata.h"
-#include "wx/gdicmn.h"
-#include "wx/intl.h"
 #include "wx/imaglist.h"
-#include "wx/icon.h"
-#include "wx/log.h"
-#include "wx/sizer.h"
 #include "wx/tokenzr.h"
 #include "wx/dir.h"
-#include "wx/settings.h"
 #include "wx/artprov.h"
-#include "wx/hash.h"
 #include "wx/mimetype.h"
-#include "wx/image.h"
-#include "wx/choice.h"
 
 #if wxUSE_STATLINE
     #include "wx/statline.h"
 #endif
 
 #if defined(__WXMAC__)
-  #include  "wx/mac/private.h"  // includes mac headers
+    #include  "wx/mac/private.h"  // includes mac headers
 #endif
 
 #ifdef __WXMSW__
@@ -64,33 +64,33 @@
 //         accordingly.
 #if !defined(__GNUWIN32__) || (defined(__MINGW32_MAJOR_VERSION) && __MINGW32_MAJOR_VERSION >= 1)
 #if !defined(__WXWINCE__)
-  #include <direct.h>
+    #include <direct.h>
 #endif
-  #include <stdlib.h>
-  #include <ctype.h>
+    #include <stdlib.h>
+    #include <ctype.h>
 #endif
 
 #endif
 
 #if defined(__OS2__) || defined(__DOS__)
-  #ifdef __OS2__
-    #define INCL_BASE
-    #include <os2.h>
-    #ifndef __EMX__
-      #include <direct.h>
+    #ifdef __OS2__
+        #define INCL_BASE
+        #include <os2.h>
+        #ifndef __EMX__
+            #include <direct.h>
+        #endif
+        #include <stdlib.h>
+        #include <ctype.h>
     #endif
-    #include <stdlib.h>
-    #include <ctype.h>
-  #endif
-  extern bool wxIsDriveAvailable(const wxString& dirName);
+    extern bool wxIsDriveAvailable(const wxString& dirName);
 #endif // __OS2__
 
 #if defined(__WXMAC__)
-# include "MoreFilesX.h"
+    #include "MoreFilesX.h"
 #endif
 
 #ifdef __BORLANDC__
-#include "dos.h"
+    #include "dos.h"
 #endif
 
 // If compiled under Windows, this macro can cause problems
@@ -120,6 +120,9 @@ size_t wxGetAvailableDrives(wxArrayString &paths, wxArrayString &names, wxArrayI
         wxString path, name;
         path.Printf(wxT("%c:\\"), driveBuffer[i]);
         name.Printf(wxT("%c:"), driveBuffer[i]);
+
+        // Do not use GetVolumeInformation to further decorate the
+        // name, since it can cause severe delays on network drives.
 
         int imageId;
         int driveType = ::GetDriveType(path);
@@ -170,7 +173,17 @@ size_t wxGetAvailableDrives(wxArrayString &paths, wxArrayString &names, wxArrayI
                 // Note: If _filesys is unsupported by some compilers,
                 //       we can always replace it by DosQueryFSAttach
                 char filesysname[20];
+#ifdef __WATCOMC__
+                ULONG cbBuffer = sizeof(filesysname);
+                PFSQBUFFER2 pfsqBuffer = (PFSQBUFFER2)filesysname;
+                APIRET rc = ::DosQueryFSAttach(name.fn_str(),0,FSAIL_QUERYNAME,pfsqBuffer,&cbBuffer);
+                if (rc != NO_ERROR)
+                {
+                    filesysname[0] = '\0';
+                }
+#else
                 _filesys(name.fn_str(), filesysname, sizeof(filesysname));
+#endif
                 /* FAT, LAN, HPFS, CDFS, NFS */
                 int imageId;
                 if (path == wxT("A:\\") || path == wxT("B:\\"))
@@ -261,8 +274,10 @@ size_t wxGetAvailableDrives(wxArrayString &paths, wxArrayString &names, wxArrayI
 bool wxIsDriveAvailable(const wxString& dirName)
 {
     // FIXME_MGL - this method leads to hang up under Watcom for some reason
-#ifndef __WATCOMC__
-    if ( dirName.Len() == 3 && dirName[1u] == wxT(':') )
+#ifdef __WATCOMC__
+    wxUnusedVar(dirName);
+#else
+    if ( dirName.length() == 3 && dirName[1u] == wxT(':') )
     {
         wxString dirNameLower(dirName.Lower());
         // VS: always return true for removable media, since Win95 doesn't
@@ -322,7 +337,7 @@ bool wxIsDriveAvailable(const wxString& WXUNUSED_IN_WINCE(dirName))
 
     // Check if this is a root directory and if so,
     // whether the drive is available.
-    if (dirName.Len() == 3 && dirName[(size_t)1] == wxT(':'))
+    if (dirName.length() == 3 && dirName[(size_t)1] == wxT(':'))
     {
         wxString dirNameLower(dirName.Lower());
 #if defined(__GNUWIN32__) && !(defined(__MINGW32_MAJOR_VERSION) && __MINGW32_MAJOR_VERSION >= 1)
@@ -529,6 +544,7 @@ bool wxGenericDirCtrl::Create(wxWindow *parent,
         return false;
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
+    SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
 
     Init();
 
@@ -597,7 +613,7 @@ bool wxGenericDirCtrl::Create(wxWindow *parent,
 
     ExpandRoot();
 
-    SetBestSize(size);
+    SetInitialSize(size);
     DoResize();
 
     return true;
@@ -679,9 +695,12 @@ void wxGenericDirCtrl::OnBeginEditItem(wxTreeEvent &event)
 
 void wxGenericDirCtrl::OnEndEditItem(wxTreeEvent &event)
 {
+    if (event.IsEditCancelled())
+        return;
+
     if ((event.GetLabel().empty()) ||
-        (event.GetLabel() == _(".")) ||
-        (event.GetLabel() == _("..")) ||
+        (event.GetLabel() == wxT(".")) ||
+        (event.GetLabel() == wxT("..")) ||
         (event.GetLabel().Find(wxT('/')) != wxNOT_FOUND) ||
         (event.GetLabel().Find(wxT('\\')) != wxNOT_FOUND) ||
         (event.GetLabel().Find(wxT('|')) != wxNOT_FOUND))
@@ -834,8 +853,6 @@ void wxGenericDirCtrl::ExpandDir(wxTreeItemId parentId)
     // Now do the filenames -- but only if we're allowed to
     if ((GetWindowStyle() & wxDIRCTRL_DIR_ONLY) == 0)
     {
-        wxLogNull log;
-
         d.Open(dirName);
 
         if (d.IsOpened())
@@ -869,7 +886,7 @@ void wxGenericDirCtrl::ExpandDir(wxTreeItemId parentId)
     size_t i;
     for (i = 0; i < dirs.Count(); i++)
     {
-        wxString eachFilename(dirs[i]);
+        eachFilename = dirs[i];
         path = dirName;
         if (!wxEndsWithPathSeparator(path))
             path += wxString(wxFILE_SEP_PATH);
@@ -898,7 +915,7 @@ void wxGenericDirCtrl::ExpandDir(wxTreeItemId parentId)
     {
         for (i = 0; i < filenames.Count(); i++)
         {
-            wxString eachFilename(filenames[i]);
+            eachFilename = filenames[i];
             path = dirName;
             if (!wxEndsWithPathSeparator(path))
                 path += wxString(wxFILE_SEP_PATH);
@@ -966,12 +983,12 @@ wxTreeItemId wxGenericDirCtrl::FindChild(wxTreeItemId parentId, const wxString& 
             childPath.MakeLower();
 #endif
 
-            if (childPath.Len() <= path2.Len())
+            if (childPath.length() <= path2.length())
             {
-                wxString path3 = path2.Mid(0, childPath.Len());
+                wxString path3 = path2.Mid(0, childPath.length());
                 if (childPath == path3)
                 {
-                    if (path3.Len() == path2.Len())
+                    if (path3.length() == path2.length())
                         done = true;
                     else
                         done = false;
@@ -1001,49 +1018,74 @@ bool wxGenericDirCtrl::ExpandPath(const wxString& path)
         if (id.IsOk())
             lastId = id;
     }
-    if (lastId.IsOk())
-    {
-        wxDirItemData *data = (wxDirItemData *) m_treeCtrl->GetItemData(lastId);
-        if (data->m_isDir)
-        {
-            m_treeCtrl->Expand(lastId);
-        }
-        if ((GetWindowStyle() & wxDIRCTRL_SELECT_FIRST) && data->m_isDir)
-        {
-            // Find the first file in this directory
-            wxTreeItemIdValue cookie;
-            wxTreeItemId childId = m_treeCtrl->GetFirstChild(lastId, cookie);
-            bool selectedChild = false;
-            while (childId.IsOk())
-            {
-                wxDirItemData* data = (wxDirItemData*) m_treeCtrl->GetItemData(childId);
+    if (!lastId.IsOk())
+        return false;
 
-                if (data && data->m_path != wxEmptyString && !data->m_isDir)
-                {
-                    m_treeCtrl->SelectItem(childId);
-                    m_treeCtrl->EnsureVisible(childId);
-                    selectedChild = true;
-                    break;
-                }
-                childId = m_treeCtrl->GetNextChild(lastId, cookie);
-            }
-            if (!selectedChild)
+    wxDirItemData *data = (wxDirItemData *) m_treeCtrl->GetItemData(lastId);
+    if (data->m_isDir)
+    {
+        m_treeCtrl->Expand(lastId);
+    }
+    if ((GetWindowStyle() & wxDIRCTRL_SELECT_FIRST) && data->m_isDir)
+    {
+        // Find the first file in this directory
+        wxTreeItemIdValue cookie;
+        wxTreeItemId childId = m_treeCtrl->GetFirstChild(lastId, cookie);
+        bool selectedChild = false;
+        while (childId.IsOk())
+        {
+            data = (wxDirItemData*) m_treeCtrl->GetItemData(childId);
+
+            if (data && data->m_path != wxEmptyString && !data->m_isDir)
             {
-                m_treeCtrl->SelectItem(lastId);
-                m_treeCtrl->EnsureVisible(lastId);
+                m_treeCtrl->SelectItem(childId);
+                m_treeCtrl->EnsureVisible(childId);
+                selectedChild = true;
+                break;
             }
+            childId = m_treeCtrl->GetNextChild(lastId, cookie);
         }
-        else
+        if (!selectedChild)
         {
             m_treeCtrl->SelectItem(lastId);
             m_treeCtrl->EnsureVisible(lastId);
         }
-
-        return true;
     }
     else
-        return false;
+    {
+        m_treeCtrl->SelectItem(lastId);
+        m_treeCtrl->EnsureVisible(lastId);
+    }
+
+    return true;
 }
+
+
+bool wxGenericDirCtrl::CollapsePath(const wxString& path)
+{
+    bool done           = false;
+    wxTreeItemId id     = FindChild(m_rootId, path, done);
+    wxTreeItemId lastId = id; // The last non-zero id
+
+    while ( id.IsOk() && !done )
+    {
+        CollapseDir(id);
+
+        id = FindChild(id, path, done);
+
+        if ( id.IsOk() )
+            lastId = id;
+    }
+
+    if ( !lastId.IsOk() )
+        return false;
+
+    m_treeCtrl->SelectItem(lastId);
+    m_treeCtrl->EnsureVisible(lastId);
+
+    return true;
+}
+
 
 wxString wxGenericDirCtrl::GetPath() const
 {
@@ -1150,6 +1192,11 @@ void wxGenericDirCtrl::SetFilter(const wxString& filter)
 #else
         m_currentFilterStr = wxT("*.*");
 #endif
+
+    // current filter index is meaningless after filter change, set it to zero
+    SetFilterIndex(0);
+    if (m_filterListCtrl)
+        m_filterListCtrl->FillFilterList(m_filter, 0);
 }
 
 // Extract description and actual filter from overall filter string
@@ -1186,22 +1233,6 @@ void wxGenericDirCtrl::DoResize()
         wxSize filterSz ;
         if (m_filterListCtrl)
         {
-#ifdef __WXMSW__
-            // For some reason, this is required in order for the
-            // correct control height to always be returned, rather
-            // than the drop-down list height which is sometimes returned.
-            wxSize oldSize = m_filterListCtrl->GetSize();
-            m_filterListCtrl->SetSize(wxDefaultCoord,
-                                      wxDefaultCoord,
-                                      oldSize.x+10,
-                                      wxDefaultCoord,
-                                      wxSIZE_USE_EXISTING);
-            m_filterListCtrl->SetSize(wxDefaultCoord,
-                                      wxDefaultCoord,
-                                      oldSize.x,
-                                      wxDefaultCoord,
-                                      wxSIZE_USE_EXISTING);
-#endif
             filterSz = m_filterListCtrl->GetSize();
             sz.y -= (filterSz.y + verticalSpacing);
         }
@@ -1487,7 +1518,7 @@ wxImageList *wxFileIconsTable::GetSmallImageList()
     return m_smallImageList;
 }
 
-#if wxUSE_MIMETYPE && wxUSE_IMAGE
+#if wxUSE_MIMETYPE && wxUSE_IMAGE && (!defined(__WXMSW__) || wxUSE_WXDIB)
 // VS: we don't need this function w/o wxMimeTypesManager because we'll only have
 //     one icon and we won't resize it
 
@@ -1647,7 +1678,7 @@ int wxFileIconsTable::GetIconID(const wxString& extension, const wxString& mime)
     {
         m_smallImageList->Add(bmp);
     }
-#if wxUSE_IMAGE
+#if wxUSE_IMAGE && (!defined(__WXMSW__) || wxUSE_WXDIB)
     else
     {
         wxImage img = bmp.ConvertToImage();

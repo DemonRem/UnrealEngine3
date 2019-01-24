@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: propsize.cpp,v 1.11 2005/03/30 19:10:38 ABX Exp $
+// RCS-ID:      $Id: propsize.cpp 40587 2006-08-13 01:17:53Z VZ $
 // Copyright:   (c) Julian Smart
 // License:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // ----------------------------------------------------------------------------
 // headers
 // ----------------------------------------------------------------------------
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma implementation
-    #pragma interface
-#endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -85,7 +81,7 @@ private:
 enum
 {
     // menu items
-    Minimal_Quit = 1,
+    Minimal_Quit = 1
 };
 
 // ----------------------------------------------------------------------------

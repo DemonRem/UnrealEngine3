@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: tbarbase.h,v 1.57 2005/02/28 17:20:12 VZ Exp $
+// RCS-ID:      $Id: tbarbase.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "tbarbase.h"
-#endif
-
 #include "wx/defs.h"
 
 #if wxUSE_TOOLBAR
@@ -28,15 +24,15 @@
 #include "wx/list.h"
 #include "wx/control.h"
 
-class WXDLLEXPORT wxToolBarBase;
-class WXDLLEXPORT wxToolBarToolBase;
-class WXDLLEXPORT wxImage;
+class WXDLLIMPEXP_FWD_CORE wxToolBarBase;
+class WXDLLIMPEXP_FWD_CORE wxToolBarToolBase;
+class WXDLLIMPEXP_FWD_CORE wxImage;
 
 // ----------------------------------------------------------------------------
 // constants
 // ----------------------------------------------------------------------------
 
-extern WXDLLEXPORT_DATA(const wxChar*) wxToolBarNameStr;
+extern WXDLLEXPORT_DATA(const wxChar) wxToolBarNameStr[];
 extern WXDLLEXPORT_DATA(const wxSize) wxDefaultSize;
 extern WXDLLEXPORT_DATA(const wxPoint) wxDefaultPosition;
 
@@ -109,7 +105,7 @@ public:
         m_toolStyle = wxTOOL_STYLE_CONTROL;
     }
 
-    ~wxToolBarToolBase(){}
+    virtual ~wxToolBarToolBase(){}
 
     // accessors
     // ---------
@@ -197,15 +193,6 @@ public:
     // add tool to/remove it from a toolbar
     virtual void Detach() { m_tbar = (wxToolBarBase *)NULL; }
     virtual void Attach(wxToolBarBase *tbar) { m_tbar = tbar; }
-
-    // compatibility only, don't use
-#if WXWIN_COMPATIBILITY_2_2
-    wxDEPRECATED( const wxBitmap& GetBitmap1() const );
-    wxDEPRECATED( const wxBitmap& GetBitmap2() const );
-
-    wxDEPRECATED( void SetBitmap1(const wxBitmap& bmp) );
-    wxDEPRECATED( void SetBitmap2(const wxBitmap& bmp) );
-#endif // WXWIN_COMPATIBILITY_2_2
 
 protected:
     wxToolBarBase *m_tbar;  // the toolbar to which we belong (may be NULL)
@@ -415,14 +402,14 @@ public:
     // get/set the size of the bitmaps used by the toolbar: should be called
     // before adding any tools to the toolbar
     virtual void SetToolBitmapSize(const wxSize& size)
-        { m_defaultWidth = size.x; m_defaultHeight = size.y; };
+        { m_defaultWidth = size.x; m_defaultHeight = size.y; }
     virtual wxSize GetToolBitmapSize() const
         { return wxSize(m_defaultWidth, m_defaultHeight); }
 
     // the button size in some implementations is bigger than the bitmap size:
     // get the total button size (by default the same as bitmap size)
     virtual wxSize GetToolSize() const
-        { return GetToolBitmapSize(); } ;
+        { return GetToolBitmapSize(); }
 
     // returns a (non separator) tool containing the point (x, y) or NULL if
     // there is no tool at this point (corrdinates are client)
@@ -433,7 +420,7 @@ public:
     wxToolBarToolBase *FindById(int toolid) const;
 
     // return true if this is a vertical toolbar, otherwise false
-    bool IsVertical() const { return HasFlag(wxTB_VERTICAL); }
+    bool IsVertical() const { return HasFlag(wxTB_LEFT | wxTB_RIGHT); }
 
 
     // the old versions of the various methods kept for compatibility
@@ -576,6 +563,13 @@ protected:
 
     // helper functions
     // ----------------
+
+    // call this from derived class ctor/Create() to ensure that we have either
+    // wxTB_HORIZONTAL or wxTB_VERTICAL style, there is a lot of existing code
+    // which randomly checks either one or the other of them and gets confused
+    // if neither is set (and making one of them 0 is not an option neither as
+    // then the existing tests would break down)
+    void FixupStyle();
 
     // un-toggle all buttons in the same radio group
     void UnToggleRadioGroup(wxToolBarToolBase *tool);

@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     03.08.2003
-// RCS-ID:      $Id: wrapcctl.h,v 1.10 2005/07/01 13:38:51 ABX Exp $
+// RCS-ID:      $Id: wrapcctl.h 41054 2006-09-07 19:01:45Z ABX $
 // Copyright:   (c) 2003 Vadim Zeitlin <vadim@wxwidgets.org>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,6 +34,8 @@
     #define _WIN32_IE 0x0600
 #endif // !defined(_WIN32_IE)
 
+#include "wx/msw/wrapwin.h"
+
 #include <commctrl.h>
 
 // define things which might be missing from our commctrl.h
@@ -49,10 +51,12 @@ inline void wxSetCCUnicodeFormat(HWND WXUNUSED_IN_WINCE(hwnd))
 #endif // __WXWINCE__/!__WXWINCE__
 }
 
+#if wxUSE_GUI
 // Return the default font for the common controls
 //
 // this is implemented in msw/settings.cpp
+class wxFont;
 extern wxFont wxGetCCDefaultFont();
+#endif
 
 #endif // _WX_MSW_WRAPCCTL_H_
-

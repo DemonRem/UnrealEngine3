@@ -4,7 +4,7 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     25.10.99
-// RCS-ID:      $Id: menuitem.h,v 1.35 2005/05/31 09:18:16 JS Exp $
+// RCS-ID:      $Id: menuitem.h 49563 2007-10-31 20:46:21Z VZ $
 // Copyright:   (c) 1999 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,9 +26,9 @@
 // forward declarations
 // ----------------------------------------------------------------------------
 
-class WXDLLEXPORT wxAcceleratorEntry;
-class WXDLLEXPORT wxMenuItem;
-class WXDLLEXPORT wxMenu;
+class WXDLLIMPEXP_FWD_CORE wxAcceleratorEntry;
+class WXDLLIMPEXP_FWD_CORE wxMenuItem;
+class WXDLLIMPEXP_FWD_CORE wxMenu;
 
 // ----------------------------------------------------------------------------
 // wxMenuItem is an item in the menu which may be either a normal item, a sub
@@ -64,7 +64,8 @@ public:
     //     any), i.e. it may contain '&' or '_' or "\t..." and thus is
     //     different from the item's label which only contains the text shown
     //     in the menu
-    virtual void SetText(const wxString& str) { m_text = str; }
+    virtual void SetText(const wxString& str);
+
     wxString GetLabel() const { return GetLabelFromText(m_text); }
     const wxString& GetText() const { return m_text; }
 
@@ -92,7 +93,7 @@ public:
     void Toggle() { Check(!m_isChecked); }
 
     // help string (displayed in the status bar by default)
-    void SetHelp(const wxString& str) { m_help = str; }
+    void SetHelp(const wxString& str);
     const wxString& GetHelp() const { return m_help; }
 
 #if wxUSE_ACCEL
@@ -146,6 +147,26 @@ private:
     // declare them ourselves - but don't implement as they shouldn't be used
     wxMenuItemBase(const wxMenuItemBase& item);
     wxMenuItemBase& operator=(const wxMenuItemBase& item);
+
+public:
+
+#if wxABI_VERSION >= 20805
+    // Sets the label. This function replaces SetText.
+    void SetItemLabel(const wxString& str) { SetText(str); }
+
+    // return the item label including any mnemonics and accelerators.
+    // This used to be called GetText.
+    // We can't implement this in the base class (no new virtuals in stable branch)
+    // wxString GetItemLabel() const;
+
+    // return just the text of the item label, without any mnemonics
+    // This used to be called GetLabel.
+    wxString GetItemLabelText() const { return GetLabelText(m_text); }
+
+    // return just the text part of the given label. In 2.9 and up, this is implemented in
+    // platform-specific code, but is now implemented in terms of GetLabelFromText.
+    static wxString GetLabelText(const wxString& label);
+#endif
 };
 
 // ----------------------------------------------------------------------------
@@ -163,8 +184,10 @@ private:
     #include "wx/msw/menuitem.h"
 #elif defined(__WXMOTIF__)
     #include "wx/motif/menuitem.h"
-#elif defined(__WXGTK__)
+#elif defined(__WXGTK20__)
     #include "wx/gtk/menuitem.h"
+#elif defined(__WXGTK__)
+    #include "wx/gtk1/menuitem.h"
 #elif defined(__WXMAC__)
     #include "wx/mac/menuitem.h"
 #elif defined(__WXCOCOA__)

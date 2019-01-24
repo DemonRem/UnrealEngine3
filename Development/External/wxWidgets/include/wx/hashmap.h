@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        hashmap.h
+// Name:        wx/hashmap.h
 // Purpose:     wxHashMap class
 // Author:      Mattia Barbon
 // Modified by:
 // Created:     29/01/2002
-// RCS-ID:      $Id: hashmap.h,v 1.46 2005/05/22 12:10:47 JS Exp $
+// RCS-ID:      $Id: hashmap.h 55215 2008-08-23 18:54:04Z VZ $
 // Copyright:   (c) Mattia Barbon
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -12,18 +12,36 @@
 #ifndef _WX_HASHMAP_H_
 #define _WX_HASHMAP_H_
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "hashmap.h"
-#endif
-
 #include "wx/string.h"
+
+// In wxUSE_STL build we prefer to use the standard hash map class but it can
+// be either in non-standard hash_map header (old g++ and some other STL
+// implementations) or in C++0x standard unordered_map which can in turn be
+// available either in std::tr1 or std namespace itself
+//
+// To summarize: if std::unordered_map is available use it, otherwise use tr1
+// and finally fall back to non-standard hash_map
 
 #if (defined(HAVE_EXT_HASH_MAP) || defined(HAVE_HASH_MAP)) \
     && (defined(HAVE_GNU_CXX_HASH_MAP) || defined(HAVE_STD_HASH_MAP))
     #define HAVE_STL_HASH_MAP
 #endif
 
-#if wxUSE_STL && defined(HAVE_STL_HASH_MAP)
+#if wxUSE_STL && \
+    (defined(HAVE_STD_UNORDERED_MAP) || defined(HAVE_TR1_UNORDERED_MAP))
+
+#if defined(HAVE_STD_UNORDERED_MAP)
+    #include <unordered_map>
+    #define WX_HASH_MAP_NAMESPACE std
+#elif defined(HAVE_TR1_UNORDERED_MAP)
+    #include <tr1/unordered_map>
+    #define WX_HASH_MAP_NAMESPACE std::tr1
+#endif
+
+#define _WX_DECLARE_HASH_MAP( KEY_T, VALUE_T, HASH_T, KEY_EQ_T, CLASSNAME, CLASSEXP ) \
+    typedef WX_HASH_MAP_NAMESPACE::unordered_map< KEY_T, VALUE_T, HASH_T, KEY_EQ_T > CLASSNAME
+
+#elif wxUSE_STL && defined(HAVE_STL_HASH_MAP)
 
 #if defined(HAVE_EXT_HASH_MAP)
     #include <ext/hash_map>
@@ -38,10 +56,11 @@
 #endif
 
 #define _WX_DECLARE_HASH_MAP( KEY_T, VALUE_T, HASH_T, KEY_EQ_T, CLASSNAME, CLASSEXP ) \
-    typedef WX_HASH_MAP_NAMESPACE::hash_map< KEY_T, VALUE_T, HASH_T, KEY_EQ_T > CLASSNAME;
+    typedef WX_HASH_MAP_NAMESPACE::hash_map< KEY_T, VALUE_T, HASH_T, KEY_EQ_T > CLASSNAME
 
-#else // !wxUSE_STL || !defined(HAVE_STL_HASH_MAP)
+#else // !wxUSE_STL || no std::{hash,unordered}_map class available
 
+#define wxNEEDS_WX_HASH_MAP
 
 #ifdef __WXWINCE__
 typedef int ptrdiff_t;
@@ -206,6 +225,7 @@ public: \
     { \
     public: \
         const_iterator() : Iterator() {} \
+        const_iterator(iterator i) : Iterator(i) {} \
         const_iterator( Node* node, const Self* ht ) \
             : Iterator( node, (Self*)ht ) {} \
         const_iterator& operator++() { PlusPlus();return *this; } \
@@ -274,9 +294,9 @@ public: \
     const_iterator end() const { return const_iterator( 0, this ); } \
     iterator end() { return iterator( 0, this ); } \
     const_iterator begin() const \
-        { return const_iterator( (Node*)GetFirstNode( m_tableBuckets, (_wxHashTable_NodeBase**)m_table ), this ); }; \
+        { return const_iterator( (Node*)GetFirstNode( m_tableBuckets, (_wxHashTable_NodeBase**)m_table ), this ); } \
     iterator begin() \
-        { return iterator( (Node*)GetFirstNode( m_tableBuckets, (_wxHashTable_NodeBase**)m_table ), this ); }; \
+        { return iterator( (Node*)GetFirstNode( m_tableBuckets, (_wxHashTable_NodeBase**)m_table ), this ); } \
  \
     size_type erase( const const_key_type& key ) \
     { \
@@ -341,25 +361,26 @@ protected: \
     /* returns NULL if not found */ \
     Node** GetNodePtr( const const_key_type& key ) const \
     { \
-        unsigned long hash = wx_static_cast(unsigned long, m_hasher( key )); \
-        Node** node = &m_table[hash % m_tableBuckets]; \
+        size_t bucket = m_hasher( key ) % m_tableBuckets; \
+        Node** node = &m_table[bucket]; \
  \
         while( *node ) \
         { \
             if( m_equals( m_getKey( (*node)->m_value ), key ) ) \
                 return node; \
+            /* Tell the compiler to not do any strict-aliasing assumptions with a void cast? Can we make such a runtime guarantee? */ \
             node = (Node**)&(*node)->m_nxt; \
         } \
  \
-        return 0; \
+        return NULL; \
     } \
  \
     /* returns NULL if not found */ \
     /* expressing it in terms of GetNodePtr is 5-8% slower :-( */ \
     Node* GetNode( const const_key_type& key ) const \
     { \
-        unsigned long hash = wx_static_cast(unsigned long, m_hasher( key )); \
-        Node* node = m_table[hash % m_tableBuckets]; \
+        size_t bucket = m_hasher( key ) % m_tableBuckets; \
+        Node* node = m_table[bucket]; \
  \
         while( node ) \
         { \
@@ -444,7 +465,7 @@ inline bool grow_lf70( size_t buckets, size_t items )
     return float(items)/float(buckets) >= 0.85;
 }
 
-#endif // !wxUSE_STL || !defined(HAVE_STL_HASH_MAP)
+#endif // various hash map implementations
 
 // ----------------------------------------------------------------------------
 // hashing and comparison functors
@@ -454,7 +475,7 @@ inline bool grow_lf70( size_t buckets, size_t items )
 //     operators to suppress warnings about "statement with no effect" from gcc
 //     in the hash table class assignment operator (where they're assigned)
 
-#if wxUSE_STL && defined(HAVE_STL_HASH_MAP)
+#ifndef wxNEEDS_WX_HASH_MAP
 
 // integer types
 class WXDLLIMPEXP_BASE wxIntegerHash
@@ -465,6 +486,23 @@ class WXDLLIMPEXP_BASE wxIntegerHash
     WX_HASH_MAP_NAMESPACE::hash<unsigned int> uintHash;
     WX_HASH_MAP_NAMESPACE::hash<short> shortHash;
     WX_HASH_MAP_NAMESPACE::hash<unsigned short> ushortHash;
+
+#if defined wxLongLong_t && !defined wxLongLongIsLong
+    // hash<wxLongLong_t> ought to work but doesn't on some compilers
+    #if (!defined SIZEOF_LONG_LONG && SIZEOF_LONG == 4) \
+        || (defined SIZEOF_LONG_LONG && SIZEOF_LONG_LONG == SIZEOF_LONG * 2)
+    size_t longlongHash( wxLongLong_t x ) const
+    {
+        return longHash( wx_truncate_cast(long, x) ) ^
+               longHash( wx_truncate_cast(long, x >> (sizeof(long) * 8)) );
+    }
+    #elif defined SIZEOF_LONG_LONG && SIZEOF_LONG_LONG == SIZEOF_LONG
+    WX_HASH_MAP_NAMESPACE::hash<long> longlongHash;
+    #else
+    WX_HASH_MAP_NAMESPACE::hash<wxLongLong_t> longlongHash;
+    #endif
+#endif
+
 public:
     wxIntegerHash() { }
     size_t operator()( long x ) const { return longHash( x ); }
@@ -473,11 +511,15 @@ public:
     size_t operator()( unsigned int x ) const { return uintHash( x ); }
     size_t operator()( short x ) const { return shortHash( x ); }
     size_t operator()( unsigned short x ) const { return ushortHash( x ); }
+#if defined wxLongLong_t && !defined wxLongLongIsLong
+    size_t operator()( wxLongLong_t x ) const { return longlongHash(x); }
+    size_t operator()( wxULongLong_t x ) const { return longlongHash(x); }
+#endif
 
     wxIntegerHash& operator=(const wxIntegerHash&) { return *this; }
 };
 
-#else // !wxUSE_STL || !defined(HAVE_STL_HASH_MAP)
+#else // wxNEEDS_WX_HASH_MAP
 
 // integer types
 class WXDLLIMPEXP_BASE wxIntegerHash
@@ -490,11 +532,15 @@ public:
     unsigned long operator()( unsigned int x ) const { return x; }
     unsigned long operator()( short x ) const { return (unsigned long)x; }
     unsigned long operator()( unsigned short x ) const { return x; }
+#if defined wxLongLong_t && !defined wxLongLongIsLong
+    wxULongLong_t operator()( wxLongLong_t x ) const { return wx_static_cast(wxULongLong_t, x); }
+    wxULongLong_t operator()( wxULongLong_t x ) const { return x; }
+#endif
 
     wxIntegerHash& operator=(const wxIntegerHash&) { return *this; }
 };
 
-#endif // !wxUSE_STL || !defined(HAVE_STL_HASH_MAP)
+#endif // !wxNEEDS_WX_HASH_MAP/wxNEEDS_WX_HASH_MAP
 
 class WXDLLIMPEXP_BASE wxIntegerEqual
 {
@@ -506,6 +552,10 @@ public:
     bool operator()( unsigned int a, unsigned int b ) const { return a == b; }
     bool operator()( short a, short b ) const { return a == b; }
     bool operator()( unsigned short a, unsigned short b ) const { return a == b; }
+#if defined wxLongLong_t && !defined wxLongLongIsLong
+    bool operator()( wxLongLong_t a, wxLongLong_t b ) const { return a == b; }
+    bool operator()( wxULongLong_t a, wxULongLong_t b ) const { return a == b; }
+#endif
 
     wxIntegerEqual& operator=(const wxIntegerEqual&) { return *this; }
 };
@@ -516,8 +566,8 @@ class WXDLLIMPEXP_BASE wxPointerHash
 public:
     wxPointerHash() { }
 
-#if wxUSE_STL && defined(HAVE_STL_HASH_MAP)
-    size_t operator()( const void* k ) const { return (size_t)k; }
+#ifdef wxNEEDS_WX_HASH_MAP
+    wxUIntPtr operator()( const void* k ) const { return wxPtrToUInt(k); }
 #else
     wxUIntPtr operator()( const void* k ) const { return wxPtrToUInt(k); }
 #endif
@@ -569,7 +619,7 @@ public:
     wxStringEqual& operator=(const wxStringEqual&) { return *this; }
 };
 
-#if !wxUSE_STL || !defined(HAVE_STL_HASH_MAP)
+#ifdef wxNEEDS_WX_HASH_MAP
 
 #define _WX_DECLARE_HASH_MAP( KEY_T, VALUE_T, HASH_T, KEY_EQ_T, CLASSNAME, CLASSEXP ) \
 _WX_DECLARE_PAIR( KEY_T, VALUE_T, CLASSNAME##_wxImplementation_Pair, CLASSEXP ) \
@@ -622,10 +672,13 @@ public: \
  \
     /* count() == 0 | 1 */ \
     size_type count( const const_key_type& key ) \
-        { return GetNode( key ) ? 1 : 0; } \
+    { \
+        /* explicit cast needed to suppress CodeWarrior warnings */ \
+        return (size_type)(GetNode( key ) ? 1 : 0); \
+    } \
 }
 
-#endif // !wxUSE_STL || !defined(HAVE_STL_HASH_MAP)
+#endif // wxNEEDS_WX_HASH_MAP
 
 // these macros are to be used in the user code
 #define WX_DECLARE_HASH_MAP( KEY_T, VALUE_T, HASH_T, KEY_EQ_T, CLASSNAME) \
@@ -686,4 +739,3 @@ WX_DECLARE_HASH_MAP_WITH_DECL( long, long, wxIntegerHash, wxIntegerEqual,
 
 
 #endif // _WX_HASHMAP_H_
-

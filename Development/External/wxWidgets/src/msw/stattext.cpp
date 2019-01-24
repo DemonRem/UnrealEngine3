@@ -4,14 +4,10 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: stattext.cpp,v 1.66 2005/08/30 13:54:26 VZ Exp $
+// RCS-ID:      $Id: stattext.cpp 40331 2006-07-25 18:47:39Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "stattext.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -22,6 +18,8 @@
 
 #if wxUSE_STATTEXT
 
+#include "wx/stattext.h"
+
 #ifndef WX_PRECOMP
     #include "wx/event.h"
     #include "wx/app.h"
@@ -30,7 +28,6 @@
     #include "wx/settings.h"
 #endif
 
-#include "wx/stattext.h"
 #include "wx/msw/private.h"
 
 #if wxUSE_EXTENDED_RTTI
@@ -139,7 +136,7 @@ wxSize wxStaticText::DoGetBestSize() const
     dc.SetFont(font);
 
     wxCoord widthTextMax, heightTextTotal;
-    dc.GetMultiLineTextExtent(GetLabel(), &widthTextMax, &heightTextTotal);
+    dc.GetMultiLineTextExtent(GetLabelText(), &widthTextMax, &heightTextTotal);
 
 #ifdef __WXWINCE__
     if ( widthTextMax )

@@ -4,7 +4,7 @@
 // Author:      Vaclav Slavik
 // Modified by:
 // Created:     2002/03/25
-// RCS-ID:      $Id: arttest.cpp,v 1.7 2005/08/23 15:54:21 ABX Exp $
+// RCS-ID:      $Id: arttest.cpp 41398 2006-09-23 20:16:18Z VZ $
 // Copyright:   (c) Vaclav Slavik
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ void MyFrame::OnBrowser(wxCommandEvent& WXUNUSED(event))
 void MyFrame::OnPlugProvider(wxCommandEvent& event)
 {
     if ( event.IsChecked() )
-        wxArtProvider::PushProvider(new MyArtProvider);
+        wxArtProvider::Push(new MyArtProvider);
     else
-        wxArtProvider::PopProvider();
+        wxArtProvider::Pop();
 }

@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxDoxygen_H__
@@ -12,7 +12,10 @@
 /// \mainpage FaceFX Documentation
 ///
 /// \section whatsNew What's New?
-/// - \subpage whatsNew161 "What's new in FaceFX 1.61"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><-- </i>read this first!</i></b>
+/// - \subpage whatsNew173 "What's new in FaceFX 1.7.3"
+/// - \subpage whatsNew172 "What's new in FaceFX 1.7.2"
+/// - \subpage whatsNew17 "What's new in FaceFX 1.7"
+/// - \subpage whatsNew161 "What's new in FaceFX 1.6.1"
 /// 
 /// \section understanding Understanding FaceFX
 /// - \subpage understandingFaceFX "Understanding FaceFX"
@@ -129,6 +132,145 @@
 /// their integration code.  For an exhaustive list of all the changes made in 
 /// FaceFX 1.6, please see the release notes in $SourceRoot/Documentation/ReleaseNotes
 
+/// \page whatsNew17 What's New in FaceFX 1.7
+/// 
+/// FaceFX 1.7 is a major optimization release. The %Face Graph has been completely
+/// overhauled to significantly improve its performance on next-gen consoles by
+/// eliminating the graph structure in memory, thereby greatly improving its
+/// cache coherency. This new structure is called the Compiled %Face Graph.
+///
+/// Any calls to FxActor::GetFaceGraph() will fail to compile. Licensees should 
+/// switch to using FxActor::GetCompiledFaceGraph() in all game code.
+///
+/// Unfortunately, this task is likely to affect licensee code. If you were using
+/// any old-style %Face Graph iteration,
+/// \code
+/// FxFaceGraph::Iterator curr = actor->GetFaceGraph().Begin(FxFaceGraphNode::StaticClass());
+/// FxFaceGraph::Iterator end  = actor->GetFaceGraph().End(FxFaceGraphNode::StaticClass());
+/// while( curr != end )
+/// {
+///		//...
+///		++curr;
+/// }
+/// \endcode
+///
+/// It will need to be replaced with the new style of %Face Graph iteration.
+/// \code
+/// FxCompiledFaceGraph& compiledGraph = actor->GetCompiledFaceGraph();
+/// FxSize numNodes = compiledGraph.nodes.Length();
+/// for( FxSize i = 0; i < numNodes; ++i )
+/// {
+///		//...
+/// }
+/// \endcode
+///
+/// Iteration over a certain type of node is easy. In the loop above, just check
+/// if the node is the type you're looking for.
+/// \code 
+/// for( FxSize i = 0; i < numNodes; ++i )
+/// {
+///		if( compiledGraph.nodes[i].nodeType == NT_MorphTarget )
+///		{
+///			//...
+///		}
+/// }
+/// \endcode
+/// 
+/// Check the \ref OC3Ent::Face::FxCompiledFaceGraph "Compiled Face Graph"
+/// documentation for more details. Customers with source code access can see
+/// our implementation of this in FxRenderWidgetOC3.cpp.
+///
+/// All of the FxGenericTargetProxy functionality is gone, and is replaced
+/// with a user data system. You are now free to define your own user data 
+/// structs and attach it to a compiled face graph node via the void* pUserData.
+/// Note if you attach user data to a compiled face graph node, you are 
+/// responsible for cleaning up after yourself. Since the compiled face graph 
+/// might be recompiled (very rare!), you will need to use the callbacks
+/// provided, the most useful being the pre-compilation callback. The other 
+/// three may be set to NULL if you don't want to use their functionality.
+///
+/// Note that UpdateBonePoses() has been removed, and will break your
+/// compilation.
+/// 
+/// Finally, FxAnimPlayer has been removed, and its functionality has been
+/// incorporated directly into FxActorInstance. Where before, to play an 
+/// animation you had to call
+/// \code
+/// _actorInstance->GetAnimPlayer().Play(animName, groupName);
+/// \endcode
+/// now, you interact directly with the actor instance.
+/// \code
+/// _actorInstance->PlayAnim(animName, groupName);
+/// \endcode
+///
+/// Likewise for checking if it is playing and stopping an animation. Formerly,
+/// you would write
+/// \code
+/// if( _actorInstance->GetAnimPlayer().IsPlaying() )
+/// {
+///     _actorInstance->GetAnimPlayer().Stop();
+/// }
+/// \endcode
+/// and now you would write
+/// \code
+/// if( _actorInstance->IsPlayingAnim() )
+/// {
+///     _actorInstance->StopAnim();
+/// }
+/// \endcode
+
+/// \page whatsNew172 What's New in FaceFX 1.7.2
+/// 
+/// \section decoupling SDK/File Version Decoupling
+/// The most significant change for licensees in FaceFX 1.7.2 is the decoupling
+/// of the file version and the SDK version. With this change, the SDK checks 
+/// the file format version stored in the archive, rather than the SDK version
+/// stored in the archive. This change will allow OC3 Entertainment to release
+/// new versions of the SDK and Studio that don't impact serialization at all,
+/// and files saved by the newer version can still be loaded in an older 
+/// version with the same file version.
+///
+/// \section phonemes Extended Phoneme List
+/// Also added to 1.7.2 are more phonemes, about 20 in all, to have a greater
+/// coverage of the phonemes that aren't necessarily in English, but are in
+/// our other supported languages. The order of the phoneme list was also 
+/// revamped to something a little more standards-compliant, though this is only
+/// useful to know if you've hard-coded phoneme enum values anywhere. The 
+/// phoneme enum value names were changed to break compilation, to ensure that
+/// no subtle bugs go unnoticed, from PHONEME_* to PHON_*.
+///
+/// \section mapping Default Mapping
+/// The default mapping in 1.7.2 was changed to a hybrid target/component-based
+/// model. This was done to telegraph the direction we're planning on taking
+/// FaceFX. Your old mappings will still work just fine with 1.7.2, and an
+/// automatic process will update your old mappings so the new phonemes are
+/// intellegently mapped based on your old mapping. We strongly suggest going
+/// with the new hybrid mapping, however. It has fewer targets, but looks almost
+/// identical, making it more efficient for your artists to get up to speed on.
+///
+/// \section other Other Changes
+/// Several bugs were fixed, including an important fix to registers correct
+/// their functionality. For a more complete list of changes, features, and
+/// additions, please check the main FaceFX documentation, which includes 
+/// changes to Studio and the tools. Be sure to check out the anim playback
+/// sample, which now has an interface for learning/testing/playing with
+/// the register system.
+
+/// \page whatsNew173 What's New in FaceFX 1.7.3
+/// 
+/// \section bugs Bug Fixes
+/// Version 1.7.3 changed very little in the SDK.  Versions 1.7.3 and 1.7.2
+/// share the same binary file format, so updating to the 1.7.3 version of 
+/// FaceFX Studio or animation tools does not require updating the  
+/// FaceFX SDK integration. Several bugs were fixed however, including 
+/// a rare crash in FxArchiveStoreMemory.cpp due to improper setting
+/// of _inUse.  A potential memory leak was fixed in FxFaceGraph::Serialize()
+/// by _pNodeHash being allocated again if it was already allocated, but 
+/// this is only a problem n licensee written code.  Another crash
+/// was fixed when creating an FxName from a null pointer. Finally,
+/// FxStringBase lexographical comparisons now use the FxCharTraits::Compare() 
+/// without  the 'num' to avoid impossible comparison results. 
+
 /// \page understandingFaceFX Understanding FaceFX - SDK Overview
 /// 
 /// \section designBasics Design Basics
@@ -157,7 +299,7 @@
 /// \ref blending "requests the final position of each bone" in the face and 
 /// sets the transforms in the skeleton.
 ///
-/// The SDK comes with platform-independant \ref support "support code" and an
+/// The SDK comes with platform-independent \ref support "support code" and an
 /// \ref object "object serialization system", used to create the fxa files.
 /// 
 /// \section integrationBasics Integration Basics
@@ -225,7 +367,7 @@
 /// The fundamental element in the %Face Graph is a 
 /// \ref OC3Ent::Face::FxFaceGraphNode "FxFaceGraphNode".  In fact, in the simplest of face
 /// graphs, links are not necessary.  If you only wanted to build the 15 speech
-/// targets and have your character do some basic lipsynched animations, for example,
+/// targets and have your character do some basic lip-synched animations, for example,
 /// your %Face Graph would have 15 \ref OC3Ent::Face::FxBonePoseNode "FxBonePoseNodes" with
 /// no links between them.  These nodes would be driven directly with the curves
 /// generated by the analysis.
@@ -321,14 +463,10 @@
 /// \brief Blends between bone poses based on results evaluated in the %Face Graph.
 ///
 /// \par Requesting a Blend Operation
-/// To request a blended bone, you first must call FxActorInstance::UpdateBonePoses().
-/// This must be done after the instance is ticked and the frame begun, like so:
-/// \dontinclude SampleCode.h
-/// \skip Set the correct animation values into the face graph.
-/// \until UpdateBonePoses
+/// Requests for blended bones must be made after the instance is ticked and the frame begun.
 /// Then, for each bone in actor instance, you can request a blended bone.
 /// \dontinclude SampleCode.h
-/// \skip Update the bones in the skeleton
+/// \skip Set the correct animation values into the face graph.
 /// \until GetBone
 /// The method fills out a position, rotation, and scale component, along with 
 /// a bone weight which was set by the artist in FaceFX Studio for blending FaceFX
@@ -590,9 +728,8 @@
 /// Graph state.  The \ref OC3Ent::Face::FxActorInstance::Tick() "FxActorInstance::Tick()" call grabs control of the %Face Graph in the shared 
 /// actor resource for that particular instance, so in the update loop for each instance it is safe to query the face graph itself (you can get a 
 /// pointer to the shared \ref OC3Ent::Face::FxActor "FxActor" through the \ref OC3Ent::Face::FxActorInstance "FxActorInstance" where you can 
-/// then access the %Face Graph for that actor).  In fact, you must do this to update any \ref creatingCustomNodeTypes "custom Face Graph nodes" 
-/// you have inserted into the %Face Graph and also to update any \ref OC3Ent::Face::FxMorphTargetNode "FxMorphTargetNodes" you may be using in 
-/// the %Face Graph.  See the \ref usingMorphTargets "FxMorphTargetNode examples"  for sample code that shows how this is done.
+/// then access the %Face Graph for that actor). Be sure to access the %Face Graph through \ref OC3Ent::Face::FxActor::GetCompiledFaceGraph "FxActor::GetCompiledFaceGraph()", 
+/// since the decompiled %Face Graph is only used in tools, not in game.
 
 /// \page creatingCustomNodeTypes Creating Custom Face Graph Node Types
 /// To create a custom Face Graph node type, you must first derive your new class from \ref OC3Ent::Face::FxGenericTargetNode "FxGenericTargetNode" 
@@ -748,7 +885,7 @@
 /// \b Sample: Making an actor instance happy.
 /// \dontinclude SampleCode.h
 /// \skip Making a character happy
-/// \until SetRegister(registerName, FxInvalidValue, VO_Replace)
+/// \until SetRegister(registerName, 0.0f, RO_None)
 ///
 /// The above sample will pop if the actor is in view when the register is set,
 /// since it will immediately start adding 1 to the current value of Happy
@@ -762,12 +899,12 @@
 /// \b Sample: Making an actor instance happy, smoothly.
 /// \dontinclude SampleCode.h
 /// \skip Making a character happy, smoothly
-/// \until SetRegister(registerName, 0.0f, VO_Add, 1.0f);
+/// \until SetRegister("Happy", 0.0f, RO_Add, 1.0f);
 /// 
 /// \b Sample: Removing an effect from a precanned animation.
 /// \dontinclude SampleCode.h
 /// \skip Removing an effect from a canned animation
-/// \until SetRegister(registerName, 0.0f, VO_Multiply)
+/// \until SetRegister("Godfather", 0.0f, RO_Multiply);
 /// Multiplying the node value by 0 will remove the effect from the animation.
 /// 
 /// Also added is a new function call, 
@@ -782,16 +919,7 @@
 /// \b Sample: Triggering a dynamic blink.
 /// \dontinclude SampleCode.h
 /// \skip Triggering a dynamic blink
-/// \until SetRegisterEx(registerName, VO_Add, 1.0f, 0.125f, 0.0f, 0.083f)
-/// 
-/// One important thing to remember is this: creating 
-/// \ref OC3Ent::Face::FxName "FxNames" is fairly expensive,
-/// involving a linear search through the name table doing string comparisons.
-/// Therefore, you do not want to be creating FxNames on a per-frame basis.
-/// For the sake of performance, create the names once and cache them somehow.
-/// Just remember they cannot be initialized until after 
-/// \ref OC3Ent::Face::FxSDKStartup() "FxSDKStartup()" is called,
-/// and they cannot be used after \ref OC3Ent::Face::FxSDKShutdown() "FxSDKShutdown()" is called.
+/// \until SetRegisterEx("Blink", RO_Add, 1.0f, 0.125f, RO_Add, 0.0f, 0.083f);
 ///
 /// Also, registers should be set before 
 /// \ref OC3Ent::Face::FxActorInstance::Tick() "FxActorInstance::Tick()" is called

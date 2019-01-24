@@ -1,19 +1,15 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        msw/notebook.h
+// Name:        wx/msw/notebook.h
 // Purpose:     MSW/GTK compatible notebook (a.k.a. property sheet)
 // Author:      Robert Roebling
 // Modified by: Vadim Zeitlin for Windows version
-// RCS-ID:      $Id: notebook.h,v 1.65 2005/05/24 19:18:12 VZ Exp $
+// RCS-ID:      $Id: notebook.h 41797 2006-10-09 12:10:01Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _NOTEBOOK_H
 #define _NOTEBOOK_H
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma interface "notebook.h"
-#endif
 
 #if wxUSE_NOTEBOOK
 
@@ -96,6 +92,9 @@ public:
     // get the currently selected page
   int GetSelection() const { return m_nSelection; }
 
+    // changes selected page without sending events
+  int ChangeSelection(size_t nPage);
+
     // set/get the title of a page
   bool SetPageText(size_t nPage, const wxString& strText);
   wxString GetPageText(size_t nPage) const;
@@ -160,7 +159,6 @@ public:
   virtual bool MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result);
   virtual bool MSWOnScroll(int orientation, WXWORD nSBCode,
                            WXWORD pos, WXHWND control);
-  virtual bool MSWTranslateMessage(WXMSG *wxmsg);
 
 #if wxUSE_CONSTRAINTS
   virtual void SetConstraintSizes(bool recurse = true);
@@ -183,14 +181,24 @@ public:
 
       return true;
   }
+
+  // return the themed brush for painting our children
+  virtual WXHBRUSH MSWGetBgBrushForChild(WXHDC hDC, WXHWND hWnd);
+
+  // draw child background
+  virtual bool MSWPrintChild(WXHDC hDC, wxWindow *win);
 #endif // wxUSE_UXTHEME
+
+  // translate wxWin styles to the Windows ones
+  virtual WXDWORD MSWGetStyle(long flags, WXDWORD *exstyle = NULL) const;
 
 protected:
   // common part of all ctors
   void Init();
 
-  // translate wxWin styles to the Windows ones
-  virtual WXDWORD MSWGetStyle(long flags, WXDWORD *exstyle = NULL) const;
+  // hides the currently shown page and shows the given one (if not -1) and
+  // updates m_nSelection accordingly
+  void UpdateSelection(int selNew);
 
   // remove one page from the notebook, without deleting
   virtual wxNotebookPage *DoRemovePage(size_t nPage);
@@ -209,12 +217,6 @@ protected:
 
   // creates the brush to be used for drawing the tab control background
   void UpdateBgBrush();
-
-  // return the themed brush for painting our children
-  virtual WXHBRUSH MSWGetBgBrushForChild(WXHDC hDC, WXHWND hWnd);
-
-  // draw child background
-  virtual bool MSWPrintChild(WXHDC hDC, wxWindow *win);
 
   // common part of QueryBgBitmap() and MSWPrintChild()
   //

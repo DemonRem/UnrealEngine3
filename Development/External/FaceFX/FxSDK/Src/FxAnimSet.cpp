@@ -4,7 +4,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #include "FxAnimSet.h"
@@ -13,6 +13,7 @@
 #include "FxArchiveStoreFileFast.h"
 #include "FxArchiveStoreMemory.h"
 #include "FxArchiveStoreMemoryNoCopy.h"
+#include "FxVersionInfo.h"
 
 namespace OC3Ent
 {
@@ -92,9 +93,8 @@ void FxAnimSet::Serialize( FxArchive& arc )
 {
 	Super::Serialize(arc);
 
-	FxUInt16 version = FX_GET_CLASS_VERSION(FxAnimSet);
-	arc << version;
-
+	arc.SerializeClassVersion("FxAnimSet");
+	
 	arc << _owningActorName << _animGroup;
 }
 
@@ -118,6 +118,7 @@ FxBool FX_CALL FxSaveAnimSetToFile( FxAnimSet& animSet, const FxChar* filename,
 						            FxArchive::FxArchiveByteOrder byteOrder,
 						            void(FX_CALL *callbackFunction)(FxReal), FxReal updateFrequency )
 {
+#ifndef NO_SAVE_VERSION
 	FxArchive directoryCreater(FxArchiveStoreNull::Create(), FxArchive::AM_CreateDirectory);
 	directoryCreater.Open();
 	directoryCreater << animSet;
@@ -130,6 +131,9 @@ FxBool FX_CALL FxSaveAnimSetToFile( FxAnimSet& animSet, const FxChar* filename,
 		animSetArchive << animSet;
 		return FxTrue;
 	}
+#else
+	animSet; filename; byteOrder; callbackFunction; updateFrequency;
+#endif
 	return FxFalse;
 }
 
@@ -154,6 +158,7 @@ FxBool FX_CALL FxSaveAnimSetToMemory( FxAnimSet& animSet, FxByte*& pMemory, FxSi
 							          FxArchive::FxArchiveByteOrder byteOrder,
 							          void(FX_CALL *callbackFunction)(FxReal), FxReal updateFrequency )
 {
+#ifndef NO_SAVE_VERSION
 	FxAssert(pMemory == NULL);
 	if( !pMemory )
 	{
@@ -174,6 +179,9 @@ FxBool FX_CALL FxSaveAnimSetToMemory( FxAnimSet& animSet, FxByte*& pMemory, FxSi
 			return FxTrue;
 		}
 	}
+#else
+	animSet; pMemory; numBytes; byteOrder; callbackFunction; updateFrequency;
+#endif
 	return FxFalse;
 }
 

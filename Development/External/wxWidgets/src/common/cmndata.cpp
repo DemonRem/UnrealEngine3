@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        cmndata.cpp
+// Name:        src/common/cmndata.cpp
 // Purpose:     Common GDI data
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: cmndata.cpp,v 1.117 2005/06/13 12:19:19 ABX Exp $
+// RCS-ID:      $Id: cmndata.cpp 43762 2006-12-03 15:26:01Z SC $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "cmndata.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,16 +24,20 @@
     #pragma hdrstop
 #endif
 
+#include "wx/cmndata.h"
+
 #ifndef WX_PRECOMP
+    #if defined(__WXMSW__)
+        #include "wx/msw/wrapcdlg.h"
+    #endif // MSW
     #include <stdio.h>
     #include "wx/string.h"
     #include "wx/utils.h"
     #include "wx/app.h"
+    #include "wx/log.h"
+    #include "wx/gdicmn.h"
 #endif
 
-#include "wx/gdicmn.h"
-#include "wx/cmndata.h"
-#include "wx/log.h"
 #include "wx/prntbase.h"
 #include "wx/printdlg.h"
 
@@ -46,26 +46,21 @@
 #endif // wxUSE_FONTDLG
 
 #if wxUSE_PRINTING_ARCHITECTURE
-    #include "wx/paper.h"
-#endif // wxUSE_PRINTING_ARCHITECTURE
 
-#if defined(__WXMSW__)
-    #include "wx/msw/wrapcdlg.h"
-#endif // MSW
-
-    #if wxUSE_PRINTING_ARCHITECTURE
+#include "wx/paper.h"
 
 #if defined(__WXMAC__)
     #include "wx/mac/private/print.h"
 #endif
 
-        IMPLEMENT_DYNAMIC_CLASS(wxPrintData, wxObject)
-        IMPLEMENT_DYNAMIC_CLASS(wxPrintDialogData, wxObject)
-        IMPLEMENT_DYNAMIC_CLASS(wxPageSetupDialogData, wxObject)
-    #endif // wxUSE_PRINTING_ARCHITECTURE
+IMPLEMENT_DYNAMIC_CLASS(wxPrintData, wxObject)
+IMPLEMENT_DYNAMIC_CLASS(wxPrintDialogData, wxObject)
+IMPLEMENT_DYNAMIC_CLASS(wxPageSetupDialogData, wxObject)
 
-    IMPLEMENT_DYNAMIC_CLASS(wxFontData, wxObject)
-    IMPLEMENT_DYNAMIC_CLASS(wxColourData, wxObject)
+#endif // wxUSE_PRINTING_ARCHITECTURE
+
+IMPLEMENT_DYNAMIC_CLASS(wxFontData, wxObject)
+IMPLEMENT_DYNAMIC_CLASS(wxColourData, wxObject)
 
 // ============================================================================
 // implementation
@@ -155,8 +150,10 @@ wxFontDialogBase::~wxFontDialogBase()
 wxPrintData::wxPrintData()
 {
     m_bin = wxPRINTBIN_DEFAULT;
+    m_media = wxPRINTMEDIA_DEFAULT;
     m_printMode = wxPRINT_MODE_PRINTER;
     m_printOrientation = wxPORTRAIT;
+    m_printOrientationReversed = false;
     m_printNoCopies = 1;
     m_printCollate = false;
 
@@ -165,8 +162,11 @@ wxPrintData::wxPrintData()
     m_colour = true;
     m_duplexMode = wxDUPLEX_SIMPLEX;
     m_printQuality = wxPRINT_QUALITY_HIGH;
-    m_paperId = wxPAPER_A4;
-    m_paperSize = wxSize(210, 297);
+
+    // we intentionally don't initialize paper id and size at all, like this
+    // the default system settings will be used for them
+    m_paperId = wxPAPER_NONE;
+    m_paperSize = wxDefaultSize;
 
     m_privData = NULL;
     m_privDataLen = 0;
@@ -222,6 +222,7 @@ void wxPrintData::operator=(const wxPrintData& data)
     m_printNoCopies = data.m_printNoCopies;
     m_printCollate = data.m_printCollate;
     m_printOrientation = data.m_printOrientation;
+    m_printOrientationReversed = data.m_printOrientationReversed;
     m_printerName = data.m_printerName;
     m_colour = data.m_colour;
     m_duplexMode = data.m_duplexMode;
@@ -229,6 +230,7 @@ void wxPrintData::operator=(const wxPrintData& data)
     m_paperId = data.m_paperId;
     m_paperSize = data.m_paperSize;
     m_bin = data.m_bin;
+    m_media = data.m_media;
     m_printMode = data.m_printMode;
     m_filename = data.m_filename;
 
@@ -257,7 +259,7 @@ void wxPrintData::operator=(const wxPrintData& data)
 }
 
 // Is this data OK for showing the print dialog?
-bool wxPrintData::Ok() const
+bool wxPrintData::IsOk() const
 {
     m_nativeData->TransferFrom( *this );
 

@@ -4,17 +4,13 @@
 // Author:      Vadim Zeitlin
 // Modified by:
 // Created:     13.01.00
-// RCS-ID:      $Id: enhmeta.h,v 1.11 2005/01/18 20:23:48 ABX Exp $
+// RCS-ID:      $Id: enhmeta.h 41751 2006-10-08 21:56:55Z VZ $
 // Copyright:   (c) 2000 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows licence
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WX_MSW_ENHMETA_H_
 #define _WX_MSW_ENHMETA_H_
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma interface "enhmeta.h"
-#endif
 
 #include "wx/dc.h"
 
@@ -43,7 +39,8 @@ public:
     bool Play(wxDC *dc, wxRect *rectBound = (wxRect *)NULL);
 
     // accessors
-    bool Ok() const { return m_hMF != 0; }
+    bool Ok() const { return IsOk(); }
+    bool IsOk() const { return m_hMF != 0; }
 
     wxSize GetSize() const;
     int GetWidth() const { return GetSize().x; }
@@ -90,7 +87,14 @@ public:
     // obtain a pointer to the new metafile (caller should delete it)
     wxEnhMetaFile *Close();
 
+protected:
+    virtual void DoGetSize(int *width, int *height) const;
+
 private:
+    // size passed to ctor and returned by DoGetSize()
+    int m_width,
+        m_height;
+
     DECLARE_DYNAMIC_CLASS_NO_COPY(wxEnhMetaFileDC)
 };
 

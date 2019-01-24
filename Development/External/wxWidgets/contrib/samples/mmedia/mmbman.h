@@ -4,17 +4,13 @@
 // Author:      Guilhem Lavaux, <guilhem.lavaux@libertysurf.fr>
 // Modified by:
 // Created:     13/02/2000
-// RCS-ID:      $Id: mmbman.h,v 1.3 2005/03/31 19:10:23 ABX Exp $
+// RCS-ID:      $Id: mmbman.h 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) 2000, Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _MMBMAN_APP_H_
 #define _MMBMAN_APP_H_
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-  #pragma interface "mmbman.h"
-#endif
 
 #include "wx/stream.h"
 #include "wx/mmedia/sndbase.h"

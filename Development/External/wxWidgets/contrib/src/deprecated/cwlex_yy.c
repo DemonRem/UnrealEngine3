@@ -3,7 +3,7 @@
 /* Licence:   wxWindows Licence */
 
 /* scanner skeleton version:
- * $Header: /pack/cvsroots/wxwidgets/wxWindows/contrib/src/deprecated/cwlex_yy.c,v 1.2 2005/05/04 18:57:49 JS Exp $
+ * $Header$
 	Last change:  JS   13 Jul 97    6:17 pm
  */
 

@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 
@@ -30,9 +30,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SBF_STATIC			  = (1<<1),
 
@@ -41,9 +42,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.collisionResponseCoefficient
 	*/
@@ -59,9 +61,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SBF_SELFCOLLISION	  = (1<<3),
 
@@ -70,9 +73,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SBF_VISUALIZATION	  = (1<<4),
 
@@ -82,9 +86,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 	*/
 	NX_SBF_GRAVITY            = (1<<5),
 
@@ -94,9 +99,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.volumeStiffness
 	*/
@@ -108,9 +114,10 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.dampingCoefficient
 	*/
@@ -134,17 +141,16 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.collisionResponseCoefficient
 	*/
 	NX_SBF_COLLISION_TWOWAY   = (1<<8),
 
 	/**
-	Not supported in current release.
-
 	\brief Defines whether the soft body is tearable. 
 	
 	Make sure meshData.maxVertices and the corresponding buffers
@@ -164,27 +170,30 @@ enum NxSoftBodyFlag
 	Note: For tearing in hardware, make sure you cook the mesh with
 	the flag NX_SOFTBODY_MESH_TEARABLE set in the NxSoftBodyMeshDesc.flags.
 
+	Only vertices that have the NX_SOFTBODY_VERTEX_TEARABLE flag set are torn.
+
 	<b>Platform:</b>
-	\li PC SW: No
-	\li PPU  : No
-	\li PS3  : No
-	\li XB360: No
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.tearFactor NxSoftBodyDesc.meshData NxSoftBodyMeshDesc.flags
 	*/
 	NX_SBF_TEARABLE           = (1<<9),
 
 	/**
-	\brief Defines whether this soft body is simulated on the PPU.
+	\brief Defines whether this soft body is simulated on the GPU.
 	
-	To simulate a soft body on the PPU
+	To simulate a soft body on the GPU
 	set this flag and create the soft body in a regular software scene. 
 	Note: only use this flag during creation, do not change it using NxSoftBody.setFlags().
 	*/
 	NX_SBF_HARDWARE           = (1<<10),
 
 	/**
-	\brief Enable/disable center of mass damping of internal velocities.
+	\brief Enable/disable center of mass damping of internal velocities. 
 
 	This flag only has an effect if the flag NX_SBF_DAMPING is set. If set, 
 	the global rigid body modes (translation and rotation) are extracted from damping. 
@@ -193,24 +202,25 @@ enum NxSoftBodyFlag
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.dampingCoefficient
 	*/
 	NX_SBF_COMDAMPING		  = (1<<11),
 
 	/**
-	Not supported in current release.
 	\brief If the flag NX_SBF_VALIDBOUNDS is set, soft body particles outside the volume
 	defined by NxSoftBodyDesc.validBounds are automatically removed from the simulation. 
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
+	\li GPU  : Yes
+	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.validBounds
 	*/
@@ -226,15 +236,83 @@ enum NxSoftBodyFlag
 	radius of the soft body and the particle radius of the fluid, so tuning 
 	these parameters might improve the performance significantly.
 
+	Note: The current implementation does not obey the NxScene::setGroupCollisionFlag
+	settings. If NX_SBF_FLUID_COLLISION is set, collisions will take place even if
+	collisions between the groups that the corresponding soft body and fluid belong to are
+	disabled.
+
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : No
-	\li XB360: No
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSoftBodyDesc.fluidCollisionResponseCoefficient
 	*/
 	NX_SBF_FLUID_COLLISION    = (1<<13),
+
+	/**
+	\brief Disable continuous collision detection with dynamic actors. 
+	Dynamic actors are handled as static ones.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+	*/
+	NX_SBF_DISABLE_DYNAMIC_CCD  = (1<<14),
+
+	/**
+	\brief Moves soft body partially in the frame of the attached actor. 
+
+	This feature is useful when the soft body is attached to a fast moving shape.
+	In that case the soft body adheres to the shape it is attached to while only 
+	velocities below the parameter minAdhereVelocity are used for secondary effects.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxSoftBodyDesc.minAdhereVelocity
+	*/
+	NX_SBF_ADHERE  = (1<<15),
+
+
+	/**
+	\brief Uses the information provided by NxSoftBody.setConstrainPositions() and
+	NxSoftBody.setConstrainCoefficients() to make the cloth less stretchy.
+
+	If the flag is set, the solver pulls vertices 
+	with a maxDistance greater zero towards vertices with maxDistance zero (attached). 
+	This reduces the stretchiness even for low solver iteration counts. The process is
+	non-physical and can yield small ghost forces. The NxSoftBody.hardStretchLimitationFactor
+	defines by what factor the soft body is allowed to stretch.
+
+	@see NxSoftBody.setConstrainPositions() NxSoftBody.setConstrainCoefficients() NxSoftBody.hardStretchLimitationFactor
+	*/
+	NX_SBF_HARD_STRETCH_LIMITATION = (1<<20),
+
+	/**
+	\brief Allows soft body to collide with cloth and with other soft bodies.
+
+	Not implemented.
+
+	<b>Platform:</b>
+	\li PC SW: No
+	\li GPU  : No
+	\li PS3  : No
+	\li XB360: No
+	\li WII	 : No
+
+	@see NxSoftBodyDesc.selfCollisionThickness
+	*/
+	NX_SBF_INTER_COLLISION = (1<<21)
 };
 
 /*----------------------------------------------------------------------------*/
@@ -263,13 +341,15 @@ enum NxSoftBodyAttachmentFlag
 
 	@see NxSoftBodyDesc.attachmentTearFactor
 	*/
-	NX_SOFTBODY_ATTACHMENT_TEARABLE		  = (1<<1),
+	NX_SOFTBODY_ATTACHMENT_TEARABLE		  = (1<<1)
 };
 
 /*----------------------------------------------------------------------------*/
 
 /**
 \brief User-side class specifying a tetrahedron split generated from a torn soft body.
+
+Faces 0,1,2,3 contain the tetrahedral vertices {2,1,0}, {0,1,3}, {1,2,3}, {2,0,3} respectively.
 */
 class NxSoftBodySplitPair
 {
@@ -334,7 +414,11 @@ public:
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 
 	/**
 	\brief Constructor sets to default.
@@ -359,13 +443,118 @@ NX_INLINE void NxSoftBodySplitPairData::setToDefault()
 	splitPairsByteStride	= 0;
 	}
 
-NX_INLINE bool NxSoftBodySplitPairData::isValid() const
+NX_INLINE NxU32 NxSoftBodySplitPairData::checkValid() const
 	{
-	if (numSplitPairsPtr  && !splitPairsBegin) return false;
-	if (!numSplitPairsPtr &&  splitPairsBegin) return false;
-	if (splitPairsBegin && !splitPairsByteStride) return false;
-	return true;
+	if (numSplitPairsPtr  && !splitPairsBegin) return 1;
+	if (!numSplitPairsPtr &&  splitPairsBegin) return 2;
+	if (splitPairsBegin && !splitPairsByteStride) return 3;
+	return 0;
 	}
+
+/*----------------------------------------------------------------------------*/
+
+/**
+\brief Defines a set of per vertex coefficients
+
+The user can supply a buffer of positions and normals coming from an animation of the soft body
+or instance. The simulated vertices are then corrected via the constrain positions, normals
+and the constrain coefficiens.
+
+@see NxSoftBody.setConstrainCoefficients() NxSoftBody.setConstrainPositions NxSoftBody.setConstrainNormals
+*/
+class NxSoftBodyConstrainCoefficients
+{
+public:
+	/**
+	\brief Distance a vertex is allowed to travel from the constrain position.
+
+	If constrain positions are provided via NxSoftBody.setConstrainPositions the SDK makes sure
+	that the soft body vertices stay within maxDistance from the constrain positions. 
+	If maxDistance is zero, the vertex is not simulated but set to the constrain position.
+	This behavior is useful for attaching the soft body vertex to the skin of an animated character.
+
+	<b>Default:</b> 0.0 <br>
+	<b>Range:</b> [0,inf)
+
+	@see NxSoftBody.setConstrainCoefficients() NxSoftBody.setConstrainPositions() NxSoftBody.setConstrainNormals()
+	*/
+	NxReal maxDistance;
+
+	/**
+	\brief Distorts the sphere defined by the maxDistance.
+
+	For this feature to work the user has to provide constrain normals. The feature is disabled
+	for a value of 0.0 (default). In this case the max distance sphere is undistorted.
+	Decreasing the maxDistanceBias towards -1.0 reduces the distance the vertex is allowed to
+	travel in the tangential direction. For -1.0 the vertex has to stay on the normal through
+	the constrain position and within maxDistance to the constrain position.
+	Increasing maxDistanceBias towards 1.0 reduces the discance the vertex is allowed to travel
+	in the normal direction. At 1.0 the vertex can only move inside the tangental plane within 
+	maxDistance from the constrain position.
+
+	<b>Default:</b> 0.0 <br>
+	<b>Range:</b> [-1.0, 1.0]
+
+	@see NxSoftBody.setConstrainCoefficients() NxSoftBody.setConstrainPositions() NxSoftBody.setConstrainNormals()
+	*/
+	NxReal maxDistanceBias;
+
+	/**
+	\brief Definition of a sphere a vertex is not allowed to enter. This allows collision against the animated soft body.
+
+	For this parameter to have an effect, both, constrain positions and constrain normals need to be provided via
+	NxSoftBody.setConstrainPositions() and NxSoftBody.setConstrainNormals(). 
+	The pair (collisionSphereRadius, collisionSphereDistance) define a sphere for each soft body vertex. The sphere's
+	center is located at the position 
+	constrainPosition - constrainNormal * (collisionSphereRadius + collisionSphereDistance) and its radius
+	is collisionSphereRadius. The SDK makes sure that the soft body vertex does not enter this sphere.
+	As a typical usecase, set collisionSphereDistance to zero and collisionSphereRadius to a large value
+	w.r.t. the triangle size. In this setup, the soft body collides against the animated mesh.
+
+	<b>Default:</b> 0.0 <br>
+	<b>Range:</b> [0,inf)
+
+	@see NxSoftBody.setConstrainCoefficients() NxSoftBody.setConstrainPositions() NxSoftBody.setConstrainNormals()
+	*/
+	NxReal collisionSphereRadius;
+
+	/**
+	\brief Definition of a sphere a vertex is not allowed to enter. This allows collision against the animated soft body.
+
+	@see NxSoftBodyConstrainCoefficients.collisionSphereRadius NxSoftBody.setConstrainCoefficients() NxSoftBody.setConstrainPositions() NxSoftBody.setConstrainNormals()
+	*/
+	NxReal collisionSphereDistance;
+
+	/**
+	\brief (Re)sets the structure to the default.	
+	*/
+	NX_INLINE void setToDefault();
+
+	/**
+	\brief Returns true if the current settings are valid
+	*/
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
+};
+
+NX_INLINE void NxSoftBodyConstrainCoefficients::setToDefault()
+	{
+	maxDistance			    = 0.0f;
+	maxDistanceBias         = 0.0f;
+	collisionSphereRadius   = 0.0f;
+	collisionSphereDistance	= 0.0f;
+	}
+
+NX_INLINE NxU32 NxSoftBodyConstrainCoefficients::checkValid() const
+	{
+	if (maxDistance < 0.0f) return 1;
+	if (collisionSphereRadius < 0.0f) return 2;
+	return 0;
+	}
+
 
 /*----------------------------------------------------------------------------*/
 
@@ -409,6 +598,21 @@ public:
 	NxReal particleRadius;
 
 	/**
+	\brief Size of the particle diameters used for self collision and inter-collision.
+
+	The self collision thickness is usually a fraction of the overall extent of the soft body and
+	should not be set to a value greater than that.	A good value is the maximal
+	distance between two adjacent soft body particles in their rest pose. Visual
+	artifacts or collision problems may appear if the particle radius is too small.
+
+	<b>Default:</b> 0.2 <br>
+	<b>Range:</b> (0,inf)
+
+	@see NxSoftBody.setSelfCollisionThickness()
+	*/
+	NxReal selfCollisionThickness;
+
+	/**
 	\brief Density of the soft body (mass per volume).
 
 	<b>Default:</b> 1.0 <br>
@@ -446,6 +650,22 @@ public:
 	NxReal stretchingStiffness;
 
 	/**
+	\brief Defines the hard stretch elongation limit
+
+	If the flag NX_SBF_HARD_STRETCH_LIMITATION is set, the solver pulls vertices 
+	with a maxDistance greater zero towards vertices with maxDistance zero (attached). 
+	This reduces the stretchiness even for low solver iteration counts. The process is
+	non-physical and can yield small ghost forces. The hardStretchLimitationFactor
+	defines by what factor the soft body is allowed to stretch.
+
+	<b>Default:</b> 1.0 <br>
+	<b>Range:</b> [0,inf)
+
+	@see NxSoftBody.setConstrainPositions() NxSoftBody.setConstrainCoefficients() NxSoftBody.setHardStretchLimitationFactor()
+	*/
+	NxReal hardStretchLimitationFactor;
+
+	/**
 	\brief Spring damping of the soft body in the range 0 to 1.
 
 	Only has an effect if the flag NX_SBF_DAMPING is set.
@@ -470,7 +690,8 @@ public:
 	NxReal friction;
 
 	/**
-	Not supported in current release.
+	\note Experimental feature.
+
 	\brief If the flag NX_SBF_TEARABLE is set, this variable defines the 
 	elongation factor that causes the soft body to tear. 
 
@@ -503,10 +724,10 @@ public:
 	/**
 	\brief Defines a factor for the impulse transfer from the soft body to attached rigid bodies.
 
-	Only has an effect if the mode of the attachment is set to NX_SBF_COLLISION_TWOWAY.
+	Only has an effect if the mode of the attachment is set to NX_SOFTBODY_ATTACHMENT_TWOWAY.
 
 	<b>Default:</b> 0.2 <br>
-	<b>Range:</b> [0,inf)
+	<b>Range:</b> [0,1]
 	
 	@see NxSoftBody.attachToShape NxSoftBody.attachToCollidingShapes NxSoftBody.attachVertexToShape NxSoftBody.setAttachmentResponseCoefficient()
 	*/
@@ -533,6 +754,8 @@ public:
 	<b>Default:</b> 1.0 <br>
 	<b>Range:</b> [0,inf)
 	
+	Note: Large values can cause instabilities
+
 	@see NxSoftBodyDesc.flags NxSoftBodyDesc.fromFluidResponseCoefficient
 	*/
 	NxReal toFluidResponseCoefficient;
@@ -544,10 +767,28 @@ public:
 
 	<b>Default:</b> 1.0 <br>
 	<b>Range:</b> [0,inf)
-	
+
+	Note: Large values can cause instabilities
+
 	@see NxSoftBodyDesc.flags NxSoftBodyDesc.toFluidResponseCoefficient
 	*/
 	NxReal fromFluidResponseCoefficient;
+
+	/**
+	\brief If the NX_SBF_ADHERE flag is set the soft body moves partially in the frame 
+	of the attached actor. 
+
+	This feature is useful when the soft body is attached to a fast moving shape.
+	In that case the soft body adheres to the shape it is attached to while only 
+	velocities below the parameter minAdhereVelocity are used for secondary effects.
+
+	<b>Default:</b> 1.0
+	<b>Range:</b> [0,inf)
+
+	@see NX_SBF_ADHERE
+	*/ 
+
+	NxReal minAdhereVelocity;
 
 	/**
 	\brief Number of solver iterations. 
@@ -631,6 +872,13 @@ public:
 	NxGroupsMask groupsMask;
 
 	/**
+	\brief Force Field Material Index, index != 0 has to be created.
+
+	<b>Default:</b> 0
+	*/
+	NxU16 forceFieldMaterial;
+
+	/**
 	\brief If the flag NX_SBF_VALIDBOUNDS is set, this variable defines the volume
 	outside of which soft body particles are automatically removed from the simulation. 
 
@@ -687,9 +935,10 @@ public:
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	<b>Default:</b> NULL
 	*/
@@ -708,7 +957,11 @@ public:
 	/**
 	\brief Returns true if the current settings are valid
 	*/
-	NX_INLINE bool isValid() const;
+	NX_INLINE bool isValid() const { return !checkValid(); }
+	/**
+	\brief returns 0 if the current settings are valid
+	*/
+	NX_INLINE NxU32 checkValid() const;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -725,9 +978,11 @@ NX_INLINE void NxSoftBodyDesc::setToDefault()
 	softBodyMesh = NULL;
 	globalPose.id();
 	particleRadius = 0.1f;
+	selfCollisionThickness = 0.2f;
 	density = 1.0f;
 	volumeStiffness = 1.0f;
 	stretchingStiffness = 1.0f;
+	hardStretchLimitationFactor = 1.0f;
     dampingCoefficient = 0.5f;
 	friction = 0.5f;
 	tearFactor = 1.5f;
@@ -736,6 +991,7 @@ NX_INLINE void NxSoftBodyDesc::setToDefault()
 	collisionResponseCoefficient = 0.2f;
 	toFluidResponseCoefficient = 1.0f;
 	fromFluidResponseCoefficient = 1.0f;
+	minAdhereVelocity = 1.0f;
 	flags = NX_SBF_GRAVITY | NX_SBF_VOLUME_CONSERVATION;
     solverIterations = 5;
 	wakeUpCounter = NX_SLEEP_INTERVAL;
@@ -749,45 +1005,51 @@ NX_INLINE void NxSoftBodyDesc::setToDefault()
 	validBounds.setEmpty();
 	relativeGridSpacing = 0.25f;
 	meshData.setToDefault();
+	splitPairData.setToDefault();
   	userData = NULL;
 	name = NULL;
 	compartment = NULL;
+	forceFieldMaterial = 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-NX_INLINE bool NxSoftBodyDesc::isValid() const
+NX_INLINE NxU32 NxSoftBodyDesc::checkValid() const
 {
-	if(!softBodyMesh) return false;
-	if(!globalPose.isFinite()) return false;
-	if(particleRadius < 0.0f) return false;
-	if(density <= 0.0f) return false;
-	if(volumeStiffness < 0.0f || volumeStiffness > 1.0f) return false;
-	if(stretchingStiffness <= 0.0f || stretchingStiffness > 1.0f) return false;
-	if(tearFactor <= 1.0f) return false;
-	if(attachmentTearFactor <= 1.0f) return false;
-	if(solverIterations < 1) return false;
-	if(friction < 0.0f || friction > 1.0f) return false;
-	if(!meshData.isValid()) return false;
-	if(dampingCoefficient < 0.0f || dampingCoefficient > 1.0f) return false;
-    if(collisionResponseCoefficient < 0.0f) return false;
-	if(wakeUpCounter < 0.0f) return false;
-	if(attachmentResponseCoefficient < 0.0f) return false;
-	if(toFluidResponseCoefficient < 0.0f) return false;
-	if(fromFluidResponseCoefficient < 0.0f) return false;
-	if(relativeGridSpacing < 0.01f) return false;
-	if(collisionGroup >= 32) return false; // We only support 32 different collision groups
-	if(compartment && (!(flags & NX_SBF_HARDWARE))) return false; //only hw soft bodies can go in compartments
-	return true;
+	if (flags & NX_SBF_INTER_COLLISION) return 1;	// not supported on any platform yet
+
+	if(!softBodyMesh) return 2;
+	if(!globalPose.isFinite()) return 3;
+	if(particleRadius < 0.0f) return 4;
+	if(selfCollisionThickness <= 0.0f) return 5;
+	if(density <= 0.0f) return 6;
+	if(volumeStiffness < 0.0f || volumeStiffness > 1.0f) return 7;
+	if(stretchingStiffness <= 0.0f || stretchingStiffness > 1.0f) return 8;
+	if(tearFactor <= 1.0f) return 9;
+	if(attachmentTearFactor <= 1.0f) return 10;
+	if(solverIterations < 1) return 11;
+	if(friction < 0.0f || friction > 1.0f) return 12;
+	if(!meshData.isValid()) return 13;
+	if(!splitPairData.isValid()) return 14;
+	if(dampingCoefficient < 0.0f || dampingCoefficient > 1.0f) return 15;
+    if(collisionResponseCoefficient < 0.0f) return 16;
+	if(wakeUpCounter < 0.0f) return 17;
+	if(attachmentResponseCoefficient < 0.0f || attachmentResponseCoefficient > 1.0f) return 18;
+	if(toFluidResponseCoefficient < 0.0f) return 19;
+	if(fromFluidResponseCoefficient < 0.0f) return 20;
+	if(minAdhereVelocity < 0.0f) return 21;
+	if(relativeGridSpacing < 0.01f) return 22;
+	if(collisionGroup >= 32) return 23; // We only support 32 different collision groups
+	return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 /** @} */
 #endif
 
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2006 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

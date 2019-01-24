@@ -3,7 +3,7 @@
 //
 // Owner: Jamie Redmond
 //
-// Copyright (c) 2002-2006 OC3 Entertainment, Inc.
+// Copyright (c) 2002-2009 OC3 Entertainment, Inc.
 //------------------------------------------------------------------------------
 
 #ifndef FxArchive_H__
@@ -90,45 +90,52 @@ public:
 	static void FX_CALL Shutdown( void );
 
 	/// Returns \p FxTrue if the archive and its store are in valid states.
-	FX_INLINE FxBool IsValid( void ) { return _isValid; }
+	FX_INLINE FxBool IsValid( void ) const { return _isValid; }
 	/// Returns \p FxTrue if the archive mode is \p AM_Save.
-	FX_INLINE FxBool IsSaving( void )
+	FX_INLINE FxBool IsSaving( void ) const
 	{
 		return (AM_Save == _mode || AM_CreateDirectory == _mode || AM_ApproximateMemoryUsage == _mode);
 	}
 	/// Returns \p FxTrue if the archive mode is \p AM_Load or \p AM_LinearLoad.
-	FX_INLINE FxBool IsLoading( void )
+	FX_INLINE FxBool IsLoading( void ) const
 	{
 		return (AM_Load == _mode || AM_LinearLoad == _mode || AM_LazyLoad == _mode);
 	}
 
 	/// Returns \p FxTrue if the archive mode is \p AM_LinearLoad.
-	FX_INLINE FxBool IsLinearLoading( void ) { return AM_LinearLoad == _mode;	}
+	FX_INLINE FxBool IsLinearLoading( void ) const { return AM_LinearLoad == _mode;	}
 	/// Returns \p FxTrue if the archive mode is \p AM_LazyLoad.
-	FX_INLINE FxBool IsLazyLoading( void ) { return AM_LazyLoad == _mode;	}
+	FX_INLINE FxBool IsLazyLoading( void ) const { return AM_LazyLoad == _mode;	}
 
 
 	/// Returns the mode of the archive.
-	FX_INLINE FxArchiveMode GetMode( void ) { return _mode; }
+	FX_INLINE FxArchiveMode GetMode( void ) const { return _mode; }
 	/// Returns the byte order of the archive.
-	FX_INLINE FxArchiveByteOrder GetByteOrder( void ) { return _byteOrder; }
+	FX_INLINE FxArchiveByteOrder GetByteOrder( void ) const { return _byteOrder; }
 
+	/// Returns the version of the FaceFX file format that the current archive
+	/// was saved in.
+	FX_INLINE FxSize GetFileFormatVersion( void ) const { return _fileFormatVersion; }
 	/// Returns the version of the FaceFX SDK that the current archive was 
-	/// saved with.  This version number has been multiplied by 1000, so 
-	/// for example version 1.0 returns 1000, version 1.1 returns 1100, and 
-	/// so on.
-	FxSize GetSDKVersion( void );
+	/// saved with.  This version number is a series of four single-digit 
+	/// version (major, minor, bugfix, revision) concatenated together. Thus 
+	/// version 1.0 is 1000, version 1.7.1 is 1710, etc.
+	FX_INLINE FxSize GetSDKVersion( void ) const { return _sdkVersion; }
+	/// Returns the version of the FaceFX SDK that the current archive was saved
+	/// with as a string. This version number is in the format: 
+	/// major.minor.bugfix.revision.
+	const FxChar* GetSDKVersionString( void );
 	/// Returns the name of the FaceFX SDK licensee that the current archive was
 	/// saved with.
-	const FxChar* GetLicenseeName( void );
+	FX_INLINE const FxChar* GetLicenseeName( void ) const { return _licenseeName; }
 	/// Returns the name of the FaceFX SDK licensee project that the current
 	/// archive was saved with.
-	const FxChar* GetLicenseeProjectName( void );
+	FX_INLINE const FxChar* GetLicenseeProjectName( void ) const { return _licenseeProjectName; }
 	/// Returns the FaceFX SDK licensee version number that the current archive
 	/// was saved with.  This version number has been multiplied by 1000, so 
 	/// for example version 1.0 returns 1000, version 1.1 returns 1100, and 
 	/// so on.
-	FxSize GetLicenseeVersion( void );
+	FX_INLINE FxSize GetLicenseeVersion( void ) const { return _licenseeVersion; }
 
 	/// Registers a callback to receive archive loading progress updates.
 	/// \param callbackFunction The callback function.  Its signature must be 
@@ -142,12 +149,12 @@ public:
 	/// Finds the object at index in the object table and returns a pointer to 
 	/// it or \p NULL if there is no object at that index.
 	/// \note Internal use only.
-	FxObject* FindObject( FxSize index );
+	FxObject* FindObject( FxSize index ) const;
 	/// Finds the object in the object table and returns its index.
 	/// \param object The object to find.
 	/// \return The index of the object, or \p FxInvalidIndex if the object is not in the table.
 	/// \note Internal use only.
-	FxSize FindObject( FxObject* object );
+	FxSize FindObject( FxObject* object ) const;
 	/// Adds an object to the object table.
 	/// Adds \a object to the object table at \a index or to the end of the 
 	/// table if \a index is \p FxInvalidIndex (provided that \a object does not
@@ -181,6 +188,11 @@ public:
 	/// \return An FxRefString** as a void**.
 	/// \note Internal use only.
 	void** GetName( FxSize index );
+
+	//@todo Document this!
+	FxUInt16 SerializeClassVersion( const FxChar* classname, 
+		                            FxBool bIsNonFxObjectDerived = FxFalse, 
+									FxUInt16 classversion = 0 );
 
 	/// Returns the current position in the archive relative to the beginning.
 	FxInt32 Tell( void ) const;
@@ -244,8 +256,8 @@ public:
 	FX_INLINE FxArchiveStore* GetStore( void ) { return _store; }
 
 	//@todo
-	FxArchiveInternalData* GetInternalData( void );
-	void SetInternalDataState( FxArchiveInternalData* pData );
+	const FxArchiveInternalData* GetInternalData( void ) const;
+	void SetInternalDataState( const FxArchiveInternalData* pData );
 
 	/// Serializes an array of built-in arithmetic types.
 	/// \param array A pointer to the first element of the array.
@@ -315,8 +327,14 @@ private:
 	/// Whether the archive valid.
 	FxBool _isValid;
 
+	/// The FaceFX file format this archive was saved in.
+	FxSize _fileFormatVersion;
 	/// The version of the FaceFX SDK this archive was saved with.
 	FxSize _sdkVersion;
+	/// The version of the FaceFX SDK this archive was saved with as a string.
+	FxChar* _sdkVersionString;
+	/// The size of _sdkVersionString.
+	FxSize _sdkVersionStringSize;
 	/// The FaceFX SDK licensee name this archive was saved with.
 	FxChar* _licenseeName;
 	/// The size of _licenseeName.

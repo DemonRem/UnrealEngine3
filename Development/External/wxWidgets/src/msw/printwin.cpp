@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        printwin.cpp
+// Name:        src/msw/printwin.cpp
 // Purpose:     wxWindowsPrinter framework
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: printwin.cpp,v 1.42 2005/03/22 19:39:54 ABX Exp $
+// RCS-ID:      $Id: printwin.cpp 42522 2006-10-27 13:07:40Z JS $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "printwin.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -28,13 +24,12 @@
     #pragma hdrstop
 #endif
 
-#include "wx/defs.h"
-
 // Don't use the Windows printer if we're in wxUniv mode and using
 // the PostScript architecture
 #if wxUSE_PRINTING_ARCHITECTURE && (!defined(__WXUNIVERSAL__) || !wxUSE_POSTSCRIPT_ARCHITECTURE_IN_MSW)
 
 #ifndef WX_PRECOMP
+    #include "wx/msw/wrapcdlg.h"
     #include "wx/window.h"
     #include "wx/msw/private.h"
     #include "wx/utils.h"
@@ -42,17 +37,16 @@
     #include "wx/app.h"
     #include "wx/msgdlg.h"
     #include "wx/intl.h"
+    #include "wx/log.h"
+    #include "wx/dcprint.h"
 #endif
 
 #include "wx/msw/printwin.h"
-#include "wx/dcprint.h"
-#include "wx/printdlg.h"
-#include "wx/log.h"
+#include "wx/msw/printdlg.h"	// RJL used Windows dialog?s
 #include "wx/msw/private.h"
 
 #include <stdlib.h>
 
-#include "wx/msw/wrapcdlg.h"
 #ifndef __WIN32__
     #include <print.h>
 #endif
@@ -112,10 +106,10 @@ bool wxWindowsPrinter::Print(wxWindow *parent, wxPrintout *printout, bool prompt
         m_printDialogData.SetMaxPage(9999);
 
     // Create a suitable device context
-    wxDC *dc wxDUMMY_INITIALIZE(NULL);
+    wxPrinterDC *dc wxDUMMY_INITIALIZE(NULL);
     if (prompt)
     {
-        dc = PrintDialog(parent);
+        dc = wxDynamicCast(PrintDialog(parent), wxPrinterDC);
         if (!dc)
             return false;
     }
@@ -154,6 +148,7 @@ bool wxWindowsPrinter::Print(wxWindow *parent, wxPrintout *printout, bool prompt
     int w, h;
     dc->GetSize(&w, &h);
     printout->SetPageSizePixels((int)w, (int)h);
+    printout->SetPaperRectPixels(dc->GetPaperRect());
 
     dc->GetSizeMM(&w, &h);
     printout->SetPageSizeMM((int)w, (int)h);
@@ -282,11 +277,11 @@ bool wxWindowsPrinter::Print(wxWindow *parent, wxPrintout *printout, bool prompt
     return sm_lastError == wxPRINTER_NO_ERROR;
 }
 
-wxDC* wxWindowsPrinter::PrintDialog(wxWindow *parent)
+wxDC *wxWindowsPrinter::PrintDialog(wxWindow *parent)
 {
-    wxDC* dc = (wxDC*) NULL;
+    wxDC *dc = (wxPrinterDC*) NULL;
 
-    wxPrintDialog dialog(parent, & m_printDialogData);
+    wxWindowsPrintDialog dialog(parent, & m_printDialogData);
     int ret = dialog.ShowModal();
 
     if (ret == wxID_OK)
@@ -358,49 +353,66 @@ bool wxWindowsPrintPreview::Print(bool interactive)
 
 void wxWindowsPrintPreview::DetermineScaling()
 {
-    HDC dc = ::GetDC(NULL);
-    int screenWidth = ::GetDeviceCaps(dc, HORZSIZE);
-    int screenYRes = ::GetDeviceCaps(dc, VERTRES);
+    ScreenHDC dc;
     int logPPIScreenX = ::GetDeviceCaps(dc, LOGPIXELSX);
     int logPPIScreenY = ::GetDeviceCaps(dc, LOGPIXELSY);
     m_previewPrintout->SetPPIScreen(logPPIScreenX, logPPIScreenY);
 
-    ::ReleaseDC(NULL, dc);
-
     // Get a device context for the currently selected printer
     wxPrinterDC printerDC(m_printDialogData.GetPrintData());
 
-    int printerWidth = 150;
-    int printerHeight wxDUMMY_INITIALIZE(250);
-    int printerXRes = 1500;
-    int printerYRes = 2500;
+    int printerWidthMM;
+    int printerHeightMM;
+    int printerXRes;
+    int printerYRes;
+    int logPPIPrinterX;
+    int logPPIPrinterY;
 
-    dc = GetHdcOf(printerDC);
-    if ( dc )
+	wxRect paperRect;
+
+    if ( printerDC.Ok() )
     {
-        printerWidth = ::GetDeviceCaps(dc, HORZSIZE);
-        printerHeight = ::GetDeviceCaps(dc, VERTSIZE);
+        HDC dc = GetHdcOf(printerDC);
+        printerWidthMM = ::GetDeviceCaps(dc, HORZSIZE);
+        printerHeightMM = ::GetDeviceCaps(dc, VERTSIZE);
         printerXRes = ::GetDeviceCaps(dc, HORZRES);
         printerYRes = ::GetDeviceCaps(dc, VERTRES);
+        logPPIPrinterX = ::GetDeviceCaps(dc, LOGPIXELSX);
+        logPPIPrinterY = ::GetDeviceCaps(dc, LOGPIXELSY);
 
-        int logPPIPrinterX = ::GetDeviceCaps(dc, LOGPIXELSX);
-        int logPPIPrinterY = ::GetDeviceCaps(dc, LOGPIXELSY);
+		paperRect = printerDC.GetPaperRect();
 
-        m_previewPrintout->SetPPIPrinter(logPPIPrinterX, logPPIPrinterY);
-        m_previewPrintout->SetPageSizeMM(printerWidth, printerHeight);
-
-        if (logPPIPrinterX == 0 || logPPIPrinterY == 0 || printerWidth == 0 || printerHeight == 0)
+        if ( logPPIPrinterX == 0 ||
+                logPPIPrinterY == 0 ||
+                    printerWidthMM == 0 ||
+                        printerHeightMM == 0 )
+        {
             m_isOk = false;
+        }
     }
     else
-        m_isOk = false;
+    {
+        // use some defaults
+        printerWidthMM = 150;
+        printerHeightMM = 250;
+        printerXRes = 1500;
+        printerYRes = 2500;
+        logPPIPrinterX = 600;
+        logPPIPrinterY = 600;
 
+		paperRect = wxRect(0, 0, printerXRes, printerYRes);
+        m_isOk = false;
+    }
     m_pageWidth = printerXRes;
     m_pageHeight = printerYRes;
+    m_previewPrintout->SetPageSizePixels(printerXRes, printerYRes);
+    m_previewPrintout->SetPageSizeMM(printerWidthMM, printerHeightMM);
+    m_previewPrintout->SetPaperRectPixels(paperRect);
+    m_previewPrintout->SetPPIPrinter(logPPIPrinterX, logPPIPrinterY);
 
     // At 100%, the page should look about page-size on the screen.
-    m_previewScale = (float)((float)screenWidth/(float)printerWidth);
-    m_previewScale = m_previewScale * (float)((float)screenYRes/(float)printerYRes);
+    m_previewScaleX = float(logPPIScreenX) / logPPIPrinterX;
+    m_previewScaleY = float(logPPIScreenY) / logPPIPrinterY;
 }
 
 /****************************************************************************

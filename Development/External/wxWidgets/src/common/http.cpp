@@ -1,23 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        http.cpp
+// Name:        src/common/http.cpp
 // Purpose:     HTTP protocol
 // Author:      Guilhem Lavaux
-// Modified by:
+// Modified by: Simo Virokannas (authentication, Dec 2005)
 // Created:     August 1997
-// RCS-ID:      $Id: http.cpp,v 1.75 2005/09/02 17:30:31 SC Exp $
+// RCS-ID:      $Id: http.cpp 44660 2007-03-07 23:07:17Z VZ $
 // Copyright:   (c) 1997, 1998 Guilhem Lavaux
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-  #pragma implementation "http.h"
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
-  #pragma hdrstop
+    #pragma hdrstop
 #endif
 
 #if wxUSE_PROTOCOL_HTTP
@@ -26,8 +22,8 @@
 #include <stdlib.h>
 
 #ifndef WX_PRECOMP
-#include "wx/string.h"
-#include "wx/app.h"
+    #include "wx/string.h"
+    #include "wx/app.h"
 #endif
 
 #include "wx/tokenzr.h"
@@ -119,6 +115,38 @@ wxString wxHTTP::GetHeader(const wxString& header) const
     return it == m_headers.end() ? wxGetEmptyString() : it->second;
 }
 
+wxString wxHTTP::GenerateAuthString(const wxString& user, const wxString& pass) const
+{
+    static const char *base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    wxString buf;
+    wxString toencode;
+
+    buf.Printf(wxT("Basic "));
+
+    toencode.Printf(wxT("%s:%s"),user.c_str(),pass.c_str());
+
+    size_t len = toencode.length();
+    const wxChar *from = toencode.c_str();
+    while (len >= 3) { // encode full blocks first
+        buf << wxString::Format(wxT("%c%c"), base64[(from[0] >> 2) & 0x3f], base64[((from[0] << 4) & 0x30) | ((from[1] >> 4) & 0xf)]);
+        buf << wxString::Format(wxT("%c%c"), base64[((from[1] << 2) & 0x3c) | ((from[2] >> 6) & 0x3)], base64[from[2] & 0x3f]);
+        from += 3;
+        len -= 3;
+    }
+    if (len > 0) { // pad the remaining characters
+        buf << wxString::Format(wxT("%c"), base64[(from[0] >> 2) & 0x3f]);
+        if (len == 1) {
+            buf << wxString::Format(wxT("%c="), base64[(from[0] << 4) & 0x30]);
+        } else {
+            buf << wxString::Format(wxT("%c%c"), base64[((from[0] << 4) & 0x30) | ((from[1] >> 4) & 0xf)], base64[(from[1] << 2) & 0x3c]);
+        }
+        buf << wxString::Format(wxT("="));
+    }
+
+    return buf;
+}
+
 void wxHTTP::SetPostBuffer(const wxString& post_buf)
 {
     m_post_buf = post_buf;
@@ -146,19 +174,13 @@ bool wxHTTP::ParseHeaders()
     ClearHeaders();
     m_read = true;
 
-#if defined(__VISAGECPP__)
-// VA just can't stand while(1)
-    bool bOs2var = true;
-    while(bOs2var)
-#else
-    while (1)
-#endif
+    for ( ;; )
     {
         m_perr = ReadLine(this, line);
         if (m_perr != wxPROTO_NOERR)
             return false;
 
-        if (line.Length() == 0)
+        if (line.length() == 0)
             break;
 
         wxString left_str = line.BeforeFirst(':');
@@ -237,6 +259,11 @@ bool wxHTTP::BuildRequest(const wxString& path, wxHTTP_Req req)
     // If there is no User-Agent defined, define it.
     if (GetHeader(wxT("User-Agent")).IsNull())
         SetHeader(wxT("User-Agent"), wxT("wxWidgets 2.x"));
+
+    // Send authentication information
+    if (!m_username.empty() || !m_password.empty()) {
+        SetHeader(wxT("Authorization"), GenerateAuthString(m_username, m_password));
+    }
 
     SaveState();
 
@@ -393,4 +420,3 @@ wxInputStream *wxHTTP::GetInputStream(const wxString& path)
 }
 
 #endif // wxUSE_PROTOCOL_HTTP
-

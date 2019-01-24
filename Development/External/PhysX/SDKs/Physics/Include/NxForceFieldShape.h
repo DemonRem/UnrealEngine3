@@ -2,9 +2,9 @@
 #define NX_PHYSICS_NXFORCEFIELDSHAPE
 /*----------------------------------------------------------------------------*\
 |
-|						Public Interface to Ageia PhysX Technology
+|					Public Interface to NVIDIA PhysX Technology
 |
-|							     www.ageia.com
+|							     www.nvidia.com
 |
 \*----------------------------------------------------------------------------*/
 /** \addtogroup physics
@@ -18,6 +18,8 @@ class NxSphereForceFieldShape;
 class NxBoxForceFieldShape;
 class NxCapsuleForceFieldShape;
 class NxConvexForceFieldShape;
+class NxForceField;
+class NxForceFieldShapeGroup;
 
 /**
  \brief A shape that represents a volume in which the force field acts on objects.
@@ -25,9 +27,10 @@ class NxConvexForceFieldShape;
 
 <b>Platform:</b>
 \li PC SW: Yes
-\li PPU  : Yes
+\li GPU  : Yes [SW]
 \li PS3  : Yes
 \li XB360: Yes
+\li WII	 : Yes
 
  @see NxForceFieldShapeDesc, NxForceField
 */
@@ -43,9 +46,10 @@ class NxForceFieldShape
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setPose() getFlags() NxForceFieldShapeDesc::pose
 	*/
@@ -56,54 +60,42 @@ class NxForceFieldShape
 	
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getPose() getFlags() NxForceFieldShapeDesc::pose
 	*/
 	virtual void setPose(const NxMat34 &) = 0;
 
 	/**
-	\brief Gets the force field shape flags
+	\brief Returns the owning force field if this is a shape of an include group, else NULL will be returned
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW] 
 	\li PS3  : Yes
 	\li XB360: Yes
-
-	@see setFlags() NxForceFieldShapeFlags
-	*/	
-	virtual NxU32 getFlags() const = 0;	
-
-	/**
-	\brief Sets the force field shape flags
-
-	\param[in] flags The new flags
-
-	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes
-	\li PS3  : Yes
-	\li XB360: Yes
-
-	@see getFlags() NxForceFieldShapeFlags
-	*/	
-	virtual void setFlags(NxU32 flags) = 0;
-
-	/**
-	\brief Returns the owning force field.
-
-	<b>Platform:</b>
-	\li PC SW: Yes
-	\li PPU  : Yes 
-	\li PS3  : Yes
-	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxForceField
 	*/
-	virtual NxForceField & getForceField() = 0;
+	virtual NxForceField * getForceField() const = 0;
+
+	/**
+	\brief Returns the owning force field shape group.
+
+	<b>Platform:</b>
+	\li PC SW: Yes
+	\li GPU  : Yes [SW] 
+	\li PS3  : Yes
+	\li XB360: Yes
+	\li WII	 : Yes
+
+	@see NxForceField
+	*/
+	virtual NxForceFieldShapeGroup & getShapeGroup() const = 0;
 
 	/**
 	\brief Sets a name string for the object that can be retrieved with getName().
@@ -114,9 +106,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see getName()
 	*/
@@ -129,9 +122,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see setName()
 	*/
@@ -143,9 +137,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes 
+	\li GPU  : Yes [SW] 
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType
 	*/
@@ -159,9 +154,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType
 	*/
@@ -175,9 +171,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxShapeType
 	*/
@@ -191,9 +188,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphereForceFieldShape
 	*/
@@ -208,9 +206,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxSphereForceFieldShape()
 	*/
@@ -225,9 +224,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBoxForceFieldShape()
 	*/
@@ -242,9 +242,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxBoxForceFieldShape
 	*/
@@ -259,9 +260,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleForceFieldShape
 	*/
@@ -276,9 +278,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxCapsuleForceFieldShape
 	*/
@@ -293,9 +296,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxConvexForceFieldShape
 	*/
@@ -310,9 +314,10 @@ class NxForceFieldShape
 
 	<b>Platform:</b>
 	\li PC SW: Yes
-	\li PPU  : Yes
+	\li GPU  : Yes [SW]
 	\li PS3  : Yes
 	\li XB360: Yes
+	\li WII	 : Yes
 
 	@see NxConvexForceFieldShape
 	*/
@@ -374,9 +379,9 @@ NX_INLINE const NxConvexForceFieldShape *  NxForceFieldShape::isConvex () const
 
 /** @} */
 #endif
-//AGCOPYRIGHTBEGIN
+//NVIDIACOPYRIGHTBEGIN
 ///////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 AGEIA Technologies.
-// All rights reserved. www.ageia.com
+// Copyright (c) 2010 NVIDIA Corporation
+// All rights reserved. www.nvidia.com
 ///////////////////////////////////////////////////////////////////////////
-//AGCOPYRIGHTEND
+//NVIDIACOPYRIGHTEND

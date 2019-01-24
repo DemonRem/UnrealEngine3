@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        prntdlgg.cpp
+// Name:        src/generic/prntdlgg.cpp
 // Purpose:     Generic print dialogs
 // Author:      Julian Smart
 // Modified by:
 // Created:     04/01/98
-// RCS-ID:      $Id: prntdlgg.cpp,v 1.82 2005/09/13 16:50:13 VZ Exp $
+// RCS-ID:      $Id: prntdlgg.cpp 55256 2008-08-25 14:39:11Z VZ $
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -17,10 +17,6 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-    #pragma implementation "prntdlgg.h"
-#endif
-
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -29,6 +25,8 @@
 #endif
 
 #if wxUSE_PRINTING_ARCHITECTURE && (!defined(__WXMSW__) || wxUSE_POSTSCRIPT_ARCHITECTURE_IN_MSW)
+
+#include "wx/generic/prntdlgg.h"
 
 #ifndef WX_PRECOMP
     #include "wx/utils.h"
@@ -47,10 +45,8 @@
 #endif
 
 #if wxUSE_STATLINE
-  #include "wx/statline.h"
+    #include "wx/statline.h"
 #endif
-
-#include "wx/generic/prntdlgg.h"
 
 #if wxUSE_POSTSCRIPT
     #include "wx/generic/dcpsg.h"
@@ -65,6 +61,15 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef __WXUNIVERSAL__
+
+#if wxUSE_LIBGNOMEPRINT
+    #include "wx/link.h"
+    wxFORCE_LINK_MODULE(gnome_print)
+#endif
+
+#endif // !__WXUNIVERSAL__
 
 // ----------------------------------------------------------------------------
 // global vars
@@ -196,9 +201,9 @@ void wxGenericPrintDialog::Init(wxWindow * WXUNUSED(parent))
     if (factory->HasStatusLine())
     {
         flex->Add( new wxStaticText( this, wxID_ANY, _("Status:") ),
-            0, wxALIGN_CENTER_VERTICAL|wxALL-wxTOP, 5 );
+            0, wxALIGN_CENTER_VERTICAL|(wxALL-wxTOP), 5 );
         flex->Add( new wxStaticText( this, wxID_ANY, factory->CreateStatusLine() ),
-            0, wxALIGN_CENTER_VERTICAL|wxALL-wxTOP, 5 );
+            0, wxALIGN_CENTER_VERTICAL|(wxALL-wxTOP), 5 );
     }
 
     mainsizer->Add( topsizer, 0, wxLEFT|wxTOP|wxRIGHT|wxGROW, 10 );
@@ -245,14 +250,11 @@ void wxGenericPrintDialog::Init(wxWindow * WXUNUSED(parent))
 
     mainsizer->Add( bottomsizer, 0, wxTOP|wxLEFT|wxRIGHT, 12 );
 
-#if wxUSE_STATLINE
-    // 4) static line
-    mainsizer->Add( new wxStaticLine( this, wxID_ANY ), 0, wxEXPAND | wxLEFT|wxRIGHT|wxTOP, 10 );
-#endif
+    // 4) buttons
 
-    // 5) buttons
-
-    mainsizer->Add( CreateButtonSizer( wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 10 );
+    wxSizer *sizerBtn = CreateSeparatedButtonSizer( wxOK|wxCANCEL);
+    if ( sizerBtn )
+        mainsizer->Add(sizerBtn, 0, wxEXPAND|wxALL, 10 );
 
     SetAutoLayout( true );
     SetSizer( mainsizer );
@@ -294,7 +296,7 @@ void wxGenericPrintDialog::OnOK(wxCommandEvent& WXUNUSED(event))
         wxFileName fname( m_printDialogData.GetPrintData().GetFilename() );
 
         wxFileDialog dialog( this, _("PostScript file"),
-            fname.GetPath(), fname.GetFullName(), wxT("*.ps"), wxSAVE | wxOVERWRITE_PROMPT );
+            fname.GetPath(), fname.GetFullName(), wxT("*.ps"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
         if (dialog.ShowModal() != wxID_OK) return;
 
         m_printDialogData.GetPrintData().SetFilename( dialog.GetPath() );
@@ -352,10 +354,12 @@ bool wxGenericPrintDialog::TransferDataToWindow()
              if (m_printDialogData.GetToPage() > 0)
                 m_toText->SetValue(wxString::Format(_T("%d"), m_printDialogData.GetToPage()));
              if(m_rangeRadioBox)
+             {
                 if (m_printDialogData.GetAllPages() || m_printDialogData.GetFromPage() == 0)
                    m_rangeRadioBox->SetSelection(0);
                 else
                    m_rangeRadioBox->SetSelection(1);
+             }
           }
           else
           {
@@ -535,8 +539,8 @@ void wxGenericPrintSetupDialog::Init(wxPrintData* data)
             if (tmp != wxT("for"))
                 break;  // the lpstat syntax must have changed.
             tmp = tok.GetNextToken();          // "hp_deskjet930c:"
-            if (tmp[tmp.Len()-1] == wxT(':'))
-                tmp.Remove(tmp.Len()-1,1);
+            if (tmp[tmp.length()-1] == wxT(':'))
+                tmp.Remove(tmp.length()-1,1);
             wxString name = tmp;
             item.SetText( name );
             item.SetId( m_printerListCtrl->InsertItem( item ) );
@@ -565,7 +569,7 @@ void wxGenericPrintSetupDialog::Init(wxPrintData* data)
                 tmp = output2[0]; // "printer hp_deskjet930c is idle. enable since ..."
                 int pos = tmp.Find( wxT('.') );
                 if (pos != wxNOT_FOUND)
-                    tmp.Remove( (size_t)pos, tmp.Len()-(size_t)pos );
+                    tmp.Remove( (size_t)pos, tmp.length()-(size_t)pos );
                 wxStringTokenizer tok2( tmp, wxT(" ") );
                 tmp = tok2.GetNextToken();  // "printer"
                 tmp = tok2.GetNextToken();  // "hp_deskjet930c"
@@ -682,8 +686,7 @@ wxGenericPrintSetupDialog::~wxGenericPrintSetupDialog()
 void wxGenericPrintSetupDialog::OnPrinter(wxListEvent& event)
 {
     // Delete check mark
-    long item;
-    for (item = 0; item < m_printerListCtrl->GetItemCount(); item++)
+    for (long item = 0; item < m_printerListCtrl->GetItemCount(); item++)
         m_printerListCtrl->SetItemImage( item, -1 );
 
     m_printerListCtrl->SetItemImage( event.GetIndex(), 0 );
@@ -694,14 +697,12 @@ void wxGenericPrintSetupDialog::OnPrinter(wxListEvent& event)
     }
     else
     {
-        wxString tmp = wxT("lpr -P");
-        wxListItem item;
-        item.SetColumn( 1 );
-        item.SetMask( wxLIST_MASK_TEXT );
-        item.SetId( event.GetIndex() );
-        m_printerListCtrl->GetItem( item );
-        tmp += item.GetText();
-        m_printerCommandText->SetValue( tmp );
+        wxListItem li;
+        li.SetColumn( 1 );
+        li.SetMask( wxLIST_MASK_TEXT );
+        li.SetId( event.GetIndex() );
+        m_printerListCtrl->GetItem( li );
+        m_printerCommandText->SetValue( _T("lpr -P") + li.GetText() );
     }
 }
 
@@ -1099,4 +1100,3 @@ void wxGenericPageSetupDialog::OnPrinter(wxCommandEvent& WXUNUSED(event))
 }
 
 #endif
-

@@ -1,14 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        busyinfo.cpp
+// Name:        src/generic/busyinfo.cpp
 // Purpose:     Information window when app is busy
 // Author:      Vaclav Slavik
 // Copyright:   (c) 1999 Vaclav Slavik
+// RCS-ID:      $Id: busyinfo.cpp 44898 2007-03-18 20:39:13Z VZ $
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "busyinfo.h"
-#endif
 
 #include "wx/wxprec.h"
 
@@ -18,17 +15,31 @@
 
 #if wxUSE_BUSYINFO
 
-#include "wx/stattext.h"
-#include "wx/panel.h"
-#include "wx/utils.h"
+// for all others, include the necessary headers
+#ifndef WX_PRECOMP
+    #include "wx/frame.h"
+    #include "wx/stattext.h"
+    #include "wx/panel.h"
+    #include "wx/utils.h"
+#endif
+
 #include "wx/busyinfo.h"
+
+class WXDLLEXPORT wxInfoFrame : public wxFrame
+{
+public:
+    wxInfoFrame(wxWindow *parent, const wxString& message);
+
+private:
+    DECLARE_NO_COPY_CLASS(wxInfoFrame)
+};
 
 
 wxInfoFrame::wxInfoFrame(wxWindow *parent, const wxString& message)
            : wxFrame(parent, wxID_ANY, wxT("Busy"),
                      wxDefaultPosition, wxDefaultSize,
 #if defined(__WXX11__)
-                     wxTHICK_FRAME
+                     wxRESIZE_BORDER
 #else
                      wxSIMPLE_BORDER
 #endif
@@ -104,6 +115,12 @@ wxInfoFrame::wxInfoFrame(wxWindow *parent, const wxString& message)
 wxBusyInfo::wxBusyInfo(const wxString& message, wxWindow *parent)
 {
     m_InfoFrame = new wxInfoFrame( parent, message);
+    if ( parent && parent->HasFlag(wxSTAY_ON_TOP) )
+    {
+        // we must have this flag to be in front of our parent if it has it
+        m_InfoFrame->SetWindowStyleFlag(wxSTAY_ON_TOP);
+    }
+
     m_InfoFrame->Show(true);
     m_InfoFrame->Refresh();
     m_InfoFrame->Update();
@@ -115,6 +132,4 @@ wxBusyInfo::~wxBusyInfo()
     m_InfoFrame->Close();
 }
 
-#endif
-  // wxUSE_BUSYINFO
-
+#endif // wxUSE_BUSYINFO

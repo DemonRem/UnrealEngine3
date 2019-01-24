@@ -1,17 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        common/fldlgcmn.cpp
+// Name:        src/common/fldlgcmn.cpp
 // Purpose:     wxFileDialog common functions
 // Author:      John Labenski
 // Modified by:
 // Created:     14.06.03 (extracted from src/*/filedlg.cpp)
-// RCS-ID:      $Id: fldlgcmn.cpp,v 1.23 2005/07/22 17:04:39 ABX Exp $
+// RCS-ID:      $Id: fldlgcmn.cpp 47482 2007-07-15 14:12:08Z VS $
 // Copyright:   (c) Robert Roebling
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "filedlg.h"
-#endif
 
 #ifdef __BORLANDC__
 #pragma hdrstop
@@ -20,15 +16,16 @@
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
+#if wxUSE_FILEDLG
+
+#include "wx/filedlg.h"
+#include "wx/dirdlg.h"
+
 #ifndef WX_PRECOMP
     #include "wx/string.h"
     #include "wx/intl.h"
     #include "wx/window.h"
 #endif // WX_PRECOMP
-
-#include "wx/filedlg.h"
-
-#if wxUSE_FILEDLG
 
 //----------------------------------------------------------------------------
 // wxFileDialogBase
@@ -38,8 +35,8 @@ IMPLEMENT_DYNAMIC_CLASS(wxFileDialogBase, wxDialog)
 
 void wxFileDialogBase::Init()
 {
-    m_filterIndex = m_dialogStyle = 0;
-    m_parent = NULL;
+    m_filterIndex =
+    m_windowStyle = 0;
 }
 
 bool wxFileDialogBase::Create(wxWindow *parent,
@@ -48,7 +45,9 @@ bool wxFileDialogBase::Create(wxWindow *parent,
                               const wxString& defaultFile,
                               const wxString& wildCard,
                               long style,
-                              const wxPoint& WXUNUSED(pos))
+                              const wxPoint& WXUNUSED(pos),
+                              const wxSize& WXUNUSED(sz),
+                              const wxString& WXUNUSED(name))
 {
     m_message = message;
     m_dir = defaultDir;
@@ -56,8 +55,22 @@ bool wxFileDialogBase::Create(wxWindow *parent,
     m_wildCard = wildCard;
 
     m_parent = parent;
-    m_dialogStyle = style;
+    m_windowStyle = style;
     m_filterIndex = 0;
+
+    if (!HasFdFlag(wxFD_OPEN) && !HasFdFlag(wxFD_SAVE))
+        m_windowStyle |= wxFD_OPEN;     // wxFD_OPEN is the default
+
+    // check that the styles are not contradictory
+    wxASSERT_MSG( !(HasFdFlag(wxFD_SAVE) && HasFdFlag(wxFD_OPEN)),
+                  _T("can't specify both wxFD_SAVE and wxFD_OPEN at once") );
+
+    wxASSERT_MSG( !HasFdFlag(wxFD_SAVE) ||
+                    (!HasFdFlag(wxFD_MULTIPLE) && !HasFdFlag(wxFD_FILE_MUST_EXIST)),
+                   _T("wxFD_MULTIPLE or wxFD_FILE_MUST_EXIST can't be used with wxFD_SAVE" ) );
+
+    wxASSERT_MSG( !HasFdFlag(wxFD_OPEN) || !HasFdFlag(wxFD_OVERWRITE_PROMPT),
+                  _T("wxFD_OVERWRITE_PROMPT can't be used with wxFD_OPEN") );
 
     if ( wildCard.empty() || wildCard == wxFileSelectorDefaultWildcardStr )
     {
@@ -101,6 +114,19 @@ int wxFileDialogBase::ParseWildcard(const wxString& filterStr,
 }
 #endif // WXWIN_COMPATIBILITY_2_4
 
+#if WXWIN_COMPATIBILITY_2_6
+long wxFileDialogBase::GetStyle() const
+{
+    return GetWindowStyle();
+}
+
+void wxFileDialogBase::SetStyle(long style)
+{
+    SetWindowStyle(style);
+}
+#endif // WXWIN_COMPATIBILITY_2_6
+
+
 wxString wxFileDialogBase::AppendExtension(const wxString &filePath,
                                            const wxString &extensionList)
 {
@@ -109,7 +135,7 @@ wxString wxFileDialogBase::AppendExtension(const wxString &filePath,
 
     // if fileName is of form "foo.bar" it's ok, return it
     int idx_dot = fileName.Find(wxT('.'), true);
-    if ((idx_dot != wxNOT_FOUND) && (idx_dot < (int)fileName.Len() - 1))
+    if ((idx_dot != wxNOT_FOUND) && (idx_dot < (int)fileName.length() - 1))
         return filePath;
 
     // get the first extension from extensionList, or all of it
@@ -117,7 +143,7 @@ wxString wxFileDialogBase::AppendExtension(const wxString &filePath,
 
     // if ext == "foo" or "foo." there's no extension
     int idx_ext_dot = ext.Find(wxT('.'), true);
-    if ((idx_ext_dot == wxNOT_FOUND) || (idx_ext_dot == (int)ext.Len() - 1))
+    if ((idx_ext_dot == wxNOT_FOUND) || (idx_ext_dot == (int)ext.length() - 1))
         return filePath;
     else
         ext = ext.AfterLast(wxT('.'));
@@ -160,17 +186,17 @@ wxString wxFileSelector(const wxChar *title,
     // suitable filter.
 
     wxString filter2;
-    if ( defaultExtension && !filter )
+    if ( !wxIsEmpty(defaultExtension) && wxIsEmpty(filter) )
         filter2 = wxString(wxT("*.")) + defaultExtension;
-    else if ( filter )
+    else if ( !wxIsEmpty(filter) )
         filter2 = filter;
 
     wxString defaultDirString;
-    if (defaultDir)
+    if (!wxIsEmpty(defaultDir))
         defaultDirString = defaultDir;
 
     wxString defaultFilenameString;
-    if (defaultFileName)
+    if (!wxIsEmpty(defaultFileName))
         defaultFilenameString = defaultFileName;
 
     wxFileDialog fileDialog(parent, title, defaultDirString,
@@ -223,10 +249,10 @@ wxString wxFileSelectorEx(const wxChar *title,
 
 {
     wxFileDialog fileDialog(parent,
-                            title ? title : wxEmptyString,
-                            defaultDir ? defaultDir : wxEmptyString,
-                            defaultFileName ? defaultFileName : wxEmptyString,
-                            filter ? filter : wxEmptyString,
+                            !wxIsEmpty(title) ? title : wxEmptyString,
+                            !wxIsEmpty(defaultDir) ? defaultDir : wxEmptyString,
+                            !wxIsEmpty(defaultFileName) ? defaultFileName : wxEmptyString,
+                            !wxIsEmpty(filter) ? filter : wxEmptyString,
                             flags, wxPoint(x, y));
 
     wxString filename;
@@ -261,7 +287,7 @@ static wxString wxDefaultFileSelector(bool load,
 
     wxString wild;
     const wxChar *ext = extension;
-    if ( ext )
+    if ( !wxIsEmpty(ext) )
     {
         if ( *ext == wxT('.') )
             ext++;
@@ -274,7 +300,7 @@ static wxString wxDefaultFileSelector(bool load,
     }
 
     return wxFileSelector(prompt, NULL, default_name, ext, wild,
-                          load ? wxOPEN : wxSAVE, parent);
+                          load ? wxFD_OPEN : wxFD_SAVE, parent);
 }
 
 //----------------------------------------------------------------------------
@@ -301,5 +327,22 @@ WXDLLEXPORT wxString wxSaveFileSelector(const wxChar *what,
     return wxDefaultFileSelector(false, what, extension, default_name, parent);
 }
 
-#endif // wxUSE_FILEDLG
 
+//----------------------------------------------------------------------------
+// wxDirDialogBase
+//----------------------------------------------------------------------------
+
+#if WXWIN_COMPATIBILITY_2_6
+long wxDirDialogBase::GetStyle() const
+{
+    return GetWindowStyle();
+}
+
+void wxDirDialogBase::SetStyle(long style)
+{
+    SetWindowStyle(style);
+}
+#endif // WXWIN_COMPATIBILITY_2_6
+
+
+#endif // wxUSE_FILEDLG

@@ -2,18 +2,10 @@
 // Name:        derivdlg.cpp
 // Purpose:     XML resources sample: A derived dialog
 // Author:      Robert O'Connor (rob@medicalmnemonics.com), Vaclav Slavik
-// RCS-ID:      $Id: derivdlg.cpp,v 1.7 2004/12/06 10:28:47 VS Exp $
+// RCS-ID:      $Id: derivdlg.cpp 35650 2005-09-23 12:56:45Z MR $
 // Copyright:   (c) Robert O'Connor and Vaclav Slavik
 // Licence:     wxWindows licence
 //-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// GCC implementation
-//-----------------------------------------------------------------------------
-
-#ifdef __GNUG__
-    #pragma implementation "derivdlg.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Standard wxWidgets headers
